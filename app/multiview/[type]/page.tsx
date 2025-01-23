@@ -84,14 +84,19 @@ export default function MultiViewPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {showElements && (
-        <DotNavigation
-          activeDot={9}
-          isSmallMultiView={isMultiView2}
-          onOutlinedDotClick={() => {}}
-        />
-      )}
+    <div className="min-h-screen flex flex-col dark:bg-black">
+      {/* Logo */}
+      <div className="fixed top-6 left-6 text-2xl font-bold text-gray-800 dark:text-white">
+        M
+      </div>
+
+      {/* DotNavigation */}
+      <DotNavigation
+        activeDot={9}
+        isSmallMultiView={isMultiView2}
+      />
+
+      {/* Menu */}
       <Menu
         showElements={showElements}
         onToggleShow={() => setShowElements(!showElements)}
@@ -100,6 +105,7 @@ export default function MultiViewPage() {
         isDarkMode={isDarkMode}
         onDarkModeChange={setIsDarkMode}
       />
+
       <div className="flex-grow flex items-center justify-center">
         <AnimatePresence mode="wait">
           <motion.div
@@ -129,7 +135,7 @@ export default function MultiViewPage() {
               onToggleShow={() => setShowElements(!showElements)}
               currentTime={currentTime}
               syncTrigger={0}
-              hideControls={true}
+              hideControls={false}
               showSatellites={showSatellites}
             />
           </motion.div>

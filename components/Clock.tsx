@@ -691,19 +691,6 @@ export default function Clock({
           );
         })}
 
-        {!hideControls && (
-          <>
-            <div className="fixed top-4 left-4 z-10 font-bold text-2xl dark:text-white">
-              {isMultiView2 ? 'M2' : 'M1'}
-            </div>
-            <div 
-              onClick={onToggleShow} 
-              className="fixed bottom-4 right-4 cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors z-10"
-            >
-              {showElements ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
-            </div>
-          </>
-        )}
         {/* Glow effects for multiview1 */}
         {!isMultiView2 && (
           <motion.div
