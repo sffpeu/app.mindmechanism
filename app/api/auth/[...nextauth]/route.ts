@@ -3,6 +3,18 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { getSupabase } from '@/lib/supabase';
 import type { User } from 'next-auth';
 
+if (!process.env.NEXTAUTH_URL) {
+  console.error('NEXTAUTH_URL is not set');
+}
+
+if (!process.env.NEXTAUTH_SECRET) {
+  console.error('NEXTAUTH_SECRET is not set');
+}
+
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  console.error('Supabase environment variables are not set');
+}
+
 const handler = NextAuth({
   providers: [
     CredentialsProvider({
@@ -14,13 +26,14 @@ const handler = NextAuth({
       async authorize(credentials): Promise<User | null> {
         try {
           if (!credentials?.email || !credentials?.password) {
-            throw new Error('Please enter both email and password');
+            console.error('Missing credentials');
+            return null;
           }
 
           const supabase = getSupabase();
           if (!supabase) {
             console.error('Supabase client initialization failed');
-            throw new Error('Authentication service unavailable');
+            return null;
           }
 
           // Sign in with Supabase
@@ -30,20 +43,25 @@ const handler = NextAuth({
           });
 
           if (error) {
-            console.error('Supabase auth error:', error);
-            throw new Error(error.message);
+            console.error('Supabase auth error:', error.message);
+            return null;
           }
 
           if (!user) {
-            throw new Error('User not found');
+            console.error('No user returned from Supabase');
+            return null;
           }
 
           // Get additional user data from Supabase if needed
-          const { data: profile } = await supabase
+          const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', user.id)
             .single();
+
+          if (profileError) {
+            console.error('Error fetching profile:', profileError.message);
+          }
 
           // Ensure the returned object matches the User type
           return {
@@ -81,7 +99,7 @@ const handler = NextAuth({
       return token;
     }
   },
-  debug: process.env.NODE_ENV === 'development',
+  debug: true, // Enable debug messages
 });
 
 export { handler as GET, handler as POST }; 
