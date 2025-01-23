@@ -23,7 +23,7 @@ const handler = NextAuth({
           }
 
           // Sign in with Supabase
-          const { data, error } = await supabase.auth.signInWithPassword({
+          const { data: { user }, error } = await supabase.auth.signInWithPassword({
             email: credentials.email,
             password: credentials.password,
           });
@@ -33,15 +33,23 @@ const handler = NextAuth({
             throw new Error(error.message);
           }
 
-          const user = data.user;
           if (!user) {
             throw new Error('User not found');
           }
 
+          // Get additional user data from Supabase if needed
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
           return {
             id: user.id,
             email: user.email,
-            name: user.user_metadata?.name || user.email?.split('@')[0],
+            name: profile?.name || user.email?.split('@')[0],
+            // Add any additional user data you want to include in the session
+            profile: profile || null,
           };
         } catch (error) {
           console.error('Auth error:', error);
@@ -62,12 +70,16 @@ const handler = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.sub as string;
+        // Add any additional user data from token to session
+        session.user.profile = token.profile as any;
       }
       return session;
     },
     async jwt({ token, user }) {
       if (user) {
         token.sub = user.id;
+        // Store additional user data in the token
+        token.profile = user.profile;
       }
       return token;
     }
