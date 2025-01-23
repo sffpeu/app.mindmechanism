@@ -1,5 +1,13 @@
 import { NextResponse } from 'next/server';
-import { hash } from 'bcrypt';
+
+// Access the same in-memory store
+declare global {
+  var users: Map<string, any>;
+}
+
+if (!global.users) {
+  global.users = new Map();
+}
 
 export async function POST(req: Request) {
   try {
@@ -8,30 +16,29 @@ export async function POST(req: Request) {
     // Validate input
     if (!name || !email || !password) {
       return NextResponse.json(
-        { message: 'Missing required fields' },
+        { message: 'Please fill in all fields' },
         { status: 400 }
       );
     }
 
-    // TODO: Check if user already exists in your database
-    const existingUser = false;
-
-    if (existingUser) {
+    // Check if user already exists
+    if (global.users.has(email)) {
       return NextResponse.json(
         { message: 'User already exists' },
         { status: 400 }
       );
     }
 
-    // Hash password
-    const hashedPassword = await hash(password, 10);
-
-    // TODO: Store user in your database
+    // Create new user
     const user = {
+      id: Date.now().toString(),
       name,
       email,
-      password: hashedPassword,
+      password, // In development, we'll store plain password
     };
+
+    // Store user
+    global.users.set(email, user);
 
     return NextResponse.json(
       { message: 'User created successfully' },

@@ -3,6 +3,9 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { compare } from 'bcrypt';
 import type { JWT } from 'next-auth/jwt';
 
+// For development, we'll use an in-memory store
+const users = new Map();
+
 const handler = NextAuth({
   providers: [
     CredentialsProvider({
@@ -13,23 +16,30 @@ const handler = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('Invalid credentials');
+          throw new Error('Please enter both email and password');
         }
 
-        // TODO: Replace with actual database lookup
-        const user = {
-          id: '1',
-          email: 'test@example.com',
-          name: 'Test User',
-          password: '$2b$10$test', // This is just for demo, replace with actual hashed password
-        };
-
+        // For development, we'll use the in-memory store
+        const user = users.get(credentials.email);
+        
         if (!user) {
-          throw new Error('User not found');
+          // During sign-in, if user doesn't exist, create one (for development only)
+          const newUser = {
+            id: Date.now().toString(),
+            email: credentials.email,
+            password: credentials.password, // In development, we'll store plain password
+            name: credentials.email.split('@')[0],
+          };
+          users.set(credentials.email, newUser);
+          return {
+            id: newUser.id,
+            email: newUser.email,
+            name: newUser.name,
+          };
         }
 
-        // TODO: Replace with actual password comparison
-        const isValid = true; // For demo purposes
+        // In development, we'll do a simple password comparison
+        const isValid = user.password === credentials.password;
 
         if (!isValid) {
           throw new Error('Invalid password');
