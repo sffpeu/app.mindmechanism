@@ -1,6 +1,7 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { getSupabase } from '@/lib/supabase';
+import type { User } from 'next-auth';
 
 const handler = NextAuth({
   providers: [
@@ -10,7 +11,7 @@ const handler = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
-      async authorize(credentials) {
+      async authorize(credentials): Promise<User | null> {
         try {
           if (!credentials?.email || !credentials?.password) {
             throw new Error('Please enter both email and password');
@@ -44,16 +45,16 @@ const handler = NextAuth({
             .eq('id', user.id)
             .single();
 
+          // Ensure the returned object matches the User type
           return {
             id: user.id,
-            email: user.email,
-            name: profile?.name || user.email?.split('@')[0],
-            // Add any additional user data you want to include in the session
-            profile: profile || null,
+            email: user.email || '',
+            name: (profile?.name as string) || user.email?.split('@')[0] || '',
+            image: profile?.image as string || null,
           };
         } catch (error) {
           console.error('Auth error:', error);
-          throw error;
+          return null;
         }
       }
     })
@@ -70,16 +71,12 @@ const handler = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.sub as string;
-        // Add any additional user data from token to session
-        session.user.profile = token.profile as any;
       }
       return session;
     },
     async jwt({ token, user }) {
       if (user) {
         token.sub = user.id;
-        // Store additional user data in the token
-        token.profile = user.profile;
       }
       return token;
     }
