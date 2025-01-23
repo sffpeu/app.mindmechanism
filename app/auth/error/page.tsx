@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-export default function AuthError() {
+function ErrorContent() {
   const searchParams = useSearchParams();
   const [error, setError] = useState<string>('');
 
@@ -22,27 +22,41 @@ export default function AuthError() {
   }, [searchParams]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-            Authentication Error
-          </h2>
-          <div className="mt-4 bg-red-50 dark:bg-red-900/50 p-4 rounded-md">
-            <p className="text-sm text-red-700 dark:text-red-200 text-center">
-              {error}
-            </p>
-          </div>
-          <div className="mt-6 text-center">
-            <Link
-              href="/auth/signin"
-              className="text-black dark:text-white hover:underline"
-            >
-              Return to sign in
-            </Link>
-          </div>
+    <div className="max-w-md w-full space-y-8">
+      <div>
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+          Authentication Error
+        </h2>
+        <div className="mt-4 bg-red-50 dark:bg-red-900/50 p-4 rounded-md">
+          <p className="text-sm text-red-700 dark:text-red-200 text-center">
+            {error}
+          </p>
+        </div>
+        <div className="mt-6 text-center">
+          <Link
+            href="/auth/signin"
+            className="text-black dark:text-white hover:underline"
+          >
+            Return to sign in
+          </Link>
         </div>
       </div>
+    </div>
+  );
+}
+
+export default function AuthError() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <Suspense fallback={
+        <div className="max-w-md w-full space-y-8">
+          <div className="mt-6 text-center text-xl text-gray-600 dark:text-gray-400">
+            Loading...
+          </div>
+        </div>
+      }>
+        <ErrorContent />
+      </Suspense>
     </div>
   );
 } 
