@@ -1,0 +1,23 @@
+.clockContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.clockFace {
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+  transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  background: white;
+}
+
+.info {
+  margin-top: 20px;
+  text-align: center;
+}
+
