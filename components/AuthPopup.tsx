@@ -56,11 +56,19 @@ export default function AuthPopup({ isOpen, onClose }: AuthPopupProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="relative w-full max-w-md bg-white dark:bg-black p-8 rounded-lg shadow-xl">
+    <div 
+      className="fixed inset-0 z-[9999] flex items-center justify-center"
+      onClick={onClose}
+      style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+    >
+      <div 
+        className="relative w-full max-w-md bg-white dark:bg-black p-8 rounded-lg shadow-xl"
+        onClick={e => e.stopPropagation()}
+      >
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/5"
+          type="button"
         >
           <X className="w-5 h-5 text-black/70 dark:text-white/70" />
         </button>
