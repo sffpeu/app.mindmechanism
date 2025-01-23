@@ -1,10 +1,6 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { compare } from 'bcrypt';
-import type { JWT } from 'next-auth/jwt';
-
-// For development, we'll use an in-memory store
-const users = new Map();
+import { supabase } from '@/lib/supabase';
 
 const handler = NextAuth({
   providers: [
@@ -19,36 +15,25 @@ const handler = NextAuth({
           throw new Error('Please enter both email and password');
         }
 
-        // For development, we'll use the in-memory store
-        const user = users.get(credentials.email);
-        
-        if (!user) {
-          // During sign-in, if user doesn't exist, create one (for development only)
-          const newUser = {
-            id: Date.now().toString(),
-            email: credentials.email,
-            password: credentials.password, // In development, we'll store plain password
-            name: credentials.email.split('@')[0],
-          };
-          users.set(credentials.email, newUser);
-          return {
-            id: newUser.id,
-            email: newUser.email,
-            name: newUser.name,
-          };
+        // Sign in with Supabase
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: credentials.email,
+          password: credentials.password,
+        });
+
+        if (error) {
+          throw new Error(error.message);
         }
 
-        // In development, we'll do a simple password comparison
-        const isValid = user.password === credentials.password;
-
-        if (!isValid) {
-          throw new Error('Invalid password');
+        const user = data.user;
+        if (!user) {
+          throw new Error('User not found');
         }
 
         return {
           id: user.id,
           email: user.email,
-          name: user.name,
+          name: user.user_metadata?.name || user.email?.split('@')[0],
         };
       }
     })

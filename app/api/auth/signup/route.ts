@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase';
 
 // Access the same in-memory store
 declare global {
@@ -21,27 +22,26 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check if user already exists
-    if (global.users.has(email)) {
+    // Sign up with Supabase
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name,
+        },
+      },
+    });
+
+    if (error) {
       return NextResponse.json(
-        { message: 'User already exists' },
+        { message: error.message },
         { status: 400 }
       );
     }
 
-    // Create new user
-    const user = {
-      id: Date.now().toString(),
-      name,
-      email,
-      password, // In development, we'll store plain password
-    };
-
-    // Store user
-    global.users.set(email, user);
-
     return NextResponse.json(
-      { message: 'User created successfully' },
+      { message: 'User created successfully', user: data.user },
       { status: 201 }
     );
   } catch (error) {
