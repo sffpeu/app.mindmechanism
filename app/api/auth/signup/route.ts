@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 
 // Access the same in-memory store
 declare global {
@@ -19,6 +19,14 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { message: 'Please fill in all fields' },
         { status: 400 }
+      );
+    }
+
+    const supabase = getSupabase();
+    if (!supabase) {
+      return NextResponse.json(
+        { message: 'Authentication service unavailable' },
+        { status: 503 }
       );
     }
 

@@ -1,6 +1,6 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 
 const handler = NextAuth({
   providers: [
@@ -13,6 +13,11 @@ const handler = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           throw new Error('Please enter both email and password');
+        }
+
+        const supabase = getSupabase();
+        if (!supabase) {
+          throw new Error('Authentication service unavailable');
         }
 
         // Sign in with Supabase
