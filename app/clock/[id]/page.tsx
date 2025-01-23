@@ -5,7 +5,7 @@ import Clock from '@/components/Clock'
 import { useState, useEffect } from 'react'
 import DotNavigation from '@/components/DotNavigation'
 import { clockSettings } from '@/lib/clockSettings'
-import { Menu } from '@/components/Menu'
+import Menu from '@/components/Menu'
 import { ClockSettings } from '@/components/ClockSettings'
 import { ClockSettings as ClockSettingsType } from '@/types/ClockSettings'
 

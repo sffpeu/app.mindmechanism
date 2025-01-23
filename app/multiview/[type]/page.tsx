@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react'
 import DotNavigation from '@/components/DotNavigation'
 import { clockSettings } from '@/lib/clockSettings'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu } from '@/components/Menu'
+import Menu from '@/components/Menu'
 
 export default function MultiViewPage() {
   const params = useParams()
