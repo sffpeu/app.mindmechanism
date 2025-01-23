@@ -348,8 +348,8 @@ export function ClockSettings({ settings, onSave, onCancel }: ClockSettingsProps
                           <Image
                             src={settings.imageUrl}
                             alt="Clock Face Preview"
-                            fill
-                            style={{ objectFit: 'cover' }}
+                            layout="fill"
+                            objectFit="cover"
                             className="dark:invert"
                           />
                         </div>

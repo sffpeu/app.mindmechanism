@@ -1,6 +1,4 @@
-import { ClockSettings } from '@/types/ClockSettings'
-
-export const clockSettings: ClockSettings[] = [
+export const clockSettings = [
   {
     id: 0,
     startDateTime: new Date('1610-12-21T03:00:00'),

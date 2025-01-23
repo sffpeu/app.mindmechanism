@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react'
 import DotNavigation from '@/components/DotNavigation'
 import { clockSettings } from '@/lib/clockSettings'
 import { motion, AnimatePresence } from 'framer-motion'
-import Menu from '@/components/Menu'
+import { Menu } from '@/components/Menu'
 
 export default function MultiViewPage() {
   const params = useParams()
@@ -84,19 +84,14 @@ export default function MultiViewPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col dark:bg-black">
-      {/* Logo */}
-      <div className="fixed top-6 left-6 text-2xl font-bold text-gray-800 dark:text-white">
-        M
-      </div>
-
-      {/* DotNavigation */}
-      <DotNavigation
-        activeDot={9}
-        isSmallMultiView={isMultiView2}
-      />
-
-      {/* Menu */}
+    <div className="min-h-screen flex flex-col">
+      {showElements && (
+        <DotNavigation
+          activeDot={9}
+          isSmallMultiView={isMultiView2}
+          onOutlinedDotClick={() => {}}
+        />
+      )}
       <Menu
         showElements={showElements}
         onToggleShow={() => setShowElements(!showElements)}
@@ -105,7 +100,6 @@ export default function MultiViewPage() {
         isDarkMode={isDarkMode}
         onDarkModeChange={setIsDarkMode}
       />
-
       <div className="flex-grow flex items-center justify-center">
         <AnimatePresence mode="wait">
           <motion.div
@@ -135,7 +129,7 @@ export default function MultiViewPage() {
               onToggleShow={() => setShowElements(!showElements)}
               currentTime={currentTime}
               syncTrigger={0}
-              hideControls={false}
+              hideControls={true}
               showSatellites={showSatellites}
             />
           </motion.div>
