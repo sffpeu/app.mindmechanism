@@ -1,61 +1,70 @@
+import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/supabase';
 
-// Access the same in-memory store
-declare global {
-  var users: Map<string, any>;
-}
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
-if (!global.users) {
-  global.users = new Map();
-}
-
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const { name, email, password } = await req.json();
+    const { email, password, name } = await request.json();
 
-    // Validate input
-    if (!name || !email || !password) {
+    if (!email || !password) {
       return NextResponse.json(
-        { message: 'Please fill in all fields' },
+        { error: 'Email and password are required' },
         { status: 400 }
       );
     }
 
-    const supabase = getSupabase();
-    if (!supabase) {
-      return NextResponse.json(
-        { message: 'Authentication service unavailable' },
-        { status: 503 }
-      );
-    }
-
-    // Sign up with Supabase
-    const { data, error } = await supabase.auth.signUp({
+    // Create user in Supabase
+    const { data: { user }, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: {
-          name,
-        },
-      },
     });
 
-    if (error) {
+    if (signUpError) {
+      console.error('Signup error:', signUpError);
       return NextResponse.json(
-        { message: error.message },
+        { error: signUpError.message },
         { status: 400 }
       );
     }
 
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User creation failed' },
+        { status: 400 }
+      );
+    }
+
+    // Create user profile
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert([
+        {
+          id: user.id,
+          name: name || email.split('@')[0],
+          email: email,
+        },
+      ]);
+
+    if (profileError) {
+      console.error('Profile creation error:', profileError);
+      // Don't return error as user is already created
+    }
+
+    return NextResponse.json({ 
+      message: 'User created successfully',
+      user: {
+        id: user.id,
+        email: user.email,
+      }
+    });
+  } catch (error: any) {
+    console.error('Server error:', error);
     return NextResponse.json(
-      { message: 'User created successfully', user: data.user },
-      { status: 201 }
-    );
-  } catch (error) {
-    console.error('Error in signup:', error);
-    return NextResponse.json(
-      { message: 'Error creating user' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

@@ -1,7 +1,6 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { getSupabase } from '@/lib/supabase';
-import type { User } from 'next-auth';
+import { createClient } from '@supabase/supabase-js';
 
 if (!process.env.NEXTAUTH_URL) {
   console.error('NEXTAUTH_URL is not set');
@@ -15,6 +14,12 @@ if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_A
   console.error('Supabase environment variables are not set');
 }
 
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
 const handler = NextAuth({
   providers: [
     CredentialsProvider({
@@ -23,17 +28,10 @@ const handler = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
-      async authorize(credentials): Promise<User | null> {
+      async authorize(credentials) {
         try {
           if (!credentials?.email || !credentials?.password) {
-            console.error('Missing credentials');
-            return null;
-          }
-
-          const supabase = getSupabase();
-          if (!supabase) {
-            console.error('Supabase client initialization failed');
-            return null;
+            throw new Error('Please enter both email and password');
           }
 
           // Sign in with Supabase
@@ -44,35 +42,29 @@ const handler = NextAuth({
 
           if (error) {
             console.error('Supabase auth error:', error.message);
-            return null;
+            throw new Error(error.message);
           }
 
           if (!user) {
-            console.error('No user returned from Supabase');
-            return null;
+            throw new Error('User not found');
           }
 
           // Get additional user data from Supabase if needed
-          const { data: profile, error: profileError } = await supabase
+          const { data: profile } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', user.id)
             .single();
 
-          if (profileError) {
-            console.error('Error fetching profile:', profileError.message);
-          }
-
-          // Ensure the returned object matches the User type
           return {
             id: user.id,
             email: user.email || '',
-            name: (profile?.name as string) || user.email?.split('@')[0] || '',
-            image: profile?.image as string || null,
+            name: profile?.name || user.email?.split('@')[0] || '',
+            image: profile?.image || null,
           };
-        } catch (error) {
+        } catch (error: any) {
           console.error('Auth error:', error);
-          return null;
+          throw error;
         }
       }
     })
@@ -85,20 +77,20 @@ const handler = NextAuth({
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.sub as string;
-      }
-      return session;
-    },
     async jwt({ token, user }) {
       if (user) {
         token.sub = user.id;
       }
       return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.sub as string;
+      }
+      return session;
     }
   },
-  debug: true, // Enable debug messages
+  debug: process.env.NODE_ENV === 'development',
 });
 
 export { handler as GET, handler as POST }; 
