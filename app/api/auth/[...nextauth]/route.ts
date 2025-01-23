@@ -11,40 +11,48 @@ const handler = NextAuth({
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error('Please enter both email and password');
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            throw new Error('Please enter both email and password');
+          }
+
+          const supabase = getSupabase();
+          if (!supabase) {
+            console.error('Supabase client initialization failed');
+            throw new Error('Authentication service unavailable');
+          }
+
+          // Sign in with Supabase
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: credentials.email,
+            password: credentials.password,
+          });
+
+          if (error) {
+            console.error('Supabase auth error:', error);
+            throw new Error(error.message);
+          }
+
+          const user = data.user;
+          if (!user) {
+            throw new Error('User not found');
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.user_metadata?.name || user.email?.split('@')[0],
+          };
+        } catch (error) {
+          console.error('Auth error:', error);
+          throw error;
         }
-
-        const supabase = getSupabase();
-        if (!supabase) {
-          throw new Error('Authentication service unavailable');
-        }
-
-        // Sign in with Supabase
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: credentials.email,
-          password: credentials.password,
-        });
-
-        if (error) {
-          throw new Error(error.message);
-        }
-
-        const user = data.user;
-        if (!user) {
-          throw new Error('User not found');
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.user_metadata?.name || user.email?.split('@')[0],
-        };
       }
     })
   ],
   pages: {
     signIn: '/auth/signin',
+    error: '/auth/error',
   },
   session: {
     strategy: 'jwt',
@@ -64,6 +72,7 @@ const handler = NextAuth({
       return token;
     }
   },
+  debug: process.env.NODE_ENV === 'development',
 });
 
 export { handler as GET, handler as POST }; 
