@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { Card } from '@/components/ui/card'
-import { Calendar, Clock, Cloud, Droplets, Gauge, Wind, Moon, ClipboardList, BookOpen, Sun, MapPin, Mountain, Waves } from 'lucide-react'
+import { Calendar, Clock, Cloud, Droplets, Gauge, Wind, Moon, ClipboardList, BookOpen, Sun, MapPin, Mountain, Waves, User } from 'lucide-react'
 import DotNavigation from '@/components/DotNavigation'
 import { useTheme } from '@/app/ThemeContext'
 import { Logo } from '@/components/Logo'
@@ -186,6 +186,48 @@ export default function HomePage() {
           {showInfoCards && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-base font-semibold dark:text-white">Time</h2>
+                  <Clock className="h-4 w-4 text-gray-500" />
+                </div>
+                <p className="text-5xl font-bold dark:text-white tracking-tight">
+                  {formatTime(currentTime)}
+                </p>
+                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                  {currentTime?.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </p>
+                <div className="mt-4 grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-200">
+                      <div className="p-2 rounded-full bg-gray-100 dark:bg-white/20">
+                        <Clock className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-lg font-semibold dark:text-white">1 day</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Current Streak</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-200">
+                      <div className="p-2 rounded-full bg-gray-100 dark:bg-white/20">
+                        <Calendar className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-lg font-semibold dark:text-white">2h</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Total Time</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-white/20 flex items-center justify-center">
                     <span className="text-xl font-semibold dark:text-white">B</span>
@@ -201,40 +243,19 @@ export default function HomePage() {
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       Member since March 2024
                     </p>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-base font-semibold dark:text-white">Monthly Progress</h2>
-                    <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-white/20 text-gray-600 dark:text-gray-200">
-                      0 / 2 sessions
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-200">
-                        <div className="p-2 rounded-full bg-gray-100 dark:bg-white/20">
-                          <Clock className="h-4 w-4" />
-                        </div>
-                        <div>
-                          <p className="text-lg font-semibold dark:text-white">1 day</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">Current Streak</p>
-                        </div>
+                    <div className="mt-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-base font-semibold dark:text-white">Monthly Progress</h2>
+                        <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-white/20 text-gray-600 dark:text-gray-200">
+                          0 / 2 sessions
+                        </span>
                       </div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-200">
-                        <div className="p-2 rounded-full bg-gray-100 dark:bg-white/20">
-                          <Calendar className="h-4 w-4" />
-                        </div>
-                        <div>
-                          <p className="text-lg font-semibold dark:text-white">2h</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">Total Time</p>
-                        </div>
+                      <div className="h-2 bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-full w-1/3 bg-blue-500 dark:bg-blue-400 rounded-full" />
                       </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Next milestone: 5 sessions
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -246,20 +267,26 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all md:col-span-3">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-base font-semibold dark:text-white">Time</h2>
-                <Clock className="h-4 w-4 text-gray-500" />
+                <h2 className="text-base font-semibold dark:text-white">Profile Stats</h2>
+                <User className="h-4 w-4 text-gray-500" />
               </div>
-              <p className="text-5xl font-bold dark:text-white tracking-tight">
-                {formatTime(currentTime)}
-              </p>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                {currentTime?.toLocaleDateString('en-US', {
-                  weekday: 'long',
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
-              </p>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Sessions</h3>
+                  <p className="text-3xl font-bold dark:text-white">24</p>
+                  <p className="text-sm text-green-600 dark:text-green-400">+12% this month</p>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Average Duration</h3>
+                  <p className="text-3xl font-bold dark:text-white">18m</p>
+                  <p className="text-sm text-blue-600 dark:text-blue-400">+3m from last month</p>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Focus Score</h3>
+                  <p className="text-3xl font-bold dark:text-white">85%</p>
+                  <p className="text-sm text-green-600 dark:text-green-400">Top 10% of users</p>
+                </div>
+              </div>
             </Card>
 
             {showInfoCards && (
