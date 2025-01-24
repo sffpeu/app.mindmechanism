@@ -48,6 +48,8 @@ export default function HomePage() {
   const [moon, setMoon] = useState<MoonData | null>(null)
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
   const { isDarkMode } = useTheme()
+  const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null)
+  const [locationError, setLocationError] = useState<string | null>(null)
 
   // Handle mounting
   useEffect(() => {
@@ -92,20 +94,56 @@ export default function HomePage() {
     return () => clearInterval(timer)
   }, [mounted])
 
-  // Fetch weather and moon data
+  // Request location permission and get coordinates
+  useEffect(() => {
+    if (!mounted) return
+
+    const getLocation = () => {
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            setLocation({
+              lat: position.coords.latitude,
+              lon: position.coords.longitude,
+            })
+            setLocationError(null)
+          },
+          (error) => {
+            console.error('Error getting location:', error)
+            setLocationError('Unable to get your location. Using IP-based location instead.')
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
+          }
+        )
+      } else {
+        setLocationError('Geolocation is not supported by your browser. Using IP-based location instead.')
+      }
+    }
+
+    getLocation()
+  }, [mounted])
+
+  // Fetch weather and moon data with precise location
   useEffect(() => {
     if (!mounted) return
 
     const fetchData = async () => {
       try {
         const weatherRes = await fetch(
-          'https://api.weatherapi.com/v1/current.json?key=6cb652a81cb64a19a84103447252001&q=auto:ip&aqi=no'
+          `https://api.weatherapi.com/v1/current.json?key=6cb652a81cb64a19a84103447252001&q=${
+            location ? `${location.lat},${location.lon}` : 'auto:ip'
+          }&aqi=no`
         )
         const weatherData = await weatherRes.json()
         setWeatherData(weatherData)
 
         const astronomyRes = await fetch(
-          'https://api.weatherapi.com/v1/astronomy.json?key=6cb652a81cb64a19a84103447252001&q=auto:ip'
+          `https://api.weatherapi.com/v1/astronomy.json?key=6cb652a81cb64a19a84103447252001&q=${
+            location ? `${location.lat},${location.lon}` : 'auto:ip'
+          }`
         )
         const astronomyData = await astronomyRes.json()
         setMoon(astronomyData.astronomy.astro)
@@ -115,10 +153,9 @@ export default function HomePage() {
     }
 
     fetchData()
-    // Refresh data every 5 minutes
     const interval = setInterval(fetchData, 5 * 60 * 1000)
     return () => clearInterval(interval)
-  }, [mounted])
+  }, [mounted, location])
 
   if (!mounted) {
     return null
@@ -393,6 +430,12 @@ export default function HomePage() {
           )}
         </div>
       </main>
+
+      {locationError && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-yellow-500/20 backdrop-blur-lg rounded-full border border-yellow-500/20 text-yellow-700 dark:text-yellow-300 text-sm">
+          {locationError}
+        </div>
+      )}
     </div>
   )
 }

@@ -1,6 +1,5 @@
 'use client'
 
-import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { getServerSession } from 'next-auth'
@@ -10,17 +9,11 @@ import { ThemeContext } from './ThemeContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
-export const metadata: Metadata = {
-  title: 'Mind Mechanism',
-  description: 'Mind Mechanism - A new way to meditate',
-}
-
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const session = await getServerSession()
   const [isDarkMode, setIsDarkMode] = useState(false)
 
   // Initialize dark mode from localStorage or system preference
@@ -50,7 +43,7 @@ export default async function RootLayout({
     <html lang="en" className={isDarkMode ? 'dark' : ''}>
       <body className={inter.className}>
         <ThemeContext.Provider value={{ isDarkMode, setIsDarkMode }}>
-          <Providers session={session}>
+          <Providers>
             {children}
           </Providers>
         </ThemeContext.Provider>
