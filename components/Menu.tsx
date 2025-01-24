@@ -12,6 +12,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { createClient } from '@supabase/supabase-js'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Card, CardContent } from "@/components/ui/card"
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -109,17 +120,6 @@ export function Menu({
     e.stopPropagation()
     setIsProfileOpen(true)
     setIsMenuOpen(false)
-  }
-
-  const handleCloseDialog = () => {
-    if (hasUnsavedChanges) {
-      if (confirm('You have unsaved changes. Are you sure you want to close?')) {
-        setProfileData(initialProfileData)
-        setIsProfileOpen(false)
-      }
-    } else {
-      setIsProfileOpen(false)
-    }
   }
 
   const handleSave = async () => {
@@ -304,185 +304,198 @@ export function Menu({
             )}
           </AnimatePresence>
 
-          <Dialog 
+          <Sheet 
             open={isProfileOpen} 
             onOpenChange={(open) => {
-              if (!open) {
-                handleCloseDialog()
+              if (!open && hasUnsavedChanges) {
+                if (confirm('You have unsaved changes. Are you sure you want to close?')) {
+                  setProfileData(initialProfileData)
+                  setIsProfileOpen(false)
+                }
+              } else if (!open) {
+                setIsProfileOpen(false)
               }
             }}
           >
-            <DialogContent 
-              className="sm:max-w-[500px] bg-white/95 dark:bg-black/95 backdrop-blur-xl text-black dark:text-white border border-black/10 dark:border-white/10 shadow-lg"
-            >
-              <DialogHeader>
-                <DialogTitle className="text-xl font-semibold flex items-center justify-between">
+            <SheetContent side="right" className="w-full sm:max-w-[500px] overflow-y-auto">
+              <SheetHeader className="space-y-4">
+                <SheetTitle className="flex items-center justify-between">
                   Profile Settings
                   {hasUnsavedChanges && (
                     <span className="text-sm font-normal text-yellow-600 dark:text-yellow-400">
                       Unsaved changes
                     </span>
                   )}
-                </DialogTitle>
-              </DialogHeader>
-              
-              <Tabs defaultValue="general" className="w-full">
-                <TabsList className="w-full grid grid-cols-3 gap-1 p-1 mb-6 bg-black/5 dark:bg-white/5 rounded-lg">
-                  <TabsTrigger 
-                    value="general"
-                    className="data-[state=active]:bg-white dark:data-[state=active]:bg-black data-[state=active]:text-black dark:data-[state=active]:text-white rounded-md transition-all"
-                  >
-                    General
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="security"
-                    className="data-[state=active]:bg-white dark:data-[state=active]:bg-black data-[state=active]:text-black dark:data-[state=active]:text-white rounded-md transition-all"
-                  >
-                    Security
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="appearance"
-                    className="data-[state=active]:bg-white dark:data-[state=active]:bg-black data-[state=active]:text-black dark:data-[state=active]:text-white rounded-md transition-all"
-                  >
-                    Appearance
-                  </TabsTrigger>
+                </SheetTitle>
+              </SheetHeader>
+
+              <Tabs defaultValue="general" className="mt-6">
+                <TabsList className="grid w-full grid-cols-3 h-12">
+                  <TabsTrigger value="general">General</TabsTrigger>
+                  <TabsTrigger value="security">Security</TabsTrigger>
+                  <TabsTrigger value="appearance">Appearance</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="general" className="space-y-4">
-                  <div className="grid gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
-                      <input
-                        type="text"
+                <TabsContent value="general" className="mt-6 space-y-6">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Name</Label>
+                      <Input
+                        id="name"
                         value={profileData.name || session?.user?.name || ''}
                         onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                        className="w-full px-3 py-2 rounded-lg bg-white/50 dark:bg-black/50 border border-black/10 dark:border-white/10 focus:border-black dark:focus:border-white outline-none transition-colors"
                         placeholder="Your name"
                       />
                     </div>
 
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Birthday</label>
-                      <input
+                    <div className="space-y-2">
+                      <Label htmlFor="birthday">Birthday</Label>
+                      <Input
+                        id="birthday"
                         type="date"
                         value={profileData.birthday}
                         onChange={(e) => setProfileData({ ...profileData, birthday: e.target.value })}
-                        className="w-full px-3 py-2 rounded-lg bg-white/50 dark:bg-black/50 border border-black/10 dark:border-white/10 focus:border-black dark:focus:border-white outline-none transition-colors"
                       />
                     </div>
 
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Country</label>
-                      <input
-                        type="text"
+                    <div className="space-y-2">
+                      <Label htmlFor="country">Country</Label>
+                      <Input
+                        id="country"
                         value={profileData.country}
                         onChange={(e) => setProfileData({ ...profileData, country: e.target.value })}
-                        className="w-full px-3 py-2 rounded-lg bg-white/50 dark:bg-black/50 border border-black/10 dark:border-white/10 focus:border-black dark:focus:border-white outline-none transition-colors"
                         placeholder="Your country"
                       />
                     </div>
 
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Timezone</label>
-                      <select
-                        value={profileData.timezone}
-                        onChange={(e) => setProfileData({ ...profileData, timezone: e.target.value })}
-                        className="w-full px-3 py-2 rounded-lg bg-white/50 dark:bg-black/50 border border-black/10 dark:border-white/10 focus:border-black dark:focus:border-white outline-none transition-colors"
+                    <div className="space-y-2">
+                      <Label htmlFor="timezone">Timezone</Label>
+                      <Select 
+                        value={profileData.timezone} 
+                        onValueChange={(value) => setProfileData({ ...profileData, timezone: value })}
                       >
-                        {Intl.supportedValuesOf('timeZone').map((tz) => (
-                          <option key={tz} value={tz}>{tz}</option>
-                        ))}
-                      </select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select timezone" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Intl.supportedValuesOf('timeZone').map((tz) => (
+                            <SelectItem key={tz} value={tz}>
+                              {tz}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 </TabsContent>
 
-                <TabsContent value="security" className="space-y-4">
-                  <div className="grid gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
-                      <input
-                        type="email"
-                        value={session?.user?.email || ''}
-                        disabled
-                        className="w-full px-3 py-2 rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10"
-                      />
-                    </div>
+                <TabsContent value="security" className="mt-6 space-y-6">
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label>Email</Label>
+                          <Input
+                            type="email"
+                            value={session?.user?.email || ''}
+                            disabled
+                            className="bg-muted"
+                          />
+                        </div>
 
-                    {profileData.last_login && (
-                      <div className="px-3 py-2 rounded-lg bg-black/5 dark:bg-white/5 text-sm text-gray-600 dark:text-gray-400">
-                        Last login: {new Date(profileData.last_login).toLocaleString()}
-                      </div>
-                    )}
+                        {profileData.last_login && (
+                          <div className="text-sm text-muted-foreground">
+                            Last login: {new Date(profileData.last_login).toLocaleString()}
+                          </div>
+                        )}
 
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => router.push('/auth/change-password')}
-                        className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-white/50 dark:bg-black/50 hover:bg-white dark:hover:bg-black border border-black/10 dark:border-white/10 transition-colors"
-                      >
-                        <Lock className="h-4 w-4" />
-                        Change Password
-                      </button>
+                        <div className="grid grid-cols-2 gap-4">
+                          <button
+                            onClick={() => router.push('/auth/change-password')}
+                            className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-secondary hover:bg-secondary/80 transition-colors"
+                          >
+                            <Lock className="h-4 w-4" />
+                            Change Password
+                          </button>
 
-                      <button
-                        onClick={() => router.push('/auth/change-email')}
-                        className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-white/50 dark:bg-black/50 hover:bg-white dark:hover:bg-black border border-black/10 dark:border-white/10 transition-colors"
-                      >
-                        <Mail className="h-4 w-4" />
-                        Change Email
-                      </button>
-                    </div>
+                          <button
+                            onClick={() => router.push('/auth/change-email')}
+                            className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-secondary hover:bg-secondary/80 transition-colors"
+                          >
+                            <Mail className="h-4 w-4" />
+                            Change Email
+                          </button>
+                        </div>
 
-                    <button
-                      onClick={handleDeleteAccount}
-                      disabled={isLoading}
-                      className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 border border-red-200 dark:border-red-800 transition-colors"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      Delete Account
-                    </button>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="appearance" className="space-y-4">
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Theme</label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {['light', 'dark', 'auto'].map((theme) => (
                         <button
-                          key={theme}
-                          onClick={() => setProfileData({ ...profileData, theme: theme as 'light' | 'dark' | 'auto' })}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                            profileData.theme === theme
-                              ? 'bg-white dark:bg-black border-black dark:border-white text-black dark:text-white'
-                              : 'bg-white/50 dark:bg-black/50 border-black/10 dark:border-white/10 hover:border-black dark:hover:border-white'
-                          }`}
+                          onClick={handleDeleteAccount}
+                          disabled={isLoading}
+                          className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 border border-destructive/20 transition-colors"
                         >
-                          {theme.charAt(0).toUpperCase() + theme.slice(1)}
+                          <Trash2 className="h-4 w-4" />
+                          Delete Account
                         </button>
-                      ))}
-                    </div>
-                  </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="appearance" className="mt-6 space-y-6">
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="space-y-4">
+                        <Label>Theme</Label>
+                        <div className="grid grid-cols-3 gap-4">
+                          {['light', 'dark', 'auto'].map((theme) => (
+                            <button
+                              key={theme}
+                              onClick={() => setProfileData({ ...profileData, theme: theme as 'light' | 'dark' | 'auto' })}
+                              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                profileData.theme === theme
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'bg-secondary hover:bg-secondary/80'
+                              }`}
+                            >
+                              {theme.charAt(0).toUpperCase() + theme.slice(1)}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </TabsContent>
               </Tabs>
 
-              <div className="flex justify-end gap-2 mt-6">
+              <div className="flex justify-end gap-4 mt-8">
                 <button
-                  onClick={handleCloseDialog}
-                  className="px-4 py-2 rounded-lg text-sm font-medium hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                  onClick={() => {
+                    if (hasUnsavedChanges) {
+                      if (confirm('You have unsaved changes. Are you sure you want to close?')) {
+                        setProfileData(initialProfileData)
+                        setIsProfileOpen(false)
+                      }
+                    } else {
+                      setIsProfileOpen(false)
+                    }
+                  }}
+                  className="px-4 py-2 rounded-lg text-sm font-medium hover:bg-secondary/80 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={isLoading || !hasUnsavedChanges}
-                  className="px-4 py-2 rounded-lg text-sm font-medium bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isLoading || !hasUnsavedChanges
+                      ? 'bg-primary/50 cursor-not-allowed'
+                      : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                  }`}
                 >
                   {isLoading ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
-            </DialogContent>
-          </Dialog>
+            </SheetContent>
+          </Sheet>
         </>
       )}
       <div 
