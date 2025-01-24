@@ -165,6 +165,12 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95">
       <Logo />
+      {showElements && (
+        <DotNavigation
+          activeDot={0}
+          isSmallMultiView={false}
+        />
+      )}
       <Menu
         showElements={showElements}
         onToggleShow={() => setShowElements(!showElements)}

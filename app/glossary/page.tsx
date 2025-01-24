@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { Logo } from '@/components/Logo'
-import { Search, Plus } from 'lucide-react'
+import { Search, Plus, ThumbsUp, ThumbsDown, Minus } from 'lucide-react'
+import DotNavigation from '@/components/DotNavigation'
 
 interface WordCard {
   word: string;
@@ -121,6 +122,12 @@ export default function GlossaryPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95">
       <Logo />
+      {showElements && (
+        <DotNavigation
+          activeDot={1}
+          isSmallMultiView={false}
+        />
+      )}
       <Menu
         showElements={showElements}
         onToggleShow={() => setShowElements(!showElements)}
@@ -186,8 +193,8 @@ export default function GlossaryPage() {
           </div>
         </div>
 
-        {/* Word Cards */}
-        <div className="grid grid-cols-1 gap-4">
+        {/* Word Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {filteredWords.map((word, index) => (
             <div
               key={index}
@@ -207,7 +214,9 @@ export default function GlossaryPage() {
                     {word.rating}
                   </span>
                   <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-                    {word.rating >= 4 ? '👍' : word.rating >= 2 ? '😐' : '👎'}
+                    {word.rating >= 4 ? <ThumbsUp className="h-4 w-4" /> : 
+                     word.rating >= 2 ? <Minus className="h-4 w-4" /> : 
+                     <ThumbsDown className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
