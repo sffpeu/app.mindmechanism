@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AlertCircle } from 'lucide-react';
 
-export default function ErrorPage() {
+function ErrorContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -93,5 +93,19 @@ export default function ErrorPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ErrorPage() {
+  return (
+    <Suspense 
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
+          <div className="w-12 h-12 rounded-full border-2 border-black dark:border-white border-t-transparent animate-spin" />
+        </div>
+      }
+    >
+      <ErrorContent />
+    </Suspense>
   );
 } 
