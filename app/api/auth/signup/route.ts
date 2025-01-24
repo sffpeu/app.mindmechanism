@@ -40,6 +40,7 @@ export async function POST(request: Request) {
         data: {
           name: name, // Store name in user metadata
         },
+        emailRedirectTo: `${process.env.NEXTAUTH_URL}/auth/signin`,
       },
     });
 
@@ -64,8 +65,12 @@ export async function POST(request: Request) {
     // Return success message with confirmation instructions
     return NextResponse.json(
       { 
-        message: 'Please check your email for confirmation instructions',
-        confirmEmail: true
+        success: true,
+        message: 'Account created successfully! Please check your email to confirm your account.',
+        user: {
+          id: authData.user.id,
+          email: authData.user.email,
+        }
       },
       { status: 201 }
     );
