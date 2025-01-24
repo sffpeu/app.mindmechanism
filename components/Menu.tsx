@@ -31,6 +31,8 @@ export function Menu({
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const router = useRouter()
+  const pathname = router.pathname || ''
+  const isClockPage = pathname.includes('/clock/')
 
   return (
     <>
@@ -108,64 +110,63 @@ export function Menu({
             </motion.button>
           </div>
 
-          {/* Bottom Right Settings Button */}
-          <div className="fixed bottom-4 right-4 z-10">
-            <motion.button
-              onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-              className="relative w-9 h-9 rounded-full bg-white/10 dark:bg-black/10 backdrop-blur-lg border border-black/10 dark:border-white/20 hover:border-black/50 dark:hover:border-white/50 hover:border-2 dark:hover:border-2 transition-all flex items-center justify-center"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Settings className="h-[18px] w-[18px] text-black dark:text-white" />
-            </motion.button>
+          {/* Bottom Right Settings Button - Only show on clock pages */}
+          {isClockPage && (
+            <div className="fixed bottom-4 right-4 z-10">
+              <motion.button
+                onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                className="relative w-9 h-9 rounded-full bg-white/10 dark:bg-black/10 backdrop-blur-lg border border-black/10 dark:border-white/20 hover:border-black/50 dark:hover:border-white/50 hover:border-2 dark:hover:border-2 transition-all flex items-center justify-center"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Settings className="h-[18px] w-[18px] text-black dark:text-white" />
+              </motion.button>
 
-            <AnimatePresence>
-              {isSettingsOpen && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95, y: -20 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -20 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute bottom-12 right-0 bg-white/90 dark:bg-black/90 backdrop-blur-md rounded-xl shadow-lg z-20 min-w-[200px] overflow-hidden border border-black/10 dark:border-white/20"
-                >
-                  <div className="py-2 space-y-1">
-                    <div className="px-3 py-1.5 flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-800 dark:text-white">
-                        Show UI
-                      </span>
-                      <Switch
-                        checked={showElements}
-                        onCheckedChange={onToggleShow}
-                        className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-white data-[state=checked]:border-black/20 dark:data-[state=checked]:border-white/20 border border-black/20 dark:border-white/20"
-                      />
-                    </div>
+              <AnimatePresence>
+                {isSettingsOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute bottom-12 right-0 bg-white/90 dark:bg-black/90 backdrop-blur-md rounded-xl shadow-lg z-20 min-w-[200px] overflow-hidden border border-black/10 dark:border-white/20"
+                  >
+                    <div className="py-2 space-y-1">
+                      <div className="px-3 py-1.5 flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-800 dark:text-white">
+                          Show UI
+                        </span>
+                        <Switch
+                          checked={showElements}
+                          onCheckedChange={onToggleShow}
+                        />
+                      </div>
 
-                    <div className="px-3 py-1.5 flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-800 dark:text-white">
-                        Show Satellites
-                      </span>
-                      <Switch
-                        checked={showSatellites}
-                        onCheckedChange={onSatellitesChange}
-                        className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-white data-[state=checked]:border-black/20 dark:data-[state=checked]:border-white/20 border border-black/20 dark:border-white/20"
-                      />
-                    </div>
+                      <div className="px-3 py-1.5 flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-800 dark:text-white">
+                          Show Satellites
+                        </span>
+                        <Switch
+                          checked={showSatellites}
+                          onCheckedChange={onSatellitesChange}
+                        />
+                      </div>
 
-                    <div className="px-3 py-1.5 flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-800 dark:text-white">
-                        Show InfoCards
-                      </span>
-                      <Switch
-                        checked={showInfoCards}
-                        onCheckedChange={onInfoCardsChange}
-                        className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-white data-[state=checked]:border-black/20 dark:data-[state=checked]:border-white/20 border border-black/20 dark:border-white/20"
-                      />
+                      <div className="px-3 py-1.5 flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-800 dark:text-white">
+                          Show InfoCards
+                        </span>
+                        <Switch
+                          checked={showInfoCards}
+                          onCheckedChange={onInfoCardsChange}
+                        />
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
 
           <AnimatePresence>
             {isMenuOpen && (
