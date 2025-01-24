@@ -185,7 +185,7 @@ export default function ProfilePage() {
         />
 
         {/* DotNavigation */}
-        <DotNavigation />
+        <DotNavigation activeDot={-1} />
 
         {/* Main Content */}
         <div className="container max-w-2xl mx-auto px-4 py-8">
