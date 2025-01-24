@@ -56,6 +56,14 @@ export function Menu({
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     theme: 'auto'
   })
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [initialProfileData, setInitialProfileData] = useState<ProfileData>({
+    name: '',
+    birthday: '',
+    country: '',
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    theme: 'auto'
+  })
   const router = useRouter()
   const { data: session, update: updateSession } = useSession()
 
@@ -75,32 +83,49 @@ export function Menu({
 
       if (error) throw error
 
-      if (data) {
-        setProfileData({
-          name: data.name || '',
-          birthday: data.birthday || '',
-          country: data.country || '',
-          timezone: data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
-          theme: data.theme || 'auto',
-          last_login: data.last_login || undefined
-        })
+      const newProfileData = {
+        name: data?.name || '',
+        birthday: data?.birthday || '',
+        country: data?.country || '',
+        timezone: data?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+        theme: data?.theme || 'auto',
+        last_login: data?.last_login || undefined
       }
+
+      setProfileData(newProfileData)
+      setInitialProfileData(newProfileData)
     } catch (error) {
       console.error('Error fetching profile:', error)
       toast.error('Failed to load profile data')
     }
   }
 
+  useEffect(() => {
+    const hasChanges = JSON.stringify(profileData) !== JSON.stringify(initialProfileData)
+    setHasUnsavedChanges(hasChanges)
+  }, [profileData, initialProfileData])
+
   const handleProfileClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent event bubbling
-    setIsProfileOpen(true);
-    setIsMenuOpen(false);
-  };
+    e.stopPropagation()
+    setIsProfileOpen(true)
+    setIsMenuOpen(false)
+  }
+
+  const handleCloseDialog = () => {
+    if (hasUnsavedChanges) {
+      if (confirm('You have unsaved changes. Are you sure you want to close?')) {
+        setProfileData(initialProfileData) // Reset to initial data
+        setIsProfileOpen(false)
+      }
+    } else {
+      setIsProfileOpen(false)
+    }
+  }
 
   const handleSave = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsLoading(true);
+    e.preventDefault()
+    e.stopPropagation()
+    setIsLoading(true)
     try {
       const { error } = await supabase
         .from('profiles')
@@ -113,6 +138,7 @@ export function Menu({
       if (error) throw error
 
       await updateSession()
+      setInitialProfileData(profileData) // Update initial data after successful save
       toast.success('Profile updated successfully')
       setIsProfileOpen(false)
     } catch (error) {
@@ -121,7 +147,7 @@ export function Menu({
     } finally {
       setIsLoading(false)
     }
-  };
+  }
 
   const handleDeleteAccount = async () => {
     if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
@@ -280,13 +306,27 @@ export function Menu({
             )}
           </AnimatePresence>
 
-          <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
+          <Dialog 
+            open={isProfileOpen} 
+            onOpenChange={(open) => {
+              if (!open) {
+                handleCloseDialog()
+              }
+            }}
+          >
             <DialogContent 
               className="sm:max-w-[500px] bg-white/95 dark:bg-black/95 backdrop-blur-xl text-black dark:text-white border border-black/10 dark:border-white/10 shadow-lg"
               onClick={(e) => e.stopPropagation()}
             >
               <DialogHeader>
-                <DialogTitle className="text-xl font-semibold">Profile Settings</DialogTitle>
+                <DialogTitle className="text-xl font-semibold flex items-center justify-between">
+                  Profile Settings
+                  {hasUnsavedChanges && (
+                    <span className="text-sm font-normal text-yellow-600 dark:text-yellow-400">
+                      Unsaved changes
+                    </span>
+                  )}
+                </DialogTitle>
               </DialogHeader>
               
               <Tabs defaultValue="general" className="w-full">
@@ -431,15 +471,15 @@ export function Menu({
 
               <div className="flex justify-end gap-2 mt-6">
                 <button
-                  onClick={() => setIsProfileOpen(false)}
+                  onClick={handleCloseDialog}
                   className="px-4 py-2 rounded-lg text-sm font-medium hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSave}
-                  disabled={isLoading}
-                  className="px-4 py-2 rounded-lg text-sm font-medium bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 disabled:opacity-50 transition-colors"
+                  disabled={isLoading || !hasUnsavedChanges}
+                  className="px-4 py-2 rounded-lg text-sm font-medium bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isLoading ? 'Saving...' : 'Save Changes'}
                 </button>
