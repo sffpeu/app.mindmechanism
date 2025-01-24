@@ -21,13 +21,6 @@ const handler = NextAuth({
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      authorization: {
-        params: {
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code"
-        }
-      }
     }),
     CredentialsProvider({
       name: 'Credentials',
@@ -97,30 +90,16 @@ const handler = NextAuth({
       },
     }),
   ],
-  debug: true,
   pages: {
     signIn: '/auth/signin',
     error: '/auth/error',
   },
   callbacks: {
-    async signIn({ user, account, profile }) {
-      console.log('Sign in callback:', { user, account, profile });
-      
+    async signIn({ user, account }) {
       if (account?.provider === 'google') {
         try {
           // Create or update user profile in Supabase
-          const { data: existingProfile, error: fetchError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single();
-
-          if (fetchError && fetchError.code !== 'PGRST116') {
-            console.error('Error fetching profile:', fetchError);
-            return false;
-          }
-
-          const { error: upsertError } = await supabase
+          const { error } = await supabase
             .from('profiles')
             .upsert({
               id: user.id,
@@ -129,12 +108,10 @@ const handler = NextAuth({
               updated_at: new Date().toISOString(),
             });
 
-          if (upsertError) {
-            console.error('Error upserting profile:', upsertError);
+          if (error) {
+            console.error('Error updating profile:', error);
             return false;
           }
-
-          return true;
         } catch (error) {
           console.error('Error in signIn callback:', error);
           return false;
@@ -143,7 +120,6 @@ const handler = NextAuth({
       return true;
     },
     async jwt({ token, user, account }) {
-      console.log('JWT callback:', { token, user, account });
       if (user) {
         token.id = user.id;
         token.provider = account?.provider;
@@ -151,7 +127,6 @@ const handler = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      console.log('Session callback:', { session, token });
       if (session.user) {
         session.user.id = token.id as string;
       }
