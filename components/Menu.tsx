@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Menu as MenuIcon, X, Settings, Info, Eye, EyeOff } from 'lucide-react'
+import { Menu as MenuIcon, X, Settings, Info, Eye, EyeOff, LogIn } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
+import { useRouter } from 'next/navigation'
 
 interface MenuProps {
   showElements: boolean
@@ -25,6 +26,7 @@ export function Menu({
   onDarkModeChange
 }: MenuProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const router = useRouter()
 
   return (
     <>
@@ -69,6 +71,16 @@ export function Menu({
                   <span>Settings</span>
                 </button>
               )}
+              <button
+                onClick={() => {
+                  router.push('/auth/signin');
+                  setIsMenuOpen(false);
+                }}
+                className="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-800 dark:text-white flex items-center gap-2"
+              >
+                <LogIn className="h-4 w-4" />
+                <span>Sign In</span>
+              </button>
             </div>
           )}
         </>
