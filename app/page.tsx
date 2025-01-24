@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { Card } from '@/components/ui/card'
 import { Calendar, Clock, Cloud, Droplets, Gauge, Wind, Moon, ClipboardList, BookOpen, Sun, MapPin, Mountain, Waves } from 'lucide-react'
+import DotNavigation from '@/components/DotNavigation'
 
 interface WeatherResponse {
   location: {
@@ -123,12 +124,13 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black">
-      {/* Logo */}
-      <div className="fixed top-4 left-4 z-50 w-10 h-10 rounded-full bg-white dark:bg-white/10 backdrop-blur-lg border border-black/5 dark:border-white/20 flex items-center justify-center">
-        <span className="text-xl font-bold text-black dark:text-white">M</span>
-      </div>
-
+    <div className="min-h-screen bg-gray-50 dark:bg-black/95">
+      {showElements && (
+        <DotNavigation
+          activeDot={0}
+          isSmallMultiView={false}
+        />
+      )}
       <Menu
         showElements={showElements}
         onToggleShow={() => setShowElements(!showElements)}
