@@ -272,21 +272,21 @@ export default function HomePage() {
                       </div>
                     </div>
                     <div className="grid grid-cols-3 gap-4">
-                      <div className="p-3 rounded-lg bg-gray-100 dark:bg-white/20">
+                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
                         <div className="flex items-center gap-2">
                           <Sun className="h-4 w-4 text-gray-600 dark:text-gray-200" />
                           <span className="text-sm text-gray-600 dark:text-gray-200">UV Index</span>
                         </div>
                         <p className="text-lg font-semibold mt-1 dark:text-white">{weatherData.current.uv}</p>
                       </div>
-                      <div className="p-3 rounded-lg bg-gray-100 dark:bg-white/20">
+                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
                         <div className="flex items-center gap-2">
                           <Gauge className="h-4 w-4 text-gray-600 dark:text-gray-200" />
                           <span className="text-sm text-gray-600 dark:text-gray-200">Pressure</span>
                         </div>
                         <p className="text-lg font-semibold mt-1 dark:text-white">{weatherData.current.pressure_mb} mb</p>
                       </div>
-                      <div className="p-3 rounded-lg bg-gray-100 dark:bg-white/20">
+                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
                         <div className="flex items-center gap-2">
                           <Wind className="h-4 w-4 text-gray-600 dark:text-gray-200" />
                           <span className="text-sm text-gray-600 dark:text-gray-200">Wind</span>
@@ -306,7 +306,7 @@ export default function HomePage() {
                 {moon && (
                   <div className="space-y-4">
                     <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-white/20 flex items-center justify-center">
+                      <div className="w-16 h-16 rounded-full border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all flex items-center justify-center">
                         <Moon className="w-10 h-10 text-gray-600 dark:text-gray-200" />
                       </div>
                       <div>
@@ -315,11 +315,11 @@ export default function HomePage() {
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="p-3 rounded-lg bg-gray-100 dark:bg-white/20">
+                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
                         <p className="text-xs text-gray-500 dark:text-gray-400">Moonrise</p>
                         <p className="text-sm font-semibold dark:text-white">{moon.moonrise}</p>
                       </div>
-                      <div className="p-3 rounded-lg bg-gray-100 dark:bg-white/20">
+                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
                         <p className="text-xs text-gray-500 dark:text-gray-400">Moonset</p>
                         <p className="text-sm font-semibold dark:text-white">{moon.moonset}</p>
                       </div>
