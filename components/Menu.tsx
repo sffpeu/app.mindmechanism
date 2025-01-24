@@ -14,6 +14,8 @@ interface MenuProps {
   onSatellitesChange: (checked: boolean) => void
   isDarkMode: boolean
   onDarkModeChange: (checked: boolean) => void
+  showInfoCards?: boolean
+  onInfoCardsChange?: (checked: boolean) => void
 }
 
 export function Menu({
@@ -22,7 +24,9 @@ export function Menu({
   showSatellites,
   onSatellitesChange,
   isDarkMode,
-  onDarkModeChange
+  onDarkModeChange,
+  showInfoCards = true,
+  onInfoCardsChange,
 }: MenuProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
@@ -138,22 +142,22 @@ export function Menu({
 
                     <div className="px-3 py-1.5 flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-800 dark:text-white">
-                        Dark Mode
+                        Show Satellites
                       </span>
                       <Switch
-                        checked={isDarkMode}
-                        onCheckedChange={onDarkModeChange}
+                        checked={showSatellites}
+                        onCheckedChange={onSatellitesChange}
                         className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-white data-[state=checked]:border-black/20 dark:data-[state=checked]:border-white/20 border border-black/20 dark:border-white/20"
                       />
                     </div>
 
                     <div className="px-3 py-1.5 flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-800 dark:text-white">
-                        Show Satellites
+                        Show InfoCards
                       </span>
                       <Switch
-                        checked={showSatellites}
-                        onCheckedChange={onSatellitesChange}
+                        checked={showInfoCards}
+                        onCheckedChange={onInfoCardsChange}
                         className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-white data-[state=checked]:border-black/20 dark:data-[state=checked]:border-white/20 border border-black/20 dark:border-white/20"
                       />
                     </div>
