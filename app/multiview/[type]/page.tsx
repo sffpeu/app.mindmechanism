@@ -10,32 +10,36 @@ import { Menu } from '@/components/Menu'
 
 export default function MultiViewPage() {
   const params = useParams()
-  const isMultiView2 = params.type === '2'
+  const type = parseInt(params.type as string)
   const [showElements, setShowElements] = useState(true)
-  const [currentTime, setCurrentTime] = useState(new Date())
+  const [currentTime, setCurrentTime] = useState<Date | null>(null)
   const [showSatellites, setShowSatellites] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
-  const [showInfo, setShowInfo] = useState(true)
+
+  // Initialize current time on client side only
+  useEffect(() => {
+    setCurrentTime(new Date())
+  }, [])
 
   // Initialize dark mode from system preference
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setIsDarkMode(prefersDark);
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      setIsDarkMode(prefersDark)
       if (prefersDark) {
-        document.documentElement.classList.add('dark');
+        document.documentElement.classList.add('dark')
       }
     }
-  }, []);
+  }, [])
 
   // Handle dark mode changes
   useEffect(() => {
     if (isDarkMode) {
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add('dark')
     } else {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove('dark')
     }
-  }, [isDarkMode]);
+  }, [isDarkMode])
 
   // Update current time every second
   useEffect(() => {
@@ -45,43 +49,9 @@ export default function MultiViewPage() {
     return () => clearInterval(timer)
   }, [])
 
-  const multiview2Variants = {
-    initial: { opacity: 0, scale: 0.75 },
-    animate: { 
-      opacity: 1, 
-      scale: 0.75,
-      transition: {
-        duration: 0.8,
-        ease: "easeOut"
-      }
-    },
-    exit: { 
-      opacity: 0, 
-      scale: 0.7,
-      transition: {
-        duration: 0.4,
-        ease: "easeIn"
-      }
-    }
-  }
-
-  const multiview1Variants = {
-    initial: { opacity: 0 },
-    animate: { 
-      opacity: 1,
-      transition: {
-        duration: 0.8,
-        ease: "easeOut",
-        staggerChildren: 0.1
-      }
-    },
-    exit: { 
-      opacity: 0,
-      transition: {
-        duration: 0.4,
-        ease: "easeIn"
-      }
-    }
+  // Don't render until we have client-side time
+  if (!currentTime) {
+    return null
   }
 
   return (
@@ -89,8 +59,7 @@ export default function MultiViewPage() {
       {showElements && (
         <DotNavigation
           activeDot={9}
-          isSmallMultiView={isMultiView2}
-          onOutlinedDotClick={() => {}}
+          isSmallMultiView={type === 2}
         />
       )}
       <Menu
@@ -100,44 +69,20 @@ export default function MultiViewPage() {
         onSatellitesChange={setShowSatellites}
         isDarkMode={isDarkMode}
         onDarkModeChange={setIsDarkMode}
-        showInfo={showInfo}
-        onInfoChange={setShowInfo}
       />
       <div className="flex-grow flex items-center justify-center">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={isMultiView2 ? 'multiview2' : 'multiview1'}
-            variants={isMultiView2 ? multiview2Variants : multiview1Variants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            className="transition-all duration-500 ease-in-out transform-gpu"
-          >
-            <Clock
-              id={9}
-              isMultiView={!isMultiView2}
-              isMultiView2={isMultiView2}
-              allClocks={clockSettings}
-              startDateTime={new Date()}
-              rotationTime={60000}
-              imageUrl="/placeholder.svg"
-              startingDegree={0}
-              focusNodes={clockSettings.reduce((sum, clock) => sum + clock.focusNodes, 0)}
-              rotationDirection="clockwise"
-              imageOrientation={0}
-              imageScale={1}
-              imageX={0}
-              imageY={0}
-              showElements={showElements}
-              onToggleShow={() => setShowElements(!showElements)}
-              currentTime={currentTime}
-              syncTrigger={0}
-              hideControls={true}
-              showSatellites={showSatellites}
-              showInfo={showInfo}
-            />
-          </motion.div>
-        </AnimatePresence>
+        <Clock
+          id={9}
+          showElements={showElements}
+          onToggleShow={() => setShowElements(!showElements)}
+          currentTime={currentTime}
+          syncTrigger={0}
+          hideControls={false}
+          showSatellites={showSatellites}
+          isMultiView={type === 1}
+          isMultiView2={type === 2}
+          allClocks={clockSettings}
+        />
       </div>
     </div>
   )
