@@ -152,15 +152,17 @@ export function Menu({
                         />
                       </div>
 
-                      <div className="px-3 py-1.5 flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-800 dark:text-white">
-                          Show InfoCards
-                        </span>
-                        <Switch
-                          checked={showInfoCards}
-                          onCheckedChange={onInfoCardsChange}
-                        />
-                      </div>
+                      {onInfoCardsChange && (
+                        <div className="px-3 py-1.5 flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-800 dark:text-white">
+                            Show Info Cards
+                          </span>
+                          <Switch
+                            checked={showInfoCards}
+                            onCheckedChange={onInfoCardsChange}
+                          />
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 )}

@@ -21,6 +21,7 @@ export default function ClockPage() {
   const [isSmallMultiView, setIsSmallMultiView] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [localClockSettings, setLocalClockSettings] = useState<ClockSettingsType>(clockSettings[id])
+  const [syncTrigger, setSyncTrigger] = useState(0)
 
   // Initialize current time
   useEffect(() => {
@@ -38,6 +39,8 @@ export default function ClockPage() {
   const handleSettingsSave = (newSettings: Partial<ClockSettingsType>) => {
     setLocalClockSettings({ ...localClockSettings, ...newSettings })
     setShowSettings(false)
+    // Trigger a sync when settings change
+    setSyncTrigger(prev => prev + 1)
   }
 
   // Don't render clock until we have client-side time
@@ -63,13 +66,15 @@ export default function ClockPage() {
         onInfoCardsChange={setShowInfoCards}
       />
       <Clock
+        {...localClockSettings}
         id={id}
         showElements={showElements}
         onToggleShow={() => setShowElements(!showElements)}
         currentTime={currentTime}
-        syncTrigger={0}
+        syncTrigger={syncTrigger}
         hideControls={false}
         showSatellites={showSatellites}
+        showInfo={showInfoCards}
         isMultiView={false}
         isMultiView2={false}
         allClocks={clockSettings}
