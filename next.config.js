@@ -9,7 +9,8 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
   eslint: {
-    ignoreDuringBuilds: false
+    ignoreDuringBuilds: false,
+    dirs: ['app', 'components', 'lib', 'types']
   },
   experimental: {
     serverActions: {
