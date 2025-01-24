@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Menu as MenuIcon, X, Settings, Info, Eye, EyeOff, LogIn, Sun, Moon } from 'lucide-react'
+import { Menu as MenuIcon, X, Settings, Eye, EyeOff, LogIn, Sun, Moon, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { useRouter } from 'next/navigation'
@@ -36,7 +36,7 @@ export function Menu({
           <div className="absolute top-4 right-4 z-10">
             <motion.button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="relative w-10 h-10 rounded-full bg-white/10 dark:bg-black/10 backdrop-blur-lg border border-white/20 dark:border-black/20 hover:bg-white/20 dark:hover:bg-black/20 transition-colors"
+              className="relative w-9 h-9 rounded-full bg-white/10 dark:bg-black/10 backdrop-blur-lg border border-black/10 dark:border-white/20 hover:bg-white/20 dark:hover:bg-black/20 transition-colors"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -47,9 +47,9 @@ export function Menu({
                 transition={{ duration: 0.2 }}
               >
                 {isMenuOpen ? (
-                  <X className="h-5 w-5 text-black dark:text-white" />
+                  <X className="h-4 w-4 text-black dark:text-white" />
                 ) : (
-                  <MenuIcon className="h-5 w-5 text-black dark:text-white" />
+                  <MenuIcon className="h-4 w-4 text-black dark:text-white" />
                 )}
               </motion.div>
             </motion.button>
@@ -62,10 +62,21 @@ export function Menu({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -20 }}
                 transition={{ duration: 0.15 }}
-                className="fixed top-16 right-4 bg-white/80 dark:bg-black/80 backdrop-blur-md rounded-2xl shadow-lg z-20 min-w-[240px] overflow-hidden border border-white/20 dark:border-black/20"
+                className="fixed top-14 right-4 bg-white/90 dark:bg-black/90 backdrop-blur-md rounded-xl shadow-lg z-20 min-w-[200px] overflow-hidden border border-black/10 dark:border-white/20"
               >
-                <div className="p-4 space-y-4">
-                  <div className="flex items-center justify-between">
+                <div className="py-2 space-y-1">
+                  <button
+                    onClick={() => {
+                      router.push('/profile');
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-800 dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                  >
+                    <User className="h-4 w-4" />
+                    Profile
+                  </button>
+
+                  <div className="px-3 py-1.5 flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-800 dark:text-white flex items-center gap-2">
                       {isDarkMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
                       Dark Mode
@@ -73,22 +84,22 @@ export function Menu({
                     <Switch
                       checked={isDarkMode}
                       onCheckedChange={onDarkModeChange}
-                      className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-white data-[state=unchecked]:bg-gray-200 dark:data-[state=unchecked]:bg-gray-800"
+                      className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-white data-[state=unchecked]:bg-gray-200 dark:data-[state=unchecked]:bg-gray-800 border border-black/20 dark:border-white/20"
                     />
                   </div>
 
-                  <div className="flex items-center justify-between">
+                  <div className="px-3 py-1.5 flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-800 dark:text-white">
-                      Show Satellites
+                      Satellites
                     </span>
                     <Switch
                       checked={showSatellites}
                       onCheckedChange={onSatellitesChange}
-                      className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-white data-[state=unchecked]:bg-gray-200 dark:data-[state=unchecked]:bg-gray-800"
+                      className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-white data-[state=unchecked]:bg-gray-200 dark:data-[state=unchecked]:bg-gray-800 border border-black/20 dark:border-white/20"
                     />
                   </div>
 
-                  <div className="h-px bg-gray-200 dark:bg-gray-800 -mx-4" />
+                  <div className="h-px bg-black/10 dark:bg-white/10 mx-2" />
 
                   {onSettingsClick && (
                     <button
@@ -96,7 +107,7 @@ export function Menu({
                         onSettingsClick();
                         setIsMenuOpen(false);
                       }}
-                      className="w-full flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-medium text-gray-800 dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-800 dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                     >
                       <Settings className="h-4 w-4" />
                       Settings
@@ -108,7 +119,7 @@ export function Menu({
                       router.push('/auth/signin');
                       setIsMenuOpen(false);
                     }}
-                    className="w-full flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-medium text-gray-800 dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-800 dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                   >
                     <LogIn className="h-4 w-4" />
                     Sign In
