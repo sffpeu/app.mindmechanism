@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card'
 import { Calendar, Clock, Cloud, Droplets, Gauge, Wind, Moon, ClipboardList, BookOpen, Sun, MapPin, Mountain, Waves } from 'lucide-react'
 import DotNavigation from '@/components/DotNavigation'
 import { useTheme } from '@/app/ThemeContext'
+import { Logo } from '@/components/Logo'
 
 interface WeatherResponse {
   location: {
@@ -163,12 +164,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95">
-      {showElements && (
-        <DotNavigation
-          activeDot={0}
-          isSmallMultiView={false}
-        />
-      )}
+      <Logo />
       <Menu
         showElements={showElements}
         onToggleShow={() => setShowElements(!showElements)}

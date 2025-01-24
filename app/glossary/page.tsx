@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
+import { Logo } from '@/components/Logo'
+import { Search, Plus } from 'lucide-react'
 
 interface WordCard {
   word: string;
@@ -117,11 +119,12 @@ export default function GlossaryPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95">
+      <Logo />
       <Menu
         showElements={showElements}
         onToggleShow={() => setShowElements(!showElements)}
       />
-      <div className="max-w-6xl mx-auto p-4 md:p-6">
+      <div className="max-w-6xl mx-auto p-4 md:p-6 pt-24">
         <div className="mb-8">
           <h1 className="text-2xl font-semibold mb-2">Glossary</h1>
           <p className="text-gray-600 dark:text-gray-400">Browse and search through meditation focus words</p>
@@ -130,13 +133,16 @@ export default function GlossaryPage() {
         {/* Search and Filters */}
         <div className="mb-8 space-y-4">
           <div className="flex items-center space-x-4">
-            <input
-              type="text"
-              placeholder="Search words or definitions"
-              className="flex-1 p-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                placeholder="Search words or definitions"
+                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+            </div>
             <span className="text-sm text-gray-500">{filteredWords.length}</span>
           </div>
           
@@ -155,7 +161,7 @@ export default function GlossaryPage() {
               </button>
             ))}
             <button className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800">
-              +
+              <Plus className="h-5 w-5" />
             </button>
           </div>
 
@@ -178,11 +184,11 @@ export default function GlossaryPage() {
         </div>
 
         {/* Word Cards */}
-        <div className="grid gap-4">
+        <div className="grid grid-cols-1 gap-4">
           {filteredWords.map((word, index) => (
             <div
               key={index}
-              className="p-4 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
+              className="p-4 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-gray-300 dark:hover:border-gray-700 transition-all"
             >
               <div className="flex justify-between items-start mb-2">
                 <div>
@@ -191,9 +197,9 @@ export default function GlossaryPage() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <span className={`px-2 py-1 rounded-full text-sm ${
-                    word.rating >= 4 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' :
-                    word.rating >= 2 ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100' :
-                    'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
+                    word.rating >= 4 ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-100' :
+                    word.rating >= 2 ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-100' :
+                    'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-100'
                   }`}>
                     {word.rating}
                   </span>
