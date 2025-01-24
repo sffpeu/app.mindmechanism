@@ -15,6 +15,7 @@ export default function MultiViewPage() {
   const [currentTime, setCurrentTime] = useState(new Date())
   const [showSatellites, setShowSatellites] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
+  const [showInfo, setShowInfo] = useState(true)
 
   // Initialize dark mode from system preference
   useEffect(() => {
@@ -99,6 +100,8 @@ export default function MultiViewPage() {
         onSatellitesChange={setShowSatellites}
         isDarkMode={isDarkMode}
         onDarkModeChange={setIsDarkMode}
+        showInfo={showInfo}
+        onInfoChange={setShowInfo}
       />
       <div className="flex-grow flex items-center justify-center">
         <AnimatePresence mode="wait">
@@ -131,6 +134,7 @@ export default function MultiViewPage() {
               syncTrigger={0}
               hideControls={true}
               showSatellites={showSatellites}
+              showInfo={showInfo}
             />
           </motion.div>
         </AnimatePresence>

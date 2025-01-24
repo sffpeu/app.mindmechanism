@@ -64,7 +64,9 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
                 ? 'bg-black dark:bg-white border-black dark:border-white'
                 : index === activeDot
                   ? dotColors[index]
-                  : 'bg-transparent border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+                  : hoveredDot === index
+                    ? dotColors[index]
+                    : 'bg-transparent border-gray-300 dark:border-gray-600'
             }`}
           />
         </div>

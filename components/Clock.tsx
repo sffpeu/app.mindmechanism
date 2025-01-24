@@ -112,6 +112,7 @@ interface ClockProps extends Partial<ClockSettings> {
   customWords?: string[];
   hideControls?: boolean;
   showSatellites?: boolean;
+  showInfo?: boolean;
 }
 
 // Add display state type
@@ -157,7 +158,8 @@ export default function Clock({
   syncTrigger, 
   onToggleShow, 
   hideControls = false,
-  showSatellites = false
+  showSatellites = false,
+  showInfo = true
 }: ClockProps) {
   if (!(startDateTime instanceof Date) || isNaN(startDateTime.getTime())) {
     console.error(`Invalid startDateTime for clock ${id}:`, startDateTime);
@@ -864,10 +866,9 @@ export default function Clock({
                   onClick={() => setDisplayState(state as DisplayState)}
                   className={`w-2 h-2 rounded-full transition-all duration-300 ease-out hover:scale-150 ${
                     displayState === state 
-                      ? 'bg-black/90 dark:bg-white scale-125 shadow-[0_0_4px_rgba(0,0,0,0.3)]' 
-                      : 'bg-black/30 dark:bg-gray-700 hover:bg-black/60 dark:hover:bg-gray-600 shadow-[0_0_2px_rgba(0,0,0,0.2)]'
+                      ? 'bg-black/90 dark:bg-white scale-125'
+                      : 'bg-black/30 dark:bg-gray-700 hover:bg-black/60 dark:hover:bg-gray-600'
                   }`}
-                  style={{ zIndex: 1000001 }}
                 />
               ))}
             </div>
@@ -911,19 +912,13 @@ export default function Clock({
                 </div>
               </div>
               <div className={`w-full transition-all duration-300 ease-in-out ${displayState === 'sound' ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'}`}>
-                <div className="flex justify-center w-full">
+                <div className="flex justify-center">
                   <SoundCard />
                 </div>
               </div>
             </div>
           </>
         )}
-      </div>
-      <div 
-        onClick={onToggleShow} 
-        className="fixed bottom-4 right-4 cursor-pointer text-gray-500 hover:text-gray-700 transition-colors z-10"
-      >
-        {showElements ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
       </div>
     </div>
   );
