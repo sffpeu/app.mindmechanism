@@ -42,6 +42,12 @@ const handler = NextAuth({
             throw new Error('Invalid credentials');
           }
 
+          // Check if email is verified using user metadata
+          const userMetadata = user.user_metadata as { email_verified?: boolean };
+          if (!userMetadata.email_verified) {
+            throw new Error('Please verify your email before signing in');
+          }
+
           // Get user profile
           const { data: profile } = await supabase
             .from('profiles')
@@ -49,10 +55,14 @@ const handler = NextAuth({
             .eq('id', user.id)
             .single();
 
+          if (!profile) {
+            throw new Error('User profile not found');
+          }
+
           return {
             id: user.id,
             email: user.email,
-            name: profile?.name,
+            name: profile.name,
           };
         } catch (error: any) {
           throw new Error(error.message);
