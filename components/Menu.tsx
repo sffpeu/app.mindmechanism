@@ -1,13 +1,22 @@
 'use client'
 
-import { useState } from 'react'
-import { Menu as MenuIcon, X, Settings, Eye, EyeOff, LogIn, Sun, Moon, User } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Menu as MenuIcon, X, Settings, Eye, EyeOff, LogIn, Sun, Moon, User, Trash2, Lock, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useSession } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { createClient } from '@supabase/supabase-js'
+import { format } from 'date-fns'
+import { toast } from 'sonner'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 interface MenuProps {
   showElements: boolean
@@ -17,6 +26,14 @@ interface MenuProps {
   onSatellitesChange: (checked: boolean) => void
   isDarkMode: boolean
   onDarkModeChange: (checked: boolean) => void
+}
+
+interface ProfileData {
+  name: string
+  birthday: string
+  country: string
+  timezone: string
+  theme: 'light' | 'dark' | 'auto'
 }
 
 export function Menu({
@@ -30,8 +47,91 @@ export function Menu({
 }: MenuProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [profileData, setProfileData] = useState<ProfileData>({
+    name: '',
+    birthday: '',
+    country: '',
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    theme: 'auto'
+  })
   const router = useRouter()
-  const { data: session } = useSession()
+  const { data: session, update: updateSession } = useSession()
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetchProfileData()
+    }
+  }, [session?.user?.id])
+
+  const fetchProfileData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session?.user?.id)
+        .single()
+
+      if (error) throw error
+
+      if (data) {
+        setProfileData({
+          name: data.name || '',
+          birthday: data.birthday || '',
+          country: data.country || '',
+          timezone: data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+          theme: data.theme || 'auto'
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+      toast.error('Failed to load profile data')
+    }
+  }
+
+  const handleSave = async () => {
+    setIsLoading(true)
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({
+          id: session?.user?.id,
+          ...profileData,
+          updated_at: new Date().toISOString()
+        })
+
+      if (error) throw error
+
+      await updateSession()
+      toast.success('Profile updated successfully')
+      setIsProfileOpen(false)
+    } catch (error) {
+      console.error('Error updating profile:', error)
+      toast.error('Failed to update profile')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const { error } = await supabase.auth.admin.deleteUser(session?.user?.id!)
+      if (error) throw error
+
+      await signOut({ callbackUrl: '/' })
+      toast.success('Account deleted successfully')
+    } catch (error) {
+      console.error('Error deleting account:', error)
+      toast.error('Failed to delete account')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <>
@@ -174,32 +274,146 @@ export function Menu({
           </AnimatePresence>
 
           <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
-            <DialogContent className="sm:max-w-[425px] bg-white dark:bg-black text-black dark:text-white">
+            <DialogContent className="sm:max-w-[600px] bg-white dark:bg-black text-black dark:text-white">
               <DialogHeader>
                 <DialogTitle>Profile Settings</DialogTitle>
               </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Name</label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-black"
-                    placeholder="Your name"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Email</label>
-                  <input
-                    type="email"
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-black"
-                    placeholder="Your email"
-                    disabled
-                    value={session?.user?.email || ''}
-                  />
-                </div>
-                {/* Add more profile settings as needed */}
-              </div>
-              <div className="flex justify-end gap-3 mt-4">
+              
+              <Tabs defaultValue="general" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 mb-4">
+                  <TabsTrigger value="general">General</TabsTrigger>
+                  <TabsTrigger value="security">Security</TabsTrigger>
+                  <TabsTrigger value="appearance">Appearance</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="general" className="space-y-4">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium">Name</label>
+                      <input
+                        type="text"
+                        value={profileData.name}
+                        onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                        className="w-full px-3 py-2 mt-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-black"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium">Birthday</label>
+                      <input
+                        type="date"
+                        value={profileData.birthday}
+                        onChange={(e) => setProfileData({ ...profileData, birthday: e.target.value })}
+                        className="w-full px-3 py-2 mt-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-black"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium">Country</label>
+                      <input
+                        type="text"
+                        value={profileData.country}
+                        onChange={(e) => setProfileData({ ...profileData, country: e.target.value })}
+                        className="w-full px-3 py-2 mt-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-black"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium">Timezone</label>
+                      <select
+                        value={profileData.timezone}
+                        onChange={(e) => setProfileData({ ...profileData, timezone: e.target.value })}
+                        className="w-full px-3 py-2 mt-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-black"
+                      >
+                        {Intl.supportedValuesOf('timeZone').map((tz) => (
+                          <option key={tz} value={tz}>{tz}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="security" className="space-y-4">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium">Email</label>
+                      <input
+                        type="email"
+                        value={session?.user?.email || ''}
+                        disabled
+                        className="w-full px-3 py-2 mt-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900"
+                      />
+                    </div>
+
+                    <button
+                      onClick={() => router.push('/auth/change-password')}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-900 border border-gray-300 dark:border-gray-700"
+                    >
+                      <Lock className="h-4 w-4" />
+                      Change Password
+                    </button>
+
+                    <button
+                      onClick={() => router.push('/auth/change-email')}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-900 border border-gray-300 dark:border-gray-700"
+                    >
+                      <Mail className="h-4 w-4" />
+                      Change Email
+                    </button>
+
+                    <button
+                      onClick={handleDeleteAccount}
+                      disabled={isLoading}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 border border-red-200 dark:border-red-800"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete Account
+                    </button>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="appearance" className="space-y-4">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Theme</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        <button
+                          onClick={() => setProfileData({ ...profileData, theme: 'light' })}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium border ${
+                            profileData.theme === 'light'
+                              ? 'border-black dark:border-white bg-black/5 dark:bg-white/5'
+                              : 'border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-900'
+                          }`}
+                        >
+                          Light
+                        </button>
+                        <button
+                          onClick={() => setProfileData({ ...profileData, theme: 'dark' })}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium border ${
+                            profileData.theme === 'dark'
+                              ? 'border-black dark:border-white bg-black/5 dark:bg-white/5'
+                              : 'border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-900'
+                          }`}
+                        >
+                          Dark
+                        </button>
+                        <button
+                          onClick={() => setProfileData({ ...profileData, theme: 'auto' })}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium border ${
+                            profileData.theme === 'auto'
+                              ? 'border-black dark:border-white bg-black/5 dark:bg-white/5'
+                              : 'border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-900'
+                          }`}
+                        >
+                          Auto
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+
+              <div className="flex justify-end gap-3 mt-6">
                 <button
                   onClick={() => setIsProfileOpen(false)}
                   className="px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-900"
@@ -207,13 +421,11 @@ export function Menu({
                   Cancel
                 </button>
                 <button
-                  onClick={() => {
-                    // Handle save
-                    setIsProfileOpen(false)
-                  }}
-                  className="px-4 py-2 rounded-lg bg-black dark:bg-white text-white dark:text-black text-sm font-medium hover:bg-gray-900 dark:hover:bg-gray-100"
+                  onClick={handleSave}
+                  disabled={isLoading}
+                  className="px-4 py-2 rounded-lg bg-black dark:bg-white text-white dark:text-black text-sm font-medium hover:bg-gray-900 dark:hover:bg-gray-100 disabled:opacity-50"
                 >
-                  Save Changes
+                  {isLoading ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </DialogContent>
