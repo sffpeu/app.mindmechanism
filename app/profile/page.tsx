@@ -2,18 +2,19 @@
 
 import { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
-import { Lock, Mail, Trash2 } from 'lucide-react'
+import { Lock, Mail, Trash2, User, Calendar, Globe, Clock } from 'lucide-react'
 import { toast } from 'sonner'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent } from "@/components/ui/card"
-import { Menu } from '@/components/Menu'
-import DotNavigation from '@/components/DotNavigation'
-import Link from 'next/link'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Separator } from "@/components/ui/separator"
+import { Button } from "@/components/ui/button"
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -29,8 +30,9 @@ interface ProfileData {
   last_login?: string
 }
 
-export default function ProfilePage() {
+export default function ProfilePopover() {
   const [isLoading, setIsLoading] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const [profileData, setProfileData] = useState<ProfileData>({
     name: '',
     birthday: '',
@@ -46,49 +48,13 @@ export default function ProfilePage() {
     timezone: 'Europe/Berlin',
     theme: 'auto'
   })
-  const router = useRouter()
-  const { data: session, status, update: updateSession } = useSession()
-  const [showElements, setShowElements] = useState(true)
-  const [isDarkMode, setIsDarkMode] = useState(false)
-  const [showSatellites, setShowSatellites] = useState(false)
-
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin')
-    }
-  }, [status, router])
+  const { data: session, update: updateSession } = useSession()
 
   useEffect(() => {
-    if (session?.user?.id) {
+    if (session?.user?.id && isOpen) {
       fetchProfileData()
     }
-  }, [session?.user?.id])
-
-  useEffect(() => {
-    // Check system preference and localStorage for dark mode
-    const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    const storedTheme = localStorage.getItem('theme')
-    setIsDarkMode(storedTheme === 'dark' || (!storedTheme && darkModeMediaQuery.matches))
-
-    const handleChange = (e: MediaQueryListEvent) => {
-      if (!localStorage.getItem('theme')) {
-        setIsDarkMode(e.matches)
-      }
-    }
-
-    darkModeMediaQuery.addEventListener('change', handleChange)
-    return () => darkModeMediaQuery.removeEventListener('change', handleChange)
-  }, [])
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', isDarkMode)
-    if (isDarkMode) {
-      localStorage.setItem('theme', 'dark')
-    } else {
-      localStorage.setItem('theme', 'light')
-    }
-  }, [isDarkMode])
+  }, [session?.user?.id, isOpen])
 
   const fetchProfileData = async () => {
     try {
@@ -138,6 +104,7 @@ export default function ProfilePage() {
       await updateSession()
       setInitialProfileData(profileData)
       toast.success('Profile updated successfully')
+      setIsOpen(false)
     } catch (error) {
       console.error('Error updating profile:', error)
       toast.error('Failed to update profile')
@@ -166,182 +133,138 @@ export default function ProfilePage() {
     }
   }
 
-  if (status === 'loading' || status === 'unauthenticated') {
-    return null
-  }
-
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'dark' : ''}`}>
-      <div className="dark:bg-black dark:text-white">
-        {/* Logo */}
-        <Link href="/" className="absolute top-4 left-4 z-10 font-bold text-4xl">
-          M
-        </Link>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-9 w-9">
+          <User className="h-5 w-5" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-96 p-6" align="end">
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Profile Settings</h2>
+            {hasUnsavedChanges && (
+              <span className="text-xs text-yellow-600 dark:text-yellow-400">
+                Unsaved changes
+              </span>
+            )}
+          </div>
 
-        {/* Menu */}
-        <Menu
-          showElements={showElements}
-          onToggleShow={() => setShowElements(!showElements)}
-          showSatellites={showSatellites}
-          onSatellitesChange={setShowSatellites}
-          isDarkMode={isDarkMode}
-          onDarkModeChange={setIsDarkMode}
-        />
-
-        {/* DotNavigation */}
-        <DotNavigation activeDot={-1} />
-
-        {/* Main Content */}
-        <div className="container max-w-xl mx-auto px-4 py-16">
-          <div className="flex flex-col items-start space-y-8">
-            <div className="w-full flex items-center justify-between">
-              <h1 className="text-3xl font-bold">Profile</h1>
-              {hasUnsavedChanges && (
-                <span className="text-sm font-medium text-yellow-600 dark:text-yellow-400">
-                  Unsaved changes
-                </span>
-              )}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <User className="h-4 w-4 text-muted-foreground" />
+              <Input
+                value={profileData.name}
+                onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                placeholder="Your name"
+                className="h-8"
+              />
             </div>
 
-            <Card className="w-full">
-              <CardContent className="pt-6 space-y-6">
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Name</Label>
-                    <Input
-                      id="name"
-                      value={profileData.name}
-                      onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                      placeholder="Your name"
-                      className="bg-white/50 dark:bg-black/50"
-                    />
-                  </div>
+            <div className="flex items-center gap-3">
+              <Mail className="h-4 w-4 text-muted-foreground" />
+              <Input
+                type="email"
+                value={session?.user?.email || ''}
+                disabled
+                className="h-8 bg-muted"
+              />
+            </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={session?.user?.email || ''}
-                      disabled
-                      className="bg-muted"
-                    />
-                  </div>
+            <div className="flex items-center gap-3">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <Input
+                type="date"
+                value={profileData.birthday}
+                onChange={(e) => setProfileData({ ...profileData, birthday: e.target.value })}
+                className="h-8"
+              />
+            </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="birthday">Birthday</Label>
-                    <Input
-                      id="birthday"
-                      type="date"
-                      value={profileData.birthday}
-                      onChange={(e) => setProfileData({ ...profileData, birthday: e.target.value })}
-                      className="bg-white/50 dark:bg-black/50"
-                    />
-                  </div>
+            <div className="flex items-center gap-3">
+              <Globe className="h-4 w-4 text-muted-foreground" />
+              <Input
+                value={profileData.country}
+                onChange={(e) => setProfileData({ ...profileData, country: e.target.value })}
+                placeholder="Your country"
+                className="h-8"
+              />
+            </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="country">Country</Label>
-                    <Input
-                      id="country"
-                      value={profileData.country}
-                      onChange={(e) => setProfileData({ ...profileData, country: e.target.value })}
-                      placeholder="Your country"
-                      className="bg-white/50 dark:bg-black/50"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="timezone">Timezone</Label>
-                    <Select 
-                      value={profileData.timezone} 
-                      onValueChange={(value) => setProfileData({ ...profileData, timezone: value })}
-                    >
-                      <SelectTrigger className="bg-white/50 dark:bg-black/50">
-                        <SelectValue placeholder="Select timezone" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Intl.supportedValuesOf('timeZone').map((tz) => (
-                          <SelectItem key={tz} value={tz}>
-                            {tz}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Theme</Label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {['light', 'dark', 'auto'].map((theme) => (
-                        <button
-                          key={theme}
-                          onClick={() => setProfileData({ ...profileData, theme: theme as 'light' | 'dark' | 'auto' })}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            profileData.theme === theme
-                              ? 'bg-primary text-primary-foreground'
-                              : 'bg-secondary hover:bg-secondary/80'
-                          }`}
-                        >
-                          {theme.charAt(0).toUpperCase() + theme.slice(1)}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-4 space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <button
-                      onClick={() => router.push('/auth/change-password')}
-                      className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-secondary hover:bg-secondary/80 transition-colors"
-                    >
-                      <Lock className="h-4 w-4" />
-                      Change Password
-                    </button>
-
-                    <button
-                      onClick={() => router.push('/auth/change-email')}
-                      className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-secondary hover:bg-secondary/80 transition-colors"
-                    >
-                      <Mail className="h-4 w-4" />
-                      Change Email
-                    </button>
-                  </div>
-
-                  <button
-                    onClick={handleDeleteAccount}
-                    disabled={isLoading}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 border border-destructive/20 transition-colors"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Delete Account
-                  </button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="w-full flex justify-end gap-4">
-              <button
-                onClick={() => router.back()}
-                className="px-4 py-2 rounded-lg text-sm font-medium hover:bg-secondary/80 transition-colors"
+            <div className="flex items-center gap-3">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <Select 
+                value={profileData.timezone} 
+                onValueChange={(value) => setProfileData({ ...profileData, timezone: value })}
               >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={isLoading || !hasUnsavedChanges}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isLoading || !hasUnsavedChanges
-                    ? 'bg-primary/50 cursor-not-allowed'
-                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
-                }`}
-              >
-                {isLoading ? 'Saving...' : 'Save Changes'}
-              </button>
+                <SelectTrigger className="h-8">
+                  <SelectValue placeholder="Select timezone" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Intl.supportedValuesOf('timeZone').map((tz) => (
+                    <SelectItem key={tz} value={tz}>
+                      {tz}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
+
+          <Separator />
+
+          <div className="space-y-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
+              onClick={() => window.location.href = '/auth/change-password'}
+            >
+              <Lock className="h-4 w-4" />
+              Change Password
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
+              onClick={() => window.location.href = '/auth/change-email'}
+            >
+              <Mail className="h-4 w-4" />
+              Change Email
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start gap-2 text-destructive hover:text-destructive/90"
+              onClick={handleDeleteAccount}
+              disabled={isLoading}
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete Account
+            </Button>
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSave}
+              disabled={isLoading || !hasUnsavedChanges}
+            >
+              {isLoading ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
         </div>
-      </div>
-    </div>
+      </PopoverContent>
+    </Popover>
   )
 } 
