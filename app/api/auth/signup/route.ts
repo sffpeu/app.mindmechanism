@@ -1,7 +1,20 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
+// Create a Supabase client with the service role key for admin operations
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+);
+
+// Regular client for auth operations
+const supabaseAuth = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
@@ -19,8 +32,8 @@ export async function POST(request: Request) {
 
     console.log('Attempting to sign up user with email:', email);
 
-    // Sign up the user with Supabase
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    // Sign up the user with Supabase using the auth client
+    const { data: authData, error: authError } = await supabaseAuth.auth.signUp({
       email,
       password,
     });
@@ -43,8 +56,8 @@ export async function POST(request: Request) {
 
     console.log('User created successfully with ID:', authData.user.id);
 
-    // Insert the user's profile into the profiles table
-    const { data: profileData, error: profileError } = await supabase
+    // Insert the user's profile into the profiles table using the admin client
+    const { data: profileData, error: profileError } = await supabaseAdmin
       .from('profiles')
       .insert([
         {
