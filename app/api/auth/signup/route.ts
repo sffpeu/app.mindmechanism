@@ -36,6 +36,11 @@ export async function POST(request: Request) {
     const { data: authData, error: authError } = await supabaseAuth.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          name: name, // Store name in user metadata
+        },
+      },
     });
 
     if (authError) {
@@ -56,33 +61,12 @@ export async function POST(request: Request) {
 
     console.log('User created successfully with ID:', authData.user.id);
 
-    // Insert the user's profile into the profiles table using the admin client
-    const { data: profileData, error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .insert([
-        {
-          id: authData.user.id,
-          name,
-          email,
-        },
-      ])
-      .select()
-      .single();
-
-    if (profileError) {
-      console.error('Profile creation error:', profileError);
-      // If profile creation fails, we should ideally clean up the auth user
-      // but Supabase will handle this with cascading deletes
-      return NextResponse.json(
-        { message: `Profile creation failed: ${profileError.message}` },
-        { status: 400 }
-      );
-    }
-
-    console.log('Profile created successfully:', profileData);
-
+    // Return success message with confirmation instructions
     return NextResponse.json(
-      { message: 'User created successfully' },
+      { 
+        message: 'Please check your email for confirmation instructions',
+        confirmEmail: true
+      },
       { status: 201 }
     );
   } catch (error: any) {
