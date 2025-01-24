@@ -10,9 +10,9 @@ const Switch = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SwitchPrimitives.Root
     className={cn(
-      "peer inline-flex h-6 w-10 shrink-0 cursor-pointer items-center rounded-full border-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
-      "border-gray-200 bg-gray-100 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500",
-      "dark:border-gray-700 dark:bg-gray-800 dark:data-[state=checked]:bg-blue-500 dark:data-[state=checked]:border-blue-500",
+      "peer inline-flex h-6 w-10 shrink-0 cursor-pointer items-center rounded-full border-[3px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
+      "border-gray-200 bg-gray-100 data-[state=checked]:bg-black data-[state=checked]:border-black",
+      "dark:border-gray-700 dark:bg-gray-800 dark:data-[state=checked]:bg-black dark:data-[state=checked]:border-black",
       className
     )}
     {...props}
@@ -21,8 +21,8 @@ const Switch = React.forwardRef<
     <SwitchPrimitives.Thumb
       className={cn(
         "pointer-events-none block h-5 w-5 rounded-full shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0",
-        "bg-white border border-gray-300",
-        "dark:bg-gray-200 dark:border-gray-600 dark:data-[state=checked]:bg-white dark:data-[state=checked]:border-blue-400",
+        "bg-white border-2 border-gray-300",
+        "dark:bg-gray-200 dark:border-gray-600 dark:data-[state=checked]:bg-white dark:data-[state=checked]:border-black",
       )}
     />
   </SwitchPrimitives.Root>
