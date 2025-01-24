@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useSession } from 'next-auth/react'
 
 interface MenuProps {
   showElements: boolean
@@ -28,6 +29,7 @@ export function Menu({
 }: MenuProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const router = useRouter()
+  const { data: session } = useSession()
 
   return (
     <>
@@ -46,11 +48,35 @@ export function Menu({
                 animate={{ rotate: isMenuOpen ? 90 : 0 }}
                 transition={{ duration: 0.2 }}
               >
-                {isMenuOpen ? (
-                  <X className="h-4 w-4 text-black dark:text-white" />
-                ) : (
-                  <MenuIcon className="h-4 w-4 text-black dark:text-white" />
-                )}
+                <div className="relative w-5 h-5">
+                  <motion.div
+                    className="absolute w-1 h-1 bg-black dark:bg-white rounded-full"
+                    style={{ top: '20%', left: '20%' }}
+                    animate={{ scale: isMenuOpen ? 0 : 1 }}
+                  />
+                  <motion.div
+                    className="absolute w-1 h-1 bg-black dark:bg-white rounded-full"
+                    style={{ top: '20%', right: '20%' }}
+                    animate={{ scale: isMenuOpen ? 0 : 1 }}
+                  />
+                  <motion.div
+                    className="absolute w-1 h-1 bg-black dark:bg-white rounded-full"
+                    style={{ bottom: '20%', left: '20%' }}
+                    animate={{ scale: isMenuOpen ? 0 : 1 }}
+                  />
+                  <motion.div
+                    className="absolute w-1 h-1 bg-black dark:bg-white rounded-full"
+                    style={{ bottom: '20%', right: '20%' }}
+                    animate={{ scale: isMenuOpen ? 0 : 1 }}
+                  />
+                  <motion.div
+                    className="absolute w-4 h-4 border-2 border-black dark:border-white rounded-full left-0.5 top-0.5"
+                    animate={{ 
+                      rotate: isMenuOpen ? 45 : 0,
+                      scale: isMenuOpen ? 0.8 : 1
+                    }}
+                  />
+                </div>
               </motion.div>
             </motion.button>
           </div>
@@ -65,6 +91,12 @@ export function Menu({
                 className="fixed top-14 right-4 bg-white/90 dark:bg-black/90 backdrop-blur-md rounded-xl shadow-lg z-20 min-w-[200px] overflow-hidden border border-black/10 dark:border-white/20"
               >
                 <div className="py-2 space-y-1">
+                  {session?.user?.name && (
+                    <div className="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400">
+                      Welcome, {session.user.name}
+                    </div>
+                  )}
+                  
                   <button
                     onClick={() => {
                       router.push('/profile');
