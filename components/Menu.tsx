@@ -114,7 +114,7 @@ export function Menu({
   const handleCloseDialog = () => {
     if (hasUnsavedChanges) {
       if (confirm('You have unsaved changes. Are you sure you want to close?')) {
-        setProfileData(initialProfileData) // Reset to initial data
+        setProfileData(initialProfileData)
         setIsProfileOpen(false)
       }
     } else {
@@ -122,9 +122,7 @@ export function Menu({
     }
   }
 
-  const handleSave = async (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
+  const handleSave = async () => {
     setIsLoading(true)
     try {
       const { error } = await supabase
@@ -138,7 +136,7 @@ export function Menu({
       if (error) throw error
 
       await updateSession()
-      setInitialProfileData(profileData) // Update initial data after successful save
+      setInitialProfileData(profileData)
       toast.success('Profile updated successfully')
       setIsProfileOpen(false)
     } catch (error) {
@@ -316,7 +314,6 @@ export function Menu({
           >
             <DialogContent 
               className="sm:max-w-[500px] bg-white/95 dark:bg-black/95 backdrop-blur-xl text-black dark:text-white border border-black/10 dark:border-white/10 shadow-lg"
-              onClick={(e) => e.stopPropagation()}
             >
               <DialogHeader>
                 <DialogTitle className="text-xl font-semibold flex items-center justify-between">
