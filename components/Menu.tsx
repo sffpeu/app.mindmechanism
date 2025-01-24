@@ -91,8 +91,16 @@ export function Menu({
     }
   }
 
-  const handleSave = async () => {
-    setIsLoading(true)
+  const handleProfileClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent event bubbling
+    setIsProfileOpen(true);
+    setIsMenuOpen(false);
+  };
+
+  const handleSave = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsLoading(true);
     try {
       const { error } = await supabase
         .from('profiles')
@@ -113,7 +121,7 @@ export function Menu({
     } finally {
       setIsLoading(false)
     }
-  }
+  };
 
   const handleDeleteAccount = async () => {
     if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
@@ -172,10 +180,7 @@ export function Menu({
               >
                 <div className="py-2 space-y-1">
                   <button
-                    onClick={() => {
-                      setIsProfileOpen(true);
-                      setIsMenuOpen(false);
-                    }}
+                    onClick={handleProfileClick}
                     className="w-full flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-800 dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                   >
                     <User className="h-4 w-4" />
@@ -276,56 +281,76 @@ export function Menu({
           </AnimatePresence>
 
           <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
-            <DialogContent className="sm:max-w-[600px] bg-white dark:bg-black text-black dark:text-white">
+            <DialogContent 
+              className="sm:max-w-[500px] bg-white/95 dark:bg-black/95 backdrop-blur-xl text-black dark:text-white border border-black/10 dark:border-white/10 shadow-lg"
+              onClick={(e) => e.stopPropagation()}
+            >
               <DialogHeader>
-                <DialogTitle>Profile Settings</DialogTitle>
+                <DialogTitle className="text-xl font-semibold">Profile Settings</DialogTitle>
               </DialogHeader>
               
               <Tabs defaultValue="general" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 mb-4">
-                  <TabsTrigger value="general">General</TabsTrigger>
-                  <TabsTrigger value="security">Security</TabsTrigger>
-                  <TabsTrigger value="appearance">Appearance</TabsTrigger>
+                <TabsList className="w-full grid grid-cols-3 gap-1 p-1 mb-6 bg-black/5 dark:bg-white/5 rounded-lg">
+                  <TabsTrigger 
+                    value="general"
+                    className="data-[state=active]:bg-white dark:data-[state=active]:bg-black data-[state=active]:text-black dark:data-[state=active]:text-white rounded-md transition-all"
+                  >
+                    General
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="security"
+                    className="data-[state=active]:bg-white dark:data-[state=active]:bg-black data-[state=active]:text-black dark:data-[state=active]:text-white rounded-md transition-all"
+                  >
+                    Security
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="appearance"
+                    className="data-[state=active]:bg-white dark:data-[state=active]:bg-black data-[state=active]:text-black dark:data-[state=active]:text-white rounded-md transition-all"
+                  >
+                    Appearance
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="general" className="space-y-4">
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium">Name</label>
+                  <div className="grid gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
                       <input
                         type="text"
-                        value={profileData.name}
+                        value={profileData.name || session?.user?.name || ''}
                         onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                        className="w-full px-3 py-2 mt-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-black"
+                        className="w-full px-3 py-2 rounded-lg bg-white/50 dark:bg-black/50 border border-black/10 dark:border-white/10 focus:border-black dark:focus:border-white outline-none transition-colors"
+                        placeholder="Your name"
                       />
                     </div>
 
-                    <div>
-                      <label className="text-sm font-medium">Birthday</label>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Birthday</label>
                       <input
                         type="date"
                         value={profileData.birthday}
                         onChange={(e) => setProfileData({ ...profileData, birthday: e.target.value })}
-                        className="w-full px-3 py-2 mt-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-black"
+                        className="w-full px-3 py-2 rounded-lg bg-white/50 dark:bg-black/50 border border-black/10 dark:border-white/10 focus:border-black dark:focus:border-white outline-none transition-colors"
                       />
                     </div>
 
-                    <div>
-                      <label className="text-sm font-medium">Country</label>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Country</label>
                       <input
                         type="text"
                         value={profileData.country}
                         onChange={(e) => setProfileData({ ...profileData, country: e.target.value })}
-                        className="w-full px-3 py-2 mt-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-black"
+                        className="w-full px-3 py-2 rounded-lg bg-white/50 dark:bg-black/50 border border-black/10 dark:border-white/10 focus:border-black dark:focus:border-white outline-none transition-colors"
+                        placeholder="Your country"
                       />
                     </div>
 
-                    <div>
-                      <label className="text-sm font-medium">Timezone</label>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Timezone</label>
                       <select
                         value={profileData.timezone}
                         onChange={(e) => setProfileData({ ...profileData, timezone: e.target.value })}
-                        className="w-full px-3 py-2 mt-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-black"
+                        className="w-full px-3 py-2 rounded-lg bg-white/50 dark:bg-black/50 border border-black/10 dark:border-white/10 focus:border-black dark:focus:border-white outline-none transition-colors"
                       >
                         {Intl.supportedValuesOf('timeZone').map((tz) => (
                           <option key={tz} value={tz}>{tz}</option>
@@ -336,43 +361,45 @@ export function Menu({
                 </TabsContent>
 
                 <TabsContent value="security" className="space-y-4">
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium">Email</label>
+                  <div className="grid gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
                       <input
                         type="email"
                         value={session?.user?.email || ''}
                         disabled
-                        className="w-full px-3 py-2 mt-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900"
+                        className="w-full px-3 py-2 rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10"
                       />
                     </div>
 
                     {profileData.last_login && (
-                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                      <div className="px-3 py-2 rounded-lg bg-black/5 dark:bg-white/5 text-sm text-gray-600 dark:text-gray-400">
                         Last login: {new Date(profileData.last_login).toLocaleString()}
                       </div>
                     )}
 
-                    <button
-                      onClick={() => router.push('/auth/change-password')}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-900 border border-gray-300 dark:border-gray-700"
-                    >
-                      <Lock className="h-4 w-4" />
-                      Change Password
-                    </button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => router.push('/auth/change-password')}
+                        className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-white/50 dark:bg-black/50 hover:bg-white dark:hover:bg-black border border-black/10 dark:border-white/10 transition-colors"
+                      >
+                        <Lock className="h-4 w-4" />
+                        Change Password
+                      </button>
 
-                    <button
-                      onClick={() => router.push('/auth/change-email')}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-900 border border-gray-300 dark:border-gray-700"
-                    >
-                      <Mail className="h-4 w-4" />
-                      Change Email
-                    </button>
+                      <button
+                        onClick={() => router.push('/auth/change-email')}
+                        className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-white/50 dark:bg-black/50 hover:bg-white dark:hover:bg-black border border-black/10 dark:border-white/10 transition-colors"
+                      >
+                        <Mail className="h-4 w-4" />
+                        Change Email
+                      </button>
+                    </div>
 
                     <button
                       onClick={handleDeleteAccount}
                       disabled={isLoading}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 border border-red-200 dark:border-red-800"
+                      className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 border border-red-200 dark:border-red-800 transition-colors"
                     >
                       <Trash2 className="h-4 w-4" />
                       Delete Account
@@ -381,57 +408,38 @@ export function Menu({
                 </TabsContent>
 
                 <TabsContent value="appearance" className="space-y-4">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Theme</label>
-                      <div className="grid grid-cols-3 gap-2">
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Theme</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {['light', 'dark', 'auto'].map((theme) => (
                         <button
-                          onClick={() => setProfileData({ ...profileData, theme: 'light' })}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium border ${
-                            profileData.theme === 'light'
-                              ? 'border-black dark:border-white bg-black/5 dark:bg-white/5'
-                              : 'border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-900'
+                          key={theme}
+                          onClick={() => setProfileData({ ...profileData, theme: theme as 'light' | 'dark' | 'auto' })}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                            profileData.theme === theme
+                              ? 'bg-white dark:bg-black border-black dark:border-white text-black dark:text-white'
+                              : 'bg-white/50 dark:bg-black/50 border-black/10 dark:border-white/10 hover:border-black dark:hover:border-white'
                           }`}
                         >
-                          Light
+                          {theme.charAt(0).toUpperCase() + theme.slice(1)}
                         </button>
-                        <button
-                          onClick={() => setProfileData({ ...profileData, theme: 'dark' })}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium border ${
-                            profileData.theme === 'dark'
-                              ? 'border-black dark:border-white bg-black/5 dark:bg-white/5'
-                              : 'border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-900'
-                          }`}
-                        >
-                          Dark
-                        </button>
-                        <button
-                          onClick={() => setProfileData({ ...profileData, theme: 'auto' })}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium border ${
-                            profileData.theme === 'auto'
-                              ? 'border-black dark:border-white bg-black/5 dark:bg-white/5'
-                              : 'border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-900'
-                          }`}
-                        >
-                          Auto
-                        </button>
-                      </div>
+                      ))}
                     </div>
                   </div>
                 </TabsContent>
               </Tabs>
 
-              <div className="flex justify-end gap-3 mt-6">
+              <div className="flex justify-end gap-2 mt-6">
                 <button
                   onClick={() => setIsProfileOpen(false)}
-                  className="px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-900"
+                  className="px-4 py-2 rounded-lg text-sm font-medium hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={isLoading}
-                  className="px-4 py-2 rounded-lg bg-black dark:bg-white text-white dark:text-black text-sm font-medium hover:bg-gray-900 dark:hover:bg-gray-100 disabled:opacity-50"
+                  className="px-4 py-2 rounded-lg text-sm font-medium bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 disabled:opacity-50 transition-colors"
                 >
                   {isLoading ? 'Saving...' : 'Save Changes'}
                 </button>
