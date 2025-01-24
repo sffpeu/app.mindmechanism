@@ -19,6 +19,9 @@ const supabaseAuth = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+// Get the site URL from environment, fallback to localhost for development
+const siteUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+
 export async function POST(request: Request) {
   try {
     const { email, password, name } = await request.json();
@@ -39,8 +42,11 @@ export async function POST(request: Request) {
       options: {
         data: {
           name: name, // Store name in user metadata
+          email: email, // Store email in metadata for profile creation
+          email_verified: false,
+          phone_verified: false,
         },
-        emailRedirectTo: `${process.env.NEXTAUTH_URL}/auth/signin`,
+        emailRedirectTo: `${siteUrl}/auth/signin`,
       },
     });
 
