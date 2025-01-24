@@ -75,7 +75,6 @@ export default function ClockPage() {
       <Menu
         showElements={showElements}
         onToggleShow={() => setShowElements(!showElements)}
-        onSettingsClick={() => setShowSettings(true)}
         showSatellites={showSatellites}
         onSatellitesChange={setShowSatellites}
         isDarkMode={isDarkMode}
