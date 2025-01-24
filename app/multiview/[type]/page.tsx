@@ -7,6 +7,7 @@ import DotNavigation from '@/components/DotNavigation'
 import { clockSettings } from '@/lib/clockSettings'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Menu } from '@/components/Menu'
+import { useTheme } from '@/app/ThemeContext'
 
 export default function MultiViewPage() {
   const params = useParams()
@@ -14,32 +15,12 @@ export default function MultiViewPage() {
   const [showElements, setShowElements] = useState(true)
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
   const [showSatellites, setShowSatellites] = useState(false)
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const { isDarkMode } = useTheme()
 
   // Initialize current time on client side only
   useEffect(() => {
     setCurrentTime(new Date())
   }, [])
-
-  // Initialize dark mode from system preference
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      setIsDarkMode(prefersDark)
-      if (prefersDark) {
-        document.documentElement.classList.add('dark')
-      }
-    }
-  }, [])
-
-  // Handle dark mode changes
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-  }, [isDarkMode])
 
   // Update current time every second
   useEffect(() => {
@@ -67,8 +48,6 @@ export default function MultiViewPage() {
         onToggleShow={() => setShowElements(!showElements)}
         showSatellites={showSatellites}
         onSatellitesChange={setShowSatellites}
-        isDarkMode={isDarkMode}
-        onDarkModeChange={setIsDarkMode}
       />
       <div className="flex-grow flex items-center justify-center">
         <Clock
