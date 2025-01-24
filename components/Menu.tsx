@@ -1,30 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Menu as MenuIcon, X, Settings, Eye, EyeOff, LogIn, Sun, Moon, User, Trash2, Lock, Mail, Calendar, Globe, Clock } from 'lucide-react'
+import { Menu as MenuIcon, X, Eye, EyeOff, LogIn, Sun, Moon, User, Trash2, Lock, Mail, Calendar, Globe, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSession, signOut } from 'next-auth/react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { createClient } from '@supabase/supabase-js'
-import { format } from 'date-fns'
 import { toast } from 'sonner'
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent } from "@/components/ui/card"
-import Link from 'next/link'
-import ProfilePopover from '@/app/profile/page'
 import {
   Popover,
   PopoverContent,
@@ -40,7 +25,6 @@ const supabase = createClient(
 interface MenuProps {
   showElements: boolean
   onToggleShow: () => void
-  onSettingsClick?: () => void
   showSatellites: boolean
   onSatellitesChange: (checked: boolean) => void
   isDarkMode: boolean
@@ -59,7 +43,6 @@ interface ProfileData {
 export function Menu({
   showElements,
   onToggleShow,
-  onSettingsClick,
   showSatellites,
   onSatellitesChange,
   isDarkMode,
