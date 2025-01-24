@@ -29,35 +29,49 @@ const handler = NextAuth({
             throw new Error('Email and password are required');
           }
 
+          console.log('Attempting to sign in with email:', credentials.email);
+
           const { data: { user }, error } = await supabase.auth.signInWithPassword({
             email: credentials.email,
             password: credentials.password,
           });
 
           if (error) {
+            console.error('Auth error:', error);
             throw new Error(error.message);
           }
 
           if (!user) {
+            console.error('No user returned from auth');
             throw new Error('Invalid credentials');
           }
 
-          // Check if email is verified using user metadata
-          const userMetadata = user.user_metadata as { email_verified?: boolean };
-          if (!userMetadata.email_verified) {
-            throw new Error('Please verify your email before signing in');
-          }
+          console.log('User data:', user);
 
-          // Get user profile
-          const { data: profile } = await supabase
+          // Get user profile first
+          const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', user.id)
             .single();
 
+          if (profileError) {
+            console.error('Profile error:', profileError);
+            throw new Error('Error fetching user profile');
+          }
+
           if (!profile) {
+            console.error('No profile found for user');
             throw new Error('User profile not found');
           }
+
+          // Check email verification status directly from user object
+          if (!user.email_confirmed_at) {
+            console.error('Email not confirmed for user:', user.email);
+            throw new Error('Please verify your email before signing in');
+          }
+
+          console.log('Login successful for user:', user.email);
 
           return {
             id: user.id,
@@ -65,6 +79,7 @@ const handler = NextAuth({
             name: profile.name,
           };
         } catch (error: any) {
+          console.error('Authorization error:', error);
           throw new Error(error.message);
         }
       },
