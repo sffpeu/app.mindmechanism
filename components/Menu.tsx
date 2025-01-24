@@ -34,6 +34,7 @@ interface ProfileData {
   country: string
   timezone: string
   theme: 'light' | 'dark' | 'auto'
+  last_login?: string
 }
 
 export function Menu({
@@ -80,7 +81,8 @@ export function Menu({
           birthday: data.birthday || '',
           country: data.country || '',
           timezone: data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
-          theme: data.theme || 'auto'
+          theme: data.theme || 'auto',
+          last_login: data.last_login || undefined
         })
       }
     } catch (error) {
@@ -344,6 +346,12 @@ export function Menu({
                         className="w-full px-3 py-2 mt-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900"
                       />
                     </div>
+
+                    {profileData.last_login && (
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        Last login: {new Date(profileData.last_login).toLocaleString()}
+                      </div>
+                    )}
 
                     <button
                       onClick={() => router.push('/auth/change-password')}
