@@ -62,16 +62,18 @@ export function Menu({
               </div>
             </motion.button>
 
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="group relative w-9 h-9 rounded-full bg-white/10 dark:bg-black/10 backdrop-blur-lg border border-black/10 dark:border-white/20 hover:border-black/50 dark:hover:border-white/50 hover:border-2 dark:hover:border-2 transition-all flex items-center justify-center"
-            >
-              <BookOpen className="h-[18px] w-[18px] text-black dark:text-white" />
-              <div className="absolute left-12 px-2 py-1 bg-white dark:bg-black rounded-md text-sm font-medium text-black dark:text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-black/10 dark:border-white/20">
-                Documentation
-              </div>
-            </motion.button>
+            <Link href="/glossary">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="group relative w-9 h-9 rounded-full bg-white/10 dark:bg-black/10 backdrop-blur-lg border border-black/10 dark:border-white/20 hover:border-black/50 dark:hover:border-white/50 hover:border-2 dark:hover:border-2 transition-all flex items-center justify-center"
+              >
+                <BookOpen className="h-[18px] w-[18px] text-black dark:text-white" />
+                <div className="absolute left-12 px-2 py-1 bg-white dark:bg-black rounded-md text-sm font-medium text-black dark:text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-black/10 dark:border-white/20">
+                  Glossary
+                </div>
+              </motion.button>
+            </Link>
 
             <motion.button
               whileHover={{ scale: 1.05 }}
