@@ -7,6 +7,7 @@ import { Switch } from '@/components/ui/switch'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSession } from 'next-auth/react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 interface MenuProps {
   showElements: boolean
@@ -28,6 +29,7 @@ export function Menu({
   onDarkModeChange
 }: MenuProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
   const router = useRouter()
   const { data: session } = useSession()
 
@@ -69,7 +71,7 @@ export function Menu({
                 <div className="py-2 space-y-1">
                   <button
                     onClick={() => {
-                      router.push('/profile');
+                      setIsProfileOpen(true);
                       setIsMenuOpen(false);
                     }}
                     className="w-full flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-800 dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
@@ -83,7 +85,10 @@ export function Menu({
                       {isDarkMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
                       Dark Mode
                     </span>
-                    <div className="relative w-8 h-4">
+                    <div 
+                      className="relative w-8 h-4 cursor-pointer"
+                      onClick={() => onDarkModeChange(!isDarkMode)}
+                    >
                       <motion.div
                         className="absolute inset-0 rounded-full border border-black/20 dark:border-white/20"
                         animate={{
@@ -97,7 +102,6 @@ export function Menu({
                           x: isDarkMode ? 16 : 0
                         }}
                         transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                        onClick={() => onDarkModeChange(!isDarkMode)}
                       />
                       <input
                         type="checkbox"
@@ -112,7 +116,10 @@ export function Menu({
                     <span className="text-sm font-medium text-gray-800 dark:text-white">
                       Satellites
                     </span>
-                    <div className="relative w-8 h-4">
+                    <div 
+                      className="relative w-8 h-4 cursor-pointer"
+                      onClick={() => onSatellitesChange(!showSatellites)}
+                    >
                       <motion.div
                         className="absolute inset-0 rounded-full border border-black/20 dark:border-white/20"
                         animate={{
@@ -126,7 +133,6 @@ export function Menu({
                           x: showSatellites ? 16 : 0
                         }}
                         transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                        onClick={() => onSatellitesChange(!showSatellites)}
                       />
                       <input
                         type="checkbox"
@@ -166,6 +172,52 @@ export function Menu({
               </motion.div>
             )}
           </AnimatePresence>
+
+          <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
+            <DialogContent className="sm:max-w-[425px] bg-white dark:bg-black text-black dark:text-white">
+              <DialogHeader>
+                <DialogTitle>Profile Settings</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Name</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-black"
+                    placeholder="Your name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Email</label>
+                  <input
+                    type="email"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-black"
+                    placeholder="Your email"
+                    disabled
+                    value={session?.user?.email || ''}
+                  />
+                </div>
+                {/* Add more profile settings as needed */}
+              </div>
+              <div className="flex justify-end gap-3 mt-4">
+                <button
+                  onClick={() => setIsProfileOpen(false)}
+                  className="px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-900"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    // Handle save
+                    setIsProfileOpen(false)
+                  }}
+                  className="px-4 py-2 rounded-lg bg-black dark:bg-white text-white dark:text-black text-sm font-medium hover:bg-gray-900 dark:hover:bg-gray-100"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </>
       )}
       <div 
