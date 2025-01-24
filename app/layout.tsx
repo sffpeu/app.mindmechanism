@@ -1,52 +1,26 @@
-'use client'
-
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { getServerSession } from 'next-auth'
 import { Providers } from './providers'
-import { useEffect, useState } from 'react'
-import { ThemeContext } from './ThemeContext'
+import { ThemeProvider } from './ThemeProvider'
 
 const inter = Inter({ subsets: ['latin'] })
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const [isDarkMode, setIsDarkMode] = useState(false)
-
-  // Initialize dark mode from localStorage or system preference
-  useEffect(() => {
-    const storedTheme = localStorage.getItem('theme')
-    if (storedTheme) {
-      setIsDarkMode(storedTheme === 'dark')
-    } else {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      setIsDarkMode(prefersDark)
-      localStorage.setItem('theme', prefersDark ? 'dark' : 'light')
-    }
-  }, [])
-
-  // Update document class and localStorage when dark mode changes
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
-    }
-  }, [isDarkMode])
+  const session = await getServerSession()
 
   return (
-    <html lang="en" className={isDarkMode ? 'dark' : ''}>
+    <html lang="en">
       <body className={inter.className}>
-        <ThemeContext.Provider value={{ isDarkMode, setIsDarkMode }}>
-          <Providers>
+        <ThemeProvider>
+          <Providers session={session}>
             {children}
           </Providers>
-        </ThemeContext.Provider>
+        </ThemeProvider>
       </body>
     </html>
   )
