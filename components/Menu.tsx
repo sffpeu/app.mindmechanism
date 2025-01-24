@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Menu as MenuIcon, X, Settings, Sun, Moon, User, LogIn, LayoutGrid, Square, BookOpen, ClipboardList, Eye } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 
@@ -31,8 +31,8 @@ export function Menu({
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const router = useRouter()
-  const pathname = router.pathname || ''
-  const isClockPage = pathname.includes('/clock/')
+  const pathname = usePathname()
+  const isClockPage = pathname?.includes('/clock/')
 
   return (
     <>
