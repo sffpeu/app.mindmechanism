@@ -104,6 +104,7 @@ const initialWords: WordCard[] = [
 export default function GlossaryPage() {
   const { isDarkMode } = useTheme()
   const [showElements, setShowElements] = useState(true)
+  const [showSatellites, setShowSatellites] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedFilter, setSelectedFilter] = useState('All')
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
@@ -123,6 +124,8 @@ export default function GlossaryPage() {
       <Menu
         showElements={showElements}
         onToggleShow={() => setShowElements(!showElements)}
+        showSatellites={showSatellites}
+        onSatellitesChange={setShowSatellites}
       />
       <div className="max-w-6xl mx-auto p-4 md:p-6 pt-24">
         <div className="mb-8">
