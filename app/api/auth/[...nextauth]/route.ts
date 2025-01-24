@@ -1,5 +1,6 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import GoogleProvider from 'next-auth/providers/google';
 import { createClient } from '@supabase/supabase-js';
 
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
@@ -17,6 +18,10 @@ const supabase = createClient(
 
 const handler = NextAuth({
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
@@ -90,9 +95,34 @@ const handler = NextAuth({
     error: '/auth/error',
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async signIn({ user, account }) {
+      if (account?.provider === 'google') {
+        try {
+          // Create or update user profile in Supabase
+          const { error } = await supabase
+            .from('profiles')
+            .upsert({
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              updated_at: new Date().toISOString(),
+            });
+
+          if (error) {
+            console.error('Error updating profile:', error);
+            return false;
+          }
+        } catch (error) {
+          console.error('Error in signIn callback:', error);
+          return false;
+        }
+      }
+      return true;
+    },
+    async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;
+        token.provider = account?.provider;
       }
       return token;
     },
