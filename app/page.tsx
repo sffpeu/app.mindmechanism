@@ -144,7 +144,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto space-y-4">
           {/* Profile and Progress Section - Combined in one row */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="p-4 bg-white dark:bg-white/10 backdrop-blur-lg border border-black/5 dark:border-white/20 hover:border-black/10 dark:hover:border-white/30 transition-colors">
+            <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-white/20 flex items-center justify-center">
                   <span className="text-xl font-semibold dark:text-white">B</span>
@@ -164,7 +164,7 @@ export default function HomePage() {
               </div>
             </Card>
 
-            <Card className="p-4 bg-white dark:bg-white/10 backdrop-blur-lg border border-black/5 dark:border-white/20 hover:border-black/10 dark:hover:border-white/30 transition-colors">
+            <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <h2 className="text-base font-semibold dark:text-white">Monthly Progress</h2>
@@ -202,7 +202,7 @@ export default function HomePage() {
 
           {/* Time and Calendar Section */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card className="p-4 bg-white dark:bg-white/10 backdrop-blur-lg border border-black/5 dark:border-white/20 hover:border-black/10 dark:hover:border-white/30 transition-colors md:col-span-3">
+            <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all md:col-span-3">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-base font-semibold dark:text-white">Time</h2>
                 <Clock className="h-4 w-4 text-gray-500" />
@@ -220,7 +220,7 @@ export default function HomePage() {
               </p>
             </Card>
 
-            <Card className="p-4 bg-white dark:bg-white/10 backdrop-blur-lg border border-black/5 dark:border-white/20 hover:border-black/10 dark:hover:border-white/30 transition-colors">
+            <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="text-base font-semibold dark:text-white">Calendar</h2>
                 <Calendar className="h-4 w-4 text-gray-500" />
@@ -250,7 +250,7 @@ export default function HomePage() {
           {/* Weather and Moon Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {weatherData && (
-              <Card className="p-4 bg-white dark:bg-white/10 backdrop-blur-lg border border-black/5 dark:border-white/20 hover:border-black/10 dark:hover:border-white/30 transition-colors">
+              <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
@@ -292,7 +292,7 @@ export default function HomePage() {
               </Card>
             )}
 
-            <Card className="p-4 bg-white dark:bg-white/10 backdrop-blur-lg border border-black/5 dark:border-white/20 hover:border-black/10 dark:hover:border-white/30 transition-colors">
+            <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-base font-semibold dark:text-white">Moon Phase</h2>
                 <Moon className="h-4 w-4 text-gray-500" />
@@ -326,7 +326,7 @@ export default function HomePage() {
           {/* Location Section */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {weatherData && (
-              <Card className="p-4 bg-white dark:bg-white/10 backdrop-blur-lg border border-black/5 dark:border-white/20 hover:border-black/10 dark:hover:border-white/30 transition-colors">
+              <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="text-base font-semibold dark:text-white">Location</h2>
                   <MapPin className="h-4 w-4 text-gray-500" />
@@ -365,7 +365,7 @@ export default function HomePage() {
             )}
 
             {/* Notebook and Word of the Day */}
-            <Card className="p-4 bg-white dark:bg-white/10 backdrop-blur-lg border border-black/5 dark:border-white/20 md:col-span-2">
+            <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all md:col-span-2">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-base font-semibold dark:text-white">Notebook</h2>
                 <ClipboardList className="h-4 w-4 text-gray-500" />
