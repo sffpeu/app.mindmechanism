@@ -17,6 +17,8 @@ export async function POST(request: Request) {
       );
     }
 
+    console.log('Attempting to sign up user with email:', email);
+
     // Sign up the user with Supabase
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
@@ -24,6 +26,7 @@ export async function POST(request: Request) {
     });
 
     if (authError) {
+      console.error('Auth error:', authError);
       return NextResponse.json(
         { message: authError.message },
         { status: 400 }
@@ -31,14 +34,17 @@ export async function POST(request: Request) {
     }
 
     if (!authData.user) {
+      console.error('No user data returned from auth signup');
       return NextResponse.json(
         { message: 'User creation failed' },
         { status: 400 }
       );
     }
 
+    console.log('User created successfully with ID:', authData.user.id);
+
     // Insert the user's profile into the profiles table
-    const { error: profileError } = await supabase
+    const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .insert([
         {
@@ -46,16 +52,21 @@ export async function POST(request: Request) {
           name,
           email,
         },
-      ]);
+      ])
+      .select()
+      .single();
 
     if (profileError) {
+      console.error('Profile creation error:', profileError);
       // If profile creation fails, we should ideally clean up the auth user
       // but Supabase will handle this with cascading deletes
       return NextResponse.json(
-        { message: 'Profile creation failed' },
+        { message: `Profile creation failed: ${profileError.message}` },
         { status: 400 }
       );
     }
+
+    console.log('Profile created successfully:', profileData);
 
     return NextResponse.json(
       { message: 'User created successfully' },
