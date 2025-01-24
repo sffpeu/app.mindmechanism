@@ -5,6 +5,7 @@ import { Menu } from '@/components/Menu'
 import { Card } from '@/components/ui/card'
 import { Calendar, Clock, Cloud, Droplets, Gauge, Wind, Moon, ClipboardList, BookOpen, Sun, MapPin, Mountain, Waves } from 'lucide-react'
 import DotNavigation from '@/components/DotNavigation'
+import { useTheme } from '@/app/ThemeContext'
 
 interface WeatherResponse {
   location: {
@@ -41,12 +42,12 @@ interface MoonData {
 export default function HomePage() {
   const [mounted, setMounted] = useState(false)
   const [showElements, setShowElements] = useState(true)
-  const [isDarkMode, setIsDarkMode] = useState(false)
   const [showSatellites, setShowSatellites] = useState(false)
   const [showInfoCards, setShowInfoCards] = useState(true)
   const [weatherData, setWeatherData] = useState<WeatherResponse | null>(null)
   const [moon, setMoon] = useState<MoonData | null>(null)
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
+  const { isDarkMode } = useTheme()
 
   // Handle mounting
   useEffect(() => {
@@ -66,7 +67,6 @@ export default function HomePage() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      setIsDarkMode(prefersDark)
       if (prefersDark) {
         document.documentElement.classList.add('dark')
       }
@@ -137,8 +137,6 @@ export default function HomePage() {
         onToggleShow={() => setShowElements(!showElements)}
         showSatellites={showSatellites}
         onSatellitesChange={setShowSatellites}
-        isDarkMode={isDarkMode}
-        onDarkModeChange={setIsDarkMode}
         showInfoCards={showInfoCards}
         onInfoCardsChange={setShowInfoCards}
       />

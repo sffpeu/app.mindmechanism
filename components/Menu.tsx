@@ -6,14 +6,13 @@ import { Switch } from '@/components/ui/switch'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
+import { useTheme } from '@/app/ThemeContext'
 
 interface MenuProps {
   showElements: boolean
   onToggleShow: () => void
   showSatellites: boolean
   onSatellitesChange: (checked: boolean) => void
-  isDarkMode: boolean
-  onDarkModeChange: (checked: boolean) => void
   showInfoCards?: boolean
   onInfoCardsChange?: (checked: boolean) => void
 }
@@ -23,8 +22,6 @@ export function Menu({
   onToggleShow,
   showSatellites,
   onSatellitesChange,
-  isDarkMode,
-  onDarkModeChange,
   showInfoCards = true,
   onInfoCardsChange,
 }: MenuProps) {
@@ -33,6 +30,7 @@ export function Menu({
   const router = useRouter()
   const pathname = usePathname()
   const isClockPage = pathname?.includes('/clock/')
+  const { isDarkMode, setIsDarkMode } = useTheme()
 
   return (
     <>
@@ -192,8 +190,7 @@ export function Menu({
                     </span>
                     <Switch
                       checked={isDarkMode}
-                      onCheckedChange={onDarkModeChange}
-                      className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-white data-[state=checked]:border-black/20 dark:data-[state=checked]:border-white/20 border border-black/20 dark:border-white/20"
+                      onCheckedChange={setIsDarkMode}
                     />
                   </div>
 
