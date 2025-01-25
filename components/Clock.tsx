@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ClockIcon, Calendar, RotateCw, Timer, Compass, ChevronUp, ChevronDown, Repeat, Eye, EyeOff, Settings, Play, SkipForward, Repeat as RepeatIcon } from 'lucide-react';
+import { ClockIcon, Calendar, RotateCw, Timer, Compass, ChevronUp, ChevronDown, Repeat, Eye, EyeOff, Settings } from 'lucide-react';
 import { ClockSettings } from '../types/ClockSettings';
 import { motion } from 'framer-motion';
 
@@ -102,8 +102,8 @@ interface ClockProps extends Partial<ClockSettings> {
   showInfo?: boolean;
 }
 
-// Add display state type
-type DisplayState = 'info' | 'words' | 'sound';
+// Update the display state type
+type DisplayState = 'info';
 
 // Add keyframes for the shadow animation
 const shadowKeyframes = {
@@ -492,46 +492,6 @@ export default function Clock({
     );
   }
 
-  function SoundCard() {
-    return (
-      <Card className="bg-white/80 dark:bg-black/80 backdrop-blur-sm min-w-[280px]">
-        <CardContent className="flex items-center p-2 h-[52px] justify-between gap-3">
-          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full dark:text-white">
-            <Play className="h-4 w-4" />
-          </Button>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 truncate">Ambient Sound</p>
-            <p className="text-sm font-semibold truncate dark:text-white">03:45</p>
-          </div>
-          <div className="flex gap-1">
-            <Button variant="ghost" size="icon" className="h-8 w-8 dark:text-white">
-              <SkipForward className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 dark:text-white">
-              <RepeatIcon className="h-4 w-4" />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Update the click handler for the colored dot
-  const handleDisplayToggle = () => {
-    setDisplayState(current => {
-      switch (current) {
-        case 'info':
-          return 'words';
-        case 'words':
-          return 'sound';
-        case 'sound':
-          return 'info';
-        default:
-          return 'info';
-      }
-    });
-  };
-
   if (isMultiView || isMultiView2) {
     return (
       <div className="relative w-[90vw] h-[90vw] max-w-[700px] max-h-[700px]">
@@ -835,20 +795,13 @@ export default function Clock({
         {showElements && (
           <>
             <div className="flex justify-center gap-2 mb-3">
-              {['info', 'words', 'sound'].map((state) => (
-                <button
-                  key={state}
-                  onClick={() => setDisplayState(state as DisplayState)}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ease-out hover:scale-150 ${
-                    displayState === state 
-                      ? 'bg-black/90 dark:bg-white scale-125'
-                      : 'bg-black/30 dark:bg-gray-700 hover:bg-black/60 dark:hover:bg-gray-600'
-                  }`}
-                />
-              ))}
+              <button
+                onClick={() => setDisplayState('info')}
+                className="w-2 h-2 rounded-full bg-black/90 dark:bg-white scale-125 transition-all duration-300 ease-out hover:scale-150"
+              />
             </div>
             <div className="h-[68px] flex items-center justify-center">
-              <div className={`w-full transition-all duration-300 ease-in-out ${displayState === 'info' ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'}`}>
+              <div className="w-full transition-all duration-300 ease-in-out opacity-100">
                 <div className="flex flex-wrap justify-center items-start gap-2">
                   <InfoCard icon={<ClockIcon className="h-4 w-4" />} title="Current" value={currentTime.toLocaleTimeString()} />
                   <InfoCard 
@@ -866,27 +819,6 @@ export default function Clock({
                   <InfoCard icon={<Compass className="h-4 w-4" />} title="Start °" value={`${startingDegree.toFixed(1)}°`} />
                   <InfoCard icon={<RotateCw className="h-4 w-4" />} title="Rot. Time" value={`${rotationTime / 1000}s`} />
                   <InfoCard icon={<div className={`w-4 h-4 ${dotColors[id % dotColors.length]} rounded-full`} />} title="Focus Nodes" value={focusNodes.toString()} />
-                </div>
-              </div>
-              <div className={`w-full transition-all duration-300 ease-in-out ${displayState === 'words' ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'}`}>
-                <div className="max-h-[120px] overflow-y-auto">
-                  <div className="flex flex-wrap gap-2 justify-center px-4">
-                    {Array.from({ length: focusNodes }).map((_, index) => {
-                      const wordIndex = index % words.length;
-                      const word = words[wordIndex] || '';
-                      return (
-                        <WordCard 
-                          key={index} 
-                          word={word} 
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-              <div className={`w-full transition-all duration-300 ease-in-out ${displayState === 'sound' ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'}`}>
-                <div className="flex justify-center">
-                  <SoundCard />
                 </div>
               </div>
             </div>
