@@ -16,19 +16,20 @@ export interface ClockSettings {
   imageScale: number;
   imageX?: number;
   imageY?: number;
-  satellites?: Array<{
-    rotationTime: number;
-    rotationDirection: 'clockwise' | 'counterclockwise';
-  }>;
+  satellites?: SatelliteSettings[];
 }
 
 export interface ClockProps extends Omit<ClockSettings, 'id'> {
   id: number;
   isMultiView?: boolean;
+  isMultiView2?: boolean;
   allClocks?: ClockSettings[];
   showElements: boolean;
   onToggleShow?: () => void;
   currentTime: Date;
   syncTrigger: number;
+  hideControls?: boolean;
+  showSatellites?: boolean;
+  showInfo?: boolean;
 }
 

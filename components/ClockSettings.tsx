@@ -241,7 +241,7 @@ export function ClockSettings({ settings, onSave, onCancel }: ClockSettingsProps
 
   useEffect(() => {
     // Initialize refs for each satellite
-    localSettings.satellites?.forEach((satellite) => {
+    localSettings.satellites?.forEach((satellite: SatelliteSettings) => {
       if (!inputRefs.has(satellite.id)) {
         inputRefs.set(satellite.id, React.createRef<HTMLInputElement>());
       }
