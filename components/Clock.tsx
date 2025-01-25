@@ -169,7 +169,7 @@ export default function Clock({
     // Load words when component mounts
     async function fetchWords() {
       const loadedWords = await loadWords();
-      const clockSpecificWords = getClockWords(`clock${id + 1}`);
+      const clockSpecificWords = getClockWords();
       setWords(clockSpecificWords.map(word => word.word));
     }
     fetchWords();
