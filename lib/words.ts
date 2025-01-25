@@ -643,6 +643,104 @@ export const words: Word[] = [
     definition: 'The non-physical part of a person regarded as their true self.',
     rating: 3,
     type: 'Neutral'
+  },
+  {
+    word: 'Brother',
+    phonetic: '/ˈbrʌðər/',
+    definition: 'A male sibling.',
+    rating: 3,
+    type: 'Neutral'
+  },
+  {
+    word: 'Mother',
+    phonetic: '/ˈmʌðər/',
+    definition: 'A female parent.',
+    rating: 3,
+    type: 'Neutral'
+  },
+  {
+    word: 'Daughter',
+    phonetic: '/ˈdɔːtər/',
+    definition: 'A female child in relation to her parents.',
+    rating: 3,
+    type: 'Neutral'
+  },
+  {
+    word: 'Sister',
+    phonetic: '/ˈsɪstər/',
+    definition: 'A female sibling.',
+    rating: 3,
+    type: 'Neutral'
+  },
+  {
+    word: 'Source',
+    phonetic: '/sɔːrs/',
+    definition: 'A place, person, or thing from which something originates.',
+    rating: 3,
+    type: 'Neutral'
+  },
+  {
+    word: 'A cut above',
+    phonetic: '/ə kʌt əˈbʌv/',
+    definition: 'Significantly better than others.',
+    rating: 5,
+    type: 'Positive'
+  },
+  {
+    word: 'Absolute',
+    phonetic: '/ˈæbsəˌlut/',
+    definition: 'Not qualified or diminished in any way; total.',
+    rating: 5,
+    type: 'Positive'
+  },
+  {
+    word: 'Absurdity',
+    phonetic: '/əbˈsɜːrdɪti/',
+    definition: 'The quality or state of being ridiculous or wildly unreasonable.',
+    rating: 2,
+    type: 'Negative'
+  },
+  {
+    word: 'Abuse',
+    phonetic: '/əˈbjuːs/',
+    definition: 'The improper use of something.',
+    rating: 1,
+    type: 'Negative'
+  },
+  {
+    word: 'Abusiveness',
+    phonetic: '/əˈbjuːsɪvnəs/',
+    definition: 'The bad quality of being abusive towards someone or something.',
+    rating: 1,
+    type: 'Negative'
+  },
+  {
+    word: 'Acceptance',
+    phonetic: '/əkˈsɛptəns/',
+    definition: 'The action of consenting to receive or undertake something offered.',
+    rating: 5,
+    type: 'Positive'
+  },
+  {
+    word: 'Accurate',
+    phonetic: '/ˈækjərɪt/',
+    definition: 'Correct in all details; exact.',
+    rating: 5,
+    type: 'Positive'
+  },
+  {
+    word: 'Adaptability',
+    phonetic: '/əˌdæptəˈbɪlɪti/',
+    definition: 'The quality of being able to adjust to new conditions.',
+    rating: 4,
+    type: 'Positive'
+  },
+  {
+    word: 'Adequacy',
+    phonetic: '/ˈædɪkwəsi/',
+    definition: 'The state of being sufficient for the purpose concerned.',
+    rating: 4,
+    type: 'Positive'
   }
 ];
 
