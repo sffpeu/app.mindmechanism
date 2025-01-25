@@ -33,7 +33,7 @@ export default function DashboardPage() {
       <div className="flex-1 flex items-center justify-center">
         <div className="max-w-6xl w-full mx-auto p-4 md:p-6">
           <Clock
-            id="main-clock"
+            id={1}
             currentTime={currentTime}
             syncTrigger={syncTrigger}
             showElements={showElements}
