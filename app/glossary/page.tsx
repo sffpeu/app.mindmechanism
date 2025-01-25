@@ -30,7 +30,11 @@ export default function GlossaryPage() {
 
   const filteredWords = words.filter(word => {
     const matchesSearch = word.word.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesFilter = selectedFilter === 'All' || word.type === selectedFilter
+    const matchesFilter = selectedFilter === 'All' 
+      ? true 
+      : selectedFilter === 'Default' 
+        ? word.type === 'Neutral'
+        : word.type === selectedFilter
     const matchesLetter = !selectedLetter || word.word.charAt(0).toUpperCase() === selectedLetter
     return matchesSearch && matchesFilter && matchesLetter
   })
@@ -73,7 +77,7 @@ export default function GlossaryPage() {
           </div>
           
           <div className="flex space-x-2">
-            {['All', 'Positive', 'Neutral', 'Negative'].map(filter => (
+            {['All', 'Default', 'Positive', 'Neutral', 'Negative'].map(filter => (
               <button
                 key={filter}
                 onClick={() => setSelectedFilter(filter)}
@@ -114,16 +118,19 @@ export default function GlossaryPage() {
           {filteredWords.map((word, index) => (
             <div
               key={index}
-              className={`p-4 rounded-lg bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border ${
-                word.type === 'Neutral' 
-                  ? 'border-blue-200 dark:border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)] dark:shadow-[0_0_15px_rgba(59,130,246,0.07)]' 
-                  : 'border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20'
-              } transition-all`}
+              className="p-4 rounded-lg bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
             >
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white">{word.word}</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{word.phonetic}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{word.phonetic}</p>
+                    {word.type === 'Neutral' && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
+                        Default
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   <span className={`px-2 py-1 rounded-full text-sm ${
