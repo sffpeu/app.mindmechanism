@@ -5,7 +5,6 @@ import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { Logo } from '@/components/Logo'
 import { Search, Plus, ThumbsUp, ThumbsDown, Minus } from 'lucide-react'
-import DotNavigation from '@/components/DotNavigation'
 import { Word, loadWords } from '@/lib/words'
 
 export default function GlossaryPage() {
@@ -38,12 +37,6 @@ export default function GlossaryPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95">
       <Logo />
-      {showElements && (
-        <DotNavigation
-          activeDot={1}
-          isSmallMultiView={false}
-        />
-      )}
       <Menu
         showElements={showElements}
         onToggleShow={() => setShowElements(!showElements)}
