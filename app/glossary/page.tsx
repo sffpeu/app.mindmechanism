@@ -115,7 +115,7 @@ export default function GlossaryPage() {
             <div
               key={index}
               className={`p-4 rounded-lg bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border ${
-                word.type === 'default' 
+                word.type === 'Neutral' 
                   ? 'border-blue-200 dark:border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)] dark:shadow-[0_0_15px_rgba(59,130,246,0.07)]' 
                   : 'border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20'
               } transition-all`}
