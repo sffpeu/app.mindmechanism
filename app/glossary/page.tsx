@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { Logo } from '@/components/Logo'
-import { Search, Plus, ThumbsUp, ThumbsDown, Minus, Tag } from 'lucide-react'
+import { Search, Plus, ThumbsUp, ThumbsDown, Minus, Tag, LayoutGrid, List } from 'lucide-react'
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords, searchWords } from '@/lib/glossary'
 
@@ -17,6 +17,7 @@ export default function GlossaryPage() {
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
   const [words, setWords] = useState<GlossaryWord[]>([])
   const [loading, setLoading] = useState(true)
+  const [isListView, setIsListView] = useState(false)
 
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
 
@@ -106,6 +107,12 @@ export default function GlossaryPage() {
                 {filteredWords.length} words
               </span>
             </div>
+            <button
+              onClick={() => setIsListView(!isListView)}
+              className="p-2 rounded-lg bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all text-gray-900 dark:text-white"
+            >
+              {isListView ? <LayoutGrid className="h-5 w-5" /> : <List className="h-5 w-5" />}
+            </button>
           </div>
           
           <div className="flex space-x-2">
@@ -145,8 +152,8 @@ export default function GlossaryPage() {
           </div>
         </div>
 
-        {/* Word Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Word Grid/List */}
+        <div className={`${isListView ? 'space-y-2' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'}`}>
           {loading ? (
             <div className="col-span-full text-center py-8 text-gray-500">Loading words...</div>
           ) : filteredWords.length === 0 ? (
@@ -155,52 +162,42 @@ export default function GlossaryPage() {
             filteredWords.map((word) => (
               <div
                 key={word.id}
-                className="p-4 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
+                className={`${isListView ? 'p-3' : 'p-4'} rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all`}
               >
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="text-lg font-medium text-black dark:text-white mb-0.5">{word.word}</h3>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">{word.phonetic_spelling}</span>
+                <div className="flex justify-between items-start">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-medium text-black dark:text-white mb-0.5 truncate">{word.word}</h3>
+                    <span className="text-sm text-gray-500 dark:text-gray-400 block">{word.phonetic_spelling}</span>
                   </div>
-                  {word.version === 'Default' && (
-                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-transparent border border-gray-200 dark:border-gray-700 rounded-full px-2 py-0.5">
-                      default
-                    </span>
-                  )}
+                  <div className="flex flex-col items-end ml-4">
+                    <div className="flex items-center space-x-1.5">
+                      <span className="text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center
+                        ${word.rating === '+' ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20' :
+                          word.rating === '-' ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20' :
+                          'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'}"
+                      >
+                        {word.grade}
+                      </span>
+                      <div className="w-7 h-7 rounded-full flex items-center justify-center
+                        ${word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20' :
+                          word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20' :
+                          'bg-blue-50 dark:bg-blue-900/20'}"
+                      >
+                        {word.rating === '+' && <ThumbsUp className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />}
+                        {word.rating === '-' && <ThumbsDown className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />}
+                        {word.rating === '~' && <span className="text-lg leading-none text-blue-600 dark:text-blue-400 font-medium" style={{ marginTop: '-1px' }}>~</span>}
+                      </div>
+                    </div>
+                    {word.version === 'Default' && (
+                      <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400 bg-transparent border border-gray-200 dark:border-gray-700 rounded-full px-1.5 py-px mt-1">
+                        default
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">{word.definition}</p>
-                <div className="flex items-center space-x-2">
-                  {word.rating === '+' && (
-                    <>
-                      <div className="w-7 h-7 rounded-full bg-green-50 dark:bg-green-900/20 flex items-center justify-center">
-                        <ThumbsUp className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
-                      </div>
-                      <span className="text-xs font-medium text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded-full w-5 h-5 flex items-center justify-center">
-                        {word.grade}
-                      </span>
-                    </>
-                  )}
-                  {word.rating === '-' && (
-                    <>
-                      <div className="w-7 h-7 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
-                        <ThumbsDown className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
-                      </div>
-                      <span className="text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-full w-5 h-5 flex items-center justify-center">
-                        {word.grade}
-                      </span>
-                    </>
-                  )}
-                  {word.rating === '~' && (
-                    <>
-                      <div className="w-7 h-7 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                        <span className="text-lg leading-none text-blue-600 dark:text-blue-400 font-medium" style={{ marginTop: '-1px' }}>~</span>
-                      </div>
-                      <span className="text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-full w-5 h-5 flex items-center justify-center">
-                        {word.grade}
-                      </span>
-                    </>
-                  )}
-                </div>
+                <p className={`text-gray-600 dark:text-gray-400 text-sm ${isListView ? 'mt-1' : 'mt-2'} line-clamp-2`}>
+                  {word.definition}
+                </p>
               </div>
             ))
           )}
