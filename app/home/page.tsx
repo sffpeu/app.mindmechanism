@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
-import { Logo } from '@/components/Logo'
 import { Play, BookOpen, ClipboardList, ArrowRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -81,7 +80,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95">
-      <Logo />
       <Menu
         showElements={showElements}
         onToggleShow={() => setShowElements(!showElements)}

@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
-import { Logo } from '@/components/Logo'
 import { Search, Plus, ThumbsUp, ThumbsDown, Minus, Tag, LayoutGrid, List, Home } from 'lucide-react'
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords, searchWords } from '@/lib/glossary'
@@ -78,7 +77,6 @@ export default function GlossaryPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95">
-      <Logo />
       <Menu
         showElements={showElements}
         onToggleShow={() => setShowElements(!showElements)}

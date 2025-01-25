@@ -26,7 +26,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95 flex flex-col">
-      <Logo />
       <Menu
         showElements={showElements}
         onToggleShow={() => setShowElements(!showElements)}
