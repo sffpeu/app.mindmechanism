@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Menu as MenuIcon, X, Settings, Sun, Moon, User, LogIn, LayoutGrid, Square, BookOpen, ClipboardList, Eye } from 'lucide-react'
+import { Menu as MenuIcon, X, Settings, Sun, Moon, User, LogIn, LayoutGrid, Square, BookOpen, ClipboardList, Eye, Home } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -38,6 +38,19 @@ export function Menu({
         <>
           {/* Left Sidebar */}
           <div className="fixed left-4 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-10">
+            <Link href="/home">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="group relative w-9 h-9 rounded-full bg-white/10 dark:bg-black/10 backdrop-blur-lg border border-black/10 dark:border-white/20 hover:border-black/50 dark:hover:border-white/50 hover:border-2 dark:hover:border-2 transition-all flex items-center justify-center"
+              >
+                <Home className="h-[18px] w-[18px] text-black dark:text-white" />
+                <div className="absolute left-12 px-2 py-1 bg-white dark:bg-black rounded-md text-sm font-medium text-black dark:text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-black/10 dark:border-white/20">
+                  Home
+                </div>
+              </motion.button>
+            </Link>
+
             <Link href="/">
               <motion.button
                 whileHover={{ scale: 1.05 }}
