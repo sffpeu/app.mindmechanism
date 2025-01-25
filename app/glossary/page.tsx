@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { Logo } from '@/components/Logo'
-import { Search, Plus, ThumbsUp, ThumbsDown, Minus, Tag, LayoutGrid, List } from 'lucide-react'
+import { Search, Plus, ThumbsUp, ThumbsDown, Minus, Tag, LayoutGrid, List, Home } from 'lucide-react'
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords, searchWords } from '@/lib/glossary'
 
@@ -114,24 +114,30 @@ export default function GlossaryPage() {
               {isListView ? <LayoutGrid className="h-5 w-5" /> : <List className="h-5 w-5" />}
             </button>
           </div>
-          
-          <div className="flex space-x-2">
-            {['All', 'Default', 'Positive', 'Neutral', 'Negative'].map(filter => (
-              <button
-                key={filter}
-                onClick={() => setSelectedFilter(filter)}
-                className={`px-4 py-2 rounded-lg transition-all ${
-                  selectedFilter === filter
-                    ? 'bg-black text-white dark:bg-white dark:text-black'
-                    : 'bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 text-gray-900 dark:text-white'
-                }`}
-              >
-                {filter}
-              </button>
-            ))}
-            <button className="px-4 py-2 rounded-lg bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all text-gray-900 dark:text-white">
-              <Plus className="h-5 w-5" />
+
+          <div className="flex flex-col space-y-2">
+            <button className="w-fit px-4 py-2 rounded-lg bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all text-gray-900 dark:text-white">
+              <Home className="h-5 w-5" />
             </button>
+            
+            <div className="flex space-x-2">
+              {['All', 'Default', 'Positive', 'Neutral', 'Negative'].map(filter => (
+                <button
+                  key={filter}
+                  onClick={() => setSelectedFilter(filter)}
+                  className={`px-4 py-2 rounded-lg transition-all ${
+                    selectedFilter === filter
+                      ? 'bg-black text-white dark:bg-white dark:text-black'
+                      : 'bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 text-gray-900 dark:text-white'
+                  }`}
+                >
+                  {filter}
+                </button>
+              ))}
+              <button className="px-4 py-2 rounded-lg bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all text-gray-900 dark:text-white">
+                <Plus className="h-5 w-5" />
+              </button>
+            </div>
           </div>
 
           {/* Alphabet Filter */}
@@ -155,7 +161,7 @@ export default function GlossaryPage() {
         {/* Word Grid/List */}
         <div>
           {isListView && (
-            <div className="mb-2 px-4 text-sm font-medium text-gray-500 dark:text-gray-400 grid grid-cols-[2fr,3fr,auto,auto,auto] gap-4 items-center">
+            <div className="mb-2 px-4 text-sm font-medium text-gray-500 dark:text-gray-400 grid grid-cols-[2fr,3fr,4rem,4rem,4rem] gap-4 items-center">
               <div>Word</div>
               <div>Definition</div>
               <div className="text-center">Grade</div>
@@ -173,7 +179,7 @@ export default function GlossaryPage() {
                 <div
                   key={word.id}
                   className={`${isListView ? 'py-2 px-4' : 'p-4'} rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all ${
-                    isListView ? 'grid grid-cols-[2fr,3fr,auto,auto,auto] gap-4 items-center' : ''
+                    isListView ? 'grid grid-cols-[2fr,3fr,4rem,4rem,4rem] gap-4 items-center' : ''
                   }`}
                 >
                   {isListView ? (
@@ -183,7 +189,7 @@ export default function GlossaryPage() {
                         <span className="text-xs text-gray-500 dark:text-gray-400 block">{word.phonetic_spelling}</span>
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-1">{word.definition}</p>
-                      <div className="flex items-center justify-center">
+                      <div className="flex items-center justify-center w-full">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium
                           ${word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
                             word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
@@ -192,7 +198,7 @@ export default function GlossaryPage() {
                           {word.grade}
                         </div>
                       </div>
-                      <div className="flex items-center justify-center">
+                      <div className="flex items-center justify-center w-full">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium
                           ${word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
                             word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
@@ -201,7 +207,7 @@ export default function GlossaryPage() {
                           {word.rating}
                         </div>
                       </div>
-                      <div className="flex items-center justify-center">
+                      <div className="flex items-center justify-center w-full">
                         {word.version === 'Default' && (
                           <div className="group relative">
                             <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
