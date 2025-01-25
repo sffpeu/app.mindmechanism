@@ -9,7 +9,6 @@ import { Menu } from '@/components/Menu'
 import { ClockSettings } from '@/components/ClockSettings'
 import { ClockSettings as ClockSettingsType } from '@/types/ClockSettings'
 import { useTheme } from '@/app/ThemeContext'
-import { Logo } from '@/components/Logo'
 
 export default function ClockPage() {
   const params = useParams()
@@ -51,7 +50,6 @@ export default function ClockPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95">
-      <Logo />
       {showElements && (
         <DotNavigation
           activeDot={id}

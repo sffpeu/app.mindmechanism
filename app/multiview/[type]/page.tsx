@@ -1,14 +1,14 @@
 'use client'
 
-import { useParams } from 'next/navigation'
-import Clock from '@/components/Clock'
-import { useState, useEffect } from 'react'
-import DotNavigation from '@/components/DotNavigation'
-import { clockSettings } from '@/lib/clockSettings'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
-import { Logo } from '@/components/Logo'
+import Clock from '@/components/Clock'
+import { useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
+import { clockSettings } from '@/lib/clockSettings'
+import { motion, AnimatePresence } from 'framer-motion'
+import DotNavigation from '@/components/DotNavigation'
 
 export default function MultiViewPage() {
   const params = useParams()
