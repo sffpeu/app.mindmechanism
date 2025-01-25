@@ -159,38 +159,47 @@ export default function GlossaryPage() {
               >
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <h3 className="text-lg font-medium text-black dark:text-white">{word.word}</h3>
-                    {word.version === 'Default' && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 mt-1">
-                        <Tag className="w-3 h-3 mr-1" />
-                        Default
-                      </span>
-                    )}
+                    <h3 className="text-lg font-medium text-black dark:text-white mb-0.5">{word.word}</h3>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">{word.phonetic_spelling}</span>
                   </div>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">{word.phonetic_spelling}</span>
+                  {word.version === 'Default' && (
+                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-transparent border border-gray-200 dark:border-gray-700 rounded-full px-2 py-0.5">
+                      default
+                    </span>
+                  )}
                 </div>
                 <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">{word.definition}</p>
-                <div className="flex justify-between items-center">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300">
-                    Grade {word.grade}
-                  </span>
-                  <div className="flex items-center space-x-1">
-                    {word.rating === '+' && (
-                      <div className="w-8 h-8 rounded-full bg-green-50 dark:bg-green-900/20 flex items-center justify-center">
-                        <ThumbsUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+                <div className="flex items-center space-x-2">
+                  {word.rating === '+' && (
+                    <>
+                      <div className="w-7 h-7 rounded-full bg-green-50 dark:bg-green-900/20 flex items-center justify-center">
+                        <ThumbsUp className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
                       </div>
-                    )}
-                    {word.rating === '-' && (
-                      <div className="w-8 h-8 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
-                        <ThumbsDown className="w-4 h-4 text-red-600 dark:text-red-400" />
+                      <span className="text-xs font-medium text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded-full w-5 h-5 flex items-center justify-center">
+                        {word.grade}
+                      </span>
+                    </>
+                  )}
+                  {word.rating === '-' && (
+                    <>
+                      <div className="w-7 h-7 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
+                        <ThumbsDown className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
                       </div>
-                    )}
-                    {word.rating === '~' && (
-                      <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                        <Minus className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      <span className="text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-full w-5 h-5 flex items-center justify-center">
+                        {word.grade}
+                      </span>
+                    </>
+                  )}
+                  {word.rating === '~' && (
+                    <>
+                      <div className="w-7 h-7 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                        <span className="text-lg leading-none text-blue-600 dark:text-blue-400 font-medium" style={{ marginTop: '-1px' }}>~</span>
                       </div>
-                    )}
-                  </div>
+                      <span className="text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-full w-5 h-5 flex items-center justify-center">
+                        {word.grade}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
             ))
