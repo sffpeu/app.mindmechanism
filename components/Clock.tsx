@@ -170,7 +170,7 @@ export default function Clock({
     async function fetchWords() {
       const loadedWords = await loadWords();
       const clockSpecificWords = getClockWords(`clock${id + 1}`);
-      setWords(clockSpecificWords);
+      setWords(clockSpecificWords.map(word => word.word));
     }
     fetchWords();
   }, [id]);
