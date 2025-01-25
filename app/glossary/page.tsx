@@ -199,7 +199,14 @@ export default function GlossaryPage() {
                           </div>
                         </div>
                         {word.version === 'Default' && (
-                          <span className="text-[10px] font-medium text-gray-400 dark:text-gray-500">d</span>
+                          <div className="group relative">
+                            <span className="text-xs font-medium text-gray-400 dark:text-gray-500 border border-gray-300 dark:border-gray-600 rounded-full w-5 h-5 flex items-center justify-center">
+                              D
+                            </span>
+                            <span className="absolute -bottom-8 right-0 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                              Default
+                            </span>
+                          </div>
                         )}
                       </div>
                     </>
@@ -226,7 +233,14 @@ export default function GlossaryPage() {
                             {word.rating}
                           </div>
                           {word.version === 'Default' && (
-                            <span className="text-[10px] font-medium text-gray-400 dark:text-gray-500">d</span>
+                            <div className="group relative">
+                              <span className="text-xs font-medium text-gray-400 dark:text-gray-500 border border-gray-300 dark:border-gray-600 rounded-full w-5 h-5 flex items-center justify-center">
+                                D
+                              </span>
+                              <span className="absolute -bottom-8 right-0 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                                Default
+                              </span>
+                            </div>
                           )}
                         </div>
                       </div>
