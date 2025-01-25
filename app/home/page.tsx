@@ -43,9 +43,9 @@ const LayeredClockVisualization = () => {
               transition={{ duration: 0.3 }}
             >
               <img
-                src={`/${9 - index}.svg`}
+                src={`/${9 - index}_small.svg`}
                 alt={`Clock Layer ${9 - index}`}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain [&_*]:stroke-[0.75] dark:[&_*]:stroke-[0.75] [&_*]:stroke-black dark:[&_*]:stroke-white"
               />
             </motion.div>
           ))}

@@ -34,7 +34,6 @@
   pointer-events: none;
   user-select: none;
   filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.1));
-  mix-blend-mode: multiply;
 }
 
 .clockLayer img path,

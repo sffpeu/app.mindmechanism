@@ -6,3 +6,8 @@
 img[src$=".svg"] {
   mix-blend-mode: multiply;
 }
+
+img[src$=".svg"] * {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+}
