@@ -741,6 +741,104 @@ export const words: Word[] = [
     definition: 'The state of being sufficient for the purpose concerned.',
     rating: 4,
     type: 'Positive'
+  },
+  {
+    word: 'Advantage',
+    phonetic: '/ədˈvæntɪdʒ/',
+    definition: 'A condition or circumstance that puts one in a favorable or superior position.',
+    rating: 5,
+    type: 'Positive'
+  },
+  {
+    word: 'Advocacy',
+    phonetic: '/ˈædvəkəsi/',
+    definition: 'Public support for or recommendation of a particular cause or policy.',
+    rating: 5,
+    type: 'Positive'
+  },
+  {
+    word: 'Aggravation',
+    phonetic: '/ˌæɡrəˈveɪʃən/',
+    definition: 'The state of becoming worse or more serious.',
+    rating: 2,
+    type: 'Negative'
+  },
+  {
+    word: 'Aggression',
+    phonetic: '/əˈɡrɛʃən/',
+    definition: 'Hostile or violent behavior or attitudes.',
+    rating: 2,
+    type: 'Negative'
+  },
+  {
+    word: 'Agitation',
+    phonetic: '/ˌædʒɪˈteɪʃən/',
+    definition: 'A state of anxiety or nervous excitement.',
+    rating: 2,
+    type: 'Negative'
+  },
+  {
+    word: 'Agony',
+    phonetic: '/ˈæɡəni/',
+    definition: 'Extreme physical or mental suffering.',
+    rating: 1,
+    type: 'Negative'
+  },
+  {
+    word: 'Agoraphobia',
+    phonetic: '/ˌæɡərəˈfoʊbiə/',
+    definition: 'Extreme or irrational fear of open or public places.',
+    rating: 1,
+    type: 'Negative'
+  },
+  {
+    word: 'Alarm',
+    phonetic: '/əˈlɑrm/',
+    definition: 'An anxious awareness of danger.',
+    rating: 2,
+    type: 'Negative'
+  },
+  {
+    word: 'Alienation',
+    phonetic: '/ˌeɪliəˈneɪʃən/',
+    definition: 'The state or experience of being isolated from a group or an activity to which one should belong or in which one should be involved.',
+    rating: 2,
+    type: 'Negative'
+  },
+  {
+    word: 'Animated',
+    phonetic: '/ˈænɪˌmeɪtɪd/',
+    definition: 'Full of life or excitement; lively.',
+    rating: 4,
+    type: 'Positive'
+  },
+  {
+    word: 'Antagonism',
+    phonetic: '/ænˈtæɡənɪzəm/',
+    definition: 'Active hostility or opposition.',
+    rating: 2,
+    type: 'Negative'
+  },
+  {
+    word: 'Anxiousness',
+    phonetic: '/ˈæŋkʃəsnəs/',
+    definition: 'The state of being anxious or worried.',
+    rating: 2,
+    type: 'Negative'
+  },
+  {
+    word: 'Apathetic',
+    phonetic: '/ˈæpəθi/',
+    definition: 'Lack of interest, enthusiasm, or concern for feelings toward something or someone.',
+    rating: 2,
+    type: 'Negative'
+  },
+  {
+    word: 'Apathy',
+    phonetic: '/ˈæpəθi/',
+    definition: 'Lack of interest, enthusiasm, or concern.',
+    rating: 2,
+    type: 'Negative'
   }
 ];
 
