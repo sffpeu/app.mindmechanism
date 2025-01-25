@@ -39,7 +39,9 @@ export default function GlossaryPage() {
   const loadWords = async () => {
     setLoading(true)
     try {
+      console.log('Fetching words...')
       const allWords = await getAllWords()
+      console.log('Fetched words:', allWords.length)
       setWords(allWords)
     } catch (error) {
       console.error('Error loading words:', error)
@@ -50,7 +52,9 @@ export default function GlossaryPage() {
   const handleSearch = async () => {
     setLoading(true)
     try {
+      console.log('Searching words with query:', searchQuery)
       const results = await searchWords(searchQuery)
+      console.log('Search results:', results.length)
       setWords(results)
     } catch (error) {
       console.error('Error searching words:', error)
@@ -59,6 +63,7 @@ export default function GlossaryPage() {
   }
 
   const filteredWords = words.filter(word => {
+    console.log('Filtering words, current count:', words.length)
     if (selectedFilter === 'All') return true
     if (selectedFilter === 'Positive') return word.rating === '+'
     if (selectedFilter === 'Neutral') return word.rating === '~'
