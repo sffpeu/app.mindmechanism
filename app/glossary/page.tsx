@@ -155,10 +155,12 @@ export default function GlossaryPage() {
         {/* Word Grid/List */}
         <div>
           {isListView && (
-            <div className="mb-2 px-4 text-sm font-medium text-gray-500 dark:text-gray-400 grid grid-cols-[2fr,3fr,auto] gap-4 items-center">
+            <div className="mb-2 px-4 text-sm font-medium text-gray-500 dark:text-gray-400 grid grid-cols-[2fr,3fr,auto,auto,auto] gap-4 items-center">
               <div>Word</div>
               <div>Definition</div>
-              <div className="text-right pr-1">Rating</div>
+              <div className="text-center">Grade</div>
+              <div className="text-center">Rating</div>
+              <div className="text-center">Default</div>
             </div>
           )}
           <div className={`${isListView ? 'space-y-1' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'}`}>
@@ -171,7 +173,7 @@ export default function GlossaryPage() {
                 <div
                   key={word.id}
                   className={`${isListView ? 'py-2 px-4' : 'p-4'} rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all ${
-                    isListView ? 'grid grid-cols-[2fr,3fr,auto] gap-4 items-center' : ''
+                    isListView ? 'grid grid-cols-[2fr,3fr,auto,auto,auto] gap-4 items-center' : ''
                   }`}
                 >
                   {isListView ? (
@@ -181,28 +183,30 @@ export default function GlossaryPage() {
                         <span className="text-xs text-gray-500 dark:text-gray-400 block">{word.phonetic_spelling}</span>
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-1">{word.definition}</p>
-                      <div className="flex items-center justify-end space-x-1.5">
-                        <div className="flex items-center space-x-1">
-                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium
-                            ${word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
-                              word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
-                              'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'}`}
-                          >
-                            {word.grade}
-                          </div>
-                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium
-                            ${word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
-                              word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
-                              'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'}`}
-                          >
-                            {word.rating}
-                          </div>
+                      <div className="flex items-center justify-center">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium
+                          ${word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
+                            word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
+                            'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'}`}
+                        >
+                          {word.grade}
                         </div>
+                      </div>
+                      <div className="flex items-center justify-center">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium
+                          ${word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
+                            word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
+                            'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'}`}
+                        >
+                          {word.rating}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-center">
                         {word.version === 'Default' && (
                           <div className="group relative">
-                            <span className="text-xs font-medium text-gray-400 dark:text-gray-500 border border-gray-300 dark:border-gray-600 rounded-full w-5 h-5 flex items-center justify-center">
+                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-white dark:bg-black text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
                               D
-                            </span>
+                            </div>
                             <span className="absolute -bottom-8 right-0 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
                               Default
                             </span>
@@ -217,7 +221,7 @@ export default function GlossaryPage() {
                           <h3 className="text-lg font-medium text-black dark:text-white mb-0.5 truncate">{word.word}</h3>
                           <span className="text-sm text-gray-500 dark:text-gray-400 block">{word.phonetic_spelling}</span>
                         </div>
-                        <div className="flex items-center ml-4 space-x-1">
+                        <div className="flex items-center ml-4 space-x-1.5">
                           <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium
                             ${word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
                               word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
@@ -234,9 +238,9 @@ export default function GlossaryPage() {
                           </div>
                           {word.version === 'Default' && (
                             <div className="group relative">
-                              <span className="text-xs font-medium text-gray-400 dark:text-gray-500 border border-gray-300 dark:border-gray-600 rounded-full w-5 h-5 flex items-center justify-center">
+                              <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-white dark:bg-black text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
                                 D
-                              </span>
+                              </div>
                               <span className="absolute -bottom-8 right-0 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
                                 Default
                               </span>
