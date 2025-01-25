@@ -11,6 +11,7 @@ import styles from './page.module.css'
 const LayeredClockVisualization = () => {
   const [isHovered, setIsHovered] = useState(false)
   const [showExplore, setShowExplore] = useState(false)
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const router = useRouter()
 
   useEffect(() => {
@@ -22,25 +23,42 @@ const LayeredClockVisualization = () => {
     }
   }, [isHovered])
 
+  const handleMouseMove = (event: React.MouseEvent) => {
+    const { currentTarget, clientX, clientY } = event
+    const { left, top, width, height } = currentTarget.getBoundingClientRect()
+    const x = (clientX - left) / width - 0.5
+    const y = (clientY - top) / height - 0.5
+    setMousePosition({ x, y })
+  }
+
   return (
     <div className="relative">
       <div 
         className={`relative w-full max-w-2xl h-[500px] mx-auto my-8 ${styles.clockVisualization}`}
         onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseLeave={() => {
+          setIsHovered(false)
+          setMousePosition({ x: 0, y: 0 })
+        }}
+        onMouseMove={handleMouseMove}
       >
         <div className={styles.clockContainer}>
           {[...Array(9)].map((_, index) => (
             <motion.div
               key={index + 1}
               className={styles.clockLayer}
-              initial={{ opacity: 0.8, z: index * 30 }}
+              initial={{ opacity: 0.8, z: index * 60 }}
               animate={{ 
-                opacity: isHovered ? 0.8 : 0.8,
-                z: isHovered ? 0 : index * 30,
-                rotateZ: isHovered ? 0 : index * 5
+                opacity: 0.8,
+                z: isHovered ? 0 : index * 60,
+                rotateZ: isHovered ? mousePosition.x * 20 : index * 10,
+                rotateX: isHovered ? mousePosition.y * -20 : 0,
+                rotateY: isHovered ? mousePosition.x * 20 : 0
               }}
-              transition={{ duration: 0.3 }}
+              transition={{ 
+                duration: 0.3,
+                ease: "easeOut"
+              }}
             >
               <img
                 src={`/${9 - index}_small.svg`}

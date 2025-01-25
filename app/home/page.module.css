@@ -1,5 +1,5 @@
 .clockVisualization {
-  perspective: 2000px;
+  perspective: 3000px;
   transform-style: preserve-3d;
 }
 
@@ -9,11 +9,11 @@
   height: 100%;
   transform-style: preserve-3d;
   transition: transform 0.5s ease;
-  transform: rotateX(25deg) rotateY(25deg);
+  transform: rotateX(35deg) rotateY(35deg);
 }
 
 .clockContainer:hover {
-  transform: rotateX(0deg) rotateY(0deg);
+  transform: rotateX(15deg) rotateY(15deg);
 }
 
 .clockLayer {
@@ -24,7 +24,7 @@
   height: 100%;
   transform-style: preserve-3d;
   will-change: transform;
-  transition: all 0.5s ease;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .clockLayer img {
@@ -33,7 +33,7 @@
   object-fit: contain;
   pointer-events: none;
   user-select: none;
-  filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.1));
+  filter: drop-shadow(0 0 15px rgba(0, 0, 0, 0.15));
 }
 
 .clockLayer img path,
