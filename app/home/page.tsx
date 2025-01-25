@@ -7,6 +7,41 @@ import { Logo } from '@/components/Logo'
 import { Play, BookOpen, ClipboardList, ArrowRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
+import styles from './page.module.css'
+
+const LayeredClockVisualization = () => {
+  const [isHovered, setIsHovered] = useState(false)
+
+  return (
+    <div 
+      className={`relative w-full max-w-2xl h-[500px] mx-auto my-8 ${styles.clockVisualization}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className={styles.clockContainer}>
+        {[...Array(9)].map((_, index) => (
+          <motion.div
+            key={index + 1}
+            className={styles.clockLayer}
+            initial={{ opacity: 0, z: index * 20 }}
+            animate={{ 
+              opacity: 0.8,
+              z: index * (isHovered ? 30 : 20),
+              rotateZ: isHovered ? index * 5 : 0
+            }}
+            transition={{ duration: 0.3 }}
+          >
+            <img
+              src={`/clock/3/${index + 1}.svg`}
+              alt={`Clock Layer ${index + 1}`}
+              className="w-full h-full object-contain"
+            />
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export default function HomePage() {
   const { isDarkMode } = useTheme()
@@ -34,6 +69,9 @@ export default function HomePage() {
             Track your meditation journey with an innovative clock system, explore meditation focus words, and document your progress.
           </p>
         </div>
+
+        {/* Clock Visualization */}
+        <LayeredClockVisualization />
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
