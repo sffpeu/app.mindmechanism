@@ -1,102 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { Play, BookOpen, ClipboardList, ArrowRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import styles from './page.module.css'
-
-const LayeredClockVisualization = () => {
-  const [isHovered, setIsHovered] = useState(false)
-  const [showExplore, setShowExplore] = useState(false)
-  const router = useRouter()
-
-  useEffect(() => {
-    if (isHovered) {
-      const timer = setTimeout(() => setShowExplore(true), 300)
-      return () => clearTimeout(timer)
-    } else {
-      setShowExplore(false)
-    }
-  }, [isHovered])
-
-  // Calculate circular positions for each clock
-  const getCircularPosition = (index: number) => {
-    const radius = 45 // Percentage from center
-    const angle = (360 / 9) * index + 90 // Start from top, +90 to start from top
-    const x = radius * Math.cos((angle * Math.PI) / 180)
-    const y = radius * Math.sin((angle * Math.PI) / 180)
-    return { x, y }
-  }
-
-  return (
-    <div className="relative">
-      <div 
-        className={`relative w-full max-w-3xl h-[600px] mx-auto my-8 ${styles.clockVisualization}`}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <div className={styles.clockContainer}>
-          {[...Array(9)].map((_, index) => {
-            const circularPos = getCircularPosition(index)
-            return (
-              <motion.div
-                key={index + 1}
-                className={styles.clockLayer}
-                initial={{ 
-                  opacity: 0.8,
-                  x: 0,
-                  y: 0,
-                  scale: 1,
-                  zIndex: 9 - index
-                }}
-                animate={{ 
-                  opacity: 0.8,
-                  x: isHovered ? `${circularPos.x}%` : 0,
-                  y: isHovered ? `${circularPos.y}%` : 0,
-                  scale: isHovered ? 0.4 : 1,
-                  zIndex: 9 - index
-                }}
-                transition={{ 
-                  type: "spring",
-                  stiffness: 100,
-                  damping: 20,
-                  mass: 1
-                }}
-              >
-                <img
-                  src={`/${9 - index}_small.svg`}
-                  alt={`Clock Layer ${9 - index}`}
-                  className={`w-full h-full object-contain ${isHovered ? '[&_*]:stroke-[1.25]' : '[&_*]:stroke-[0.75]'} dark:[&_*]:stroke-[0.75] [&_*]:stroke-black dark:[&_*]:stroke-white`}
-                />
-              </motion.div>
-            )
-          })}
-
-          {/* Begin Circle */}
-          <motion.div 
-            className="absolute inset-0 flex items-center justify-center pointer-events-none"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ 
-              opacity: isHovered ? 1 : 0,
-              scale: isHovered ? 1 : 0.8
-            }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="relative">
-              <div className="absolute inset-0 rounded-full border-2 border-black dark:border-white animate-[ping_2s_ease-in-out_infinite]" />
-              <div className="rounded-full border-2 border-black dark:border-white px-8 py-4">
-                <span className="text-xl font-semibold text-black dark:text-white">Begin</span>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 export default function HomePage() {
   const { isDarkMode } = useTheme()
@@ -123,9 +32,6 @@ export default function HomePage() {
             Track your meditation journey with an innovative clock system, explore meditation focus words, and document your progress.
           </p>
         </div>
-
-        {/* Clock Visualization */}
-        <LayeredClockVisualization />
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
