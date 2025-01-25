@@ -6,7 +6,7 @@ export interface Word {
   type: 'Positive' | 'Neutral' | 'Negative';
 }
 
-// Hardcode the words for now (we can move this to Supabase later)
+// Hardcoded words data
 export const initialWords: Word[] = [
   {
     word: 'A cut above',
@@ -95,29 +95,11 @@ export const initialWords: Word[] = [
 ];
 
 export async function loadWords(): Promise<Word[]> {
-  // For now, return the hardcoded words
-  // Later, we can fetch from Supabase here
   return initialWords;
-}
-
-function determineRating(type: string): number {
-  const normalizedType = type.toLowerCase();
-  if (normalizedType.includes('positive')) return 5;
-  if (normalizedType.includes('neutral')) return 3;
-  if (normalizedType.includes('negative')) return 1;
-  return 3; // Default to neutral
-}
-
-function determineType(type: string): 'Positive' | 'Neutral' | 'Negative' {
-  const normalizedType = type.toLowerCase();
-  if (normalizedType.includes('positive')) return 'Positive';
-  if (normalizedType.includes('negative')) return 'Negative';
-  return 'Neutral';
 }
 
 // Function to get words for a specific clock
 export function getClockWords(clockId: number, words: Word[]): string[] {
-  // Filter words based on type and rating
   let filteredWords: Word[] = [];
   
   switch(clockId) {
