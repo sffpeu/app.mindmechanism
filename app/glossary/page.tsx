@@ -1,106 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { Logo } from '@/components/Logo'
 import { Search, Plus, ThumbsUp, ThumbsDown, Minus } from 'lucide-react'
 import DotNavigation from '@/components/DotNavigation'
-
-interface WordCard {
-  word: string;
-  phonetic: string;
-  definition: string;
-  rating: number;
-  type: 'Positive' | 'Neutral' | 'Negative';
-}
-
-const initialWords: WordCard[] = [
-  {
-    word: 'A cut above',
-    phonetic: '/ə kʌt əˈbʌv/',
-    definition: 'Significantly better than others.',
-    rating: 5,
-    type: 'Positive'
-  },
-  {
-    word: 'Absolute',
-    phonetic: '/æbsəluːt/',
-    definition: 'Not qualified or diminished in any way',
-    rating: 3,
-    type: 'Neutral'
-  },
-  {
-    word: 'Absurdity',
-    phonetic: '/əbsɜːrdɪti/',
-    definition: 'The quality or state of being ridiculous or wildly unreasonable.',
-    rating: 1,
-    type: 'Negative'
-  },
-  {
-    word: 'Abuse',
-    phonetic: '/əbjuːs/',
-    definition: 'The improper use of something.',
-    rating: 1,
-    type: 'Negative'
-  },
-  {
-    word: 'Abusiveness',
-    phonetic: '/əbjuːsɪvnəs/',
-    definition: 'The bad quality of being abusive towards someone or something.',
-    rating: 1,
-    type: 'Negative'
-  },
-  {
-    word: 'Acceptance',
-    phonetic: '/əkseptəns/',
-    definition: 'The action of consenting to receive or undertake something offered.',
-    rating: 5,
-    type: 'Positive'
-  },
-  {
-    word: 'Accurate',
-    phonetic: '/ækjʊrət/',
-    definition: 'Correct in all details',
-    rating: 3,
-    type: 'Neutral'
-  },
-  {
-    word: 'Achievement',
-    phonetic: '/ətʃiːvmənt/',
-    definition: 'A successful result gained through effort.',
-    rating: 5,
-    type: 'Positive'
-  },
-  {
-    word: 'Adaptability',
-    phonetic: '/əˌdæptəˈbɪlɪti/',
-    definition: 'The quality of being able to adjust to new conditions.',
-    rating: 5,
-    type: 'Positive'
-  },
-  {
-    word: 'Adapting',
-    phonetic: '/əˈdæptɪŋ/',
-    definition: 'The act of making something suitable for a new use or purpose.',
-    rating: 5,
-    type: 'Positive'
-  },
-  {
-    word: 'Adequacy',
-    phonetic: '/ædɪkwəsi/',
-    definition: 'The state of being sufficient for the purpose concerned.',
-    rating: 5,
-    type: 'Positive'
-  },
-  {
-    word: 'Advantage',
-    phonetic: '/ədvæntɪdʒ/',
-    definition: 'A condition or circumstance that puts one in a favorable or superior position.',
-    rating: 5,
-    type: 'Positive'
-  }
-]
+import { Word, loadWords } from '@/lib/words'
 
 export default function GlossaryPage() {
   const { isDarkMode } = useTheme()
@@ -109,10 +15,20 @@ export default function GlossaryPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedFilter, setSelectedFilter] = useState('All')
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
+  const [words, setWords] = useState<Word[]>([])
 
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
 
-  const filteredWords = initialWords.filter(word => {
+  useEffect(() => {
+    // Load words when component mounts
+    async function fetchWords() {
+      const loadedWords = await loadWords();
+      setWords(loadedWords);
+    }
+    fetchWords();
+  }, []);
+
+  const filteredWords = words.filter(word => {
     const matchesSearch = word.word.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesFilter = selectedFilter === 'All' || word.type === selectedFilter
     const matchesLetter = !selectedLetter || word.word.charAt(0).toUpperCase() === selectedLetter

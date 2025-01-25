@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { ClockIcon, Calendar, RotateCw, Timer, Compass, ChevronUp, ChevronDown, Repeat, Eye, EyeOff, Settings, Play, SkipForward, Repeat as RepeatIcon } from 'lucide-react';
 import { ClockSettings } from '../types/ClockSettings';
 import { motion } from 'framer-motion';
+import { Word, loadWords, getClockWords } from '@/lib/words';
 
 const dotColors = [
   'bg-[#fd290a]', // 1. Red
@@ -19,19 +20,6 @@ const dotColors = [
   'bg-[#ee5fa7]', // 8. Pink
   'bg-[#56c1ff]', // 9. Light Blue
 ];
-
-// Define word sets for each clock
-const clockWords: Record<number, string[]> = {
-  0: ['Achievement', 'Willingness', 'Vitality', 'Boldness', 'Insight', 'Command', 'Reflection', 'Illusion'],
-  1: ['Union', 'Sturdiness', 'Insightful', 'Modesty', 'Surprise', 'Joyless'],
-  2: ['Rampant', 'Causing', 'Salvage', 'Roaring', 'Pertentions', 'Selatiousness', 'Aim', 'Rebirth', 'Exuberance', 'Urge'],
-  3: ['Balancing', 'Submerging', 'Attracting', 'Curiosity', 'Colliding', 'Concern', 'Fate', 'Overbearing', 'Life force', 'Protecting', 'Triumphing', 'Preaning'],
-  4: ['Resonating', 'immersing', 'Righteous', 'Compulsion', 'Yearning', 'Adapting', 'Fostering', 'Flaunting', 'Advocating', 'Beguiling', 'Crippling', 'Repairing', 'Transforming', 'Suspension', 'Replanting', 'Reprocessing'],
-  5: ['Child Like', 'Unveiling', 'Flight', 'Premonition'],
-  6: ['Seeking', 'Idealism', 'Surrendering', 'Bliss', 'Spontinaity', 'Discourse', 'Empathy', 'Righteousness', 'Prayer', 'Majisty', 'Praise', 'Libation', 'Atonement', 'Ceremony', 'Temperance', 'Release'],
-  7: ['Infinity', 'Weaving love', 'Vibrating', 'Core centering', 'Purification', 'Stability', 'Kindness', 'Transformation', 'Self love', 'Pure being', 'Limitlessness', 'Contingency', 'Sensual', 'Effort', 'Innovating', 'Heritage'],
-  8: ['Infinity', 'Weaving love', 'Vibrating', 'Core centering', 'Purification', 'Stability', 'Kindness', 'Transformation', 'Self love', 'Pure being', 'Limitlessness', 'Contingency', 'Sensual', 'Effort', 'Innovating', 'Heritage'],
-};
 
 // Update satellites count for each clock
 export const clockSatellites: Record<number, number> = {
@@ -175,6 +163,17 @@ export default function Clock({
   const lastRotation = useRef(rotation);
   const [showInfoCards, setShowInfoCards] = useState(true);
   const [displayState, setDisplayState] = useState<DisplayState>('info');
+  const [words, setWords] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Load words when component mounts
+    async function fetchWords() {
+      const loadedWords = await loadWords();
+      const clockSpecificWords = getClockWords(id, loadedWords);
+      setWords(clockSpecificWords);
+    }
+    fetchWords();
+  }, [id]);
 
   // Handle image error
   const handleImageError = () => {
@@ -897,14 +896,12 @@ export default function Clock({
                 <div className="max-h-[120px] overflow-y-auto">
                   <div className="flex flex-wrap gap-2 justify-center px-4">
                     {Array.from({ length: focusNodes }).map((_, index) => {
-                      const numericId = Number(id);
-                      const clockWordArray = clockWords[numericId] || [];
-                      const wordIndex = index % clockWordArray.length;
-                      const word = clockWordArray[wordIndex];
+                      const wordIndex = index % words.length;
+                      const word = words[wordIndex] || '';
                       return (
                         <WordCard 
                           key={index} 
-                          word={word || ''} 
+                          word={word} 
                         />
                       );
                     })}
