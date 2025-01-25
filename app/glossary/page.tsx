@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { Logo } from '@/components/Logo'
-import { Search, Plus } from 'lucide-react'
+import { Search, Plus, ThumbsUp, ThumbsDown, Minus, Tag } from 'lucide-react'
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords, searchWords } from '@/lib/glossary'
 
@@ -102,6 +102,9 @@ export default function GlossaryPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400 dark:text-gray-500" />
+              <span className="absolute right-3 top-2.5 text-sm text-gray-400 dark:text-gray-500">
+                {filteredWords.length} words
+              </span>
             </div>
           </div>
           
@@ -155,21 +158,39 @@ export default function GlossaryPage() {
                 className="p-4 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
               >
                 <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-lg font-medium text-black dark:text-white">{word.word}</h3>
+                  <div>
+                    <h3 className="text-lg font-medium text-black dark:text-white">{word.word}</h3>
+                    {word.version === 'Default' && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 mt-1">
+                        <Tag className="w-3 h-3 mr-1" />
+                        Default
+                      </span>
+                    )}
+                  </div>
                   <span className="text-sm text-gray-500 dark:text-gray-400">{word.phonetic_spelling}</span>
                 </div>
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">{word.definition}</p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">{word.definition}</p>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Grade: {word.grade}</span>
-                  <span className={`text-sm ${
-                    word.rating === '+' ? 'text-green-500' :
-                    word.rating === '-' ? 'text-red-500' :
-                    'text-yellow-500'
-                  }`}>
-                    {word.rating === '+' ? 'Positive' :
-                     word.rating === '-' ? 'Negative' :
-                     'Neutral'}
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300">
+                    Grade {word.grade}
                   </span>
+                  <div className="flex items-center space-x-1">
+                    {word.rating === '+' && (
+                      <div className="w-8 h-8 rounded-full bg-green-50 dark:bg-green-900/20 flex items-center justify-center">
+                        <ThumbsUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+                      </div>
+                    )}
+                    {word.rating === '-' && (
+                      <div className="w-8 h-8 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
+                        <ThumbsDown className="w-4 h-4 text-red-600 dark:text-red-400" />
+                      </div>
+                    )}
+                    {word.rating === '~' && (
+                      <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                        <Minus className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))
