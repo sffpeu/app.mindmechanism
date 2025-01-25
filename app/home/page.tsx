@@ -11,7 +11,6 @@ import styles from './page.module.css'
 const LayeredClockVisualization = () => {
   const [isHovered, setIsHovered] = useState(false)
   const [showExplore, setShowExplore] = useState(false)
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const router = useRouter()
 
   useEffect(() => {
@@ -23,12 +22,13 @@ const LayeredClockVisualization = () => {
     }
   }, [isHovered])
 
-  const handleMouseMove = (event: React.MouseEvent) => {
-    const { currentTarget, clientX, clientY } = event
-    const { left, top, width, height } = currentTarget.getBoundingClientRect()
-    const x = (clientX - left) / width - 0.5
-    const y = (clientY - top) / height - 0.5
-    setMousePosition({ x, y })
+  // Calculate grid positions for each clock
+  const getGridPosition = (index: number) => {
+    const row = Math.floor(index / 3)
+    const col = index % 3
+    const x = col * 33 - 33 // -33 to center the grid
+    const y = row * 33 - 33
+    return { x, y }
   }
 
   return (
@@ -36,37 +36,44 @@ const LayeredClockVisualization = () => {
       <div 
         className={`relative w-full max-w-2xl h-[500px] mx-auto my-8 ${styles.clockVisualization}`}
         onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => {
-          setIsHovered(false)
-          setMousePosition({ x: 0, y: 0 })
-        }}
-        onMouseMove={handleMouseMove}
+        onMouseLeave={() => setIsHovered(false)}
       >
         <div className={styles.clockContainer}>
-          {[...Array(9)].map((_, index) => (
-            <motion.div
-              key={index + 1}
-              className={styles.clockLayer}
-              initial={{ opacity: 0.8, z: index * 60 }}
-              animate={{ 
-                opacity: 0.8,
-                z: isHovered ? 0 : index * 60,
-                rotateZ: isHovered ? mousePosition.x * 20 : index * 10,
-                rotateX: isHovered ? mousePosition.y * -20 : 0,
-                rotateY: isHovered ? mousePosition.x * 20 : 0
-              }}
-              transition={{ 
-                duration: 0.3,
-                ease: "easeOut"
-              }}
-            >
-              <img
-                src={`/${9 - index}_small.svg`}
-                alt={`Clock Layer ${9 - index}`}
-                className="w-full h-full object-contain [&_*]:stroke-[0.75] dark:[&_*]:stroke-[0.75] [&_*]:stroke-black dark:[&_*]:stroke-white"
-              />
-            </motion.div>
-          ))}
+          {[...Array(9)].map((_, index) => {
+            const gridPos = getGridPosition(index)
+            return (
+              <motion.div
+                key={index + 1}
+                className={styles.clockLayer}
+                initial={{ 
+                  opacity: 0.8,
+                  x: 0,
+                  y: 0,
+                  scale: 1,
+                  zIndex: 9 - index
+                }}
+                animate={{ 
+                  opacity: 0.8,
+                  x: isHovered ? `${gridPos.x}%` : 0,
+                  y: isHovered ? `${gridPos.y}%` : 0,
+                  scale: isHovered ? 0.5 : 1,
+                  zIndex: 9 - index
+                }}
+                transition={{ 
+                  type: "spring",
+                  stiffness: 100,
+                  damping: 20,
+                  mass: 1
+                }}
+              >
+                <img
+                  src={`/${9 - index}_small.svg`}
+                  alt={`Clock Layer ${9 - index}`}
+                  className="w-full h-full object-contain [&_*]:stroke-[0.75] dark:[&_*]:stroke-[0.75] [&_*]:stroke-black dark:[&_*]:stroke-white"
+                />
+              </motion.div>
+            )
+          })}
         </div>
       </div>
       
