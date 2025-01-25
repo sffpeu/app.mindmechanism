@@ -5,6 +5,7 @@ import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { Logo } from '@/components/Logo'
 import { Search, Plus, ThumbsUp, ThumbsDown, Minus } from 'lucide-react'
+import DotNavigation from '@/components/DotNavigation'
 import { Word, loadWords } from '@/lib/words'
 
 export default function GlossaryPage() {
@@ -37,6 +38,12 @@ export default function GlossaryPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95">
       <Logo />
+      {showElements && (
+        <DotNavigation
+          activeDot={1}
+          isSmallMultiView={false}
+        />
+      )}
       <Menu
         showElements={showElements}
         onToggleShow={() => setShowElements(!showElements)}
@@ -107,7 +114,11 @@ export default function GlossaryPage() {
           {filteredWords.map((word, index) => (
             <div
               key={index}
-              className="p-4 rounded-lg bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
+              className={`p-4 rounded-lg bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border ${
+                word.type === 'default' 
+                  ? 'border-blue-200 dark:border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)] dark:shadow-[0_0_15px_rgba(59,130,246,0.07)]' 
+                  : 'border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20'
+              } transition-all`}
             >
               <div className="flex justify-between items-start mb-2">
                 <div>
