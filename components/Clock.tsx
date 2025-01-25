@@ -253,14 +253,11 @@ export default function Clock({
   }, [startDateTime, rotationTime, startingDegree, rotationDirection, isTransitioning]);
 
   const renderFocusNodes = (clockRotation: number, clockFocusNodes: number, clockStartingDegree: number, clockId: number) => {
-    const numericId = Number(clockId);
-    const clockWordArray = clockWords[numericId] || [];
-
     // If no words are available for this clock, return null
-    if (clockWordArray.length === 0) return null;
+    if (words.length === 0) return null;
 
     // Add 30 degrees to starting angle for Clock 9 and Clock 2
-    const adjustedStartingDegree = (numericId === 8 || numericId === 1) ? clockStartingDegree + 30 : clockStartingDegree;
+    const adjustedStartingDegree = (clockId === 8 || clockId === 1) ? clockStartingDegree + 30 : clockStartingDegree;
 
     return (
       <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
@@ -272,8 +269,8 @@ export default function Clock({
           const y = 50 + radius * Math.sin(radians);
 
           // Get word for this node - cycle through available words
-          const wordIndex = index % clockWordArray.length;
-          const word = clockWordArray[wordIndex];
+          const wordIndex = index % words.length;
+          const word = words[wordIndex];
 
           return (
             <motion.div
