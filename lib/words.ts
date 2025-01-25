@@ -8,13 +8,19 @@ export interface Word {
 
 import { parseCSV } from './parseWords';
 
+let cachedWords: Word[] | null = null;
+
 export async function loadWords(): Promise<Word[]> {
-  return parseCSV();
+  if (!cachedWords) {
+    cachedWords = await parseCSV();
+  }
+  return cachedWords;
 }
 
 // Function to get words for a specific clock
-export function getClockWords(clockId: string): Word[] {
-  return initialWords.filter(word => {
+export async function getClockWords(clockId: string): Promise<Word[]> {
+  const words = await loadWords();
+  return words.filter((word: Word) => {
     const rating = Number(word.rating);
     if (clockId === "clock1") {
       return rating === 5;
@@ -27,6 +33,6 @@ export function getClockWords(clockId: string): Word[] {
   });
 }
 
-export function getAllWords(): Word[] {
-  return initialWords;
+export async function getAllWords(): Promise<Word[]> {
+  return loadWords();
 } 

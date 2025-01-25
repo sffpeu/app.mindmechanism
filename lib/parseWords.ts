@@ -1,10 +1,8 @@
-import fs from 'fs';
-import path from 'path';
 import { Word } from './words';
 
-export function parseCSV(): Word[] {
-  const csvPath = path.join(process.cwd(), 'public', '1M3.Glossary.csv');
-  const csvContent = fs.readFileSync(csvPath, 'utf-8');
+export async function parseCSV(): Promise<Word[]> {
+  const response = await fetch('/1M3.Glossary.csv');
+  const csvContent = await response.text();
   const lines = csvContent.split('\n');
   
   // Skip header lines
