@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { Logo } from '@/components/Logo'
-import { Clock } from '@/components/Clock'
+import Clock from '@/components/Clock'
 
 export default function DashboardPage() {
   const { isDarkMode } = useTheme()
