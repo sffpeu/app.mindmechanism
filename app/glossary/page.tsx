@@ -204,11 +204,11 @@ export default function GlossaryPage() {
                       <div className="flex items-center justify-center">
                         {word.version === 'Default' && (
                           <div className="group relative">
-                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-white dark:bg-black text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
+                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
                               D
                             </div>
                             <span className="absolute -bottom-8 right-0 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                              Default
+                              Default Word
                             </span>
                           </div>
                         )}
@@ -238,11 +238,11 @@ export default function GlossaryPage() {
                           </div>
                           {word.version === 'Default' && (
                             <div className="group relative">
-                              <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-white dark:bg-black text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
+                              <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
                                 D
                               </div>
                               <span className="absolute -bottom-8 right-0 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                                Default
+                                Default Word
                               </span>
                             </div>
                           )}
