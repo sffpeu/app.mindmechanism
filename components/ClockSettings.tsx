@@ -32,7 +32,7 @@ const defaultEmotionalStates = [
 ];
 
 type RotationDirection = 'clockwise' | 'counterclockwise';
-type SettingsStep = 'main' | 'words' | 'preview';
+type SettingsStep = 'main' | 'preview';
 
 interface ClockSettingsProps {
   settings: ClockSettingsType;
@@ -219,7 +219,7 @@ export function ClockSettings({ settings, onSave, onCancel }: ClockSettingsProps
   const [imageScale, setImageScale] = useState((localSettings.imageScale || defaultImageScale).toString());
   const [imageX, setImageX] = useState(localSettings.imageX?.toString() || "0");
   const [imageY, setImageY] = useState(localSettings.imageY?.toString() || "0");
-  const [customWords, setCustomWords] = useState<string[]>(localSettings.customWords || [...defaultEmotionalStates]);
+  const [customWords, setCustomWords] = useState<string[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Handle click outside
@@ -267,7 +267,6 @@ export function ClockSettings({ settings, onSave, onCancel }: ClockSettingsProps
       imageScale: parseFloat(imageScale),
       imageX: parseFloat(imageX),
       imageY: parseFloat(imageY),
-      customWords
     });
   };
 

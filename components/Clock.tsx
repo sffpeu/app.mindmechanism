@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { ClockIcon, Calendar, RotateCw, Timer, Compass, ChevronUp, ChevronDown, Repeat, Eye, EyeOff, Settings, Play, SkipForward, Repeat as RepeatIcon } from 'lucide-react';
 import { ClockSettings } from '../types/ClockSettings';
 import { motion } from 'framer-motion';
-import { Word, loadWords, getClockWords } from '@/lib/words';
 
 const dotColors = [
   'bg-[#fd290a]', // 1. Red
@@ -137,7 +136,6 @@ export default function Clock({
   imageScale = 1,
   imageX = 0,
   imageY = 0,
-  customWords,
   isMultiView = false,
   isMultiView2 = false,
   allClocks = [], 
@@ -163,17 +161,6 @@ export default function Clock({
   const lastRotation = useRef(rotation);
   const [showInfoCards, setShowInfoCards] = useState(true);
   const [displayState, setDisplayState] = useState<DisplayState>('info');
-  const [words, setWords] = useState<string[]>([]);
-
-  useEffect(() => {
-    // Load words when component mounts
-    async function fetchWords() {
-      const loadedWords = await loadWords();
-      const clockSpecificWords = await getClockWords();
-      setWords(clockSpecificWords.map(word => word.word));
-    }
-    fetchWords();
-  }, [id]);
 
   // Handle image error
   const handleImageError = () => {
@@ -253,24 +240,14 @@ export default function Clock({
   }, [startDateTime, rotationTime, startingDegree, rotationDirection, isTransitioning]);
 
   const renderFocusNodes = (clockRotation: number, clockFocusNodes: number, clockStartingDegree: number, clockId: number) => {
-    // If no words are available for this clock, return null
-    if (words.length === 0) return null;
-
-    // Add 30 degrees to starting angle for Clock 9 and Clock 2
-    const adjustedStartingDegree = (clockId === 8 || clockId === 1) ? clockStartingDegree + 30 : clockStartingDegree;
-
     return (
       <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
         {Array.from({ length: Math.max(0, clockFocusNodes || 0) }).map((_, index) => {
-          const angle = ((360 / Math.max(1, clockFocusNodes || 1)) * index + adjustedStartingDegree) % 360;
+          const angle = ((360 / Math.max(1, clockFocusNodes || 1)) * index + clockStartingDegree) % 360;
           const radians = angle * (Math.PI / 180);
           const radius = isMultiView ? 53 : 55;
           const x = 50 + radius * Math.cos(radians);
           const y = 50 + radius * Math.sin(radians);
-
-          // Get word for this node - cycle through available words
-          const wordIndex = index % words.length;
-          const word = words[wordIndex];
 
           return (
             <motion.div
@@ -501,12 +478,14 @@ export default function Clock({
     );
   };
 
-  function WordCard({ word }: { word: string }) {
+  function InfoCard({ icon, title, value }: { icon: React.ReactNode; title: string; value: string }) {
     return (
-      <Card className="bg-white/80 dark:bg-black/80 backdrop-blur-sm min-w-fit">
-        <CardContent className="flex items-center p-2 h-[52px] justify-center">
+      <Card className="bg-white/80 dark:bg-black/80 backdrop-blur-sm">
+        <CardContent className="flex items-center p-2">
+          <div className="mr-2 text-gray-500 dark:text-gray-400 flex-shrink-0">{icon}</div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-center px-3 whitespace-nowrap dark:text-white">{word}</p>
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 truncate">{title}</p>
+            <p className="text-sm font-semibold truncate dark:text-white">{value}</p>
           </div>
         </CardContent>
       </Card>

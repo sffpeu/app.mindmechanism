@@ -16,8 +16,10 @@ export interface ClockSettings {
   imageScale: number;
   imageX?: number;
   imageY?: number;
-  satellites?: SatelliteSettings[];
-  customWords?: string[];
+  satellites?: Array<{
+    rotationTime: number;
+    rotationDirection: 'clockwise' | 'counterclockwise';
+  }>;
 }
 
 export interface ClockProps extends Omit<ClockSettings, 'id'> {
