@@ -153,54 +153,90 @@ export default function GlossaryPage() {
         </div>
 
         {/* Word Grid/List */}
-        <div className={`${isListView ? 'space-y-2' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'}`}>
-          {loading ? (
-            <div className="col-span-full text-center py-8 text-gray-500">Loading words...</div>
-          ) : filteredWords.length === 0 ? (
-            <div className="col-span-full text-center py-8 text-gray-500">No words found</div>
-          ) : (
-            filteredWords.map((word) => (
-              <div
-                key={word.id}
-                className={`${isListView ? 'p-3' : 'p-4'} rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all`}
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-medium text-black dark:text-white mb-0.5 truncate">{word.word}</h3>
-                    <span className="text-sm text-gray-500 dark:text-gray-400 block">{word.phonetic_spelling}</span>
-                  </div>
-                  <div className="flex flex-col items-end ml-4">
-                    <div className="flex items-center space-x-1.5">
-                      <span className="text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center
-                        ${word.rating === '+' ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20' :
-                          word.rating === '-' ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20' :
-                          'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'}"
-                      >
-                        {word.grade}
-                      </span>
-                      <div className="w-7 h-7 rounded-full flex items-center justify-center
-                        ${word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20' :
-                          word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20' :
-                          'bg-blue-50 dark:bg-blue-900/20'}"
-                      >
-                        {word.rating === '+' && <ThumbsUp className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />}
-                        {word.rating === '-' && <ThumbsDown className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />}
-                        {word.rating === '~' && <span className="text-lg leading-none text-blue-600 dark:text-blue-400 font-medium" style={{ marginTop: '-1px' }}>~</span>}
-                      </div>
-                    </div>
-                    {word.version === 'Default' && (
-                      <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400 bg-transparent border border-gray-200 dark:border-gray-700 rounded-full px-1.5 py-px mt-1">
-                        default
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <p className={`text-gray-600 dark:text-gray-400 text-sm ${isListView ? 'mt-1' : 'mt-2'} line-clamp-2`}>
-                  {word.definition}
-                </p>
-              </div>
-            ))
+        <div>
+          {isListView && (
+            <div className="mb-2 px-4 text-sm font-medium text-gray-500 dark:text-gray-400 grid grid-cols-[2fr,3fr,auto] gap-4 items-center">
+              <div>Word</div>
+              <div>Definition</div>
+              <div className="text-right pr-1">Rating</div>
+            </div>
           )}
+          <div className={`${isListView ? 'space-y-1' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'}`}>
+            {loading ? (
+              <div className="col-span-full text-center py-8 text-gray-500">Loading words...</div>
+            ) : filteredWords.length === 0 ? (
+              <div className="col-span-full text-center py-8 text-gray-500">No words found</div>
+            ) : (
+              filteredWords.map((word) => (
+                <div
+                  key={word.id}
+                  className={`${isListView ? 'py-2 px-4' : 'p-4'} rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all ${
+                    isListView ? 'grid grid-cols-[2fr,3fr,auto] gap-4 items-center' : ''
+                  }`}
+                >
+                  {isListView ? (
+                    <>
+                      <div className="min-w-0">
+                        <h3 className="text-base font-medium text-black dark:text-white truncate">{word.word}</h3>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 block">{word.phonetic_spelling}</span>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-1">{word.definition}</p>
+                      <div className="flex items-center justify-end space-x-1.5">
+                        <div className="flex items-center space-x-1">
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium
+                            ${word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
+                              word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
+                              'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'}`}
+                          >
+                            {word.grade}
+                          </div>
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium
+                            ${word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
+                              word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
+                              'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'}`}
+                          >
+                            {word.rating}
+                          </div>
+                        </div>
+                        {word.version === 'Default' && (
+                          <span className="text-[10px] font-medium text-gray-400 dark:text-gray-500">d</span>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg font-medium text-black dark:text-white mb-0.5 truncate">{word.word}</h3>
+                          <span className="text-sm text-gray-500 dark:text-gray-400 block">{word.phonetic_spelling}</span>
+                        </div>
+                        <div className="flex items-center ml-4 space-x-1">
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium
+                            ${word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
+                              word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
+                              'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'}`}
+                          >
+                            {word.grade}
+                          </div>
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium
+                            ${word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
+                              word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
+                              'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'}`}
+                          >
+                            {word.rating}
+                          </div>
+                          {word.version === 'Default' && (
+                            <span className="text-[10px] font-medium text-gray-400 dark:text-gray-500">d</span>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-2">{word.definition}</p>
+                    </>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>
