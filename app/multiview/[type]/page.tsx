@@ -38,7 +38,6 @@ export default function MultiViewPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-black/95">
-      <Logo />
       {showElements && (
         <DotNavigation
           activeDot={9}
