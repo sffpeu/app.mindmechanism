@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
-import { Logo } from '@/components/Logo'
 import Clock from '@/components/Clock'
 import { Home } from 'lucide-react'
 import { useRouter } from 'next/navigation'

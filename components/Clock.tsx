@@ -786,8 +786,6 @@ export default function Clock({
 
   return (
     <div className="flex flex-col justify-between min-h-screen w-full dark:bg-black">
-      <div className="fixed top-4 left-4 z-10 font-bold text-2xl dark:text-white">M</div>
-      
       <div className="flex-grow flex items-center justify-center">
         {renderSingleClock()}
       </div>
