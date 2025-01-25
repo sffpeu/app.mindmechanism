@@ -11,34 +11,64 @@ import styles from './page.module.css'
 
 const LayeredClockVisualization = () => {
   const [isHovered, setIsHovered] = useState(false)
+  const [showExplore, setShowExplore] = useState(false)
+  const router = useRouter()
+
+  useEffect(() => {
+    if (isHovered) {
+      const timer = setTimeout(() => setShowExplore(true), 300)
+      return () => clearTimeout(timer)
+    } else {
+      setShowExplore(false)
+    }
+  }, [isHovered])
 
   return (
-    <div 
-      className={`relative w-full max-w-2xl h-[500px] mx-auto my-8 ${styles.clockVisualization}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <div className={styles.clockContainer}>
-        {[...Array(9)].map((_, index) => (
-          <motion.div
-            key={index + 1}
-            className={styles.clockLayer}
-            initial={{ opacity: 0, z: index * 20 }}
-            animate={{ 
-              opacity: 0.8,
-              z: index * (isHovered ? 30 : 20),
-              rotateZ: isHovered ? index * 5 : 0
-            }}
-            transition={{ duration: 0.3 }}
-          >
-            <img
-              src={`/clock/3/${index + 1}.svg`}
-              alt={`Clock Layer ${index + 1}`}
-              className="w-full h-full object-contain"
-            />
-          </motion.div>
-        ))}
+    <div className="relative">
+      <div 
+        className={`relative w-full max-w-2xl h-[500px] mx-auto my-8 ${styles.clockVisualization}`}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <div className={styles.clockContainer}>
+          {[...Array(9)].map((_, index) => (
+            <motion.div
+              key={index + 1}
+              className={styles.clockLayer}
+              initial={{ opacity: 0.8, z: index * 30 }}
+              animate={{ 
+                opacity: isHovered ? 0.8 : 0.8,
+                z: isHovered ? 0 : index * 30,
+                rotateZ: isHovered ? 0 : index * 5
+              }}
+              transition={{ duration: 0.3 }}
+            >
+              <img
+                src={`/${9 - index}.svg`}
+                alt={`Clock Layer ${9 - index}`}
+                className="w-full h-full object-contain"
+              />
+            </motion.div>
+          ))}
+        </div>
       </div>
+      
+      <motion.div 
+        className="absolute left-1/2 bottom-4 transform -translate-x-1/2"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ 
+          opacity: showExplore ? 1 : 0,
+          y: showExplore ? 0 : 20
+        }}
+        transition={{ duration: 0.2 }}
+      >
+        <button
+          onClick={() => router.push('/')}
+          className="px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-full font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
+        >
+          Explore Clock
+        </button>
+      </motion.div>
     </div>
   )
 }
