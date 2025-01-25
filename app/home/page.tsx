@@ -22,25 +22,25 @@ const LayeredClockVisualization = () => {
     }
   }, [isHovered])
 
-  // Calculate grid positions for each clock
-  const getGridPosition = (index: number) => {
-    const row = Math.floor(index / 3)
-    const col = index % 3
-    const x = col * 33 - 33 // -33 to center the grid
-    const y = row * 33 - 33
+  // Calculate circular positions for each clock
+  const getCircularPosition = (index: number) => {
+    const radius = 45 // Percentage from center
+    const angle = (360 / 9) * index + 90 // Start from top, +90 to start from top
+    const x = radius * Math.cos((angle * Math.PI) / 180)
+    const y = radius * Math.sin((angle * Math.PI) / 180)
     return { x, y }
   }
 
   return (
     <div className="relative">
       <div 
-        className={`relative w-full max-w-2xl h-[500px] mx-auto my-8 ${styles.clockVisualization}`}
+        className={`relative w-full max-w-3xl h-[600px] mx-auto my-8 ${styles.clockVisualization}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         <div className={styles.clockContainer}>
           {[...Array(9)].map((_, index) => {
-            const gridPos = getGridPosition(index)
+            const circularPos = getCircularPosition(index)
             return (
               <motion.div
                 key={index + 1}
@@ -54,9 +54,9 @@ const LayeredClockVisualization = () => {
                 }}
                 animate={{ 
                   opacity: 0.8,
-                  x: isHovered ? `${gridPos.x}%` : 0,
-                  y: isHovered ? `${gridPos.y}%` : 0,
-                  scale: isHovered ? 0.5 : 1,
+                  x: isHovered ? `${circularPos.x}%` : 0,
+                  y: isHovered ? `${circularPos.y}%` : 0,
+                  scale: isHovered ? 0.4 : 1,
                   zIndex: 9 - index
                 }}
                 transition={{ 
@@ -69,30 +69,31 @@ const LayeredClockVisualization = () => {
                 <img
                   src={`/${9 - index}_small.svg`}
                   alt={`Clock Layer ${9 - index}`}
-                  className="w-full h-full object-contain [&_*]:stroke-[0.75] dark:[&_*]:stroke-[0.75] [&_*]:stroke-black dark:[&_*]:stroke-white"
+                  className={`w-full h-full object-contain ${isHovered ? '[&_*]:stroke-[1.25]' : '[&_*]:stroke-[0.75]'} dark:[&_*]:stroke-[0.75] [&_*]:stroke-black dark:[&_*]:stroke-white`}
                 />
               </motion.div>
             )
           })}
+
+          {/* Begin Circle */}
+          <motion.div 
+            className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ 
+              opacity: isHovered ? 1 : 0,
+              scale: isHovered ? 1 : 0.8
+            }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="relative">
+              <div className="absolute inset-0 rounded-full border-2 border-black dark:border-white animate-[ping_2s_ease-in-out_infinite]" />
+              <div className="rounded-full border-2 border-black dark:border-white px-8 py-4">
+                <span className="text-xl font-semibold text-black dark:text-white">Begin</span>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </div>
-      
-      <motion.div 
-        className="absolute left-1/2 bottom-4 transform -translate-x-1/2"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ 
-          opacity: showExplore ? 1 : 0,
-          y: showExplore ? 0 : 20
-        }}
-        transition={{ duration: 0.2 }}
-      >
-        <button
-          onClick={() => router.push('/')}
-          className="px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-full font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
-        >
-          Explore Clock
-        </button>
-      </motion.div>
     </div>
   )
 }

@@ -13,12 +13,13 @@
 
 .clockLayer {
   position: absolute;
-  width: 80%;
-  height: 80%;
+  width: 90%;
+  height: 90%;
   display: flex;
   align-items: center;
   justify-content: center;
   will-change: transform;
+  transition: all 0.3s ease;
 }
 
 .clockLayer img {
@@ -28,6 +29,7 @@
   pointer-events: none;
   user-select: none;
   filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.1));
+  transition: all 0.3s ease;
 }
 
 .clockLayer img path,
@@ -36,4 +38,19 @@
 .clockLayer img polygon {
   fill: none !important;
   stroke: currentColor;
+}
+
+@keyframes ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.25;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
 } 
