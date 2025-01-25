@@ -3,11 +3,6 @@
   transform-style: preserve-3d;
 }
 
-/* Global SVG styles */
-:global(img[src$=".svg"]) {
-  mix-blend-mode: multiply;
-}
-
 .clockContainer {
   position: relative;
   width: 100%;
