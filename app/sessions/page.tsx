@@ -231,15 +231,24 @@ export default function SessionsPage() {
             {clockData.map((clock, i) => (
               <Card 
                 key={i}
-                className="group p-4 bg-white/90 hover:bg-white dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
+                className={`group p-4 bg-white/90 hover:bg-white dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all hover:shadow-lg hover:shadow-${clock.color.split('-')[1]}/10`}
               >
-                <div className="aspect-square relative mb-4 overflow-hidden rounded-lg">
+                <div className="aspect-square relative mb-4 overflow-hidden rounded-lg bg-gray-50 dark:bg-black/40">
+                  {/* Background Pattern */}
+                  <div className="absolute inset-0 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <div className="absolute inset-4 border-2 border-dashed rounded-full border-current" />
+                    <div className="absolute inset-8 border-2 border-dashed rounded-full border-current rotate-45" />
+                    <div className="absolute inset-12 border-2 border-dashed rounded-full border-current -rotate-45" />
+                  </div>
+                  
+                  {/* Clock Image */}
                   <Image
                     src={`/${i + 1}_small.svg`}
                     alt={`Clock ${i + 1}`}
                     fill
-                    className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+                    className="object-contain p-4 group-hover:scale-105 transition-transform duration-300 z-10"
                   />
+
                   {/* Focus Nodes */}
                   {Array.from({ length: clock.focusNodes }).map((_, index) => {
                     const angle = (index * 360) / clock.focusNodes
@@ -249,7 +258,26 @@ export default function SessionsPage() {
                     return (
                       <div
                         key={index}
-                        className={`absolute w-2 h-2 rounded-full ${clock.color}`}
+                        className={`absolute w-2 h-2 rounded-full ${clock.color} z-20`}
+                        style={{
+                          left: `${x}%`,
+                          top: `${y}%`,
+                          transform: 'translate(-50%, -50%)'
+                        }}
+                      />
+                    )
+                  })}
+
+                  {/* Satellites */}
+                  {Array.from({ length: clock.satellites }).map((_, index) => {
+                    const angle = (index * 360) / (clock.satellites || 1)
+                    const radius = 35 // percentage from center
+                    const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
+                    const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
+                    return (
+                      <div
+                        key={`satellite-${index}`}
+                        className={`absolute w-3 h-3 rounded-full bg-white/80 dark:bg-black/80 border-2 z-20 ${clock.color.replace('text', 'border')}`}
                         style={{
                           left: `${x}%`,
                           top: `${y}%`,
@@ -259,51 +287,61 @@ export default function SessionsPage() {
                     )
                   })}
                 </div>
+
                 <div className="space-y-4">
                   <div>
-                    <h3 className={`text-lg font-medium mb-2 ${clock.color}`}>
+                    <h3 className={`text-lg font-medium mb-2 ${clock.color} group-hover:opacity-90 transition-opacity`}>
                       {clock.title}
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
                       {clock.description}
                     </p>
                   </div>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                        <Calendar className="h-4 w-4" />
-                        <span>{clock.startDate}</span>
+
+                  {/* Stats Grid */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className={`p-2 rounded-lg border ${clock.color.replace('text', 'border')} bg-white/50 dark:bg-black/50`}>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Circle className={`h-4 w-4 ${clock.color}`} />
+                        <span className="text-gray-600 dark:text-gray-300 font-medium">{clock.focusNodes}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                        <Clock className="h-4 w-4" />
-                        <span>{clock.timeElapsed}</span>
-                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Focus Nodes</p>
                     </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                        <Circle className="h-4 w-4" />
-                        <span>{clock.focusNodes} Focus Nodes</span>
+
+                    <div className={`p-2 rounded-lg border ${clock.color.replace('text', 'border')} bg-white/50 dark:bg-black/50`}>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Satellite className={`h-4 w-4 ${clock.color}`} />
+                        <span className="text-gray-600 dark:text-gray-300 font-medium">{clock.satellites}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                        <Satellite className="h-4 w-4" />
-                        <span>{clock.satellites} Satellites</span>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Satellites</p>
+                    </div>
+
+                    <div className={`p-2 rounded-lg border ${clock.color.replace('text', 'border')} bg-white/50 dark:bg-black/50`}>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Clock className={`h-4 w-4 ${clock.color}`} />
+                        <span className="text-gray-600 dark:text-gray-300 font-medium">{clock.timeElapsed}</span>
                       </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Time Elapsed</p>
+                    </div>
+
+                    <div className={`p-2 rounded-lg border ${clock.color.replace('text', 'border')} bg-white/50 dark:bg-black/50`}>
+                      <div className="flex items-center gap-2 text-sm">
+                        <RotateCw className={`h-4 w-4 ${clock.color}`} />
+                        <span className="text-gray-600 dark:text-gray-300 font-medium">{clock.totalRotations.toLocaleString()}</span>
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Rotations</p>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between pt-2">
-                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                      <RotateCw className="h-4 w-4" />
-                      <span>{clock.totalRotations.toLocaleString()} Rotations</span>
-                    </div>
-                    <Link
-                      href={`/clock/${i + 1}`}
-                      className={`px-4 py-2 rounded-md transition-colors ${
-                        clock.color.replace('text-', 'bg-').replace('dark:text-', 'dark:bg-')
-                      } text-white hover:opacity-90`}
-                    >
-                      Start Session
-                    </Link>
-                  </div>
+
+                  {/* Start Session Button */}
+                  <Link
+                    href={`/clock/${i + 1}`}
+                    className={`block w-full px-4 py-2.5 rounded-lg text-center transition-all ${
+                      clock.color.replace('text-', 'bg-').replace('dark:text-', 'dark:bg-')
+                    } text-white hover:opacity-90 group-hover:shadow-md`}
+                  >
+                    Start Session
+                  </Link>
                 </div>
               </Card>
             ))}
