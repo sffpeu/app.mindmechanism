@@ -138,70 +138,101 @@ export function SessionDurationDialog({
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -20 }}
-        className="w-full px-6"
+        className="w-full px-6 pt-20"
       >
-        <div className="grid grid-cols-[1fr_1fr] gap-12">
-          {/* Left side: Focus Nodes Visualization */}
-          <div className="flex items-center justify-center">
-            <div className="relative w-[280px] h-[280px]">
-              <div className="absolute inset-0 rounded-full border border-gray-200 dark:border-gray-800" />
-              {Array.from({ length: focusNodesCount }).map((_, index) => {
-                const angle = ((360 / focusNodesCount) * index) * (Math.PI / 180)
-                const radius = 120
-                const x = 140 + radius * Math.cos(angle)
-                const y = 140 + radius * Math.sin(angle)
+        <div className="grid grid-cols-[300px_1fr] gap-8">
+          {/* Left side: Focus Nodes Card */}
+          <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+              <h3 className="text-sm font-medium text-black/90 dark:text-white/90">Focus Nodes</h3>
+              <p className="text-xs text-black/60 dark:text-white/60 mt-1">
+                {focusNodesCount} active node{focusNodesCount !== 1 ? 's' : ''}
+              </p>
+            </div>
+            <div className="aspect-square relative">
+              <div className="absolute inset-4">
+                <div className="relative w-full h-full">
+                  <div className="absolute inset-0 rounded-full border border-gray-200 dark:border-gray-800" />
+                  {Array.from({ length: focusNodesCount }).map((_, index) => {
+                    const angle = ((360 / focusNodesCount) * index - 90) * (Math.PI / 180)
+                    const radius = 45
+                    const x = 50 + radius * Math.cos(angle)
+                    const y = 50 + radius * Math.sin(angle)
 
-                return (
-                  <motion.div
-                    key={index}
-                    className={cn(
-                      "absolute w-3 h-3 rounded-full",
-                      bgColorClass
-                    )}
-                    style={{
-                      left: `${x}px`,
-                      top: `${y}px`,
-                      transform: 'translate(-50%, -50%)',
-                    }}
-                    whileHover={{ scale: 1.5 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  />
-                )
-              })}
+                    return (
+                      <motion.div
+                        key={index}
+                        className={cn(
+                          "absolute w-3 h-3 rounded-full",
+                          bgColorClass
+                        )}
+                        style={{
+                          left: `${x}%`,
+                          top: `${y}%`,
+                          transform: 'translate(-50%, -50%)',
+                        }}
+                        whileHover={{ scale: 1.5 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                      />
+                    )
+                  })}
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Right side: Word Inputs */}
-          <div className="flex flex-col gap-4">
-            <div className="space-y-4">
+          {/* Right side: Word Cards */}
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               {Array.from({ length: focusNodesCount }).map((_, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-black/90 dark:text-white/90">
-                      Word {index + 1}
-                      {index === 0 && <span className="text-red-500 ml-1">*</span>}
-                    </label>
-                    <span className="text-xs text-gray-400">
-                      Suggestion: {defaultWords[index]}
-                    </span>
+                <div 
+                  key={index}
+                  className={cn(
+                    "group relative p-4 bg-white dark:bg-black border rounded-xl transition-all",
+                    words[index]?.trim() 
+                      ? "border-gray-200 dark:border-gray-800" 
+                      : "border-dashed border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700"
+                  )}
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="text-sm font-medium text-black/90 dark:text-white/90">
+                          Word {index + 1}
+                          {index === 0 && <span className="text-red-500 ml-1">*</span>}
+                        </h3>
+                        <p className="text-xs text-black/60 dark:text-white/60 mt-0.5">
+                          Suggestion: {defaultWords[index]}
+                        </p>
+                      </div>
+                      <div className={cn(
+                        "w-8 h-8 rounded-full flex items-center justify-center",
+                        bgColorClass,
+                        "opacity-20 group-hover:opacity-30 transition-opacity"
+                      )}>
+                        <PenLine className="w-4 h-4 text-white" />
+                      </div>
+                    </div>
+
+                    <Input
+                      value={words[index] || ''}
+                      onChange={(e) => {
+                        const newWords = [...words]
+                        newWords[index] = e.target.value
+                        setWords(newWords)
+                      }}
+                      placeholder={defaultWords[index]}
+                      className={cn(
+                        "h-10 text-base w-full",
+                        "bg-transparent",
+                        "border-gray-200 dark:border-gray-800",
+                        "hover:border-gray-300 dark:hover:border-gray-700",
+                        "placeholder:text-gray-400 dark:placeholder:text-gray-600",
+                        words[index]?.trim() !== '' && "ring-1",
+                        words[index]?.trim() !== '' && bgColorClass.replace('bg-', 'ring-')
+                      )}
+                    />
                   </div>
-                  <Input
-                    value={words[index] || ''}
-                    onChange={(e) => {
-                      const newWords = [...words]
-                      newWords[index] = e.target.value
-                      setWords(newWords)
-                    }}
-                    placeholder={defaultWords[index]}
-                    className={cn(
-                      "h-10 text-base",
-                      "border-gray-200 dark:border-gray-800",
-                      "hover:border-gray-300 dark:hover:border-gray-700",
-                      "bg-white dark:bg-black",
-                      words[index]?.trim() !== '' && "ring-1",
-                      words[index]?.trim() !== '' && bgColorClass.replace('bg-', 'ring-')
-                    )}
-                  />
                 </div>
               ))}
             </div>
@@ -210,7 +241,7 @@ export function SessionDurationDialog({
               onClick={handleNext}
               disabled={!canProceed()}
               className={cn(
-                "w-full h-12 text-white text-lg transition-all mt-4",
+                "w-full h-12 text-white text-lg transition-all",
                 bgColorClass,
                 "hover:opacity-90 disabled:opacity-50"
               )}
