@@ -197,7 +197,7 @@ export default function SessionsPage() {
                 key={index}
                 className={`${isListView 
                   ? 'flex items-center justify-between p-3' 
-                  : 'p-4'} rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-lg transition-all hover:border-2 ${clockColors[session.clockId].split(' ')[0].replace('text', 'border')}`}
+                  : 'p-4'} rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-lg transition-all hover:border-2 hover:border-${clockColors[session.clockId].split(' ')[1].split('-')[1]}-500`}
               >
                 {isListView ? (
                   <>
@@ -337,58 +337,58 @@ export default function SessionsPage() {
                     </div>
                   </div>
 
-                  <div className={isCreateListView ? "grid grid-cols-3 gap-4 mb-4" : "grid grid-cols-2 gap-2 mb-4"}>
-                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
-                      <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mb-0.5">
-                        <Clock className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
+                  <div className={isCreateListView ? "grid grid-cols-3 gap-4 mb-4" : "grid grid-cols-3 gap-1.5 mb-4"}>
+                    <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
+                      <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        <Clock className="h-3 w-3 text-gray-400 dark:text-gray-500" />
                         Elapsed
                       </span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      <span className="text-xs font-medium text-gray-900 dark:text-white">
                         {clock.timeElapsed}
                       </span>
                     </div>
-                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
-                      <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mb-0.5">
-                        <RotateCw className={`h-3.5 w-3.5 text-gray-400 dark:text-gray-500 ${clock.rotationDirection === 'counterclockwise' ? 'transform -scale-x-100' : ''}`} />
+                    <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
+                      <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        <RotateCw className={`h-3 w-3 text-gray-400 dark:text-gray-500 ${clock.rotationDirection === 'counterclockwise' ? 'transform -scale-x-100' : ''}`} />
                         Rotations
                       </span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      <span className="text-xs font-medium text-gray-900 dark:text-white">
                         {clock.totalRotations.toLocaleString()}
                       </span>
                     </div>
-                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
-                      <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mb-0.5">
-                        <Timer className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
+                    <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
+                      <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        <Timer className="h-3 w-3 text-gray-400 dark:text-gray-500" />
                         Rot. Time
                       </span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      <span className="text-xs font-medium text-gray-900 dark:text-white">
                         {(clock.rotationTime / 1000).toFixed(0)}s
                       </span>
                     </div>
-                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
-                      <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mb-0.5">
-                        <div className={`w-1.5 h-1.5 rounded-full ${clock.color.split(' ')[1]}`} />
+                    <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
+                      <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        <div className={`w-1 h-1 rounded-full ${clock.color.split(' ')[1]}`} />
                         Focus Nodes
                       </span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      <span className="text-xs font-medium text-gray-900 dark:text-white">
                         {clock.focusNodes}
                       </span>
                     </div>
-                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
-                      <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mb-0.5">
-                        <div className="w-1.5 h-1.5 rounded-full border border-gray-900 dark:border-white/40" />
+                    <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
+                      <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        <div className="w-1 h-1 rounded-full border border-gray-900 dark:border-white/40" />
                         Satellites
                       </span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      <span className="text-xs font-medium text-gray-900 dark:text-white">
                         {clock.satellites.length}
                       </span>
                     </div>
-                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
-                      <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mb-0.5">
-                        <Compass className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
+                    <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
+                      <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        <Compass className="h-3 w-3 text-gray-400 dark:text-gray-500" />
                         Start °
                       </span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      <span className="text-xs font-medium text-gray-900 dark:text-white">
                         {clock.startingDegree}°
                       </span>
                     </div>
