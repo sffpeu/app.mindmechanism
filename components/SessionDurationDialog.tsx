@@ -126,16 +126,32 @@ export function SessionDurationDialog({
     return true
   }
 
+  const handleStepClick = (newStep: Step) => {
+    if (newStep === 'duration' || 
+        (newStep === 'words' && step !== 'duration') || 
+        (newStep === 'confirm' && step === 'confirm')) {
+      setStep(newStep)
+    }
+  }
+
   const renderStepIndicator = () => (
     <div className="absolute top-0 left-0 right-0 flex justify-center">
       <div className="flex items-center gap-1 py-2 px-3 rounded-full bg-gray-100/80 dark:bg-white/5 backdrop-blur-sm">
-        {['duration', 'words', 'confirm'].map((s, index) => (
+        {(['duration', 'words', 'confirm'] as Step[]).map((s, index) => (
           <React.Fragment key={s}>
-            <div 
+            <button
+              onClick={() => handleStepClick(s)}
               className={cn(
-                "w-2 h-2 rounded-full transition-colors",
-                step === s ? bgColorClass : 'bg-gray-300 dark:bg-gray-700'
+                "w-2 h-2 rounded-full transition-all hover:scale-125",
+                step === s ? bgColorClass : 'bg-gray-300 dark:bg-gray-700',
+                s === 'words' && step === 'duration' && 'cursor-not-allowed opacity-50',
+                s === 'confirm' && step !== 'confirm' && 'cursor-not-allowed opacity-50'
               )}
+              disabled={
+                (s === 'words' && step === 'duration') ||
+                (s === 'confirm' && step !== 'confirm')
+              }
+              aria-label={`Go to ${s} step`}
             />
             {index < 2 && (
               <div className="w-12 h-[1px] bg-gray-200 dark:bg-gray-700" />
@@ -169,11 +185,11 @@ export function SessionDurationDialog({
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -20 }}
-        className="w-full h-full px-6 overflow-hidden"
+        className="w-full h-[calc(100%-4rem)] px-6 overflow-hidden"
       >
         <div className="grid grid-cols-[300px_1fr] gap-6 h-full">
           {/* Left side: Focus Nodes and Selected Words */}
-          <div className="space-y-4 overflow-y-auto pr-2 max-h-full">
+          <div className="space-y-4 overflow-y-auto pr-2 max-h-full scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
             {/* Focus Nodes Card */}
             <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
               <div className="p-3 border-b border-gray-200 dark:border-gray-800">
@@ -281,13 +297,13 @@ export function SessionDurationDialog({
               </div>
 
               {/* Filters */}
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1.5 max-h-[80px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
                 {['All', 'Default', 'Positive', 'Neutral', 'Negative'].map(filter => (
                   <button
                     key={filter}
                     onClick={() => setSelectedFilter(filter)}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-sm transition-all",
+                      "px-3 py-1.5 rounded-lg text-sm transition-all shrink-0",
                       selectedFilter === filter
                         ? `${bgColorClass} text-white`
                         : 'bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10'
@@ -301,13 +317,13 @@ export function SessionDurationDialog({
               </div>
 
               {/* Alphabet */}
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-1 max-h-[80px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
                 {alphabet.map(letter => (
                   <button
                     key={letter}
                     onClick={() => setSelectedLetter(selectedLetter === letter ? null : letter)}
                     className={cn(
-                      "w-6 h-6 rounded-full flex items-center justify-center text-xs transition-all",
+                      "w-6 h-6 rounded-full flex items-center justify-center text-xs transition-all shrink-0",
                       selectedLetter === letter
                         ? `${bgColorClass} text-white`
                         : 'bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10'
@@ -322,7 +338,7 @@ export function SessionDurationDialog({
             </div>
 
             {/* Word Grid */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
               <div className="grid grid-cols-3 gap-3 p-3">
                 {filteredWords.length === 0 ? (
                   <div className="col-span-3 py-6 text-center text-gray-500 dark:text-gray-400">
