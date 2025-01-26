@@ -8,6 +8,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import DotNavigation from '@/components/DotNavigation'
 import { clockSettings } from '@/lib/clockSettings'
+import { SatelliteSettings } from '@/types/ClockSettings'
 
 // Update satellites count for each clock
 const clockSatellites: Record<number, number> = {
@@ -35,7 +36,7 @@ interface ClockData extends Omit<typeof clockSettings[0], 'startDateTime'> {
   startDate: string
   timeElapsed: string
   focusNodes: number
-  satellites: number
+  satellites: SatelliteSettings[]
   totalRotations: number
   color: string
   description?: string
@@ -131,7 +132,11 @@ export default function SessionsPage() {
     startDate: formatStartDate(clock.startDateTime),
     timeElapsed: getElapsedTime(clock.startDateTime),
     focusNodes: clock.focusNodes,
-    satellites: clockSatellites[index] || 0,
+    satellites: Array.from({ length: clockSatellites[index] || 0 }).map((_, i) => ({
+      id: i,
+      rotationTime: 60000, // default 60 seconds
+      rotationDirection: 'clockwise' as const
+    })),
     totalRotations: Math.floor((Date.now() - clock.startDateTime.getTime()) / clock.rotationTime),
     color: clockColors[index],
     description: clockDescriptions[index]
@@ -367,7 +372,7 @@ export default function SessionsPage() {
                         <span className="text-sm text-gray-500 dark:text-gray-400">Satellites</span>
                       </div>
                       <span className="text-base font-medium text-gray-900 dark:text-white">
-                        {clock.satellites}
+                        {clock.satellites.length}
                       </span>
                     </div>
                     <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5">
