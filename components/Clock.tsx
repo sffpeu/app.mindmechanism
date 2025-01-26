@@ -484,7 +484,7 @@ export default function Clock({
         className="bg-white/80 dark:bg-black/80 backdrop-blur-sm cursor-pointer hover:bg-white/90 dark:hover:bg-black/90 transition-colors"
         onClick={onHide}
       >
-        <CardContent className="flex items-center p-2">
+        <CardContent className="flex items-center p-1.5">
           <div className="mr-2 text-gray-500 dark:text-gray-400 flex-shrink-0">{icon}</div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-medium text-gray-500 dark:text-gray-400 truncate">{title}</p>
@@ -789,35 +789,51 @@ export default function Clock({
       <div className="flex-grow flex items-center justify-center">
         {renderSingleClock()}
       </div>
-      <div className="w-full max-w-[1200px] mx-auto mb-4 px-4 relative">
+      <div className="w-full max-w-[1000px] mx-auto mb-2 px-3 relative">
         {showElements && (
           <>
-            <div className="flex justify-center gap-2 mb-3">
+            <div className="flex justify-center gap-2 mb-2">
               <motion.button
                 onClick={() => setShowInfoCards(prev => !prev)}
-                className="w-24 h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 shadow-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300 ease-out"
+                className="w-20 h-1 rounded-full bg-gray-200 dark:bg-gray-700 shadow-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300 ease-out"
                 whileHover={{ scaleX: 1.2 }}
               />
             </div>
             <motion.div 
-              className="h-[68px] flex items-center justify-center"
+              className="h-[60px] flex items-center justify-center"
               initial={false}
               animate={{ 
-                height: showInfoCards ? "68px" : "0px",
+                height: showInfoCards ? "60px" : "0px",
                 opacity: showInfoCards ? 1 : 0
               }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
             >
               <div className="w-full">
-                <div className="flex flex-wrap justify-center items-start gap-2">
-                  <InfoCard icon={<ClockIcon className="h-4 w-4" />} title="Current" value={currentTime.toLocaleTimeString()} onHide={() => setShowInfoCards(false)} />
-                  <InfoCard icon={<Calendar className="h-4 w-4" />} title="Started" value={startDateTime.toLocaleDateString()} onHide={() => setShowInfoCards(false)} />
-                  <InfoCard icon={<RotateCw className="h-4 w-4" />} title="Rotation" value={`${rotationDirection === 'clockwise' ? '+' : ''}${rotation.toFixed(3)}°`} onHide={() => setShowInfoCards(false)} />
-                  <InfoCard icon={<Repeat className="h-4 w-4" />} title="R. Complete" value={rotationsCompleted.toString()} onHide={() => setShowInfoCards(false)} />
-                  <InfoCard icon={<Timer className="h-4 w-4" />} title="Elapsed" value={elapsedTime} onHide={() => setShowInfoCards(false)} />
-                  <InfoCard icon={<Compass className="h-4 w-4" />} title="Start °" value={`${startingDegree.toFixed(1)}°`} onHide={() => setShowInfoCards(false)} />
-                  <InfoCard icon={<RotateCw className="h-4 w-4" />} title="Rot. Time" value={`${rotationTime / 1000}s`} onHide={() => setShowInfoCards(false)} />
-                  <InfoCard icon={<div className={`w-4 h-4 ${dotColors[id % dotColors.length]} rounded-full`} />} title="Focus Nodes" value={focusNodes.toString()} onHide={() => setShowInfoCards(false)} />
+                <div className="flex flex-wrap justify-center items-start gap-1.5">
+                  <div className="w-[130px]">
+                    <InfoCard icon={<ClockIcon className="h-4 w-4" />} title="Current" value={currentTime.toLocaleTimeString()} onHide={() => setShowInfoCards(false)} />
+                  </div>
+                  <div className="w-[130px]">
+                    <InfoCard icon={<Calendar className="h-4 w-4" />} title="Started" value={startDateTime.toLocaleDateString()} onHide={() => setShowInfoCards(false)} />
+                  </div>
+                  <div className="w-[130px]">
+                    <InfoCard icon={<RotateCw className="h-4 w-4" />} title="Rotation" value={`${rotationDirection === 'clockwise' ? '+' : ''}${rotation.toFixed(3)}°`} onHide={() => setShowInfoCards(false)} />
+                  </div>
+                  <div className="w-[130px]">
+                    <InfoCard icon={<Repeat className="h-4 w-4" />} title="R. Complete" value={rotationsCompleted.toString()} onHide={() => setShowInfoCards(false)} />
+                  </div>
+                  <div className="w-[130px]">
+                    <InfoCard icon={<Timer className="h-4 w-4" />} title="Elapsed" value={elapsedTime} onHide={() => setShowInfoCards(false)} />
+                  </div>
+                  <div className="w-[130px]">
+                    <InfoCard icon={<Compass className="h-4 w-4" />} title="Start °" value={`${startingDegree.toFixed(1)}°`} onHide={() => setShowInfoCards(false)} />
+                  </div>
+                  <div className="w-[130px]">
+                    <InfoCard icon={<RotateCw className="h-4 w-4" />} title="Rot. Time" value={`${rotationTime / 1000}s`} onHide={() => setShowInfoCards(false)} />
+                  </div>
+                  <div className="w-[130px]">
+                    <InfoCard icon={<div className={`w-4 h-4 ${dotColors[id % dotColors.length]} rounded-full`} />} title="Focus Nodes" value={focusNodes.toString()} onHide={() => setShowInfoCards(false)} />
+                  </div>
                 </div>
               </div>
             </motion.div>
