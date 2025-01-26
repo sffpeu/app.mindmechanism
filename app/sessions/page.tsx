@@ -9,7 +9,6 @@ import Link from 'next/link'
 import DotNavigation from '@/components/DotNavigation'
 import { clockSettings } from '@/lib/clockSettings'
 import { SatelliteSettings } from '@/types/ClockSettings'
-import { Watermark } from '@/components/Watermark'
 
 // Update satellites count for each clock
 const clockSatellites: Record<number, number> = {
@@ -161,7 +160,6 @@ export default function SessionsPage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-black/95">
-      <Watermark />
       {showElements && (
         <div className="fixed right-8 top-8 z-50">
           <DotNavigation
@@ -199,7 +197,17 @@ export default function SessionsPage() {
                 key={index}
                 className={`${isListView 
                   ? 'flex items-center justify-between p-3' 
-                  : 'p-4'} rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-lg transition-all hover:border-2 hover:border-${clockColors[session.clockId].split(' ')[1].split('-')[1]}-500`}
+                  : 'p-4'} rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all group hover:shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] ${
+                    clockColors[session.clockId].includes('red') ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]' :
+                    clockColors[session.clockId].includes('orange') ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]' :
+                    clockColors[session.clockId].includes('yellow') ? 'hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]' :
+                    clockColors[session.clockId].includes('green') ? 'hover:shadow-[0_0_15px_rgba(34,197,94,0.1)]' :
+                    clockColors[session.clockId].includes('blue') ? 'hover:shadow-[0_0_15px_rgba(59,130,246,0.1)]' :
+                    clockColors[session.clockId].includes('pink') ? 'hover:shadow-[0_0_15px_rgba(236,72,153,0.1)]' :
+                    clockColors[session.clockId].includes('purple') ? 'hover:shadow-[0_0_15px_rgba(147,51,234,0.1)]' :
+                    clockColors[session.clockId].includes('indigo') ? 'hover:shadow-[0_0_15px_rgba(99,102,241,0.1)]' :
+                    'hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
+                  }`}
               >
                 {isListView ? (
                   <>
@@ -290,7 +298,17 @@ export default function SessionsPage() {
           </div>
           <div className={isCreateListView ? "space-y-4" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"}>
             {clockData.map((clock, i) => (
-              <div key={i} className={`p-6 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-lg transition-all hover:border-2 ${clock.color.split(' ')[0].replace('text', 'border')} ${isCreateListView ? 'flex gap-8 items-start' : ''}`}>
+              <div key={i} className={`p-6 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all group hover:shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] ${
+                clock.color.includes('red') ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]' :
+                clock.color.includes('orange') ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]' :
+                clock.color.includes('yellow') ? 'hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]' :
+                clock.color.includes('green') ? 'hover:shadow-[0_0_15px_rgba(34,197,94,0.1)]' :
+                clock.color.includes('blue') ? 'hover:shadow-[0_0_15px_rgba(59,130,246,0.1)]' :
+                clock.color.includes('pink') ? 'hover:shadow-[0_0_15px_rgba(236,72,153,0.1)]' :
+                clock.color.includes('purple') ? 'hover:shadow-[0_0_15px_rgba(147,51,234,0.1)]' :
+                clock.color.includes('indigo') ? 'hover:shadow-[0_0_15px_rgba(99,102,241,0.1)]' :
+                'hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
+              } ${isCreateListView ? 'flex gap-8 items-start' : ''}`}>
                 <div className={`aspect-square relative flex items-center justify-center ${isCreateListView ? 'w-40 shrink-0' : ''}`}>
                   <div className="w-3/4 h-3/4 relative">
                     <Image
@@ -399,7 +417,17 @@ export default function SessionsPage() {
                   <div className="flex gap-2">
                     <Link
                       href={`/clock/${i + 1}`}
-                      className={`flex-1 flex items-center justify-center px-4 py-2 rounded-lg text-center transition-all border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 hover:border-2 ${clock.color.split(' ')[0].replace('text', 'border')}/20`}
+                      className={`flex-1 flex items-center justify-center px-4 py-2 rounded-lg text-center transition-all bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] ${
+                        clock.color.includes('red') ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]' :
+                        clock.color.includes('orange') ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]' :
+                        clock.color.includes('yellow') ? 'hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]' :
+                        clock.color.includes('green') ? 'hover:shadow-[0_0_15px_rgba(34,197,94,0.1)]' :
+                        clock.color.includes('blue') ? 'hover:shadow-[0_0_15px_rgba(59,130,246,0.1)]' :
+                        clock.color.includes('pink') ? 'hover:shadow-[0_0_15px_rgba(236,72,153,0.1)]' :
+                        clock.color.includes('purple') ? 'hover:shadow-[0_0_15px_rgba(147,51,234,0.1)]' :
+                        clock.color.includes('indigo') ? 'hover:shadow-[0_0_15px_rgba(99,102,241,0.1)]' :
+                        'hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
+                      }`}
                     >
                       <span className={`text-sm font-medium ${clock.color.split(' ')[0]}`}>
                         Start Session
@@ -407,7 +435,17 @@ export default function SessionsPage() {
                     </Link>
                     <Link
                       href={`/clock/${i + 1}`}
-                      className={`w-24 flex items-center justify-center px-4 py-2 rounded-lg text-center transition-all border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 hover:border-2 ${clock.color.split(' ')[0].replace('text', 'border')}/20`}
+                      className={`w-24 flex items-center justify-center px-4 py-2 rounded-lg text-center transition-all bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] ${
+                        clock.color.includes('red') ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]' :
+                        clock.color.includes('orange') ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]' :
+                        clock.color.includes('yellow') ? 'hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]' :
+                        clock.color.includes('green') ? 'hover:shadow-[0_0_15px_rgba(34,197,94,0.1)]' :
+                        clock.color.includes('blue') ? 'hover:shadow-[0_0_15px_rgba(59,130,246,0.1)]' :
+                        clock.color.includes('pink') ? 'hover:shadow-[0_0_15px_rgba(236,72,153,0.1)]' :
+                        clock.color.includes('purple') ? 'hover:shadow-[0_0_15px_rgba(147,51,234,0.1)]' :
+                        clock.color.includes('indigo') ? 'hover:shadow-[0_0_15px_rgba(99,102,241,0.1)]' :
+                        'hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
+                      }`}
                     >
                       <span className={`text-sm font-medium ${clock.color.split(' ')[0]}`}>
                         View

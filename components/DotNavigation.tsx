@@ -69,7 +69,7 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
       {Array.from({ length: 10 }).map((_, index) => (
         <motion.div 
           key={index} 
-          className="flex items-center justify-end gap-2"
+          className="flex items-center justify-end gap-2 group"
           initial={{ x: 50, opacity: 0 }}
           animate={{ 
             x: isVisible ? 0 : 50,
@@ -80,19 +80,19 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
             delay: 0.1 + index * 0.05,
             ease: [0.16, 1, 0.3, 1],
           }}
+          onMouseEnter={() => setHoveredDot(index)}
+          onMouseLeave={() => setHoveredDot(null)}
         >
-          {index === 9 && activeDot === 9 && hoveredDot === 9 && (
+          {index === 9 && activeDot === 9 && (
             <button
               onClick={() => router.push(isSmallMultiView ? '/multiview/1' : '/multiview/2')}
-              className={`w-3.5 h-3.5 rounded-full border-2 border-black dark:border-white transition-all duration-200 hover:scale-150 ${
+              className={`w-3.5 h-3.5 rounded-full border-2 border-black dark:border-white transition-all duration-200 hover:scale-150 opacity-0 group-hover:opacity-100 ${
                 isSmallMultiView ? 'bg-black dark:bg-white' : 'bg-transparent'
               }`}
             />
           )}
           <button
             onClick={() => handleDotClick(index)}
-            onMouseEnter={() => setHoveredDot(index)}
-            onMouseLeave={() => setHoveredDot(null)}
             className={`w-3.5 h-3.5 rounded-full transition-all duration-200 transform hover:scale-150 border-2 ${
               index === 9
                 ? 'bg-black dark:bg-white border-black dark:border-white'
