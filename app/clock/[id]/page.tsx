@@ -88,14 +88,13 @@ export default function ClockPage() {
             <div className="flex justify-center gap-2 mb-3">
               <motion.button
                 onClick={() => setShowInfoCards(prev => !prev)}
-                className="w-24 h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-300 ease-out cursor-pointer"
-                whileHover={{ scaleX: 1.2 }}
-                whileTap={{ scaleX: 0.95 }}
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                className="w-24 h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 shadow-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300 ease-out"
+                whileHover={{ scaleX: 1.5 }}
+                transition={{ duration: 0.2 }}
               />
             </div>
             <motion.div 
-              className="h-[68px] flex items-center justify-center overflow-hidden"
+              className="h-[68px] flex items-center justify-center"
               initial={false}
               animate={{ 
                 height: showInfoCards ? "68px" : "0px",
