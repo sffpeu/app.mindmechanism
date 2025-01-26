@@ -792,7 +792,7 @@ export default function Clock({
             <div className="flex justify-center gap-2 mb-3">
               <button
                 onClick={() => setDisplayState('info')}
-                className="w-2 h-2 rounded-full bg-black/90 dark:bg-white scale-125 transition-all duration-300 ease-out hover:scale-150"
+                className="w-24 h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 shadow-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300 ease-out"
               />
             </div>
             <div className="h-[68px] flex items-center justify-center">
