@@ -412,17 +412,9 @@ export function SessionDurationDialog({
         step === 'words' ? "sm:max-w-[1000px] sm:h-[800px]" : "sm:max-w-[800px]"
       )}>
         <div className={cn(
-          "relative w-full",
-          step === 'words' ? "h-full" : "aspect-ratio-16/9"
+          "relative w-full h-full flex flex-col",
+          step === 'duration' && "min-h-[600px]"
         )}>
-          {/* Close button */}
-          <button 
-            onClick={() => onOpenChange(false)}
-            className="absolute -top-12 right-0 w-8 h-8 rounded-full bg-white/10 dark:bg-white/5 backdrop-blur-sm hover:bg-white/20 dark:hover:bg-white/10 transition-colors flex items-center justify-center"
-          >
-            <X className="w-4 h-4 text-black/70 dark:text-white/70" />
-          </button>
-
           {/* Step indicator */}
           {renderStepIndicator()}
 
@@ -438,18 +430,8 @@ export function SessionDurationDialog({
             </h2>
           </div>
 
-          {/* Back button */}
-          {step !== 'duration' && (
-            <button
-              onClick={handleBack}
-              className="absolute left-6 top-16 flex items-center text-sm text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white transition-colors group"
-            >
-              <ArrowLeft className="w-4 h-4 mr-1 transition-transform group-hover:-translate-x-1" />
-              Back
-            </button>
-          )}
-
-          <div className="absolute inset-0 flex items-center">
+          {/* Main Content */}
+          <div className="flex-1 mt-16">
             <AnimatePresence mode="wait">
               {step === 'duration' && (
                 <motion.div
@@ -457,10 +439,10 @@ export function SessionDurationDialog({
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
-                  className="w-full grid grid-cols-[1fr_1fr] gap-12 px-6"
+                  className="w-full grid grid-cols-[1fr_1fr] gap-12 px-6 bg-white dark:bg-black rounded-xl"
                 >
                   {/* Timer Visualization */}
-                  <div className="flex items-center justify-center">
+                  <div className="flex items-center justify-center py-8">
                     <div className="relative w-[280px] h-[280px]">
                       {/* Background circle */}
                       <div className="absolute inset-0 rounded-full border border-gray-200 dark:border-gray-800" />
@@ -536,7 +518,7 @@ export function SessionDurationDialog({
                   </div>
 
                   {/* Controls */}
-                  <div className="flex flex-col gap-4 pt-4">
+                  <div className="flex flex-col gap-4 py-8">
                     {/* Endless Mode Toggle */}
                     <div className="flex items-center justify-between">
                       <div>
@@ -621,20 +603,6 @@ export function SessionDurationDialog({
                         </Button>
                       </form>
                     </div>
-
-                    {/* Next Button */}
-                    <Button
-                      onClick={handleNext}
-                      disabled={!canProceed()}
-                      className={cn(
-                        "h-10 mt-2 text-white transition-all",
-                        bgColorClass,
-                        "hover:opacity-90 disabled:opacity-50"
-                      )}
-                    >
-                      Next
-                      <ChevronRight className="w-4 h-4 ml-1" />
-                    </Button>
                   </div>
                 </motion.div>
               )}
@@ -647,7 +615,7 @@ export function SessionDurationDialog({
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  className="w-full px-6"
+                  className="w-full px-6 bg-white dark:bg-black rounded-xl"
                 >
                   <div className="max-w-md mx-auto">
                     <div className="space-y-6">
@@ -695,6 +663,59 @@ export function SessionDurationDialog({
                 </motion.div>
               )}
             </AnimatePresence>
+          </div>
+
+          {/* Footer Navigation */}
+          <div className="px-6 py-4 mt-4 border-t border-gray-200 dark:border-gray-800">
+            <div className="flex items-center justify-between">
+              {step !== 'duration' ? (
+                <Button
+                  onClick={handleBack}
+                  variant="outline"
+                  className="text-black/70 dark:text-white/70 border-gray-200 dark:border-gray-800"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => onOpenChange(false)}
+                  variant="outline"
+                  className="text-black/70 dark:text-white/70 border-gray-200 dark:border-gray-800"
+                >
+                  Cancel
+                </Button>
+              )}
+
+              {step !== 'confirm' && (
+                <Button
+                  onClick={handleNext}
+                  disabled={!canProceed()}
+                  className={cn(
+                    "text-white transition-all",
+                    bgColorClass,
+                    "hover:opacity-90 disabled:opacity-50"
+                  )}
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4 ml-2" />
+                </Button>
+              )}
+
+              {step === 'confirm' && (
+                <Button
+                  onClick={handleNext}
+                  className={cn(
+                    "text-white transition-all",
+                    bgColorClass,
+                    "hover:opacity-90"
+                  )}
+                >
+                  Start Session
+                  <ChevronRight className="w-4 h-4 ml-2" />
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </DialogContent>
