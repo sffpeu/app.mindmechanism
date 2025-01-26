@@ -110,9 +110,10 @@ export function SessionDurationDialog({
                       className="absolute inset-0 w-full h-full -rotate-90"
                       viewBox="0 0 100 100"
                     >
+                      {/* First arc (clockwise) */}
                       <circle
                         className={cn(
-                          "stroke-current transition-all duration-300",
+                          "transition-all duration-300",
                           hoveredPreset !== null && "filter blur-[1px]"
                         )}
                         cx="50"
@@ -122,6 +123,22 @@ export function SessionDurationDialog({
                         stroke={bgColorClass.split('-')[1]}
                         strokeWidth={hoveredPreset !== null ? "2" : "1.5"}
                         strokeDasharray={`${(rotationDegrees / 360) * 302} 302`}
+                        style={{ opacity: hoveredPreset !== null ? 0.9 : 0.8 }}
+                      />
+                      {/* Second arc (counterclockwise) */}
+                      <circle
+                        className={cn(
+                          "transition-all duration-300",
+                          hoveredPreset !== null && "filter blur-[1px]"
+                        )}
+                        cx="50"
+                        cy="50"
+                        r="48"
+                        fill="none"
+                        stroke={bgColorClass.split('-')[1]}
+                        strokeWidth={hoveredPreset !== null ? "2" : "1.5"}
+                        strokeDasharray={`${(rotationDegrees / 360) * 302} 302`}
+                        transform="rotate(180 50 50)"
                         style={{ opacity: hoveredPreset !== null ? 0.9 : 0.8 }}
                       />
                     </svg>
