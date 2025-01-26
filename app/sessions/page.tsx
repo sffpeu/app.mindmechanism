@@ -183,12 +183,18 @@ export default function SessionsPage() {
               <h2 className="text-2xl font-medium text-gray-900 dark:text-white">Recent Sessions</h2>
               <button 
                 onClick={() => setIsListView(!isListView)}
-                className="w-9 h-9 flex items-center justify-center rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
               >
                 {isListView ? (
-                  <LayoutGrid className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                  <>
+                    <LayoutGrid className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Grid</span>
+                  </>
                 ) : (
-                  <List className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                  <>
+                    <List className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">List</span>
+                  </>
                 )}
               </button>
             </div>
@@ -293,12 +299,18 @@ export default function SessionsPage() {
               <h2 className="text-2xl font-medium text-gray-900 dark:text-white">Create Session</h2>
               <button 
                 onClick={() => setIsCreateListView(!isCreateListView)}
-                className="w-9 h-9 flex items-center justify-center rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
               >
                 {isCreateListView ? (
-                  <LayoutGrid className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                  <>
+                    <LayoutGrid className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Grid</span>
+                  </>
                 ) : (
-                  <List className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                  <>
+                    <List className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">List</span>
+                  </>
                 )}
               </button>
             </div>
