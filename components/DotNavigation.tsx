@@ -63,20 +63,30 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
 
   return (
     <Container 
-      initial={isSessionsPage ? { opacity: 0 } : undefined}
-      animate={isSessionsPage ? { opacity: isVisible ? 1 : 0 } : undefined}
-      transition={isSessionsPage ? { duration: 0.5 } : undefined}
-      className="fixed right-8 top-2/3 -translate-y-1/2 flex flex-col space-y-4"
+      initial={isSessionsPage ? { x: 50, opacity: 0 } : undefined}
+      animate={isSessionsPage ? { 
+        x: isVisible ? 0 : 50,
+        opacity: isVisible ? 1 : 0 
+      } : undefined}
+      transition={isSessionsPage ? { 
+        duration: 0.5,
+        ease: [0.16, 1, 0.3, 1]
+      } : undefined}
+      className="fixed right-8 top-[55%] -translate-y-1/2 flex flex-col space-y-4"
     >
       {Array.from({ length: 10 }).map((_, index) => (
         <DotContainer 
           key={index} 
           className="flex items-center justify-end gap-2 group"
-          initial={isSessionsPage ? { opacity: 0 } : undefined}
-          animate={isSessionsPage ? { opacity: isVisible ? 1 : 0 } : undefined}
+          initial={isSessionsPage ? { x: 25, opacity: 0 } : undefined}
+          animate={isSessionsPage ? { 
+            x: isVisible ? 0 : 25,
+            opacity: isVisible ? 1 : 0 
+          } : undefined}
           transition={isSessionsPage ? { 
             duration: 0.5,
             delay: 0.1 + index * 0.05,
+            ease: [0.16, 1, 0.3, 1]
           } : undefined}
           onMouseEnter={() => setHoveredDot(index)}
           onMouseLeave={() => setHoveredDot(null)}
