@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
@@ -33,6 +33,7 @@ export function SessionDurationDialog({
   const [customDuration, setCustomDuration] = useState(30)
   const [isCustom, setIsCustom] = useState(false)
   const [isEndless, setIsEndless] = useState(false)
+  const [remainingTime, setRemainingTime] = useState<string>('00:00')
 
   // Extract color class with safety check
   const colorClass = clockColor?.split(' ')?.[1] || 'bg-gray-500' // Default to gray if split fails
@@ -42,6 +43,17 @@ export function SessionDurationDialog({
   const getRotationPreview = (duration: number) => {
     return (duration / 60) * 360 // 60 minutes = full rotation
   }
+
+  useEffect(() => {
+    if (!selectedPreset) {
+      setRemainingTime('00:00')
+      return
+    }
+
+    const minutes = Math.floor(selectedPreset)
+    const seconds = Math.round((selectedPreset - minutes) * 60)
+    setRemainingTime(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`)
+  }, [selectedPreset])
 
   const handleNext = () => {
     if (isEndless) {
