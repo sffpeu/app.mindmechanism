@@ -21,7 +21,7 @@ const dotColors = [
   'bg-transparent border-[#56c1ff] dark:border-[#56c1ff]', // 9. Light Blue
 ];
 
-const DotNavigation: React.FC<DotNavigationProps> = ({ 
+const DotNavigation: React.FC<DotNavigationProps> = ({
   activeDot, 
   isSmallMultiView = false,
   onOutlinedDotClick 
@@ -64,7 +64,7 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
         duration: 0.5,
         ease: [0.16, 1, 0.3, 1],
       }}
-      className="fixed right-6 top-1/2 transform -translate-y-1/2 flex flex-col space-y-6"
+      className="flex flex-col space-y-4"
     >
       {Array.from({ length: 10 }).map((_, index) => (
         <motion.div 
@@ -84,7 +84,7 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
           {index === 9 && activeDot === 9 && (
             <button
               onClick={() => router.push(isSmallMultiView ? '/multiview/1' : '/multiview/2')}
-              className={`w-3 h-3 rounded-full border-2 border-black dark:border-white transition-all duration-200 hover:scale-150 ${
+              className={`w-4 h-4 rounded-full border-2 border-black dark:border-white transition-all duration-200 hover:scale-150 ${
                 isSmallMultiView ? 'bg-black dark:bg-white' : 'bg-transparent'
               }`}
             />
@@ -93,7 +93,7 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
             onClick={() => handleDotClick(index)}
             onMouseEnter={() => setHoveredDot(index)}
             onMouseLeave={() => setHoveredDot(null)}
-            className={`w-3 h-3 rounded-full transition-all duration-200 transform hover:scale-150 border-2 ${
+            className={`w-4 h-4 rounded-full transition-all duration-200 transform hover:scale-150 border-2 ${
               index === 9
                 ? 'bg-black dark:bg-white border-black dark:border-white'
                 : index === activeDot
@@ -107,7 +107,7 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
       ))}
     </motion.div>
   );
-};
+}
 
 export default DotNavigation;
 

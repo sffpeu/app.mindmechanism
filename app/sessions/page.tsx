@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
-import { Play, Clock, Calendar, RotateCw, Timer, Compass } from 'lucide-react'
+import { Play, Clock, Calendar, RotateCw, Timer, Compass, LayoutGrid, List } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import DotNavigation from '@/components/DotNavigation'
@@ -161,10 +161,12 @@ export default function SessionsPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-black/95">
       {showElements && (
-        <DotNavigation
-          activeDot={9}
-          isSmallMultiView={false}
-        />
+        <div className="fixed right-8 top-8 z-50">
+          <DotNavigation
+            activeDot={9}
+            isSmallMultiView={false}
+          />
+        </div>
       )}
       <Menu
         showElements={showElements}
@@ -180,11 +182,13 @@ export default function SessionsPage() {
             <h2 className="text-2xl font-medium text-gray-900 dark:text-white">Recent Sessions</h2>
             <button 
               onClick={() => setIsListView(!isListView)}
-              className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5"
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5"
             >
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                {isListView ? 'Grid View' : 'List View'}
-              </span>
+              {isListView ? (
+                <LayoutGrid className="h-4 w-4 text-gray-900 dark:text-white" />
+              ) : (
+                <List className="h-4 w-4 text-gray-900 dark:text-white" />
+              )}
             </button>
           </div>
           <div className={isListView ? "space-y-2" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"}>
@@ -273,11 +277,13 @@ export default function SessionsPage() {
             <h2 className="text-2xl font-medium text-gray-900 dark:text-white">Create Session</h2>
             <button 
               onClick={() => setIsCreateListView(!isCreateListView)}
-              className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5"
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5"
             >
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                {isCreateListView ? 'Grid View' : 'List View'}
-              </span>
+              {isCreateListView ? (
+                <LayoutGrid className="h-4 w-4 text-gray-900 dark:text-white" />
+              ) : (
+                <List className="h-4 w-4 text-gray-900 dark:text-white" />
+              )}
             </button>
           </div>
           <div className={isCreateListView ? "space-y-4" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"}>
@@ -320,67 +326,69 @@ export default function SessionsPage() {
                     <h3 className={`text-lg font-medium ${clock.color.split(' ')[0]}`}>
                       {clock.title}
                     </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
-                      {clock.description}
-                    </p>
+                    {isCreateListView && (
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                        {clock.description}
+                      </p>
+                    )}
                     <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-2">
                       <Calendar className="h-4 w-4" />
                       {clock.startDate}
                     </div>
                   </div>
 
-                  <div className={isCreateListView ? "grid grid-cols-3 gap-4 mb-4" : "grid grid-cols-2 gap-4 mb-4"}>
-                    <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Clock className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                        <span className="text-sm text-gray-500 dark:text-gray-400">Elapsed</span>
-                      </div>
-                      <span className="text-base font-medium text-gray-900 dark:text-white">
+                  <div className={isCreateListView ? "grid grid-cols-3 gap-4 mb-4" : "grid grid-cols-2 gap-2 mb-4"}>
+                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                      <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mb-0.5">
+                        <Clock className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
+                        Elapsed
+                      </span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
                         {clock.timeElapsed}
                       </span>
                     </div>
-                    <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5">
-                      <div className="flex items-center gap-2 mb-1">
-                        <RotateCw className={`h-4 w-4 text-gray-400 dark:text-gray-500 ${clock.rotationDirection === 'counterclockwise' ? 'transform -scale-x-100' : ''}`} />
-                        <span className="text-sm text-gray-500 dark:text-gray-400">Rotations</span>
-                      </div>
-                      <span className="text-base font-medium text-gray-900 dark:text-white">
+                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                      <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mb-0.5">
+                        <RotateCw className={`h-3.5 w-3.5 text-gray-400 dark:text-gray-500 ${clock.rotationDirection === 'counterclockwise' ? 'transform -scale-x-100' : ''}`} />
+                        Rotations
+                      </span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
                         {clock.totalRotations.toLocaleString()}
                       </span>
                     </div>
-                    <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Timer className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                        <span className="text-sm text-gray-500 dark:text-gray-400">Rot. Time</span>
-                      </div>
-                      <span className="text-base font-medium text-gray-900 dark:text-white">
+                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                      <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mb-0.5">
+                        <Timer className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
+                        Rot. Time
+                      </span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
                         {(clock.rotationTime / 1000).toFixed(0)}s
                       </span>
                     </div>
-                    <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className={`w-2 h-2 rounded-full ${clock.color.split(' ')[1]}`} />
-                        <span className="text-sm text-gray-500 dark:text-gray-400">Focus Nodes</span>
-                      </div>
-                      <span className="text-base font-medium text-gray-900 dark:text-white">
+                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                      <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mb-0.5">
+                        <div className={`w-1.5 h-1.5 rounded-full ${clock.color.split(' ')[1]}`} />
+                        Focus Nodes
+                      </span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
                         {clock.focusNodes}
                       </span>
                     </div>
-                    <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="w-2 h-2 rounded-full border border-gray-900 dark:border-white/40" />
-                        <span className="text-sm text-gray-500 dark:text-gray-400">Satellites</span>
-                      </div>
-                      <span className="text-base font-medium text-gray-900 dark:text-white">
+                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                      <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mb-0.5">
+                        <div className="w-1.5 h-1.5 rounded-full border border-gray-900 dark:border-white/40" />
+                        Satellites
+                      </span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
                         {clock.satellites.length}
                       </span>
                     </div>
-                    <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Compass className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                        <span className="text-sm text-gray-500 dark:text-gray-400">Start °</span>
-                      </div>
-                      <span className="text-base font-medium text-gray-900 dark:text-white">
+                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                      <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mb-0.5">
+                        <Compass className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
+                        Start °
+                      </span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
                         {clock.startingDegree}°
                       </span>
                     </div>
@@ -389,7 +397,7 @@ export default function SessionsPage() {
                   <div className="flex gap-2">
                     <Link
                       href={`/clock/${i + 1}`}
-                      className={`flex-1 flex items-center justify-center px-4 py-2.5 rounded-lg text-center transition-all border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 hover:border-2 ${clock.color.split(' ')[0].replace('text', 'border')}/20`}
+                      className={`flex-1 flex items-center justify-center px-4 py-2 rounded-lg text-center transition-all border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 hover:border-2 ${clock.color.split(' ')[0].replace('text', 'border')}/20`}
                     >
                       <span className={`text-sm font-medium ${clock.color.split(' ')[0]}`}>
                         Start Session
@@ -397,7 +405,7 @@ export default function SessionsPage() {
                     </Link>
                     <Link
                       href={`/clock/${i + 1}`}
-                      className={`w-24 flex items-center justify-center px-4 py-2.5 rounded-lg text-center transition-all border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 hover:border-2 ${clock.color.split(' ')[0].replace('text', 'border')}/20`}
+                      className={`w-24 flex items-center justify-center px-4 py-2 rounded-lg text-center transition-all border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 hover:border-2 ${clock.color.split(' ')[0].replace('text', 'border')}/20`}
                     >
                       <span className={`text-sm font-medium ${clock.color.split(' ')[0]}`}>
                         View
