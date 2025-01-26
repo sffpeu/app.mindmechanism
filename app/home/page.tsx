@@ -7,6 +7,7 @@ import { Play, BookOpen, ClipboardList, ArrowRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import styles from './page.module.css'
+import { Watermark } from '@/components/Watermark'
 
 const LayeredClockVisualization = () => {
   const [isHovered, setIsHovered] = useState(false)
@@ -80,6 +81,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95">
+      <Watermark />
       <Menu
         showElements={showElements}
         onToggleShow={() => setShowElements(!showElements)}

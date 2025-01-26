@@ -9,6 +9,7 @@ import Link from 'next/link'
 import DotNavigation from '@/components/DotNavigation'
 import { clockSettings } from '@/lib/clockSettings'
 import { SatelliteSettings } from '@/types/ClockSettings'
+import { Watermark } from '@/components/Watermark'
 
 // Update satellites count for each clock
 const clockSatellites: Record<number, number> = {
@@ -160,6 +161,7 @@ export default function SessionsPage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-black/95">
+      <Watermark />
       {showElements && (
         <div className="fixed right-8 top-8 z-50">
           <DotNavigation

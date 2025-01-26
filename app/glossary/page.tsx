@@ -6,6 +6,7 @@ import { useTheme } from '@/app/ThemeContext'
 import { Search, Plus, ThumbsUp, ThumbsDown, Minus, Tag, LayoutGrid, List, Home } from 'lucide-react'
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords, searchWords } from '@/lib/glossary'
+import { Watermark } from '@/components/Watermark'
 
 export default function GlossaryPage() {
   const { isDarkMode } = useTheme()
@@ -77,6 +78,7 @@ export default function GlossaryPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95">
+      <Watermark />
       <Menu
         showElements={showElements}
         onToggleShow={() => setShowElements(!showElements)}
