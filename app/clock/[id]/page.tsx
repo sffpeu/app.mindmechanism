@@ -10,7 +10,6 @@ import { ClockSettings } from '@/components/ClockSettings'
 import { ClockSettings as ClockSettingsType } from '@/types/ClockSettings'
 import { useTheme } from '@/app/ThemeContext'
 import { Timer } from '@/components/Timer'
-import { motion } from 'framer-motion'
 
 // Clock colors mapping
 const clockColors = [
@@ -82,35 +81,6 @@ export default function ClockPage() {
         showInfoCards={showInfoCards}
         onInfoCardsChange={setShowInfoCards}
       />
-      <div className="w-full max-w-[1200px] mx-auto mb-4 px-4 relative">
-        {showElements && (
-          <>
-            <div className="flex justify-center gap-2 mb-3">
-              <motion.button
-                onClick={() => setShowInfoCards(prev => !prev)}
-                className="w-24 h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 shadow-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300 ease-out"
-                whileHover={{ scaleX: 1.5 }}
-                transition={{ duration: 0.2 }}
-              />
-            </div>
-            <motion.div 
-              className="h-[68px] flex items-center justify-center"
-              initial={false}
-              animate={{ 
-                height: showInfoCards ? "68px" : "0px",
-                opacity: showInfoCards ? 1 : 0
-              }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-            >
-              <div className="w-full">
-                <div className="flex flex-wrap justify-center items-start gap-2">
-                  {/* ... existing code ... */}
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </div>
       <Clock
         {...localClockSettings}
         id={id}

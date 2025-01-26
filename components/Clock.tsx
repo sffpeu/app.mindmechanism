@@ -793,8 +793,7 @@ export default function Clock({
               <motion.button
                 onClick={() => setShowInfoCards(prev => !prev)}
                 className="w-24 h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 shadow-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300 ease-out"
-                whileHover={{ scaleX: 1.5 }}
-                transition={{ duration: 0.2 }}
+                whileHover={{ scaleX: 1.2 }}
               />
             </div>
             <motion.div 
