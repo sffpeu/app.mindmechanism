@@ -43,7 +43,7 @@ export default function NotesPage() {
         onSatellitesChange={setShowSatellites}
       />
 
-      <main className="container mx-auto p-4 md:p-6 max-w-7xl">
+      <main className="max-w-6xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
           {/* Select Session Card */}
           <Card className="p-4 bg-white/90 dark:bg-black/90 backdrop-blur-lg border-black/10 dark:border-white/20">
