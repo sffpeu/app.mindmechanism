@@ -1,6 +1,6 @@
 'use client'
 
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import Clock from '@/components/Clock'
 import { useState, useEffect } from 'react'
 import DotNavigation from '@/components/DotNavigation'
@@ -9,10 +9,26 @@ import { Menu } from '@/components/Menu'
 import { ClockSettings } from '@/components/ClockSettings'
 import { ClockSettings as ClockSettingsType } from '@/types/ClockSettings'
 import { useTheme } from '@/app/ThemeContext'
+import { Timer } from '@/components/Timer'
+
+// Clock colors mapping
+const clockColors = [
+  'text-red-500 bg-red-500',
+  'text-orange-500 bg-orange-500',
+  'text-yellow-500 bg-yellow-500',
+  'text-green-500 bg-green-500',
+  'text-blue-500 bg-blue-500',
+  'text-pink-500 bg-pink-500',
+  'text-purple-500 bg-purple-500',
+  'text-indigo-500 bg-indigo-500',
+  'text-cyan-500 bg-cyan-500'
+]
 
 export default function ClockPage() {
   const params = useParams()
+  const searchParams = useSearchParams()
   const id = parseInt(params.id as string)
+  const duration = searchParams.get('duration') ? parseInt(searchParams.get('duration') as string) : null
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(false)
   const [showInfoCards, setShowInfoCards] = useState(true)
@@ -86,6 +102,14 @@ export default function ClockPage() {
           onCancel={() => setShowSettings(false)}
         />
       )}
+      <Timer
+        duration={duration}
+        clockColor={clockColors[id]}
+        onComplete={() => {
+          // Handle timer completion
+          console.log('Timer completed')
+        }}
+      />
     </div>
   )
 } 
