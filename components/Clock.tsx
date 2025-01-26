@@ -790,25 +790,27 @@ export default function Clock({
         {showElements && (
           <>
             <div className="flex justify-center gap-2 mb-3">
-              <button
-                onClick={() => setDisplayState('info')}
+              <motion.button
+                onClick={() => setShowInfoCards(prev => !prev)}
                 className="w-24 h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 shadow-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300 ease-out"
+                whileHover={{ scaleX: 1.5 }}
+                transition={{ duration: 0.2 }}
               />
             </div>
-            <div className="h-[68px] flex items-center justify-center">
-              <div className="w-full transition-all duration-300 ease-in-out opacity-100">
+            <motion.div 
+              className="h-[68px] flex items-center justify-center"
+              initial={false}
+              animate={{ 
+                height: showInfoCards ? "68px" : "0px",
+                opacity: showInfoCards ? 1 : 0
+              }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
+              <div className="w-full">
                 <div className="flex flex-wrap justify-center items-start gap-2">
                   <InfoCard icon={<ClockIcon className="h-4 w-4" />} title="Current" value={currentTime.toLocaleTimeString()} />
-                  <InfoCard 
-                    icon={<Calendar className="h-4 w-4" />} 
-                    title="Started" 
-                    value={startDateTime.toLocaleDateString()} 
-                  />
-                  <InfoCard 
-                    icon={<RotateCw className="h-4 w-4" />} 
-                    title="Rotation" 
-                    value={`${rotationDirection === 'clockwise' ? '+' : ''}${rotation.toFixed(3)}°`} 
-                  />
+                  <InfoCard icon={<Calendar className="h-4 w-4" />} title="Started" value={startDateTime.toLocaleDateString()} />
+                  <InfoCard icon={<RotateCw className="h-4 w-4" />} title="Rotation" value={`${rotationDirection === 'clockwise' ? '+' : ''}${rotation.toFixed(3)}°`} />
                   <InfoCard icon={<Repeat className="h-4 w-4" />} title="R. Complete" value={rotationsCompleted.toString()} />
                   <InfoCard icon={<Timer className="h-4 w-4" />} title="Elapsed" value={elapsedTime} />
                   <InfoCard icon={<Compass className="h-4 w-4" />} title="Start °" value={`${startingDegree.toFixed(1)}°`} />
@@ -816,7 +818,7 @@ export default function Clock({
                   <InfoCard icon={<div className={`w-4 h-4 ${dotColors[id % dotColors.length]} rounded-full`} />} title="Focus Nodes" value={focusNodes.toString()} />
                 </div>
               </div>
-            </div>
+            </motion.div>
           </>
         )}
       </div>
