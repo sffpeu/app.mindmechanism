@@ -9,28 +9,35 @@ interface TimerProps {
 }
 
 export function Timer({ duration, clockColor = 'text-gray-500 bg-gray-500', onComplete }: TimerProps) {
-  const [isPaused, setIsPaused] = useState(false)
-  const [timeLeft, setTimeLeft] = useState(duration)
+  const [isPaused, setIsPaused] = useState(true) // Start paused
+  const [timeLeft, setTimeLeft] = useState<number | null>(duration)
   const colorClass = clockColor?.split(' ')?.[1] || 'bg-gray-500'
   const textColorClass = clockColor?.split(' ')?.[0] || 'text-gray-500'
 
+  // Reset timeLeft when duration changes
   useEffect(() => {
-    if (!duration || isPaused) return
+    setTimeLeft(duration)
+    setIsPaused(true)
+  }, [duration])
+
+  useEffect(() => {
+    if (!timeLeft || isPaused || timeLeft <= 0) return
 
     const interval = setInterval(() => {
       setTimeLeft((current) => {
         if (current === null) return null
-        if (current <= 0) {
+        const newTime = current - 1000
+        if (newTime <= 0) {
           clearInterval(interval)
           onComplete?.()
           return 0
         }
-        return current - 1000
+        return newTime
       })
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [duration, isPaused, onComplete])
+  }, [timeLeft, isPaused, onComplete])
 
   const formatTime = (ms: number | null) => {
     if (ms === null) return '∞'
