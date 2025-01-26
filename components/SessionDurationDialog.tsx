@@ -169,20 +169,21 @@ export function SessionDurationDialog({
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -20 }}
-        className="w-full h-full px-6 pt-20"
+        className="w-full h-[calc(100vh-200px)] px-6 pt-20"
       >
-        <div className="grid grid-cols-[300px_1fr] gap-8 h-full">
-          {/* Left side: Focus Nodes Card */}
-          <div className="space-y-4">
+        <div className="grid grid-cols-[280px_1fr] gap-6 h-full max-h-[calc(100vh-240px)]">
+          {/* Left side: Focus Nodes and Selected Words */}
+          <div className="space-y-4 overflow-y-auto pr-2">
+            {/* Focus Nodes Card */}
             <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
-              <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+              <div className="p-3 border-b border-gray-200 dark:border-gray-800">
                 <h3 className="text-sm font-medium text-black/90 dark:text-white/90">Focus Nodes</h3>
-                <p className="text-xs text-black/60 dark:text-white/60 mt-1">
+                <p className="text-xs text-black/60 dark:text-white/60 mt-0.5">
                   {focusNodesCount} active node{focusNodesCount !== 1 ? 's' : ''}
                 </p>
               </div>
               <div className="aspect-square relative">
-                <div className="absolute inset-4">
+                <div className="absolute inset-3">
                   <div className="relative w-full h-full">
                     <div className="absolute inset-0 rounded-full border border-gray-200 dark:border-gray-800" />
                     {Array.from({ length: focusNodesCount }).map((_, index) => {
@@ -195,7 +196,7 @@ export function SessionDurationDialog({
                         <motion.div
                           key={index}
                           className={cn(
-                            "absolute w-3 h-3 rounded-full",
+                            "absolute w-2.5 h-2.5 rounded-full",
                             bgColorClass,
                             words[index] ? 'opacity-100' : 'opacity-50'
                           )}
@@ -216,13 +217,13 @@ export function SessionDurationDialog({
 
             {/* Selected Words */}
             <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
-              <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+              <div className="p-3 border-b border-gray-200 dark:border-gray-800">
                 <h3 className="text-sm font-medium text-black/90 dark:text-white/90">Selected Words</h3>
-                <p className="text-xs text-black/60 dark:text-white/60 mt-1">
+                <p className="text-xs text-black/60 dark:text-white/60 mt-0.5">
                   {words.filter(w => w).length} of {focusNodesCount} words selected
                 </p>
               </div>
-              <div className="p-4 space-y-2">
+              <div className="p-3 space-y-2">
                 {Array.from({ length: focusNodesCount }).map((_, index) => (
                   <div
                     key={index}
@@ -245,6 +246,7 @@ export function SessionDurationDialog({
                             setWords(newWords)
                           }}
                           className="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
+                          aria-label={`Remove word ${words[index]}`}
                         >
                           <X className="h-4 w-4" />
                         </button>
@@ -262,48 +264,56 @@ export function SessionDurationDialog({
 
           {/* Right side: Word Selection */}
           <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-800">
-              <div className="flex items-center space-x-4">
+            <div className="p-3 border-b border-gray-200 dark:border-gray-800 space-y-3">
+              {/* Search */}
+              <div className="flex items-center space-x-3">
                 <div className="flex-1 relative">
                   <input
                     type="text"
                     placeholder="Search words or definitions"
-                    className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                    className="w-full pl-9 pr-4 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    aria-label="Search words or definitions"
                   />
-                  <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400 dark:text-gray-500" />
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" />
                 </div>
               </div>
 
-              <div className="flex space-x-2 mt-4">
+              {/* Filters */}
+              <div className="flex flex-wrap gap-1.5">
                 {['All', 'Default', 'Positive', 'Neutral', 'Negative'].map(filter => (
                   <button
                     key={filter}
                     onClick={() => setSelectedFilter(filter)}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-sm transition-all",
+                      "px-2.5 py-1 rounded-lg text-sm transition-all",
                       selectedFilter === filter
                         ? `${bgColorClass} text-white`
                         : 'bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10'
                     )}
+                    aria-pressed={selectedFilter === filter}
+                    aria-label={`Filter by ${filter} words`}
                   >
                     {filter}
                   </button>
                 ))}
               </div>
 
-              <div className="flex flex-wrap gap-1 mt-4">
+              {/* Alphabet */}
+              <div className="flex flex-wrap gap-1">
                 {alphabet.map(letter => (
                   <button
                     key={letter}
                     onClick={() => setSelectedLetter(selectedLetter === letter ? null : letter)}
                     className={cn(
-                      "w-7 h-7 rounded-full flex items-center justify-center text-xs transition-all",
+                      "w-6 h-6 rounded-full flex items-center justify-center text-xs transition-all",
                       selectedLetter === letter
                         ? `${bgColorClass} text-white`
                         : 'bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10'
                     )}
+                    aria-pressed={selectedLetter === letter}
+                    aria-label={`Filter by letter ${letter}`}
                   >
                     {letter}
                   </button>
@@ -311,73 +321,82 @@ export function SessionDurationDialog({
               </div>
             </div>
 
+            {/* Word Grid */}
             <div className="flex-1 overflow-y-auto">
-              <div className="grid grid-cols-2 gap-4 p-4">
-                {filteredWords.map((word) => (
-                  <button
-                    key={word.id}
-                    onClick={() => {
-                      const emptyIndex = words.findIndex(w => !w)
-                      if (emptyIndex !== -1) {
-                        const newWords = [...words]
-                        newWords[emptyIndex] = word.word
-                        setWords(newWords)
-                      }
-                    }}
-                    disabled={words.includes(word.word)}
-                    className={cn(
-                      "p-4 rounded-xl text-left transition-all",
-                      words.includes(word.word)
-                        ? "opacity-50 cursor-not-allowed"
-                        : "hover:bg-gray-50 dark:hover:bg-white/5",
-                      "bg-white dark:bg-black border border-gray-200 dark:border-gray-800"
-                    )}
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="text-base font-medium text-black dark:text-white">
-                          {word.word}
-                        </h3>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">
-                          {word.phonetic_spelling}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <div className={cn(
-                          "w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium",
-                          word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
-                          word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
-                          'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                        )}>
-                          {word.grade}
+              <div className="grid grid-cols-2 gap-3 p-3">
+                {filteredWords.length === 0 ? (
+                  <div className="col-span-2 py-8 text-center text-gray-500 dark:text-gray-400">
+                    No words found
+                  </div>
+                ) : (
+                  filteredWords.map((word) => (
+                    <button
+                      key={word.id}
+                      onClick={() => {
+                        const emptyIndex = words.findIndex(w => !w)
+                        if (emptyIndex !== -1) {
+                          const newWords = [...words]
+                          newWords[emptyIndex] = word.word
+                          setWords(newWords)
+                        }
+                      }}
+                      disabled={words.includes(word.word)}
+                      className={cn(
+                        "p-3 rounded-xl text-left transition-all",
+                        words.includes(word.word)
+                          ? "opacity-50 cursor-not-allowed"
+                          : "hover:bg-gray-50 dark:hover:bg-white/5",
+                        "bg-white dark:bg-black border border-gray-200 dark:border-gray-800"
+                      )}
+                      aria-label={`Select word ${word.word}${words.includes(word.word) ? ' (already selected)' : ''}`}
+                    >
+                      <div className="flex items-start justify-between mb-1.5">
+                        <div>
+                          <h3 className="text-sm font-medium text-black dark:text-white">
+                            {word.word}
+                          </h3>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {word.phonetic_spelling}
+                          </span>
                         </div>
-                        {word.version === 'Default' && (
-                          <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
-                            D
+                        <div className="flex items-center space-x-1">
+                          <div className={cn(
+                            "w-5 h-5 rounded-full flex items-center justify-center text-xs font-medium",
+                            word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
+                            word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
+                            'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                          )}>
+                            {word.grade}
                           </div>
-                        )}
+                          {word.version === 'Default' && (
+                            <div className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-medium bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
+                              D
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                      {word.definition}
-                    </p>
-                  </button>
-                ))}
+                      <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
+                        {word.definition}
+                      </p>
+                    </button>
+                  ))
+                )}
               </div>
             </div>
 
-            <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+            {/* Next Button */}
+            <div className="p-3 border-t border-gray-200 dark:border-gray-800">
               <Button
                 onClick={handleNext}
                 disabled={!canProceed()}
                 className={cn(
-                  "w-full h-12 text-white text-lg transition-all",
+                  "w-full h-10 text-white text-base transition-all",
                   bgColorClass,
                   "hover:opacity-90 disabled:opacity-50"
                 )}
               >
                 Next
-                <ChevronRight className="w-5 h-5 ml-2" />
+                <ChevronRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
           </div>
