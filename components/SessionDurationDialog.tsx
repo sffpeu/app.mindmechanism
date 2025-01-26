@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Timer, ChevronRight, InfinityIcon, X } from 'lucide-react'
+import { Timer, ChevronRight, InfinityIcon, X, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface SessionDurationDialogProps {
@@ -30,23 +30,38 @@ export function SessionDurationDialog({
   const [isEndless, setIsEndless] = useState(false)
   const [hoveredPreset, setHoveredPreset] = useState<number | null>(null)
   const [rotationDegrees, setRotationDegrees] = useState(0)
+  const [isCustomConfirmed, setIsCustomConfirmed] = useState(false)
 
   const textColorClass = clockColor?.split(' ')?.[0] || 'text-gray-500'
   const bgColorClass = clockColor?.split(' ')?.[1] || 'bg-gray-500'
 
   const calculateRotation = (minutes: number) => {
-    return (minutes / 60) * 360
+    // Calculate based on clock's rotation time
+    const rotationTimes = {
+      0: 11 * 60, // 11 hours in minutes
+      1: 16 * 60,
+      2: 25 * 60,
+      3: 243 * 60,
+      4: 17 * 60,
+      5: 58 * 60,
+      6: 10 * 60,
+      7: 10 * 60,
+      8: 24 * 60
+    }
+    const clockRotationTime = rotationTimes[clockId as keyof typeof rotationTimes] || 60
+    return (minutes / clockRotationTime) * 360
   }
 
   useEffect(() => {
     const duration = isCustom ? Number(customDuration) : selectedPreset || hoveredPreset || 0
     setRotationDegrees(calculateRotation(duration))
-  }, [selectedPreset, customDuration, isCustom, hoveredPreset])
+  }, [selectedPreset, customDuration, isCustom, hoveredPreset, clockId])
 
   const handleCustomSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const value = Number(customDuration)
     if (value > 0 && value <= 120) {
+      setIsCustomConfirmed(true)
       setIsCustom(true)
       setSelectedPreset(null)
     }
@@ -55,14 +70,14 @@ export function SessionDurationDialog({
   const handleNext = () => {
     if (isEndless) {
       onNext(null)
-    } else if (isCustom) {
+    } else if (isCustom && isCustomConfirmed) {
       onNext(Number(customDuration))
     } else if (selectedPreset !== null) {
       onNext(selectedPreset)
     }
   }
 
-  const canProceed = isEndless || selectedPreset !== null || (isCustom && Number(customDuration) > 0 && Number(customDuration) <= 120)
+  const canProceed = isEndless || selectedPreset !== null || (isCustom && isCustomConfirmed)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -97,15 +112,18 @@ export function SessionDurationDialog({
                       viewBox="0 0 100 100"
                     >
                       <circle
-                        className="stroke-current"
+                        className={cn(
+                          "stroke-current transition-all duration-300",
+                          hoveredPreset !== null && "filter blur-[1px]"
+                        )}
                         cx="50"
                         cy="50"
-                        r="49"
+                        r="48"
                         fill="none"
                         stroke={bgColorClass.split('-')[1]}
-                        strokeWidth="0.5"
-                        strokeDasharray={`${(rotationDegrees / 360) * 308} 308`}
-                        style={{ opacity: 0.8 }}
+                        strokeWidth={hoveredPreset !== null ? "2" : "1.5"}
+                        strokeDasharray={`${(rotationDegrees / 360) * 302} 302`}
+                        style={{ opacity: hoveredPreset !== null ? 0.9 : 0.8 }}
                       />
                     </svg>
                   )}
@@ -121,12 +139,9 @@ export function SessionDurationDialog({
                         className="flex flex-col items-center"
                       >
                         {isEndless ? (
-                          <motion.div
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                          >
-                            <InfinityIcon className={cn("w-12 h-12 opacity-20")} />
-                          </motion.div>
+                          <div className="opacity-20">
+                            <InfinityIcon className="w-12 h-12" />
+                          </div>
                         ) : (
                           <>
                             <span className={cn("text-4xl font-light", textColorClass)}>
@@ -158,6 +173,7 @@ export function SessionDurationDialog({
                       if (checked) {
                         setSelectedPreset(null)
                         setIsCustom(false)
+                        setIsCustomConfirmed(false)
                       }
                     }}
                     className={isEndless ? bgColorClass : ''}
@@ -172,21 +188,24 @@ export function SessionDurationDialog({
                       onClick={() => {
                         setSelectedPreset(preset)
                         setIsCustom(false)
+                        setIsCustomConfirmed(false)
                         setIsEndless(false)
                       }}
                       onHoverStart={() => setHoveredPreset(preset)}
                       onHoverEnd={() => setHoveredPreset(null)}
                       className={cn(
-                        "h-12 rounded-lg text-sm transition-all",
-                        "border border-gray-100 dark:border-gray-800",
+                        "relative h-14 rounded-xl text-sm font-medium transition-all",
                         selectedPreset === preset 
-                          ? `${bgColorClass} text-white border-0` 
-                          : `hover:${bgColorClass} hover:text-white hover:border-0`
+                          ? `${bgColorClass} text-white shadow-lg` 
+                          : 'bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10'
                       )}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      {preset}min
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-lg">{preset}</span>
+                        <span className="text-sm ml-1">min</span>
+                      </div>
                     </motion.button>
                   ))}
                 </div>
@@ -194,44 +213,53 @@ export function SessionDurationDialog({
                 {/* Custom Duration */}
                 <div>
                   <div className="text-sm text-gray-400 mb-2">OR CUSTOM</div>
-                  <Input
-                    type="number"
-                    min="1"
-                    max="120"
-                    value={customDuration}
-                    onChange={(e) => {
-                      setCustomDuration(e.target.value)
-                      setIsCustom(true)
-                      setSelectedPreset(null)
-                      setIsEndless(false)
-                    }}
-                    placeholder="Enter duration"
-                    className={cn(
-                      "h-12",
-                      "border-gray-100 dark:border-gray-800",
-                      "hover:border-gray-200 dark:hover:border-gray-700",
-                      isCustom && "ring-1",
-                      isCustom && bgColorClass.replace('bg-', 'ring-')
-                    )}
-                  />
+                  <form onSubmit={handleCustomSubmit} className="flex gap-2">
+                    <Input
+                      type="number"
+                      min="1"
+                      max="120"
+                      value={customDuration}
+                      onChange={(e) => {
+                        setCustomDuration(e.target.value)
+                        setIsCustomConfirmed(false)
+                      }}
+                      placeholder="Enter duration"
+                      className={cn(
+                        "h-14 text-lg",
+                        "border-gray-100 dark:border-gray-800",
+                        "hover:border-gray-200 dark:hover:border-gray-700",
+                        isCustom && isCustomConfirmed && "ring-1",
+                        isCustom && isCustomConfirmed && bgColorClass.replace('bg-', 'ring-')
+                      )}
+                    />
+                    <Button
+                      type="submit"
+                      className={cn(
+                        "h-14 px-4",
+                        isCustom && isCustomConfirmed ? `${bgColorClass} text-white` : 'bg-gray-50 dark:bg-white/5'
+                      )}
+                    >
+                      <Check className="w-5 h-5" />
+                    </Button>
+                  </form>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Next Button */}
-          <div className="absolute bottom-6 right-6">
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
             <Button
               onClick={handleNext}
               disabled={!canProceed}
               className={cn(
-                "h-12 px-6 text-white transition-all",
+                "h-14 px-8 text-white transition-all text-lg",
                 bgColorClass,
                 "hover:opacity-90 disabled:opacity-50"
               )}
             >
-              Next
-              <ChevronRight className="w-4 h-4 ml-2" />
+              Start Session
+              <ChevronRight className="w-5 h-5 ml-2" />
             </Button>
           </div>
         </div>
