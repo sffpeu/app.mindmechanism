@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
-import { Play, Clock, MoreVertical, Calendar, Circle, ArrowClockwise, RotateCw, RotateCcw } from 'lucide-react'
+import { Play, Clock, Calendar, RotateCw } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import DotNavigation from '@/components/DotNavigation'
