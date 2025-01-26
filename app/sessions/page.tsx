@@ -9,6 +9,8 @@ import Link from 'next/link'
 import DotNavigation from '@/components/DotNavigation'
 import { clockSettings } from '@/lib/clockSettings'
 import { SatelliteSettings } from '@/types/ClockSettings'
+import { SessionDurationDialog } from '@/components/SessionDurationDialog'
+import { useRouter } from 'next/navigation'
 
 // Update satellites count for each clock
 const clockSatellites: Record<number, number> = {
@@ -61,6 +63,10 @@ export default function SessionsPage() {
   const [showSatellites, setShowSatellites] = useState(false)
   const [isListView, setIsListView] = useState(false)
   const [isCreateListView, setIsCreateListView] = useState(false)
+  const [selectedClockId, setSelectedClockId] = useState<number | null>(null)
+  const [selectedClockColor, setSelectedClockColor] = useState<string>('')
+  const [isDurationDialogOpen, setIsDurationDialogOpen] = useState(false)
+  const router = useRouter()
 
   // Mock recent sessions data
   const recentSessions: Session[] = [
@@ -158,6 +164,21 @@ export default function SessionsPage() {
     })}`
   }
 
+  const handleStartSession = (clockId: number, clockColor: string) => {
+    setSelectedClockId(clockId)
+    setSelectedClockColor(clockColor)
+    setIsDurationDialogOpen(true)
+  }
+
+  const handleDurationSelected = (duration: number | null) => {
+    if (selectedClockId !== null) {
+      // Navigate to the clock page with the selected duration
+      const durationMs = duration === null ? undefined : duration * 60000 // Convert minutes to milliseconds
+      router.push(`/clock/${selectedClockId}?duration=${durationMs}`)
+    }
+    setIsDurationDialogOpen(false)
+  }
+
   return (
     <div className="min-h-screen bg-white dark:bg-black/95">
       {showElements && (
@@ -243,7 +264,10 @@ export default function SessionsPage() {
                         </div>
                       </div>
                     </div>
-                    <button className="p-2 rounded-full hover:bg-gray-50 dark:hover:bg-white/5">
+                    <button 
+                      onClick={() => handleStartSession(session.clockId, clockColors[session.clockId])}
+                      className="p-2 rounded-full hover:bg-gray-50 dark:hover:bg-white/5"
+                    >
                       <Play className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                     </button>
                   </>
@@ -260,7 +284,10 @@ export default function SessionsPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
-                        <button className="p-2 rounded-full hover:bg-gray-50 dark:hover:bg-white/5">
+                        <button 
+                          onClick={() => handleStartSession(session.clockId, clockColors[session.clockId])}
+                          className="p-2 rounded-full hover:bg-gray-50 dark:hover:bg-white/5"
+                        >
                           <Play className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                         </button>
                       </div>
@@ -452,24 +479,6 @@ export default function SessionsPage() {
                       }`}
                     >
                       <span className={`text-sm font-medium ${clock.color.split(' ')[0]}`}>
-                        Start Session
-                      </span>
-                    </Link>
-                    <Link
-                      href={`/clock/${i + 1}`}
-                      className={`w-24 flex items-center justify-center px-4 py-2 rounded-lg text-center transition-all bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] ${
-                        clock.color.includes('red') ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]' :
-                        clock.color.includes('orange') ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]' :
-                        clock.color.includes('yellow') ? 'hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]' :
-                        clock.color.includes('green') ? 'hover:shadow-[0_0_15px_rgba(34,197,94,0.1)]' :
-                        clock.color.includes('blue') ? 'hover:shadow-[0_0_15px_rgba(59,130,246,0.1)]' :
-                        clock.color.includes('pink') ? 'hover:shadow-[0_0_15px_rgba(236,72,153,0.1)]' :
-                        clock.color.includes('purple') ? 'hover:shadow-[0_0_15px_rgba(147,51,234,0.1)]' :
-                        clock.color.includes('indigo') ? 'hover:shadow-[0_0_15px_rgba(99,102,241,0.1)]' :
-                        'hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
-                      }`}
-                    >
-                      <span className={`text-sm font-medium ${clock.color.split(' ')[0]}`}>
                         View
                       </span>
                     </Link>
@@ -480,6 +489,13 @@ export default function SessionsPage() {
           </div>
         </section>
       </div>
+      <SessionDurationDialog
+        open={isDurationDialogOpen}
+        onOpenChange={setIsDurationDialogOpen}
+        clockId={selectedClockId ?? 0}
+        clockColor={selectedClockColor}
+        onNext={handleDurationSelected}
+      />
     </div>
   )
 } 
