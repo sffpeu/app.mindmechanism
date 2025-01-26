@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Settings } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 
 interface DotNavigationProps {
@@ -29,14 +29,19 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
   const [hoveredDot, setHoveredDot] = useState<number | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+  const isSessionsPage = pathname === '/sessions';
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    if (isSessionsPage) {
+      const timer = setTimeout(() => {
+        setIsVisible(true);
+      }, 500); // 500ms delay before showing
+      return () => clearTimeout(timer);
+    } else {
       setIsVisible(true);
-    }, 500); // 500ms delay before showing
-
-    return () => clearTimeout(timer);
-  }, []);
+    }
+  }, [isSessionsPage]);
 
   const handleDotClick = (index: number) => {
     if (index === 9) {
@@ -50,36 +55,39 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
       }
       return;
     }
-    router.push(`/clock/${index + 1}`);
+    router.push(`/clock/${index}`);
   };
 
+  const Container = isSessionsPage ? motion.div : 'div';
+  const DotContainer = isSessionsPage ? motion.div : 'div';
+
   return (
-    <motion.div 
-      initial={{ x: 100, opacity: 0 }}
-      animate={{ 
+    <Container 
+      initial={isSessionsPage ? { x: 100, opacity: 0 } : undefined}
+      animate={isSessionsPage ? { 
         x: isVisible ? 0 : 100,
         opacity: isVisible ? 1 : 0
-      }}
-      transition={{ 
+      } : undefined}
+      transition={isSessionsPage ? { 
         duration: 0.5,
         ease: [0.16, 1, 0.3, 1],
-      }}
+      } : undefined}
       className="fixed right-8 top-1/3 -translate-y-1/2 flex flex-col space-y-4"
     >
       {Array.from({ length: 10 }).map((_, index) => (
-        <motion.div 
+        <DotContainer 
           key={index} 
           className="flex items-center justify-end gap-2 group"
-          initial={{ x: 50, opacity: 0 }}
-          animate={{ 
+          initial={isSessionsPage ? { x: 50, opacity: 0 } : undefined}
+          animate={isSessionsPage ? { 
             x: isVisible ? 0 : 50,
             opacity: isVisible ? 1 : 0
-          }}
-          transition={{ 
+          } : undefined}
+          transition={isSessionsPage ? { 
             duration: 0.5,
             delay: 0.1 + index * 0.05,
             ease: [0.16, 1, 0.3, 1],
-          }}
+          } : undefined}
           onMouseEnter={() => setHoveredDot(index)}
           onMouseLeave={() => setHoveredDot(null)}
         >
@@ -103,9 +111,9 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
                     : 'bg-transparent border-gray-300 dark:border-gray-600'
             }`}
           />
-        </motion.div>
+        </DotContainer>
       ))}
-    </motion.div>
+    </Container>
   );
 }
 
