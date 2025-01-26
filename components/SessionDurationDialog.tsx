@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
-import { Timer, Clock, ChevronRight, Infinity } from 'lucide-react'
+import { Timer, Clock, ChevronRight, Infinity as InfinityIcon } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 interface SessionDurationDialogProps {
@@ -68,10 +68,14 @@ export function SessionDurationDialog({
               animate={{ 
                 rotate: isEndless ? 360 : 0 
               }}
-              transition={{ duration: isEndless ? 3 : 0.3, repeat: isEndless ? Infinity : 0, ease: "linear" }}
+              transition={{ 
+                duration: isEndless ? 3 : 0.3, 
+                repeat: isEndless ? Number.POSITIVE_INFINITY : 0, 
+                ease: "linear" 
+              }}
             >
               {isEndless ? (
-                <Infinity className={`w-12 h-12 ${textColorClass}`} />
+                <InfinityIcon className={`w-12 h-12 ${textColorClass}`} />
               ) : (
                 <div className="flex flex-col items-center">
                   <span className={`text-3xl font-medium tabular-nums ${textColorClass}`}>
