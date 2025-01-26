@@ -36,9 +36,8 @@ export function SessionDurationDialog({
   const bgColorClass = clockColor?.split(' ')?.[1] || 'bg-gray-500'
 
   const calculateRotation = (minutes: number) => {
-    // Calculate based on clock's rotation time
     const rotationTimes = {
-      0: 11 * 60, // 11 hours in minutes
+      0: 11 * 60,
       1: 16 * 60,
       2: 25 * 60,
       3: 243 * 60,
@@ -86,19 +85,19 @@ export function SessionDurationDialog({
           {/* Close Button */}
           <button 
             onClick={() => onOpenChange(false)}
-            className="absolute right-2 top-2 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="absolute right-2 top-2 p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
 
           {/* Header */}
-          <div className="absolute left-6 top-6 flex items-center">
-            <Timer className="w-5 h-5 mr-2" />
-            <h2 className="text-xl font-medium">Set Duration</h2>
+          <div className="absolute left-6 top-4 flex items-center">
+            <Timer className="w-4 h-4 mr-2" />
+            <h2 className="text-base font-medium">Set Duration</h2>
           </div>
 
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full grid grid-cols-[1fr_1.2fr] gap-12 px-6">
+            <div className="w-full grid grid-cols-[1fr_1fr] gap-12 px-6">
               {/* Timer Visualization */}
               <div className="flex items-center justify-center">
                 <div className="relative w-[280px] h-[280px]">
@@ -159,12 +158,12 @@ export function SessionDurationDialog({
               </div>
 
               {/* Controls */}
-              <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-4 pt-4">
                 {/* Endless Mode Toggle */}
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-medium">Endless Session</h3>
-                    <p className="text-sm text-gray-400">No time limit</p>
+                    <h3 className="text-sm font-medium">Endless Session</h3>
+                    <p className="text-xs text-gray-400">No time limit</p>
                   </div>
                   <Switch
                     checked={isEndless}
@@ -181,7 +180,7 @@ export function SessionDurationDialog({
                 </div>
 
                 {/* Time Presets */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2">
                   {timePresets.map((preset) => (
                     <motion.button
                       key={preset}
@@ -194,17 +193,17 @@ export function SessionDurationDialog({
                       onHoverStart={() => setHoveredPreset(preset)}
                       onHoverEnd={() => setHoveredPreset(null)}
                       className={cn(
-                        "relative h-14 rounded-xl text-sm font-medium transition-all",
+                        "relative h-10 rounded-lg text-sm font-medium transition-all",
                         selectedPreset === preset 
-                          ? `${bgColorClass} text-white shadow-lg` 
+                          ? `${bgColorClass} text-white shadow-sm` 
                           : 'bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10'
                       )}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-lg">{preset}</span>
-                        <span className="text-sm ml-1">min</span>
+                        <span className="text-base">{preset}</span>
+                        <span className="text-xs ml-0.5">min</span>
                       </div>
                     </motion.button>
                   ))}
@@ -212,7 +211,7 @@ export function SessionDurationDialog({
 
                 {/* Custom Duration */}
                 <div>
-                  <div className="text-sm text-gray-400 mb-2">OR CUSTOM</div>
+                  <div className="text-xs text-gray-400 mb-1.5">OR CUSTOM</div>
                   <form onSubmit={handleCustomSubmit} className="flex gap-2">
                     <Input
                       type="number"
@@ -221,11 +220,12 @@ export function SessionDurationDialog({
                       value={customDuration}
                       onChange={(e) => {
                         setCustomDuration(e.target.value)
+                        setIsCustom(true)
                         setIsCustomConfirmed(false)
                       }}
                       placeholder="Enter duration"
                       className={cn(
-                        "h-14 text-lg",
+                        "h-10 text-base",
                         "border-gray-100 dark:border-gray-800",
                         "hover:border-gray-200 dark:hover:border-gray-700",
                         isCustom && isCustomConfirmed && "ring-1",
@@ -235,32 +235,30 @@ export function SessionDurationDialog({
                     <Button
                       type="submit"
                       className={cn(
-                        "h-14 px-4",
+                        "h-10 w-10 p-0",
                         isCustom && isCustomConfirmed ? `${bgColorClass} text-white` : 'bg-gray-50 dark:bg-white/5'
                       )}
                     >
-                      <Check className="w-5 h-5" />
+                      <Check className="w-4 h-4" />
                     </Button>
                   </form>
                 </div>
+
+                {/* Start Button */}
+                <Button
+                  onClick={handleNext}
+                  disabled={!canProceed}
+                  className={cn(
+                    "h-10 mt-2 text-white transition-all",
+                    bgColorClass,
+                    "hover:opacity-90 disabled:opacity-50"
+                  )}
+                >
+                  Start Session
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
               </div>
             </div>
-          </div>
-
-          {/* Next Button */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
-            <Button
-              onClick={handleNext}
-              disabled={!canProceed}
-              className={cn(
-                "h-14 px-8 text-white transition-all text-lg",
-                bgColorClass,
-                "hover:opacity-90 disabled:opacity-50"
-              )}
-            >
-              Start Session
-              <ChevronRight className="w-5 h-5 ml-2" />
-            </Button>
           </div>
         </div>
       </DialogContent>
