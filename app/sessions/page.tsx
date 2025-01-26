@@ -318,7 +318,7 @@ export default function SessionsPage() {
                 clock.color.includes('purple') ? 'hover:shadow-[0_0_15px_rgba(147,51,234,0.1)]' :
                 clock.color.includes('indigo') ? 'hover:shadow-[0_0_15px_rgba(99,102,241,0.1)]' :
                 'hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
-              } ${isCreateListView ? 'flex gap-8 items-start' : ''}`}>
+              } ${isCreateListView ? 'flex gap-8 items-start' : 'flex flex-col'}`}>
                 <div className={`aspect-square relative flex items-center justify-center ${isCreateListView ? 'w-40 shrink-0' : ''}`}>
                   <div className="w-3/4 h-3/4 relative">
                     <Image
@@ -351,8 +351,8 @@ export default function SessionsPage() {
                   </div>
                 </div>
 
-                <div className="flex-1 min-w-0">
-                  <div className="mb-4">
+                <div className={`flex-1 min-w-0 ${isCreateListView ? '' : 'flex flex-col h-full'}`}>
+                  <div>
                     <h3 className={`text-lg font-medium ${clock.color.split(' ')[0]}`}>
                       {clock.title}
                     </h3>
@@ -367,7 +367,7 @@ export default function SessionsPage() {
                     </div>
                   </div>
 
-                  <div className={isCreateListView ? "grid grid-cols-3 gap-4 mb-4" : "grid grid-cols-3 gap-1.5 mb-4"}>
+                  <div className={`${isCreateListView ? "grid grid-cols-3 gap-4 mb-4" : "grid grid-cols-3 gap-1.5 my-4"}`}>
                     <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
                       <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
                         <Clock className="h-3 w-3 text-gray-400 dark:text-gray-500" />
@@ -424,7 +424,7 @@ export default function SessionsPage() {
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className={`flex gap-2 ${isCreateListView ? '' : 'mt-auto'}`}>
                     <Link
                       href={`/clock/${i + 1}`}
                       className={`flex-1 flex items-center justify-center px-4 py-2 rounded-lg text-center transition-all bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] ${
