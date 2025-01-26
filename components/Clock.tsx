@@ -841,6 +841,18 @@ function InfoCard({ icon, title, value }: { icon: React.ReactNode; title: string
 function getElapsedTime(currentDate: Date, startDateTime: Date): string {
   const elapsed = currentDate.getTime() - startDateTime.getTime();
   const days = Math.floor(elapsed / (24 * 60 * 60 * 1000));
+  
+  // If more than 365 days, show years
+  if (days >= 365) {
+    const years = Math.floor(days / 365);
+    const remainingDays = days % 365;
+    const hours = Math.floor((elapsed % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+    const minutes = Math.floor((elapsed % (60 * 60 * 1000)) / (60 * 1000));
+    const seconds = Math.floor((elapsed % (60 * 1000)) / 1000);
+    return `${years}y ${remainingDays}d ${hours}h ${minutes}m ${seconds}s`;
+  }
+  
+  // Otherwise show days as before
   const hours = Math.floor((elapsed % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
   const minutes = Math.floor((elapsed % (60 * 60 * 1000)) / (60 * 1000));
   const seconds = Math.floor((elapsed % (60 * 1000)) / 1000);
