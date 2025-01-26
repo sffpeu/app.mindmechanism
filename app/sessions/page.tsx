@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { Card } from '@/components/ui/card'
-import { Play, Clock, MoreVertical, Circle, Satellite, RotateCw } from 'lucide-react'
+import { Play, Clock, MoreVertical, Circle, Satellite, RotateCw, Calendar } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import DotNavigation from '@/components/DotNavigation'
@@ -24,6 +24,7 @@ interface ClockData {
   focusNodes: number
   satellites: number
   totalRotations: number
+  color: string
 }
 
 export default function SessionsPage() {
@@ -47,7 +48,7 @@ export default function SessionsPage() {
     }
   ]
 
-  // Clock data from the screenshot
+  // Clock data from the screenshot with added colors
   const clockData: ClockData[] = [
     {
       title: "Galileo's First Observation",
@@ -56,7 +57,8 @@ export default function SessionsPage() {
       timeElapsed: "414y 132d 18h",
       focusNodes: 8,
       satellites: 0,
-      totalRotations: 329984
+      totalRotations: 329984,
+      color: "text-red-500 dark:text-red-400"
     },
     {
       title: "Neptune's Discovery",
@@ -65,7 +67,8 @@ export default function SessionsPage() {
       timeElapsed: "178y 164d 15h",
       focusNodes: 5,
       satellites: 0,
-      totalRotations: 97701
+      totalRotations: 97701,
+      color: "text-orange-500 dark:text-orange-400"
     },
     {
       title: "Mars' Deimos",
@@ -74,7 +77,8 @@ export default function SessionsPage() {
       timeElapsed: "147y 193d 9h",
       focusNodes: 10,
       satellites: 0,
-      totalRotations: 52749
+      totalRotations: 52749,
+      color: "text-yellow-500 dark:text-yellow-400"
     },
     {
       title: "Clock 4",
@@ -83,7 +87,8 @@ export default function SessionsPage() {
       timeElapsed: "-",
       focusNodes: 6,
       satellites: 0,
-      totalRotations: 0
+      totalRotations: 0,
+      color: "text-green-500 dark:text-green-400"
     },
     {
       title: "Clock 5",
@@ -92,7 +97,8 @@ export default function SessionsPage() {
       timeElapsed: "-",
       focusNodes: 7,
       satellites: 0,
-      totalRotations: 0
+      totalRotations: 0,
+      color: "text-blue-500 dark:text-blue-400"
     },
     {
       title: "Clock 6",
@@ -101,7 +107,8 @@ export default function SessionsPage() {
       timeElapsed: "-",
       focusNodes: 8,
       satellites: 0,
-      totalRotations: 0
+      totalRotations: 0,
+      color: "text-indigo-500 dark:text-indigo-400"
     },
     {
       title: "Clock 7",
@@ -110,7 +117,8 @@ export default function SessionsPage() {
       timeElapsed: "-",
       focusNodes: 9,
       satellites: 0,
-      totalRotations: 0
+      totalRotations: 0,
+      color: "text-purple-500 dark:text-purple-400"
     },
     {
       title: "Clock 8",
@@ -119,7 +127,8 @@ export default function SessionsPage() {
       timeElapsed: "-",
       focusNodes: 8,
       satellites: 0,
-      totalRotations: 0
+      totalRotations: 0,
+      color: "text-pink-500 dark:text-pink-400"
     },
     {
       title: "Clock 9",
@@ -128,7 +137,8 @@ export default function SessionsPage() {
       timeElapsed: "-",
       focusNodes: 7,
       satellites: 0,
-      totalRotations: 0
+      totalRotations: 0,
+      color: "text-rose-500 dark:text-rose-400"
     }
   ]
 
@@ -171,7 +181,7 @@ export default function SessionsPage() {
             {recentSessions.map((session, index) => (
               <Card 
                 key={index}
-                className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
+                className="p-4 bg-white/90 hover:bg-white dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -180,13 +190,29 @@ export default function SessionsPage() {
                     </div>
                     <div>
                       <h3 className="text-lg font-medium text-gray-900 dark:text-white">{session.title}</h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{formatDate(session.date)}</p>
+                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                        <Calendar className="h-4 w-4" />
+                        <span>{formatDate(session.date)}</span>
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{formatTime(session.timeRemaining)}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{session.progress}% Complete</p>
+                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                        <Clock className="h-4 w-4" />
+                        <span>{formatTime(session.timeRemaining)}</span>
+                      </div>
+                      <div className="mt-1 flex items-center gap-2">
+                        <div className="flex-1 h-1.5 bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-red-500 dark:bg-red-400 rounded-full transition-all" 
+                            style={{ width: `${session.progress}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 min-w-[3rem] text-right">
+                          {session.progress}%
+                        </span>
+                      </div>
                     </div>
                     <button className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors">
                       <MoreVertical className="h-5 w-5 text-gray-500 dark:text-gray-400" />
@@ -205,14 +231,14 @@ export default function SessionsPage() {
             {clockData.map((clock, i) => (
               <Card 
                 key={i}
-                className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
+                className="group p-4 bg-white/90 hover:bg-white dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
               >
-                <div className="aspect-square relative mb-4">
+                <div className="aspect-square relative mb-4 overflow-hidden rounded-lg">
                   <Image
                     src={`/${i + 1}_small.svg`}
                     alt={`Clock ${i + 1}`}
                     fill
-                    className="object-contain p-4"
+                    className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
                   />
                   {/* Focus Nodes */}
                   {Array.from({ length: clock.focusNodes }).map((_, index) => {
@@ -223,7 +249,7 @@ export default function SessionsPage() {
                     return (
                       <div
                         key={index}
-                        className="absolute w-2 h-2 rounded-full bg-red-500 dark:bg-red-400"
+                        className={`absolute w-2 h-2 rounded-full ${clock.color}`}
                         style={{
                           left: `${x}%`,
                           top: `${y}%`,
@@ -235,7 +261,7 @@ export default function SessionsPage() {
                 </div>
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                    <h3 className={`text-lg font-medium mb-2 ${clock.color}`}>
                       {clock.title}
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
@@ -244,7 +270,10 @@ export default function SessionsPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div className="space-y-2">
-                      <p className="text-gray-500 dark:text-gray-400">{clock.startDate}</p>
+                      <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                        <Calendar className="h-4 w-4" />
+                        <span>{clock.startDate}</span>
+                      </div>
                       <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
                         <Clock className="h-4 w-4" />
                         <span>{clock.timeElapsed}</span>
@@ -268,7 +297,9 @@ export default function SessionsPage() {
                     </div>
                     <Link
                       href={`/clock/${i + 1}`}
-                      className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
+                      className={`px-4 py-2 rounded-md transition-colors ${
+                        clock.color.replace('text-', 'bg-').replace('dark:text-', 'dark:bg-')
+                      } text-white hover:opacity-90`}
                     >
                       Start Session
                     </Link>
