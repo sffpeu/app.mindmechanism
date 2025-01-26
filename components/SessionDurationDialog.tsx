@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronRight, InfinityIcon, Clock } from 'lucide-react'
+import { Timer, ChevronRight, InfinityIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface SessionDurationDialogProps {
@@ -15,7 +15,7 @@ interface SessionDurationDialogProps {
   onNext: (duration: number | null) => void
 }
 
-const timePresets = [5, 10, 15, 30, 45, 60]
+const timePresets = [15, 30, 45, 60, 120]
 
 export function SessionDurationDialog({ 
   open, 
@@ -64,160 +64,148 @@ export function SessionDurationDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white dark:bg-black sm:max-w-[425px] border-0">
-        <div className="grid gap-8 p-6">
-          {/* Timer Visualization */}
-          <div className="flex justify-center">
-            <div className="relative">
-              <motion.div 
-                className={cn(
-                  "w-40 h-40 rounded-full flex items-center justify-center",
-                  "bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800",
-                  "shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]",
-                  "dark:shadow-[inset_0_1px_1px_rgba(0,0,0,0.2)]"
-                )}
-              >
-                <AnimatePresence mode="wait">
-                  <motion.div 
-                    key={isEndless ? 'endless' : 'timed'}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    className="absolute inset-0 flex items-center justify-center"
-                  >
-                    {isEndless ? (
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                        className="relative"
-                      >
-                        <InfinityIcon className={cn("w-14 h-14", textColorClass)} />
-                      </motion.div>
-                    ) : (
-                      <div className="flex flex-col items-center space-y-1">
-                        <span className={cn("text-3xl font-semibold tracking-tight", textColorClass)}>
-                          {isCustom ? customDuration : (selectedPreset || hoveredPreset || 0)}
-                        </span>
-                        <span className={cn("text-sm font-medium", textColorClass)}>minutes</span>
-                        <span className={cn("text-xs", textColorClass)}>
-                          {rotationDegrees.toFixed(0)}° rotation
-                        </span>
-                      </div>
-                    )}
-                  </motion.div>
-                </AnimatePresence>
+      <DialogContent className="bg-white dark:bg-black sm:max-w-[500px] border-0">
+        <div className="p-6">
+          {/* Header */}
+          <div className="flex items-center mb-8">
+            <Timer className="w-5 h-5 mr-2" />
+            <h2 className="text-xl font-medium">Set Duration</h2>
+          </div>
 
+          <div className="grid grid-cols-[1fr_1.2fr] gap-12">
+            {/* Timer Visualization */}
+            <div className="flex items-center justify-center">
+              <div className="relative w-[280px] h-[280px]">
+                {/* Background circle */}
+                <div className="absolute inset-0 rounded-full border border-gray-100 dark:border-gray-800" />
+                
+                {/* Progress arc */}
                 {!isEndless && (
-                  <motion.div 
-                    className="absolute inset-2"
-                    style={{
-                      borderRadius: '100%',
-                      background: `conic-gradient(${bgColorClass.split('-')[1]} ${rotationDegrees}deg, transparent 0deg)`,
-                      opacity: 0.15,
-                    }}
-                    animate={{
-                      rotate: [0, 360]
-                    }}
-                    transition={{
-                      duration: 120,
-                      repeat: Infinity,
-                      ease: "linear"
-                    }}
-                  />
+                  <svg
+                    className="absolute inset-0 w-full h-full -rotate-90"
+                    viewBox="0 0 100 100"
+                  >
+                    <circle
+                      className="stroke-current"
+                      cx="50"
+                      cy="50"
+                      r="49"
+                      fill="none"
+                      stroke={bgColorClass.split('-')[1]}
+                      strokeWidth="0.5"
+                      strokeDasharray={`${(rotationDegrees / 360) * 308} 308`}
+                      style={{ opacity: 0.8 }}
+                    />
+                  </svg>
                 )}
-              </motion.div>
+
+                {/* Center content */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={isEndless ? 'endless' : 'timed'}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      className="flex flex-col items-center"
+                    >
+                      {isEndless ? (
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                        >
+                          <InfinityIcon className={cn("w-12 h-12 opacity-20")} />
+                        </motion.div>
+                      ) : (
+                        <>
+                          <span className={cn("text-4xl font-light", textColorClass)}>
+                            {rotationDegrees.toFixed(0)}°
+                          </span>
+                          <span className="text-sm text-gray-400 mt-1">
+                            {isCustom ? customDuration : (selectedPreset || hoveredPreset || 0)}min
+                          </span>
+                        </>
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+              </div>
+            </div>
+
+            {/* Controls */}
+            <div className="flex flex-col gap-6">
+              {/* Endless Mode Toggle */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium">Endless Session</h3>
+                  <p className="text-sm text-gray-400">No time limit</p>
+                </div>
+                <Switch
+                  checked={isEndless}
+                  onCheckedChange={(checked) => {
+                    setIsEndless(checked)
+                    if (checked) {
+                      setSelectedPreset(null)
+                      setIsCustom(false)
+                    }
+                  }}
+                  className={isEndless ? bgColorClass : ''}
+                />
+              </div>
+
+              {/* Time Presets */}
+              <div className="grid grid-cols-2 gap-3">
+                {timePresets.map((preset) => (
+                  <motion.button
+                    key={preset}
+                    onClick={() => {
+                      setSelectedPreset(preset)
+                      setIsCustom(false)
+                      setIsEndless(false)
+                    }}
+                    onHoverStart={() => setHoveredPreset(preset)}
+                    onHoverEnd={() => setHoveredPreset(null)}
+                    className={cn(
+                      "h-12 rounded-lg text-sm transition-all",
+                      "border border-gray-100 dark:border-gray-800",
+                      selectedPreset === preset 
+                        ? `${bgColorClass} text-white border-0` 
+                        : 'hover:border-gray-200 dark:hover:border-gray-700'
+                    )}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {preset}min
+                  </motion.button>
+                ))}
+              </div>
+
+              {/* Custom Duration */}
+              <div>
+                <div className="text-sm text-gray-400 mb-2">OR CUSTOM</div>
+                <Input
+                  type="number"
+                  min="1"
+                  max="120"
+                  value={customDuration}
+                  onChange={(e) => {
+                    setCustomDuration(e.target.value)
+                    setIsCustom(true)
+                    setSelectedPreset(null)
+                    setIsEndless(false)
+                  }}
+                  placeholder="Enter duration"
+                  className={cn(
+                    "h-12",
+                    "border-gray-100 dark:border-gray-800",
+                    "hover:border-gray-200 dark:hover:border-gray-700",
+                    isCustom && "ring-1",
+                    isCustom && bgColorClass.replace('bg-', 'ring-')
+                  )}
+                />
+              </div>
             </div>
           </div>
-
-          {/* Time Presets */}
-          <div className="grid grid-cols-3 gap-2">
-            {timePresets.map((preset) => (
-              <motion.button
-                key={preset}
-                onClick={() => {
-                  setSelectedPreset(preset)
-                  setIsCustom(false)
-                  setIsEndless(false)
-                }}
-                onHoverStart={() => setHoveredPreset(preset)}
-                onHoverEnd={() => setHoveredPreset(null)}
-                className={cn(
-                  "relative px-4 h-10 rounded-md text-sm font-medium transition-all",
-                  "hover:shadow-[0_0_0_1px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_0_0_1px_rgba(255,255,255,0.1)]",
-                  selectedPreset === preset 
-                    ? `${bgColorClass} text-white shadow-lg` 
-                    : 'bg-gray-50/50 dark:bg-white/5'
-                )}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                {preset}m
-              </motion.button>
-            ))}
-          </div>
-
-          {/* Custom Duration Input */}
-          <form onSubmit={handleCustomSubmit} className="flex gap-2">
-            <Input
-              type="number"
-              min="1"
-              max="120"
-              value={customDuration}
-              onChange={(e) => setCustomDuration(e.target.value)}
-              placeholder="Custom (1-120)"
-              className={cn(
-                "h-10",
-                isCustom && "ring-2 ring-offset-2",
-                isCustom && bgColorClass.replace('bg-', 'ring-')
-              )}
-            />
-            <Button
-              type="submit"
-              variant="outline"
-              className={cn(
-                "h-10 px-4",
-                isCustom && bgColorClass,
-                isCustom && "text-white border-0"
-              )}
-            >
-              Set
-            </Button>
-          </form>
-
-          {/* Endless Mode Toggle */}
-          <div className={cn(
-            "flex items-center justify-between p-4 rounded-lg",
-            "bg-gray-50/50 dark:bg-white/5",
-            "hover:shadow-[0_0_0_1px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_0_0_1px_rgba(255,255,255,0.1)]",
-            "transition-all"
-          )}>
-            <span className="text-sm font-medium">Endless Session</span>
-            <Switch
-              checked={isEndless}
-              onCheckedChange={(checked) => {
-                setIsEndless(checked)
-                if (checked) {
-                  setSelectedPreset(null)
-                  setIsCustom(false)
-                }
-              }}
-              className={isEndless ? bgColorClass : ''}
-            />
-          </div>
-
-          {/* Start Button */}
-          <Button
-            className={cn(
-              "h-10 font-medium transition-all",
-              bgColorClass,
-              "hover:opacity-90 text-white"
-            )}
-            onClick={handleNext}
-            disabled={!isEndless && selectedPreset === null && !isCustom}
-          >
-            Start Session
-            <ChevronRight className="w-4 h-4 ml-2" />
-          </Button>
         </div>
       </DialogContent>
     </Dialog>
