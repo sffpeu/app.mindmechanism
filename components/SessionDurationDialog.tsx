@@ -6,6 +6,7 @@ import { Switch } from '@/components/ui/switch'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Timer, ChevronRight, InfinityIcon, X, Check, ArrowLeft, PenLine } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { clockSettings } from '@/lib/clockSettings'
 
 interface SessionDurationDialogProps {
   open: boolean
@@ -104,87 +105,140 @@ export function SessionDurationDialog({
     return true
   }
 
-  const renderWordsStep = () => (
-    <motion.div
-      key="words"
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="w-full px-6"
-    >
-      <div className="max-w-md mx-auto">
-        <div className="space-y-6">
-          <div className="space-y-4">
-            {words.map((word, index) => (
-              <div key={index} className="space-y-2">
-                <label className="text-sm font-medium">
-                  Word {index + 1}
-                  {index === 0 && <span className="text-red-500 ml-1">*</span>}
-                </label>
-                <Input
-                  value={word}
-                  onChange={(e) => {
-                    const newWords = [...words]
-                    newWords[index] = e.target.value
-                    setWords(newWords)
-                  }}
-                  placeholder={`Enter word ${index + 1}`}
-                  className={cn(
-                    "h-10 text-base",
-                    "border-gray-200 dark:border-gray-800",
-                    "hover:border-gray-300 dark:hover:border-gray-700",
-                    word.trim() !== '' && "ring-1",
-                    word.trim() !== '' && bgColorClass.replace('bg-', 'ring-')
-                  )}
-                />
-              </div>
-            ))}
+  const renderStepIndicator = () => (
+    <div className="absolute top-0 left-0 right-0 flex justify-center">
+      <div className="flex items-center gap-1 py-2 px-3 rounded-full bg-gray-100/80 dark:bg-white/5 backdrop-blur-sm">
+        {['duration', 'words', 'confirm'].map((s, index) => (
+          <React.Fragment key={s}>
+            <div 
+              className={cn(
+                "w-2 h-2 rounded-full transition-colors",
+                step === s ? bgColorClass : 'bg-gray-300 dark:bg-gray-700'
+              )}
+            />
+            {index < 2 && (
+              <div className="w-12 h-[1px] bg-gray-200 dark:bg-gray-700" />
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
+  )
+
+  const renderWordsStep = () => {
+    const focusNodesCount = clockSettings[clockId]?.focusNodes || 0
+    const defaultWords = [
+      'Focus', 'Clarity', 'Peace', 'Flow', 'Growth', 
+      'Balance', 'Harmony', 'Wisdom', 'Energy', 'Calm'
+    ]
+
+    return (
+      <motion.div
+        key="words"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+        className="w-full px-6"
+      >
+        <div className="grid grid-cols-[1fr_1fr] gap-12">
+          {/* Left side: Focus Nodes Visualization */}
+          <div className="flex items-center justify-center">
+            <div className="relative w-[280px] h-[280px]">
+              <div className="absolute inset-0 rounded-full border border-gray-200 dark:border-gray-800" />
+              {Array.from({ length: focusNodesCount }).map((_, index) => {
+                const angle = ((360 / focusNodesCount) * index) * (Math.PI / 180)
+                const radius = 120
+                const x = 140 + radius * Math.cos(angle)
+                const y = 140 + radius * Math.sin(angle)
+
+                return (
+                  <motion.div
+                    key={index}
+                    className={cn(
+                      "absolute w-3 h-3 rounded-full",
+                      bgColorClass
+                    )}
+                    style={{
+                      left: `${x}px`,
+                      top: `${y}px`,
+                      transform: 'translate(-50%, -50%)',
+                    }}
+                    whileHover={{ scale: 1.5 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  />
+                )
+              })}
+            </div>
           </div>
 
-          <Button
-            onClick={handleNext}
-            disabled={!canProceed()}
-            className={cn(
-              "w-full h-12 text-white text-lg transition-all",
-              bgColorClass,
-              "hover:opacity-90 disabled:opacity-50"
-            )}
-          >
-            Next
-            <ChevronRight className="w-5 h-5 ml-2" />
-          </Button>
+          {/* Right side: Word Inputs */}
+          <div className="flex flex-col gap-4">
+            <div className="space-y-4">
+              {Array.from({ length: focusNodesCount }).map((_, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-black/90 dark:text-white/90">
+                      Word {index + 1}
+                      {index === 0 && <span className="text-red-500 ml-1">*</span>}
+                    </label>
+                    <span className="text-xs text-gray-400">
+                      Suggestion: {defaultWords[index]}
+                    </span>
+                  </div>
+                  <Input
+                    value={words[index] || ''}
+                    onChange={(e) => {
+                      const newWords = [...words]
+                      newWords[index] = e.target.value
+                      setWords(newWords)
+                    }}
+                    placeholder={defaultWords[index]}
+                    className={cn(
+                      "h-10 text-base",
+                      "border-gray-200 dark:border-gray-800",
+                      "hover:border-gray-300 dark:hover:border-gray-700",
+                      "bg-white dark:bg-black",
+                      words[index]?.trim() !== '' && "ring-1",
+                      words[index]?.trim() !== '' && bgColorClass.replace('bg-', 'ring-')
+                    )}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <Button
+              onClick={handleNext}
+              disabled={!canProceed()}
+              className={cn(
+                "w-full h-12 text-white text-lg transition-all mt-4",
+                bgColorClass,
+                "hover:opacity-90 disabled:opacity-50"
+              )}
+            >
+              Next
+              <ChevronRight className="w-5 h-5 ml-2" />
+            </Button>
+          </div>
         </div>
-      </div>
-    </motion.div>
-  )
+      </motion.div>
+    )
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      {/* Navigation Controls - now positioned relative to dialog content */}
-      <div className="absolute -top-14 right-0 z-50 flex items-center gap-2">
-        {step !== 'duration' && (
-          <motion.button
-            onClick={handleBack}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="w-10 h-10 rounded-full bg-white/10 dark:bg-black/20 backdrop-blur-md border border-white/20 dark:border-white/10 hover:bg-white/20 dark:hover:bg-black/30 transition-colors flex items-center justify-center group"
-          >
-            <ArrowLeft className="w-5 h-5 text-black/70 dark:text-white/70 group-hover:text-black dark:group-hover:text-white transition-colors" />
-          </motion.button>
-        )}
-        <motion.button
-          onClick={() => onOpenChange(false)}
-          className="w-10 h-10 rounded-full bg-white/10 dark:bg-black/20 backdrop-blur-md border border-white/20 dark:border-white/10 hover:bg-white/20 dark:hover:bg-black/30 transition-colors flex items-center justify-center group"
-          whileHover={{ rotate: 90 }}
-          transition={{ duration: 0.2 }}
-        >
-          <X className="w-5 h-5 text-black/70 dark:text-white/70 group-hover:text-black dark:group-hover:text-white transition-colors" />
-        </motion.button>
-      </div>
-
-      <DialogContent className="bg-white/80 dark:bg-black/80 backdrop-blur-md border-white/20 dark:border-white/10 sm:max-w-[800px]">
+      <DialogContent className="bg-white dark:bg-black sm:max-w-[800px] border-white/20 dark:border-white/10">
         <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
+          {/* Close button */}
+          <button 
+            onClick={() => onOpenChange(false)}
+            className="absolute -top-12 right-0 w-8 h-8 rounded-full bg-white/10 dark:bg-white/5 backdrop-blur-sm hover:bg-white/20 dark:hover:bg-white/10 transition-colors flex items-center justify-center"
+          >
+            <X className="w-4 h-4 text-black/70 dark:text-white/70" />
+          </button>
+
+          {/* Step indicator */}
+          {renderStepIndicator()}
+
           {/* Header */}
           <div className="absolute left-6 top-4 flex items-center">
             {step === 'duration' && <Timer className="w-4 h-4 mr-2 text-black/70 dark:text-white/70" />}
@@ -196,6 +250,17 @@ export function SessionDurationDialog({
               {step === 'confirm' && 'Confirm Session'}
             </h2>
           </div>
+
+          {/* Back button */}
+          {step !== 'duration' && (
+            <button
+              onClick={handleBack}
+              className="absolute left-6 top-16 flex items-center text-sm text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white transition-colors group"
+            >
+              <ArrowLeft className="w-4 h-4 mr-1 transition-transform group-hover:-translate-x-1" />
+              Back
+            </button>
+          )}
 
           <div className="absolute inset-0 flex items-center">
             <AnimatePresence mode="wait">
