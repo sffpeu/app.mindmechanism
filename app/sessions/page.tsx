@@ -133,7 +133,7 @@ export default function SessionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black">
+    <div className="min-h-screen bg-white dark:bg-black/95">
       <Menu
         showElements={showElements}
         onToggleShow={() => setShowElements(!showElements)}
@@ -144,12 +144,12 @@ export default function SessionsPage() {
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Recent Sessions Section */}
         <section className="mb-12">
-          <h2 className="text-2xl font-medium mb-6 dark:text-white">Recent Sessions</h2>
+          <h2 className="text-2xl font-medium mb-6 text-gray-900 dark:text-white">Recent Sessions</h2>
           <div className="space-y-2">
             {recentSessions.map((session, index) => (
               <div 
                 key={index}
-                className={`py-3 px-4 ${index === 1 ? 'border border-red-100/20 dark:border-red-500/20 rounded-lg' : ''}`}
+                className={`py-3 px-4 ${index === 1 ? 'border border-red-500/20 rounded-lg bg-white/5 backdrop-blur-lg' : ''}`}
               >
                 <div className="flex items-center justify-between">
                   <div>
@@ -186,34 +186,40 @@ export default function SessionsPage() {
 
         {/* Create Session Section */}
         <section>
-          <h2 className="text-2xl font-medium mb-6 dark:text-white">Create Session</h2>
+          <h2 className="text-2xl font-medium mb-6 text-gray-900 dark:text-white">Create Session</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {clockData.map((clock, i) => (
-              <div key={i} className="space-y-6 p-6 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 backdrop-blur-lg transition-all hover:border-gray-300 dark:hover:border-white/20">
-                <div className="aspect-square relative">
-                  <Image
-                    src={`/${i + 1}_small.svg`}
-                    alt={`Clock ${i + 1}`}
-                    fill
-                    className="object-contain mix-blend-darken dark:mix-blend-lighten"
-                  />
-                  {Array.from({ length: clock.focusNodes }).map((_, index) => {
-                    const angle = (index * 360) / clock.focusNodes
-                    const radius = 45
-                    const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
-                    const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
-                    return (
-                      <div
-                        key={index}
-                        className={`absolute w-1.5 h-1.5 rounded-full ${clock.color.split(' ')[1]}`}
-                        style={{
-                          left: `${x}%`,
-                          top: `${y}%`,
-                          transform: 'translate(-50%, -50%)'
-                        }}
-                      />
-                    )
-                  })}
+              <div key={i} className={`space-y-6 p-6 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-lg transition-all hover:border-2 hover:shadow-lg ${clock.color.split(' ')[0].replace('text', 'border')}/20 min-w-[320px]`}>
+                <div className="aspect-square relative flex items-center justify-center">
+                  <div className="w-3/4 h-3/4 relative">
+                    <Image
+                      src={`/${i + 1}_small.svg`}
+                      alt={`Clock ${i + 1}`}
+                      fill
+                      className="object-contain dark:invert"
+                    />
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-[90%] h-[90%] rounded-full relative">
+                      {Array.from({ length: clock.focusNodes }).map((_, index) => {
+                        const angle = (index * 360) / clock.focusNodes
+                        const radius = 48 // Increased radius to place nodes further out
+                        const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
+                        const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
+                        return (
+                          <div
+                            key={index}
+                            className={`absolute w-2 h-2 rounded-full ${clock.color.split(' ')[1]} shadow-sm outline outline-1 outline-offset-1 outline-black/10 dark:outline-white/20`}
+                            style={{
+                              left: `${x}%`,
+                              top: `${y}%`,
+                              transform: 'translate(-50%, -50%)'
+                            }}
+                          />
+                        )
+                      })}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-6">
@@ -230,7 +236,7 @@ export default function SessionsPage() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-gray-400" />
+                        <Clock className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                         <span className="text-gray-500 dark:text-gray-400">Elapsed</span>
                         <span className="font-medium text-gray-900 dark:text-white">{clock.timeElapsed}</span>
                       </div>
@@ -243,12 +249,12 @@ export default function SessionsPage() {
 
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full border border-gray-900 dark:border-white" />
+                        <div className="w-2 h-2 rounded-full border border-gray-900 dark:border-white/40" />
                         <span className="font-medium text-gray-900 dark:text-white">{clock.satellites}</span>
                         <span className="text-gray-500 dark:text-gray-400">Satellites</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-gray-400" />
+                        <Clock className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                         <span className="text-gray-500 dark:text-gray-400">Total Rotations</span>
                         <span className="font-medium text-gray-900 dark:text-white">
                           {clock.totalRotations.toLocaleString()}
@@ -260,17 +266,17 @@ export default function SessionsPage() {
                   <div className="flex gap-2">
                     <Link
                       href={`/clock/${i + 1}`}
-                      className="flex-1 flex items-center justify-center px-4 py-2.5 rounded-lg text-center transition-all border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5"
+                      className={`flex-1 flex items-center justify-center px-4 py-2.5 rounded-lg text-center transition-all border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 hover:border-2 ${clock.color.split(' ')[0].replace('text', 'border')}/20`}
                     >
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      <span className={`text-sm font-medium ${clock.color.split(' ')[0]}`}>
                         Start Session
                       </span>
                     </Link>
                     <Link
                       href={`/clock/${i + 1}`}
-                      className="flex items-center justify-center px-4 py-2.5 rounded-lg text-center transition-all border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5"
+                      className={`flex items-center justify-center px-4 py-2.5 rounded-lg text-center transition-all border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 hover:border-2 ${clock.color.split(' ')[0].replace('text', 'border')}/20`}
                     >
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      <span className={`text-sm font-medium ${clock.color.split(' ')[0]}`}>
                         View
                       </span>
                     </Link>
