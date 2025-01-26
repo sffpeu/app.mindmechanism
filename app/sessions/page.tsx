@@ -240,39 +240,35 @@ export default function SessionsPage() {
             {clockData.map((clock, i) => (
               <Card 
                 key={i}
-                className="group p-4 bg-white/90 hover:bg-white dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
+                className={`group p-4 bg-white/90 hover:bg-white dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border transition-all hover:shadow-lg hover:shadow-${clock.color.split(' ')[0]}/10 border-${clock.color.split(' ')[0]}/20 dark:border-${clock.color.split(' ')[1]}/20`}
               >
-                <div className="p-2 rounded-lg border border-black/5 dark:border-white/10 bg-gray-50 dark:bg-black/50 mb-4">
-                  <div className="text-xs text-gray-600 dark:text-gray-300">
-                    {clock.startDate}
-                  </div>
-                </div>
-                
                 <div className="aspect-square relative mb-4 overflow-hidden rounded-lg border border-black/5 dark:border-white/10 bg-gray-50 dark:bg-black/50">
-                  <Image
-                    src={`/${i + 1}_small.svg`}
-                    alt={`Clock ${i + 1}`}
-                    fill
-                    className="object-contain p-4 group-hover:scale-105 transition-transform duration-300 z-10"
-                  />
-                  {/* Focus Nodes */}
-                  {Array.from({ length: clock.focusNodes }).map((_, index) => {
-                    const angle = (index * 360) / clock.focusNodes
-                    const radius = 45
-                    const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
-                    const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
-                    return (
-                      <div
-                        key={index}
-                        className="absolute w-1.5 h-1.5 rounded-full bg-gray-900 dark:bg-white z-20"
-                        style={{
-                          left: `${x}%`,
-                          top: `${y}%`,
-                          transform: 'translate(-50%, -50%)'
-                        }}
-                      />
-                    )
-                  })}
+                  <div className="group-hover:scale-105 transition-transform duration-300 relative">
+                    <Image
+                      src={`/${i + 1}_small.svg`}
+                      alt={`Clock ${i + 1}`}
+                      fill
+                      className="object-contain p-4 z-10"
+                    />
+                    {/* Focus Nodes */}
+                    {Array.from({ length: clock.focusNodes }).map((_, index) => {
+                      const angle = (index * 360) / clock.focusNodes
+                      const radius = 45
+                      const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
+                      const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
+                      return (
+                        <div
+                          key={index}
+                          className="absolute w-1.5 h-1.5 rounded-full bg-gray-900 dark:bg-white z-20"
+                          style={{
+                            left: `${x}%`,
+                            top: `${y}%`,
+                            transform: 'translate(-50%, -50%)'
+                          }}
+                        />
+                      )
+                    })}
+                  </div>
                 </div>
 
                 <div className="space-y-4">
@@ -287,52 +283,62 @@ export default function SessionsPage() {
 
                   <div className="grid grid-cols-2 gap-2">
                     <div className="p-2 rounded-lg border border-black/5 dark:border-white/10 bg-gray-50 dark:bg-black/50">
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="text-center">
-                          <div className="flex items-center justify-center gap-1 text-xs text-gray-900 dark:text-white">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1 text-xs text-gray-900 dark:text-white">
                             <Circle className="h-3.5 w-3.5" />
-                            <span className="font-medium">{clock.focusNodes}</span>
+                            <span className="font-medium">Focus Nodes</span>
                           </div>
-                          <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">Nodes</p>
+                          <span className="text-xs font-medium text-gray-900 dark:text-white">{clock.focusNodes}</span>
                         </div>
-                        <div className="text-center">
-                          <div className="flex items-center justify-center gap-1 text-xs text-gray-900 dark:text-white">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1 text-xs text-gray-900 dark:text-white">
                             <Satellite className="h-3.5 w-3.5" />
-                            <span className="font-medium">{clock.satellites}</span>
+                            <span className="font-medium">Satellites</span>
                           </div>
-                          <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">Satellites</p>
+                          <span className="text-xs font-medium text-gray-900 dark:text-white">{clock.satellites}</span>
                         </div>
                       </div>
                     </div>
                     <div className="p-2 rounded-lg border border-black/5 dark:border-white/10 bg-gray-50 dark:bg-black/50">
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="text-center">
-                          <div className="flex items-center justify-center gap-1 text-xs text-gray-900 dark:text-white">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1 text-xs text-gray-900 dark:text-white">
                             <Clock className="h-3.5 w-3.5" />
-                            <span className="font-medium">{clock.timeElapsed}</span>
+                            <span className="font-medium">Time</span>
                           </div>
-                          <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">Time</p>
+                          <span className="text-xs font-medium text-gray-900 dark:text-white">{clock.timeElapsed}</span>
                         </div>
-                        <div className="text-center">
-                          <div className="flex items-center justify-center gap-1 text-xs text-gray-900 dark:text-white">
-                            <RotateCw className="h-3.5 w-3.5" />
-                            <span className="font-medium">{clock.totalRotations.toLocaleString()}</span>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1 text-xs text-gray-900 dark:text-white">
+                            <Calendar className="h-3.5 w-3.5" />
+                            <span className="font-medium">Started</span>
                           </div>
-                          <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">Rotations</p>
+                          <span className="text-xs font-medium text-gray-900 dark:text-white">{clock.startDate.replace('Started ', '')}</span>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <Link
-                    href={`/clock/${i + 1}`}
-                    className="group/button flex items-center justify-center w-full px-4 py-2.5 rounded-lg text-center transition-all bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-50"
-                  >
-                    <Play className="h-4 w-4 text-white dark:text-gray-900 mr-2" />
-                    <span className="text-sm font-medium text-white dark:text-gray-900">
-                      Start Session
-                    </span>
-                  </Link>
+                  <div className="flex gap-2">
+                    <Link
+                      href={`/clock/${i + 1}`}
+                      className={`flex-1 flex items-center justify-center px-4 py-2.5 rounded-lg text-center transition-all bg-${clock.color.split(' ')[0]} dark:bg-${clock.color.split(' ')[1]} hover:opacity-90`}
+                    >
+                      <Play className="h-4 w-4 text-white mr-2" />
+                      <span className="text-sm font-medium text-white">
+                        Start Session
+                      </span>
+                    </Link>
+                    <Link
+                      href={`/clock/${i + 1}`}
+                      className="flex items-center justify-center px-4 py-2.5 rounded-lg text-center transition-all border border-black/10 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5"
+                    >
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                        View
+                      </span>
+                    </Link>
+                  </div>
                 </div>
               </Card>
             ))}
