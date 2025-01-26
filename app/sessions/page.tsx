@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
-import { Play, Clock, MoreVertical, Calendar, Circle } from 'lucide-react'
+import { Play, Clock, MoreVertical, Calendar, Circle, ArrowClockwise, ArrowRotateRight } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import DotNavigation from '@/components/DotNavigation'
@@ -27,6 +27,7 @@ interface Session {
   date: Date
   timeRemaining: number
   progress: number
+  clockId: number
 }
 
 interface ClockData {
@@ -43,6 +44,7 @@ export default function SessionsPage() {
   const { isDarkMode } = useTheme()
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(false)
+  const [isListView, setIsListView] = useState(false)
 
   // Mock recent sessions data
   const recentSessions: Session[] = [
@@ -50,13 +52,15 @@ export default function SessionsPage() {
       title: "Galileo's First Observation",
       date: new Date('2025-01-20T10:36:00'),
       timeRemaining: 3600,
-      progress: 0
+      progress: 0,
+      clockId: 0
     },
     {
       title: "Galileo's First Observation",
       date: new Date('2025-01-20T10:35:00'),
       timeRemaining: 3528,
-      progress: 2
+      progress: 2,
+      clockId: 1
     }
   ]
 
@@ -134,6 +138,12 @@ export default function SessionsPage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-black/95">
+      {showElements && (
+        <DotNavigation
+          activeDot={9}
+          isSmallMultiView={false}
+        />
+      )}
       <Menu
         showElements={showElements}
         onToggleShow={() => setShowElements(!showElements)}
@@ -144,39 +154,57 @@ export default function SessionsPage() {
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Recent Sessions Section */}
         <section className="mb-12">
-          <h2 className="text-2xl font-medium mb-6 text-gray-900 dark:text-white">Recent Sessions</h2>
-          <div className="space-y-2">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-medium text-gray-900 dark:text-white">Recent Sessions</h2>
+            <button 
+              onClick={() => setIsListView(!isListView)}
+              className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5"
+            >
+              <span className="text-sm font-medium text-gray-900 dark:text-white">
+                {isListView ? 'Grid View' : 'List View'}
+              </span>
+            </button>
+          </div>
+          <div className={isListView ? "space-y-2" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"}>
             {recentSessions.map((session, index) => (
               <div 
                 key={index}
-                className={`py-3 px-4 ${index === 1 ? 'border border-red-500/20 rounded-lg bg-white/5 backdrop-blur-lg' : ''}`}
+                className={`p-6 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-lg transition-all hover:border-2 hover:shadow-lg ${clockColors[session.clockId].split(' ')[0].replace('text', 'border')}/20`}
               >
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className={`text-base font-medium mb-1 ${index === 1 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
+                    <h3 className={`text-lg font-medium ${clockColors[session.clockId].split(' ')[0]}`}>
                       {session.title}
                     </h3>
-                    <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        {formatDate(session.date)}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4" />
-                        {formatTime(session.timeRemaining)}
-                      </div>
-                      <div>
-                        {session.progress}% Complete
-                      </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                      <Calendar className="h-4 w-4" />
+                      {formatDate(session.date)}
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
                     <button className="p-2 rounded-full hover:bg-gray-50 dark:hover:bg-white/5">
                       <Play className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                     </button>
-                    <button className="p-2 rounded-full hover:bg-gray-50 dark:hover:bg-white/5">
-                      <MoreVertical className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                    </button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Clock className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                      <span className="text-sm text-gray-500 dark:text-gray-400">Remaining</span>
+                    </div>
+                    <span className="text-base font-medium text-gray-900 dark:text-white">
+                      {formatTime(session.timeRemaining)}
+                    </span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className={`w-2 h-2 rounded-full ${clockColors[session.clockId].split(' ')[1]}`} />
+                      <span className="text-sm text-gray-500 dark:text-gray-400">Progress</span>
+                    </div>
+                    <span className="text-base font-medium text-gray-900 dark:text-white">
+                      {session.progress}% Complete
+                    </span>
                   </div>
                 </div>
               </div>
@@ -186,24 +214,34 @@ export default function SessionsPage() {
 
         {/* Create Session Section */}
         <section>
-          <h2 className="text-2xl font-medium mb-6 text-gray-900 dark:text-white">Create Session</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-medium text-gray-900 dark:text-white">Create Session</h2>
+            <button 
+              onClick={() => setIsListView(!isListView)}
+              className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5"
+            >
+              <span className="text-sm font-medium text-gray-900 dark:text-white">
+                {isListView ? 'Grid View' : 'List View'}
+              </span>
+            </button>
+          </div>
+          <div className={isListView ? "space-y-4" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"}>
             {clockData.map((clock, i) => (
-              <div key={i} className={`space-y-6 p-6 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-lg transition-all hover:border-2 hover:shadow-lg ${clock.color.split(' ')[0].replace('text', 'border')}/20 min-w-[320px]`}>
-                <div className="aspect-square relative flex items-center justify-center">
+              <div key={i} className={`space-y-6 p-6 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-lg transition-all hover:border-2 hover:shadow-lg ${clock.color.split(' ')[0].replace('text', 'border')}/20 ${isListView ? 'flex gap-6' : ''}`}>
+                <div className={`aspect-square relative flex items-center justify-center ${isListView ? 'w-32 shrink-0' : ''}`}>
                   <div className="w-3/4 h-3/4 relative">
                     <Image
                       src={`/${i + 1}_small.svg`}
                       alt={`Clock ${i + 1}`}
                       fill
-                      className="object-contain dark:invert"
+                      className="object-contain dark:invert [&>path]:fill-white"
                     />
                   </div>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="w-[90%] h-[90%] rounded-full relative">
                       {Array.from({ length: clock.focusNodes }).map((_, index) => {
                         const angle = (index * 360) / clock.focusNodes
-                        const radius = 48 // Increased radius to place nodes further out
+                        const radius = 48
                         const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
                         const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
                         return (
@@ -222,7 +260,7 @@ export default function SessionsPage() {
                   </div>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-6 flex-1">
                   <div>
                     <h3 className={`text-lg font-medium ${clock.color.split(' ')[0]}`}>
                       {clock.title}
@@ -233,31 +271,47 @@ export default function SessionsPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5">
+                      <div className="flex items-center gap-2 mb-1">
                         <Clock className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                        <span className="text-gray-500 dark:text-gray-400">Elapsed</span>
-                        <span className="font-medium text-gray-900 dark:text-white">{clock.timeElapsed}</span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">Elapsed</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${clock.color.split(' ')[1]}`} />
-                        <span className="font-medium text-gray-900 dark:text-white">{clock.focusNodes}</span>
-                        <span className="text-gray-500 dark:text-gray-400">Focus Nodes</span>
-                      </div>
+                      <span className="text-base font-medium text-gray-900 dark:text-white">
+                        {clock.timeElapsed}
+                      </span>
                     </div>
-
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full border border-gray-900 dark:border-white/40" />
-                        <span className="font-medium text-gray-900 dark:text-white">{clock.satellites}</span>
-                        <span className="text-gray-500 dark:text-gray-400">Satellites</span>
+                    <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5">
+                      <div className="flex items-center gap-2 mb-1">
+                        <ArrowClockwise className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                        <span className="text-sm text-gray-500 dark:text-gray-400">Rotations</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                        <span className="text-gray-500 dark:text-gray-400">Total Rotations</span>
-                        <span className="font-medium text-gray-900 dark:text-white">
-                          {clock.totalRotations.toLocaleString()}
+                      <span className="text-base font-medium text-gray-900 dark:text-white">
+                        {clock.totalRotations.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5 col-span-2">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${clock.color.split(' ')[1]}`} />
+                          <span className="text-sm text-gray-500 dark:text-gray-400">Focus Nodes</span>
+                        </div>
+                        <span className="text-base font-medium text-gray-900 dark:text-white">{clock.focusNodes}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full border border-gray-900 dark:border-white/40" />
+                          <span className="text-sm text-gray-500 dark:text-gray-400">Satellites</span>
+                        </div>
+                        <span className="text-base font-medium text-gray-900 dark:text-white">{clock.satellites}</span>
+                      </div>
+                      <div className="flex items-center justify-between mt-1">
+                        <div className="flex items-center gap-2">
+                          <ArrowRotateRight className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                          <span className="text-sm text-gray-500 dark:text-gray-400">Direction</span>
+                        </div>
+                        <span className="text-base font-medium text-gray-900 dark:text-white capitalize">
+                          {clockSettings[i].rotationDirection}
                         </span>
                       </div>
                     </div>

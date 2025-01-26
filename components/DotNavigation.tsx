@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Settings } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 
 interface DotNavigationProps {
   activeDot: number;
@@ -26,7 +27,16 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
   onOutlinedDotClick 
 }) => {
   const [hoveredDot, setHoveredDot] = useState<number | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 500); // 500ms delay before showing
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleDotClick = (index: number) => {
     if (index === 9) {
@@ -44,9 +54,33 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
   };
 
   return (
-    <div className="fixed right-6 top-1/2 transform -translate-y-1/2 flex flex-col space-y-6">
+    <motion.div 
+      initial={{ x: 100, opacity: 0 }}
+      animate={{ 
+        x: isVisible ? 0 : 100,
+        opacity: isVisible ? 1 : 0
+      }}
+      transition={{ 
+        duration: 0.5,
+        ease: [0.16, 1, 0.3, 1],
+      }}
+      className="fixed right-6 top-1/2 transform -translate-y-1/2 flex flex-col space-y-6"
+    >
       {Array.from({ length: 10 }).map((_, index) => (
-        <div key={index} className="flex items-center justify-end gap-2">
+        <motion.div 
+          key={index} 
+          className="flex items-center justify-end gap-2"
+          initial={{ x: 50, opacity: 0 }}
+          animate={{ 
+            x: isVisible ? 0 : 50,
+            opacity: isVisible ? 1 : 0
+          }}
+          transition={{ 
+            duration: 0.5,
+            delay: 0.1 + index * 0.05,
+            ease: [0.16, 1, 0.3, 1],
+          }}
+        >
           {index === 9 && activeDot === 9 && (
             <button
               onClick={() => router.push(isSmallMultiView ? '/multiview/1' : '/multiview/2')}
@@ -69,9 +103,9 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
                     : 'bg-transparent border-gray-300 dark:border-gray-600'
             }`}
           />
-        </div>
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 };
 
