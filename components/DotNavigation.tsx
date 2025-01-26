@@ -50,7 +50,7 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
       }
       return;
     }
-    router.push(`/clock/${index}`);
+    router.push(`/clock/${index + 1}`);
   };
 
   return (
@@ -64,7 +64,7 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
         duration: 0.5,
         ease: [0.16, 1, 0.3, 1],
       }}
-      className="fixed right-8 top-1/2 -translate-y-1/2 flex flex-col space-y-3"
+      className="fixed right-8 top-1/3 -translate-y-1/2 flex flex-col space-y-4"
     >
       {Array.from({ length: 10 }).map((_, index) => (
         <motion.div 
@@ -81,7 +81,7 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
             ease: [0.16, 1, 0.3, 1],
           }}
         >
-          {index === 9 && activeDot === 9 && (
+          {index === 9 && activeDot === 9 && hoveredDot === 9 && (
             <button
               onClick={() => router.push(isSmallMultiView ? '/multiview/1' : '/multiview/2')}
               className={`w-3.5 h-3.5 rounded-full border-2 border-black dark:border-white transition-all duration-200 hover:scale-150 ${
