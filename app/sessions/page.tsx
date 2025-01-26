@@ -178,18 +178,30 @@ export default function SessionsPage() {
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Recent Sessions Section */}
         <section className="mb-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-medium text-gray-900 dark:text-white">Recent Sessions</h2>
-            <button 
-              onClick={() => setIsListView(!isListView)}
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5"
-            >
-              {isListView ? (
-                <LayoutGrid className="h-4 w-4 text-gray-900 dark:text-white" />
-              ) : (
-                <List className="h-4 w-4 text-gray-900 dark:text-white" />
-              )}
-            </button>
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-2xl font-medium text-gray-900 dark:text-white">Recent Sessions</h2>
+              <div className="flex items-center gap-2">
+                <select className="px-3 py-1.5 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 text-sm text-gray-600 dark:text-gray-400">
+                  <option value="latest">Latest</option>
+                  <option value="oldest">Oldest</option>
+                  <option value="notes">With Notes</option>
+                </select>
+                <button 
+                  onClick={() => setIsListView(!isListView)}
+                  className="w-9 h-9 flex items-center justify-center rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
+                >
+                  {isListView ? (
+                    <LayoutGrid className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                  ) : (
+                    <List className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                  )}
+                </button>
+              </div>
+            </div>
+            <p className="text-base text-gray-600 dark:text-gray-400">
+              Track your meditation journey with a chronological view of your sessions. Each entry captures your progress and insights.
+            </p>
           </div>
           <div className={isListView ? "space-y-2" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"}>
             {recentSessions.map((session, index) => (
@@ -283,18 +295,23 @@ export default function SessionsPage() {
 
         {/* Create Session Section */}
         <section>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-medium text-gray-900 dark:text-white">Create Session</h2>
-            <button 
-              onClick={() => setIsCreateListView(!isCreateListView)}
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5"
-            >
-              {isCreateListView ? (
-                <LayoutGrid className="h-4 w-4 text-gray-900 dark:text-white" />
-              ) : (
-                <List className="h-4 w-4 text-gray-900 dark:text-white" />
-              )}
-            </button>
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-2xl font-medium text-gray-900 dark:text-white">Create Session</h2>
+              <button 
+                onClick={() => setIsCreateListView(!isCreateListView)}
+                className="w-9 h-9 flex items-center justify-center rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
+              >
+                {isCreateListView ? (
+                  <LayoutGrid className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                ) : (
+                  <List className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                )}
+              </button>
+            </div>
+            <p className="text-base text-gray-600 dark:text-gray-400">
+              Begin your meditation practice by selecting one of nine unique clock designs. Each offers customizable duration and settings to enhance your experience.
+            </p>
           </div>
           <div className={isCreateListView ? "space-y-4" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"}>
             {clockData.map((clock, i) => (
