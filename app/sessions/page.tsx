@@ -11,6 +11,7 @@ import { clockSettings } from '@/lib/clockSettings'
 import { SatelliteSettings } from '@/types/ClockSettings'
 import { SessionDurationDialog } from '@/components/SessionDurationDialog'
 import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
 
 // Update satellites count for each clock
 const clockSatellites: Record<number, number> = {
@@ -464,9 +465,27 @@ export default function SessionsPage() {
                   </div>
 
                   <div className={`flex gap-2 ${isCreateListView ? '' : 'mt-auto'}`}>
+                    <Button
+                      onClick={() => handleStartSession(clock.id, clock.color)}
+                      className={`flex-1 flex items-center justify-center px-4 py-2 rounded-lg text-center transition-all bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] ${
+                        clock.color.includes('red') ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]' :
+                        clock.color.includes('orange') ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]' :
+                        clock.color.includes('yellow') ? 'hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]' :
+                        clock.color.includes('green') ? 'hover:shadow-[0_0_15px_rgba(34,197,94,0.1)]' :
+                        clock.color.includes('blue') ? 'hover:shadow-[0_0_15px_rgba(59,130,246,0.1)]' :
+                        clock.color.includes('pink') ? 'hover:shadow-[0_0_15px_rgba(236,72,153,0.1)]' :
+                        clock.color.includes('purple') ? 'hover:shadow-[0_0_15px_rgba(147,51,234,0.1)]' :
+                        clock.color.includes('indigo') ? 'hover:shadow-[0_0_15px_rgba(99,102,241,0.1)]' :
+                        'hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
+                      }`}
+                    >
+                      <span className={`text-sm font-medium ${clock.color.split(' ')[0]}`}>
+                        Start Session
+                      </span>
+                    </Button>
                     <Link
                       href={`/clock/${i + 1}`}
-                      className={`flex-1 flex items-center justify-center px-4 py-2 rounded-lg text-center transition-all bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] ${
+                      className={`w-24 flex items-center justify-center px-4 py-2 rounded-lg text-center transition-all bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] ${
                         clock.color.includes('red') ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]' :
                         clock.color.includes('orange') ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]' :
                         clock.color.includes('yellow') ? 'hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]' :
