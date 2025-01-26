@@ -7,6 +7,20 @@ import { Play, Clock, MoreVertical, Calendar, Circle } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import DotNavigation from '@/components/DotNavigation'
+import { clockSettings } from '@/lib/clockSettings'
+
+// Update satellites count for each clock
+const clockSatellites: Record<number, number> = {
+  0: 8, // Clock 1
+  1: 2, // Clock 2
+  2: 2, // Clock 3
+  3: 0, // Clock 4
+  4: 5, // Clock 5
+  5: 0, // Clock 6
+  6: 5, // Clock 7
+  7: 5, // Clock 8
+  8: 1, // Clock 9
+}
 
 interface Session {
   title: string
@@ -46,36 +60,61 @@ export default function SessionsPage() {
     }
   ]
 
-  // Clock data
-  const clockData: ClockData[] = [
-    {
-      title: "Galileo's First Observation",
-      startDate: "Started December 21, 1610",
-      timeElapsed: "414y 132d 18h",
-      focusNodes: 8,
-      satellites: 0,
-      totalRotations: 329984,
-      color: "text-red-500 bg-red-500"
-    },
-    {
-      title: "Neptune's Discovery",
-      startDate: "Started September 23, 1846",
-      timeElapsed: "178y 164d 15h",
-      focusNodes: 5,
-      satellites: 0,
-      totalRotations: 97701,
-      color: "text-orange-500 bg-orange-500"
-    },
-    {
-      title: "Mars' Deimos",
-      startDate: "Started August 17, 1877",
-      timeElapsed: "147y 193d 9h",
-      focusNodes: 10,
-      satellites: 0,
-      totalRotations: 52749,
-      color: "text-yellow-500 bg-yellow-500"
-    }
+  // Function to calculate elapsed time
+  const getElapsedTime = (startDate: Date): string => {
+    const now = new Date()
+    const elapsed = now.getTime() - startDate.getTime()
+    const years = Math.floor(elapsed / (365 * 24 * 60 * 60 * 1000))
+    const days = Math.floor((elapsed % (365 * 24 * 60 * 60 * 1000)) / (24 * 60 * 60 * 1000))
+    const hours = Math.floor((elapsed % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000))
+    return `${years}y ${days}d ${hours}h`
+  }
+
+  // Function to format start date
+  const formatStartDate = (date: Date): string => {
+    return `Started ${date.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    })}`
+  }
+
+  // Clock colors mapping
+  const clockColors = [
+    'text-red-500 bg-red-500',
+    'text-orange-500 bg-orange-500',
+    'text-yellow-500 bg-yellow-500',
+    'text-green-500 bg-green-500',
+    'text-blue-500 bg-blue-500',
+    'text-pink-500 bg-pink-500',
+    'text-purple-500 bg-purple-500',
+    'text-indigo-500 bg-indigo-500',
+    'text-cyan-500 bg-cyan-500'
   ]
+
+  // Clock titles mapping
+  const clockTitles = [
+    "Galileo's First Observation",
+    "Neptune's Discovery",
+    "Galileo's Spring Observation",
+    "Jupiter's Moons",
+    "Uranus Discovery",
+    "Saturn's Rings",
+    "Ancient Star Charts",
+    "Winter Solstice Study",
+    "Medieval Observations"
+  ]
+
+  // Map clockSettings to clockData
+  const clockData: ClockData[] = clockSettings.map((clock, index) => ({
+    title: clockTitles[index],
+    startDate: formatStartDate(clock.startDateTime),
+    timeElapsed: getElapsedTime(clock.startDateTime),
+    focusNodes: clock.focusNodes,
+    satellites: clockSatellites[index] || 0,
+    totalRotations: Math.floor((Date.now() - clock.startDateTime.getTime()) / clock.rotationTime),
+    color: clockColors[index]
+  }))
 
   const formatTime = (seconds: number) => {
     return `${Math.floor(seconds)}s remaining`
@@ -150,7 +189,7 @@ export default function SessionsPage() {
           <h2 className="text-2xl font-medium mb-6 dark:text-white">Create Session</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {clockData.map((clock, i) => (
-              <div key={i} className="space-y-6">
+              <div key={i} className="space-y-6 p-6 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 backdrop-blur-lg transition-all hover:border-gray-300 dark:hover:border-white/20">
                 <div className="aspect-square relative">
                   <Image
                     src={`/${i + 1}_small.svg`}
