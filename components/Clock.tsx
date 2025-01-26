@@ -478,9 +478,12 @@ export default function Clock({
     );
   };
 
-  function InfoCard({ icon, title, value }: { icon: React.ReactNode; title: string; value: string }) {
+  function InfoCard({ icon, title, value, onHide }: { icon: React.ReactNode; title: string; value: string; onHide: () => void }) {
     return (
-      <Card className="bg-white/80 dark:bg-black/80 backdrop-blur-sm">
+      <Card 
+        className="bg-white/80 dark:bg-black/80 backdrop-blur-sm cursor-pointer hover:bg-white/90 dark:hover:bg-black/90 transition-colors"
+        onClick={onHide}
+      >
         <CardContent className="flex items-center p-2">
           <div className="mr-2 text-gray-500 dark:text-gray-400 flex-shrink-0">{icon}</div>
           <div className="min-w-0 flex-1">
@@ -807,14 +810,14 @@ export default function Clock({
             >
               <div className="w-full">
                 <div className="flex flex-wrap justify-center items-start gap-2">
-                  <InfoCard icon={<ClockIcon className="h-4 w-4" />} title="Current" value={currentTime.toLocaleTimeString()} />
-                  <InfoCard icon={<Calendar className="h-4 w-4" />} title="Started" value={startDateTime.toLocaleDateString()} />
-                  <InfoCard icon={<RotateCw className="h-4 w-4" />} title="Rotation" value={`${rotationDirection === 'clockwise' ? '+' : ''}${rotation.toFixed(3)}°`} />
-                  <InfoCard icon={<Repeat className="h-4 w-4" />} title="R. Complete" value={rotationsCompleted.toString()} />
-                  <InfoCard icon={<Timer className="h-4 w-4" />} title="Elapsed" value={elapsedTime} />
-                  <InfoCard icon={<Compass className="h-4 w-4" />} title="Start °" value={`${startingDegree.toFixed(1)}°`} />
-                  <InfoCard icon={<RotateCw className="h-4 w-4" />} title="Rot. Time" value={`${rotationTime / 1000}s`} />
-                  <InfoCard icon={<div className={`w-4 h-4 ${dotColors[id % dotColors.length]} rounded-full`} />} title="Focus Nodes" value={focusNodes.toString()} />
+                  <InfoCard icon={<ClockIcon className="h-4 w-4" />} title="Current" value={currentTime.toLocaleTimeString()} onHide={() => setShowInfoCards(false)} />
+                  <InfoCard icon={<Calendar className="h-4 w-4" />} title="Started" value={startDateTime.toLocaleDateString()} onHide={() => setShowInfoCards(false)} />
+                  <InfoCard icon={<RotateCw className="h-4 w-4" />} title="Rotation" value={`${rotationDirection === 'clockwise' ? '+' : ''}${rotation.toFixed(3)}°`} onHide={() => setShowInfoCards(false)} />
+                  <InfoCard icon={<Repeat className="h-4 w-4" />} title="R. Complete" value={rotationsCompleted.toString()} onHide={() => setShowInfoCards(false)} />
+                  <InfoCard icon={<Timer className="h-4 w-4" />} title="Elapsed" value={elapsedTime} onHide={() => setShowInfoCards(false)} />
+                  <InfoCard icon={<Compass className="h-4 w-4" />} title="Start °" value={`${startingDegree.toFixed(1)}°`} onHide={() => setShowInfoCards(false)} />
+                  <InfoCard icon={<RotateCw className="h-4 w-4" />} title="Rot. Time" value={`${rotationTime / 1000}s`} onHide={() => setShowInfoCards(false)} />
+                  <InfoCard icon={<div className={`w-4 h-4 ${dotColors[id % dotColors.length]} rounded-full`} />} title="Focus Nodes" value={focusNodes.toString()} onHide={() => setShowInfoCards(false)} />
                 </div>
               </div>
             </motion.div>
@@ -822,20 +825,6 @@ export default function Clock({
         )}
       </div>
     </div>
-  );
-}
-
-function InfoCard({ icon, title, value }: { icon: React.ReactNode; title: string; value: string }) {
-  return (
-    <Card className="bg-white/80 dark:bg-black/80 backdrop-blur-sm">
-      <CardContent className="flex items-center p-2">
-        <div className="mr-2 text-gray-500 dark:text-gray-400 flex-shrink-0">{icon}</div>
-        <div className="min-w-0 flex-1">
-          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 truncate">{title}</p>
-          <p className="text-sm font-semibold truncate dark:text-white">{value}</p>
-        </div>
-      </CardContent>
-    </Card>
   );
 }
 
