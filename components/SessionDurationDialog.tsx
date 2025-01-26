@@ -26,7 +26,7 @@ export function SessionDurationDialog({
   open, 
   onOpenChange, 
   clockId, 
-  clockColor,
+  clockColor = 'text-gray-500 bg-gray-500', // Default color if none provided
   onNext 
 }: SessionDurationDialogProps) {
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null)
@@ -34,8 +34,8 @@ export function SessionDurationDialog({
   const [isCustom, setIsCustom] = useState(false)
   const [isEndless, setIsEndless] = useState(false)
 
-  // Extract color class without the text- prefix
-  const colorClass = clockColor.split(' ')[1] // This will be like 'bg-red-500'
+  // Extract color class with safety check
+  const colorClass = clockColor?.split(' ')?.[1] || 'bg-gray-500' // Default to gray if split fails
 
   // Calculate rotation preview based on duration
   const getRotationPreview = (duration: number) => {
@@ -65,7 +65,7 @@ export function SessionDurationDialog({
             <div className="absolute inset-0 rounded-full border-2 border-black/10 dark:border-white/10" />
             {!isEndless ? (
               <motion.div
-                className={`absolute inset-0 rounded-full border-2 ${colorClass.replace('bg-', 'border-')}`}
+                className={`absolute inset-0 rounded-full border-2 ${colorClass?.replace('bg-', 'border-')}`}
                 style={{
                   clipPath: 'polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 50% 0%)',
                   rotate: getRotationPreview(isCustom ? customDuration : (selectedPreset ?? 0)),
@@ -76,7 +76,7 @@ export function SessionDurationDialog({
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
-                <Infinity className={`w-12 h-12 ${colorClass.replace('bg-', 'text-')}`} />
+                <Infinity className={`w-12 h-12 ${colorClass?.replace('bg-', 'text-')}`} />
               </div>
             )}
           </div>
@@ -113,7 +113,7 @@ export function SessionDurationDialog({
                 max={120}
                 min={1}
                 step={1}
-                className={colorClass.replace('bg-', 'text-')}
+                className={colorClass?.replace('bg-', 'text-')}
               />
             </div>
           )}
