@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { Card } from '@/components/ui/card'
-import { Play, Clock, MoreVertical, Circle, Satellite, RotateCw, Calendar } from 'lucide-react'
+import { Play, Clock, MoreVertical, Circle, Satellite, RotateCw, Calendar, LayoutGrid, List } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import DotNavigation from '@/components/DotNavigation'
@@ -31,6 +31,7 @@ export default function SessionsPage() {
   const { isDarkMode } = useTheme()
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(false)
+  const [isListView, setIsListView] = useState(false)
 
   // Mock recent sessions data
   const recentSessions: Session[] = [
@@ -176,49 +177,96 @@ export default function SessionsPage() {
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Recent Sessions Section */}
         <section className="mb-12">
-          <h2 className="text-2xl font-semibold mb-6 dark:text-white">Recent Sessions</h2>
-          <div className="space-y-4">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-semibold dark:text-white">Recent Sessions</h2>
+            <button
+              onClick={() => setIsListView(!isListView)}
+              className="p-2 rounded-lg bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all text-gray-900 dark:text-white"
+            >
+              {isListView ? <LayoutGrid className="h-5 w-5" /> : <List className="h-5 w-5" />}
+            </button>
+          </div>
+          <div className={isListView ? "space-y-2" : "grid grid-cols-1 md:grid-cols-2 gap-4"}>
             {recentSessions.map((session, index) => (
               <Card 
                 key={index}
-                className="p-4 bg-white/90 hover:bg-white dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
+                className="group p-4 bg-white/90 hover:bg-white dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-red-500/20 dark:border-red-400/20 hover:border-red-500/40 dark:hover:border-red-400/40 transition-all hover:shadow-lg hover:shadow-red-500/10"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="flex-shrink-0">
-                      <Play className="h-5 w-5 text-red-500 dark:text-red-400" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">{session.title}</h3>
-                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                        <Calendar className="h-4 w-4" />
-                        <span>{formatDate(session.date)}</span>
+                {isListView ? (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="flex-shrink-0">
+                        <Play className="h-5 w-5 text-red-500 dark:text-red-400" />
                       </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                        <Clock className="h-4 w-4" />
-                        <span>{formatTime(session.timeRemaining)}</span>
-                      </div>
-                      <div className="mt-1 flex items-center gap-2">
-                        <div className="flex-1 h-1.5 bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-red-500 dark:bg-red-400 rounded-full transition-all" 
-                            style={{ width: `${session.progress}%` }}
-                          />
+                      <div>
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">{session.title}</h3>
+                        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                          <Calendar className="h-4 w-4" />
+                          <span>{formatDate(session.date)}</span>
                         </div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 min-w-[3rem] text-right">
-                          {session.progress}%
-                        </span>
                       </div>
                     </div>
-                    <button className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors">
-                      <MoreVertical className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                    </button>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                          <Clock className="h-4 w-4" />
+                          <span>{formatTime(session.timeRemaining)}</span>
+                        </div>
+                        <div className="mt-1 flex items-center gap-2">
+                          <div className="w-24 h-1.5 bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-red-500 dark:bg-red-400 rounded-full transition-all" 
+                              style={{ width: `${session.progress}%` }}
+                            />
+                          </div>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {session.progress}%
+                          </span>
+                        </div>
+                      </div>
+                      <button className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors">
+                        <MoreVertical className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                      </button>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Play className="h-5 w-5 text-red-500 dark:text-red-400" />
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">{session.title}</h3>
+                      </div>
+                      <button className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors">
+                        <MoreVertical className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-2 rounded-lg border border-red-500/20 dark:border-red-400/20 bg-white/50 dark:bg-black/50">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Calendar className="h-4 w-4 text-red-500 dark:text-red-400" />
+                          <span className="text-gray-600 dark:text-gray-300 font-medium">{formatDate(session.date)}</span>
+                        </div>
+                      </div>
+                      <div className="p-2 rounded-lg border border-red-500/20 dark:border-red-400/20 bg-white/50 dark:bg-black/50">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Clock className="h-4 w-4 text-red-500 dark:text-red-400" />
+                          <span className="text-gray-600 dark:text-gray-300 font-medium">{formatTime(session.timeRemaining)}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 h-1.5 bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-red-500 dark:bg-red-400 rounded-full transition-all" 
+                          style={{ width: `${session.progress}%` }}
+                        />
+                      </div>
+                      <span className="text-sm text-gray-500 dark:text-gray-400 min-w-[3rem] text-right">
+                        {session.progress}%
+                      </span>
+                    </div>
+                  </div>
+                )}
               </Card>
             ))}
           </div>
@@ -231,16 +279,17 @@ export default function SessionsPage() {
             {clockData.map((clock, i) => (
               <Card 
                 key={i}
-                className={`group p-4 bg-white/90 hover:bg-white dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all hover:shadow-lg hover:shadow-${clock.color.split('-')[1]}/10`}
+                className={`group p-4 bg-white/90 hover:bg-white dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border ${
+                  clock.color.replace('text', 'border')
+                }/20 hover:border-opacity-40 dark:hover:border-opacity-40 transition-all hover:shadow-lg hover:shadow-${
+                  clock.color.split('-')[1]
+                }/10`}
               >
-                <div className="aspect-square relative mb-4 overflow-hidden rounded-lg bg-gray-50 dark:bg-black/40">
-                  {/* Background Pattern */}
-                  <div className="absolute inset-0 opacity-5 group-hover:opacity-10 transition-opacity">
-                    <div className="absolute inset-4 border-2 border-dashed rounded-full border-current" />
-                    <div className="absolute inset-8 border-2 border-dashed rounded-full border-current rotate-45" />
-                    <div className="absolute inset-12 border-2 border-dashed rounded-full border-current -rotate-45" />
-                  </div>
-                  
+                <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                  {clock.startDate}
+                </div>
+                
+                <div className="aspect-square relative mb-4 overflow-hidden rounded-lg">
                   {/* Clock Image */}
                   <Image
                     src={`/${i + 1}_small.svg`}
@@ -299,48 +348,50 @@ export default function SessionsPage() {
                   </div>
 
                   {/* Stats Grid */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className={`p-2 rounded-lg border ${clock.color.replace('text', 'border')} bg-white/50 dark:bg-black/50`}>
-                      <div className="flex items-center gap-2 text-sm">
-                        <Circle className={`h-4 w-4 ${clock.color}`} />
-                        <span className="text-gray-600 dark:text-gray-300 font-medium">{clock.focusNodes}</span>
+                  <div className="grid grid-cols-4 gap-2">
+                    <div className="text-center">
+                      <div className={`flex items-center justify-center gap-1 text-sm ${clock.color}`}>
+                        <Circle className="h-4 w-4" />
+                        <span className="font-medium">{clock.focusNodes}</span>
                       </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Focus Nodes</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Nodes</p>
                     </div>
 
-                    <div className={`p-2 rounded-lg border ${clock.color.replace('text', 'border')} bg-white/50 dark:bg-black/50`}>
-                      <div className="flex items-center gap-2 text-sm">
-                        <Satellite className={`h-4 w-4 ${clock.color}`} />
-                        <span className="text-gray-600 dark:text-gray-300 font-medium">{clock.satellites}</span>
+                    <div className="text-center">
+                      <div className={`flex items-center justify-center gap-1 text-sm ${clock.color}`}>
+                        <Satellite className="h-4 w-4" />
+                        <span className="font-medium">{clock.satellites}</span>
                       </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Satellites</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Satellites</p>
                     </div>
 
-                    <div className={`p-2 rounded-lg border ${clock.color.replace('text', 'border')} bg-white/50 dark:bg-black/50`}>
-                      <div className="flex items-center gap-2 text-sm">
-                        <Clock className={`h-4 w-4 ${clock.color}`} />
-                        <span className="text-gray-600 dark:text-gray-300 font-medium">{clock.timeElapsed}</span>
+                    <div className="text-center">
+                      <div className={`flex items-center justify-center gap-1 text-sm ${clock.color}`}>
+                        <Clock className="h-4 w-4" />
+                        <span className="font-medium">{clock.timeElapsed}</span>
                       </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Time Elapsed</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Time</p>
                     </div>
 
-                    <div className={`p-2 rounded-lg border ${clock.color.replace('text', 'border')} bg-white/50 dark:bg-black/50`}>
-                      <div className="flex items-center gap-2 text-sm">
-                        <RotateCw className={`h-4 w-4 ${clock.color}`} />
-                        <span className="text-gray-600 dark:text-gray-300 font-medium">{clock.totalRotations.toLocaleString()}</span>
+                    <div className="text-center">
+                      <div className={`flex items-center justify-center gap-1 text-sm ${clock.color}`}>
+                        <RotateCw className="h-4 w-4" />
+                        <span className="font-medium">{clock.totalRotations.toLocaleString()}</span>
                       </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Rotations</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Rotations</p>
                     </div>
                   </div>
 
                   {/* Start Session Button */}
                   <Link
                     href={`/clock/${i + 1}`}
-                    className={`block w-full px-4 py-2.5 rounded-lg text-center transition-all ${
-                      clock.color.replace('text-', 'bg-').replace('dark:text-', 'dark:bg-')
-                    } text-white hover:opacity-90 group-hover:shadow-md`}
+                    className={`block w-full px-4 py-2.5 rounded-lg text-center transition-all border-2 ${
+                      clock.color.replace('text', 'border')
+                    } ${clock.color} hover:bg-current hover:text-white dark:hover:text-black group-hover:shadow-md`}
                   >
-                    Start Session
+                    <span className="relative z-10 transition-colors group-hover:text-white dark:group-hover:text-black">
+                      Start Session
+                    </span>
                   </Link>
                 </div>
               </Card>
