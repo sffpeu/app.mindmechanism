@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
+import { Timer, Clock, ChevronRight, Infinity } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { Timer, Infinity, Clock, ChevronRight } from 'lucide-react'
 
 interface SessionDurationDialogProps {
   open: boolean
@@ -13,51 +13,31 @@ interface SessionDurationDialogProps {
   onNext: (duration: number | null) => void
 }
 
-const timePresets = [
-  { label: '5 min', value: 5 },
-  { label: '10 min', value: 10 },
-  { label: '15 min', value: 15 },
-  { label: '30 min', value: 30 },
-  { label: '45 min', value: 45 },
-  { label: '60 min', value: 60 }
-]
+const timePresets = [5, 10, 15, 30, 45, 60]
 
 export function SessionDurationDialog({ 
   open, 
   onOpenChange, 
   clockId, 
-  clockColor = 'text-gray-500 bg-gray-500', // Default color if none provided
+  clockColor = 'text-gray-500 bg-gray-500',
   onNext 
 }: SessionDurationDialogProps) {
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null)
   const [customDuration, setCustomDuration] = useState(30)
   const [isCustom, setIsCustom] = useState(false)
   const [isEndless, setIsEndless] = useState(false)
-  const [remainingTime, setRemainingTime] = useState<string>('00:00')
-
-  // Extract color class with safety check
-  const colorClass = clockColor?.split(' ')?.[1] || 'bg-gray-500' // Default to gray if split fails
-  const textColorClass = colorClass?.replace('bg-', 'text-')
-
-  // Calculate rotation preview based on duration
-  const getRotationPreview = (duration: number) => {
-    return (duration / 60) * 360 // 60 minutes = full rotation
-  }
+  const [remainingTime, setRemainingTime] = useState('00:00')
 
   useEffect(() => {
-    if (!selectedPreset) {
-      setRemainingTime('00:00')
-      return
-    }
-
-    const minutes = Math.floor(selectedPreset)
-    const seconds = Math.round((selectedPreset - minutes) * 60)
+    const duration = isCustom ? customDuration : selectedPreset || 0
+    const minutes = Math.floor(duration)
+    const seconds = Math.round((duration % 1) * 60)
     setRemainingTime(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`)
-  }, [selectedPreset])
+  }, [selectedPreset, customDuration, isCustom])
 
   const handleNext = () => {
     if (isEndless) {
-      onNext(null) // null indicates endless session
+      onNext(null)
     } else if (isCustom) {
       onNext(customDuration)
     } else if (selectedPreset !== null) {
@@ -65,79 +45,121 @@ export function SessionDurationDialog({
     }
   }
 
+  const textColorClass = clockColor?.split(' ')?.[0] || 'text-gray-500'
+  const bgColorClass = clockColor?.split(' ')?.[1] || 'bg-gray-500'
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] p-0 gap-0 overflow-hidden">
-        <DialogHeader className="px-8 py-6 bg-white dark:bg-black border-b border-black/5 dark:border-white/10">
-          <DialogTitle className="flex items-center gap-2 text-xl">
+      <DialogContent className="bg-white dark:bg-black border-0 p-0 max-w-md mx-auto overflow-hidden">
+        {/* Header */}
+        <div className="p-6 border-b border-black/5 dark:border-white/10">
+          <h2 className="text-xl font-medium text-gray-900 dark:text-white flex items-center gap-2">
             <Timer className="w-5 h-5" />
             Choose Duration
-          </DialogTitle>
-        </DialogHeader>
+          </h2>
+        </div>
 
-        <div className="p-6 bg-gray-50/50 dark:bg-black/40 space-y-8">
-          {/* Visual Preview */}
-          <div className="relative aspect-square w-40 mx-auto">
-            <div className="absolute inset-0 rounded-full bg-white dark:bg-black shadow-lg border border-black/5 dark:border-white/10" />
-            {!isEndless ? (
-              <>
-                <motion.div
-                  className={`absolute inset-0 rounded-full ${colorClass} opacity-10`}
+        {/* Content */}
+        <div className="p-6 space-y-8">
+          {/* Timer Display */}
+          <div className="flex justify-center">
+            <motion.div 
+              className="relative w-32 h-32 flex items-center justify-center rounded-full bg-gray-50 dark:bg-white/5"
+              animate={{ 
+                rotate: isEndless ? 360 : 0 
+              }}
+              transition={{ duration: isEndless ? 3 : 0.3, repeat: isEndless ? Infinity : 0, ease: "linear" }}
+            >
+              {isEndless ? (
+                <Infinity className={`w-12 h-12 ${textColorClass}`} />
+              ) : (
+                <div className="flex flex-col items-center">
+                  <span className={`text-3xl font-medium tabular-nums ${textColorClass}`}>
+                    {remainingTime}
+                  </span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500">minutes</span>
+                </div>
+              )}
+              {!isEndless && (
+                <motion.div 
+                  className={`absolute inset-0 rounded-full ${bgColorClass}`}
                   style={{
                     clipPath: 'polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 50% 0%)',
-                    rotate: getRotationPreview(isCustom ? customDuration : (selectedPreset ?? 0)),
+                    opacity: 0.1,
+                    rotate: ((isCustom ? customDuration : (selectedPreset || 0)) / 60) * 360,
                     originX: 0.5,
                     originY: 0.5,
                   }}
-                  transition={{ type: "spring", bounce: 0 }}
                 />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Clock className={`w-8 h-8 ${textColorClass}`} />
-                </div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className={`text-2xl font-medium ${textColorClass}`}>
-                    {isCustom ? customDuration : (selectedPreset ?? 0)}
-                  </span>
-                </div>
-              </>
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Infinity className={`w-12 h-12 ${textColorClass}`} />
-              </div>
-            )}
+              )}
+            </motion.div>
           </div>
 
           {/* Preset Buttons */}
           <div className="grid grid-cols-3 gap-2">
             {timePresets.map((preset) => (
               <Button
-                key={preset.value}
-                variant={selectedPreset === preset.value ? 'default' : 'outline'}
+                key={preset}
+                variant="outline"
                 onClick={() => {
-                  setSelectedPreset(preset.value)
+                  setSelectedPreset(preset)
                   setIsCustom(false)
                   setIsEndless(false)
                 }}
-                className={`h-12 relative overflow-hidden hover:border-black/20 dark:hover:border-white/20 ${
-                  selectedPreset === preset.value 
-                    ? `${colorClass} hover:opacity-90 text-white border-0` 
-                    : 'hover:bg-white dark:hover:bg-black'
+                className={`h-12 font-medium transition-all ${
+                  selectedPreset === preset 
+                    ? `${bgColorClass} hover:opacity-90 text-white border-0` 
+                    : 'hover:bg-gray-50 dark:hover:bg-white/5'
                 }`}
               >
-                {preset.label}
+                {preset}m
               </Button>
             ))}
           </div>
 
-          {/* Custom Duration */}
+          {/* Custom and Endless Options */}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsCustom(true)
+                setSelectedPreset(null)
+                setIsEndless(false)
+              }}
+              className={`flex-1 h-12 font-medium transition-all ${
+                isCustom 
+                  ? `${bgColorClass} hover:opacity-90 text-white border-0` 
+                  : 'hover:bg-gray-50 dark:hover:bg-white/5'
+              }`}
+            >
+              Custom
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsEndless(true)
+                setSelectedPreset(null)
+                setIsCustom(false)
+              }}
+              className={`flex-1 h-12 font-medium transition-all ${
+                isEndless 
+                  ? `${bgColorClass} hover:opacity-90 text-white border-0` 
+                  : 'hover:bg-gray-50 dark:hover:bg-white/5'
+              }`}
+            >
+              Endless
+            </Button>
+          </div>
+
+          {/* Custom Duration Slider */}
           {isCustom && (
-            <div className="space-y-6 bg-white dark:bg-black p-4 rounded-lg border border-black/5 dark:border-white/10">
+            <div className="space-y-4 bg-gray-50 dark:bg-white/5 p-4 rounded-lg">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium">
+                <span className="text-sm text-gray-500 dark:text-gray-400">
                   Custom Duration
-                </label>
+                </span>
                 <span className={`text-lg font-medium ${textColorClass}`}>
-                  {customDuration} min
+                  {customDuration}m
                 </span>
               </div>
               <Slider
@@ -150,44 +172,18 @@ export function SessionDurationDialog({
               />
             </div>
           )}
+        </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-2 pt-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsCustom(true)
-                setSelectedPreset(null)
-                setIsEndless(false)
-              }}
-              className={`h-12 hover:border-black/20 dark:hover:border-white/20 hover:bg-white dark:hover:bg-black ${
-                isCustom ? `${colorClass} hover:opacity-90 text-white border-0` : ''
-              }`}
-            >
-              Custom
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsEndless(true)
-                setSelectedPreset(null)
-                setIsCustom(false)
-              }}
-              className={`h-12 hover:border-black/20 dark:hover:border-white/20 hover:bg-white dark:hover:bg-black ${
-                isEndless ? `${colorClass} hover:opacity-90 text-white border-0` : ''
-              }`}
-            >
-              Endless
-            </Button>
-            <Button
-              className={`h-12 ml-auto ${colorClass} hover:opacity-90 text-white gap-2`}
-              onClick={handleNext}
-              disabled={!isEndless && selectedPreset === null && !isCustom}
-            >
-              Next
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
+        {/* Footer */}
+        <div className="p-6 border-t border-black/5 dark:border-white/10">
+          <Button
+            className={`w-full h-12 ${bgColorClass} hover:opacity-90 text-white gap-2`}
+            onClick={handleNext}
+            disabled={!isEndless && selectedPreset === null && !isCustom}
+          >
+            Start Session
+            <ChevronRight className="w-4 h-4" />
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
