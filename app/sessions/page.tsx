@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
-import { Play, Clock, MoreVertical, Calendar, Circle, ArrowClockwise, ArrowRotateRight } from 'lucide-react'
+import { Play, Clock, MoreVertical, Calendar, Circle, ArrowClockwise, RotateCw, RotateCcw } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import DotNavigation from '@/components/DotNavigation'
@@ -283,7 +283,7 @@ export default function SessionsPage() {
                     </div>
                     <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5">
                       <div className="flex items-center gap-2 mb-1">
-                        <ArrowClockwise className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                        <RotateCw className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                         <span className="text-sm text-gray-500 dark:text-gray-400">Rotations</span>
                       </div>
                       <span className="text-base font-medium text-gray-900 dark:text-white">
@@ -307,7 +307,7 @@ export default function SessionsPage() {
                       </div>
                       <div className="flex items-center justify-between mt-1">
                         <div className="flex items-center gap-2">
-                          <ArrowRotateRight className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                          <RotateCw className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                           <span className="text-sm text-gray-500 dark:text-gray-400">Direction</span>
                         </div>
                         <span className="text-base font-medium text-gray-900 dark:text-white capitalize">
