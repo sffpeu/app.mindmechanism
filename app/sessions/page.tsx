@@ -169,44 +169,77 @@ export default function SessionsPage() {
             {recentSessions.map((session, index) => (
               <div 
                 key={index}
-                className={`p-6 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-lg transition-all hover:border-2 hover:shadow-lg ${clockColors[session.clockId].split(' ')[0].replace('text', 'border')}/20`}
+                className={`${isListView 
+                  ? 'flex items-center justify-between p-4' 
+                  : 'p-6'} rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-lg transition-all hover:border-2 hover:shadow-lg ${clockColors[session.clockId].split(' ')[0].replace('text', 'border')}/20`}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className={`text-lg font-medium ${clockColors[session.clockId].split(' ')[0]}`}>
-                      {session.title}
-                    </h3>
-                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                      <Calendar className="h-4 w-4" />
-                      {formatDate(session.date)}
+                {isListView ? (
+                  <>
+                    <div className="flex items-center gap-6">
+                      <div>
+                        <h3 className={`text-base font-medium ${clockColors[session.clockId].split(' ')[0]}`}>
+                          {session.title}
+                        </h3>
+                        <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4" />
+                            {formatDate(session.date)}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4" />
+                            {formatTime(session.timeRemaining)}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${clockColors[session.clockId].split(' ')[1]}`} />
+                            {session.progress}% Complete
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-1">
                     <button className="p-2 rounded-full hover:bg-gray-50 dark:hover:bg-white/5">
                       <Play className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                     </button>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Clock className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                      <span className="text-sm text-gray-500 dark:text-gray-400">Remaining</span>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className={`text-lg font-medium ${clockColors[session.clockId].split(' ')[0]}`}>
+                          {session.title}
+                        </h3>
+                        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                          <Calendar className="h-4 w-4" />
+                          {formatDate(session.date)}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button className="p-2 rounded-full hover:bg-gray-50 dark:hover:bg-white/5">
+                          <Play className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                        </button>
+                      </div>
                     </div>
-                    <span className="text-base font-medium text-gray-900 dark:text-white">
-                      {formatTime(session.timeRemaining)}
-                    </span>
-                  </div>
-                  <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className={`w-2 h-2 rounded-full ${clockColors[session.clockId].split(' ')[1]}`} />
-                      <span className="text-sm text-gray-500 dark:text-gray-400">Progress</span>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Clock className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                          <span className="text-sm text-gray-500 dark:text-gray-400">Remaining</span>
+                        </div>
+                        <span className="text-base font-medium text-gray-900 dark:text-white">
+                          {formatTime(session.timeRemaining)}
+                        </span>
+                      </div>
+                      <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className={`w-2 h-2 rounded-full ${clockColors[session.clockId].split(' ')[1]}`} />
+                          <span className="text-sm text-gray-500 dark:text-gray-400">Progress</span>
+                        </div>
+                        <span className="text-base font-medium text-gray-900 dark:text-white">
+                          {session.progress}% Complete
+                        </span>
+                      </div>
                     </div>
-                    <span className="text-base font-medium text-gray-900 dark:text-white">
-                      {session.progress}% Complete
-                    </span>
-                  </div>
-                </div>
+                  </>
+                )}
               </div>
             ))}
           </div>
@@ -227,8 +260,8 @@ export default function SessionsPage() {
           </div>
           <div className={isListView ? "space-y-4" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"}>
             {clockData.map((clock, i) => (
-              <div key={i} className={`space-y-6 p-6 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-lg transition-all hover:border-2 hover:shadow-lg ${clock.color.split(' ')[0].replace('text', 'border')}/20 ${isListView ? 'flex gap-6' : ''}`}>
-                <div className={`aspect-square relative flex items-center justify-center ${isListView ? 'w-32 shrink-0' : ''}`}>
+              <div key={i} className={`p-6 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-lg transition-all hover:border-2 hover:shadow-lg ${clock.color.split(' ')[0].replace('text', 'border')}/20 ${isListView ? 'flex gap-6 items-center' : ''}`}>
+                <div className={`aspect-square relative flex items-center justify-center ${isListView ? 'w-24 shrink-0' : ''}`}>
                   <div className="w-3/4 h-3/4 relative">
                     <Image
                       src={`/${i + 1}_small.svg`}
@@ -260,8 +293,8 @@ export default function SessionsPage() {
                   </div>
                 </div>
 
-                <div className="space-y-6 flex-1">
-                  <div>
+                <div className="flex-1 min-w-0">
+                  <div className="mb-4">
                     <h3 className={`text-lg font-medium ${clock.color.split(' ')[0]}`}>
                       {clock.title}
                     </h3>
@@ -271,7 +304,7 @@ export default function SessionsPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className={isListView ? "flex gap-6 mb-4" : "grid grid-cols-2 gap-4 mb-4"}>
                     <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5">
                       <div className="flex items-center gap-2 mb-1">
                         <Clock className="h-4 w-4 text-gray-400 dark:text-gray-500" />
@@ -283,7 +316,7 @@ export default function SessionsPage() {
                     </div>
                     <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5">
                       <div className="flex items-center gap-2 mb-1">
-                        <RotateCw className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                        <RotateCw className={`h-4 w-4 text-gray-400 dark:text-gray-500 ${clockSettings[i].rotationDirection === 'counterclockwise' ? 'transform -scale-x-100' : ''}`} />
                         <span className="text-sm text-gray-500 dark:text-gray-400">Rotations</span>
                       </div>
                       <span className="text-base font-medium text-gray-900 dark:text-white">
@@ -305,15 +338,6 @@ export default function SessionsPage() {
                         </div>
                         <span className="text-base font-medium text-gray-900 dark:text-white">{clock.satellites}</span>
                       </div>
-                      <div className="flex items-center justify-between mt-1">
-                        <div className="flex items-center gap-2">
-                          <RotateCw className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                          <span className="text-sm text-gray-500 dark:text-gray-400">Direction</span>
-                        </div>
-                        <span className="text-base font-medium text-gray-900 dark:text-white capitalize">
-                          {clockSettings[i].rotationDirection}
-                        </span>
-                      </div>
                     </div>
                   </div>
 
@@ -328,7 +352,7 @@ export default function SessionsPage() {
                     </Link>
                     <Link
                       href={`/clock/${i + 1}`}
-                      className={`flex items-center justify-center px-4 py-2.5 rounded-lg text-center transition-all border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 hover:border-2 ${clock.color.split(' ')[0].replace('text', 'border')}/20`}
+                      className={`w-24 flex items-center justify-center px-4 py-2.5 rounded-lg text-center transition-all border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 hover:border-2 ${clock.color.split(' ')[0].replace('text', 'border')}/20`}
                     >
                       <span className={`text-sm font-medium ${clock.color.split(' ')[0]}`}>
                         View
