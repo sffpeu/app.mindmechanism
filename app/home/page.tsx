@@ -9,7 +9,6 @@ import { motion } from 'framer-motion'
 import styles from './page.module.css'
 import DotNavigation from '@/components/DotNavigation'
 import { clockSettings } from '@/lib/clockSettings'
-import Image from 'next/image'
 
 export default function HomePage() {
   const { isDarkMode } = useTheme()
@@ -26,19 +25,9 @@ export default function HomePage() {
         onSatellitesChange={setShowSatellites}
       />
       
-      {/* Auth Buttons */}
-      <div className="absolute top-8 right-8 flex items-center gap-3">
-        <button className="px-4 py-1.5 rounded-lg bg-transparent border border-black/10 dark:border-white/10 text-sm text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-all">
-          Log in
-        </button>
-        <button className="px-4 py-1.5 rounded-lg bg-black dark:bg-white text-sm text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 transition-all">
-          Sign up
-        </button>
-      </div>
-      
       <div className="max-w-7xl mx-auto px-4 py-12">
         {/* Hero Section */}
-        <div className="grid grid-cols-[1fr_1fr] gap-16 items-center mb-24">
+        <div className="mb-24">
           <div className="space-y-8">
             <div>
               <h1 className="text-5xl md:text-6xl font-bold dark:text-white mb-6">
@@ -64,42 +53,6 @@ export default function HomePage() {
                 Explore Words
               </button>
             </div>
-          </div>
-
-          {/* MultiView 2 */}
-          <div className="relative w-[90%] ml-auto opacity-90">
-            <div className="grid grid-cols-3 gap-2 h-full">
-              {[...Array(9)].map((_, i) => (
-                <div key={i} className="relative aspect-square bg-white/80 dark:bg-black/40 backdrop-blur-sm border border-black/5 dark:border-white/10 rounded-xl overflow-hidden group hover:border-black/10 dark:hover:border-white/20 transition-all">
-                  <Image
-                    src={`/${i + 1}_small.svg`}
-                    alt={`Clock ${i + 1}`}
-                    fill
-                    className="object-contain p-3 dark:invert [&>path]:fill-white"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Stats Section */}
-        <div className="grid grid-cols-4 gap-8 mb-24">
-          <div className="p-8 rounded-2xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10">
-            <div className="text-4xl font-bold text-black dark:text-white mb-2">9</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Unique Clocks</div>
-          </div>
-          <div className="p-8 rounded-2xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10">
-            <div className="text-4xl font-bold text-black dark:text-white mb-2">300+</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Focus Words</div>
-          </div>
-          <div className="p-8 rounded-2xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10">
-            <div className="text-4xl font-bold text-black dark:text-white mb-2">∞</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Session Modes</div>
-          </div>
-          <div className="p-8 rounded-2xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10">
-            <div className="text-4xl font-bold text-black dark:text-white mb-2">24/7</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Availability</div>
           </div>
         </div>
 
