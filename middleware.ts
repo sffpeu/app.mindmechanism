@@ -1,4 +1,4 @@
-import { authMiddleware } from "@clerk/nextjs";
+import { authMiddleware } from "@clerk/nextjs/server";
 
 export default authMiddleware({
   // Routes that can be accessed while signed out
@@ -17,9 +17,7 @@ export default authMiddleware({
 // See https://clerk.com/docs/references/nextjs/auth-middleware for more information about configuring your middleware
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files
-    "/((?!.*\\..*|_next).*)",
-    // Optional: Protect API routes
-    "/api/(.*)",
+    "/((?!.+\\.[\\w]+$|_next).*)", // exclude all files in the public folder
+    "/(api|trpc)(.*)", // include all API routes
   ],
 }; 
