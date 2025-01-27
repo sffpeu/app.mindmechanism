@@ -1,7 +1,14 @@
 import { authMiddleware } from "@clerk/nextjs";
 
 export default authMiddleware({
-  publicRoutes: ["/", "/glossary", "/api/public(.*)", "/about"],
+  publicRoutes: [
+    "/",
+    "/glossary",
+    "/api/public(.*)",
+    "/about",
+    "/sign-in",
+    "/sign-up"
+  ],
   ignoredRoutes: ["/api/webhooks(.*)"],
   afterAuth(auth, req) {
     // Handle users who aren't authenticated
