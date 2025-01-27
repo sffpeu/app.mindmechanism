@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
-import { Play, Clock, Calendar, RotateCw, Timer, Compass, LayoutGrid, List, Trash2, ChevronUp, ChevronDown } from 'lucide-react'
+import { Play, Clock, Calendar, RotateCw, Timer, Compass, LayoutGrid, List, ChevronUp, ChevronDown } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import DotNavigation from '@/components/DotNavigation'
@@ -62,6 +62,7 @@ export default function SessionsPage() {
   const { isDarkMode } = useTheme()
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(false)
+  const [showRecentSessions, setShowRecentSessions] = useState(true)
   const [isListView, setIsListView] = useState(false)
   const [isCreateListView, setIsCreateListView] = useState(false)
   const [selectedClockId, setSelectedClockId] = useState<number | null>(null)
@@ -86,9 +87,6 @@ export default function SessionsPage() {
       clockId: 1
     }
   ]
-
-  const [showRecentSessions, setShowRecentSessions] = useState(recentSessions.length > 0)
-  const [selectedSessions, setSelectedSessions] = useState<number[]>([])
 
   // Function to calculate elapsed time
   const getElapsedTime = (startDate: Date): string => {
@@ -208,20 +206,6 @@ export default function SessionsPage() {
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-xl font-medium text-gray-900 dark:text-white">Recent Sessions</h2>
               <div className="flex items-center gap-2">
-                {selectedSessions.length > 0 && (
-                  <button
-                    onClick={() => {
-                      // Delete selected sessions logic here
-                      const updatedSessions = recentSessions.filter((_, index) => !selectedSessions.includes(index))
-                      // Update sessions state
-                      setSelectedSessions([])
-                    }}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    <span className="text-sm">Delete</span>
-                  </button>
-                )}
                 <button 
                   onClick={() => setIsListView(!isListView)}
                   className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
@@ -286,20 +270,6 @@ export default function SessionsPage() {
                         'hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
                       }`}
                   >
-                    <div className="absolute top-2 right-2">
-                      <input
-                        type="checkbox"
-                        checked={selectedSessions.includes(index)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedSessions([...selectedSessions, index])
-                          } else {
-                            setSelectedSessions(selectedSessions.filter(i => i !== index))
-                          }
-                        }}
-                        className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
-                      />
-                    </div>
                     {isListView ? (
                       <>
                         <div className="flex items-center gap-4">
