@@ -7,7 +7,9 @@ export default authMiddleware({
     "/api/public(.*)",
     "/about",
     "/sign-in",
-    "/sign-up"
+    "/sign-up",
+    "/sign-up/verify-email",
+    "/sign-up/verify-email-address",
   ],
   ignoredRoutes: ["/api/webhooks(.*)"],
   afterAuth(auth, req) {
