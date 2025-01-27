@@ -27,18 +27,18 @@ export default function HomePage() {
       />
       
       {/* Auth Buttons */}
-      <div className="absolute top-8 right-32 flex items-center gap-4">
-        <button className="px-6 py-2 rounded-lg bg-transparent border-2 border-black/10 dark:border-white/10 text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-all">
+      <div className="absolute top-8 right-8 flex items-center gap-3">
+        <button className="px-4 py-1.5 rounded-lg bg-transparent border border-black/10 dark:border-white/10 text-sm text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-all">
           Log in
         </button>
-        <button className="px-6 py-2 rounded-lg bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 transition-all">
+        <button className="px-4 py-1.5 rounded-lg bg-black dark:bg-white text-sm text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 transition-all">
           Sign up
         </button>
       </div>
       
       <div className="max-w-7xl mx-auto px-4 py-12">
         {/* Hero Section */}
-        <div className="grid grid-cols-[1fr_1.2fr] gap-16 items-center mb-24">
+        <div className="grid grid-cols-[1fr_1fr] gap-16 items-center mb-24">
           <div className="space-y-8">
             <div>
               <h1 className="text-5xl md:text-6xl font-bold dark:text-white mb-6">
@@ -67,15 +67,15 @@ export default function HomePage() {
           </div>
 
           {/* MultiView 2 */}
-          <div className="relative aspect-square">
-            <div className="grid grid-cols-3 gap-4 h-full">
+          <div className="relative w-[90%] ml-auto opacity-90">
+            <div className="grid grid-cols-3 gap-2 h-full">
               {[...Array(9)].map((_, i) => (
-                <div key={i} className="relative aspect-square bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 rounded-2xl overflow-hidden group hover:border-black/10 dark:hover:border-white/20 transition-all">
+                <div key={i} className="relative aspect-square bg-white/80 dark:bg-black/40 backdrop-blur-sm border border-black/5 dark:border-white/10 rounded-xl overflow-hidden group hover:border-black/10 dark:hover:border-white/20 transition-all">
                   <Image
                     src={`/${i + 1}_small.svg`}
                     alt={`Clock ${i + 1}`}
                     fill
-                    className="object-contain p-4 dark:invert [&>path]:fill-white"
+                    className="object-contain p-3 dark:invert [&>path]:fill-white"
                   />
                 </div>
               ))}

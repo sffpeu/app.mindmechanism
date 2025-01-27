@@ -476,174 +476,268 @@ export function SessionDurationDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl bg-white dark:bg-black border-black/10 dark:border-white/10">
-        {renderStepIndicator()}
-        <AnimatePresence mode="wait">
-          {step === 'duration' ? (
-            <motion.div
-              key="duration"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="w-full h-[calc(100%-1rem)] px-8"
+      <DialogContent className={cn(
+        "bg-white dark:bg-black border-white/20 dark:border-white/10",
+        step === 'words' ? "sm:max-w-[1200px] sm:h-[800px]" : "sm:max-w-[800px]",
+        step === 'duration' && "sm:h-[500px]",
+        step === 'confirm' && "sm:h-[500px]"
+      )}>
+        <div className={cn(
+          "relative w-full h-full flex flex-col max-h-[800px]",
+          step === 'duration' && "justify-center"
+        )}>
+          {/* Step indicator */}
+          {renderStepIndicator()}
+
+          {/* Top Navigation */}
+          <div className="absolute right-6 top-4 flex items-center gap-2">
+            {step !== 'duration' && (
+              <button
+                onClick={handleBack}
+                className="w-8 h-8 rounded-full bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors flex items-center justify-center group"
+                aria-label="Go back"
+              >
+                <ArrowLeft className="w-4 h-4 text-black/70 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
+              </button>
+            )}
+            {step === 'words' ? (
+              <button
+                onClick={handleNext}
+                disabled={!canProceed()}
+                className={cn(
+                  "h-8 px-4 rounded-full flex items-center text-sm font-medium transition-all",
+                  bgColorClass,
+                  "text-white hover:opacity-90 disabled:opacity-50",
+                  "disabled:cursor-not-allowed"
+                )}
+              >
+                Start
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </button>
+            ) : step === 'duration' && (
+              <button
+                onClick={handleNext}
+                disabled={!canProceed()}
+                className={cn(
+                  "h-8 px-4 rounded-full flex items-center text-sm font-medium transition-all",
+                  bgColorClass,
+                  "text-white hover:opacity-90 disabled:opacity-50",
+                  "disabled:cursor-not-allowed"
+                )}
+              >
+                Next
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </button>
+            )}
+            <button
+              onClick={() => onOpenChange(false)}
+              className="w-8 h-8 rounded-full bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors flex items-center justify-center"
+              aria-label="Close dialog"
             >
-              <div className="grid grid-cols-[1.2fr_1fr] gap-8 h-full">
-                {/* Left side: Visualization */}
-                <div className="flex flex-col items-center justify-center relative">
-                  <div className="w-[400px] h-[400px] relative">
-                    {/* Thin ring */}
-                    <div className="absolute inset-[15%] rounded-full border border-black/10 dark:border-white/10" />
-                    
-                    {/* Rotation indicator */}
-                    <motion.div
-                      className="absolute inset-[15%] rounded-full"
-                      style={{
-                        borderWidth: '1px',
-                        borderStyle: 'dashed',
-                        rotate: `${rotationDegrees}deg`,
-                        borderColor: 'rgba(0, 0, 0, 0.1)',
-                      }}
-                    />
+              <X className="w-4 h-4 text-black/70 dark:text-white" />
+            </button>
+          </div>
 
-                    {/* Center dot */}
-                    <div className={`absolute left-1/2 top-1/2 w-3 h-3 rounded-full transform -translate-x-1/2 -translate-y-1/2 ${bgColorClass}`} />
-                  </div>
-                </div>
+          {/* Header */}
+          <div className="absolute left-6 top-4 flex items-center">
+            {step === 'duration' && <Timer className="w-4 h-4 mr-2 text-black/70 dark:text-white" />}
+            {step === 'words' && <PenLine className="w-4 h-4 mr-2 text-black/70 dark:text-white" />}
+            {step === 'confirm' && <Check className="w-4 h-4 mr-2 text-black/70 dark:text-white" />}
+            <h2 className="text-base font-medium text-black/90 dark:text-white">
+              {step === 'duration' && 'Set Duration'}
+              {step === 'words' && 'Assign Words'}
+              {step === 'confirm' && 'Confirm Session'}
+            </h2>
+          </div>
 
-                {/* Right side: Duration Selection */}
-                <div className="flex flex-col justify-center space-y-6">
-                  <div>
-                    <h2 className="text-2xl font-medium text-black dark:text-white mb-2">
-                      Session Duration
-                    </h2>
-                    <p className="text-black/60 dark:text-white/60">
-                      Choose how long you want to meditate
-                    </p>
-                  </div>
-
-                  {/* Presets */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-medium text-black dark:text-white">Presets</h3>
-                    <div className="grid grid-cols-3 gap-3">
-                      {timePresets.map((preset) => (
-                        <button
-                          key={preset}
-                          onClick={() => {
-                            setSelectedPreset(preset)
-                            setIsCustom(false)
-                            setIsCustomConfirmed(false)
-                            setIsEndless(false)
-                          }}
-                          onMouseEnter={() => setHoveredPreset(preset)}
-                          onMouseLeave={() => setHoveredPreset(null)}
-                          className={cn(
-                            "px-6 py-4 rounded-xl text-lg font-medium transition-all",
-                            selectedPreset === preset
-                              ? `${textColorClass} bg-black/5 dark:bg-white/10 border-2 ${clockColor.includes('text-') ? clockColor.replace('text-', 'border-') : 'border-black/10 dark:border-white/10'}`
-                              : "text-black dark:text-white border-2 border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5"
-                          )}
-                        >
-                          {preset}m
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Custom Duration */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-medium text-black dark:text-white">Custom Duration</h3>
-                    <form onSubmit={handleCustomSubmit} className="flex items-center gap-3">
-                      <Input
-                        type="number"
-                        min="1"
-                        max="120"
-                        value={customDuration}
-                        onChange={(e) => {
-                          setCustomDuration(e.target.value)
-                          setIsCustomConfirmed(false)
-                        }}
-                        placeholder="Enter minutes"
-                        className="text-lg px-4 py-6 rounded-xl bg-transparent border-2 border-black/10 dark:border-white/10 focus:border-black/20 dark:focus:border-white/20"
-                      />
-                      <Button
-                        type="submit"
-                        className={cn(
-                          "px-6 py-6 rounded-xl text-lg font-medium transition-all",
-                          isCustomConfirmed
-                            ? `${textColorClass} bg-black/5 dark:bg-white/10`
-                            : "text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5"
+          {/* Main Content */}
+          <div className={cn(
+            "flex-1 overflow-hidden",
+            step === 'duration' ? "mt-0" : "mt-14"
+          )}>
+            <AnimatePresence mode="wait">
+              {step === 'duration' && (
+                <motion.div
+                  key="duration"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  className="w-full h-full flex items-center justify-center px-6"
+                >
+                  <div className="w-full grid grid-cols-[1fr_1fr] gap-8 bg-white dark:bg-black rounded-xl mx-auto max-w-3xl">
+                    {/* Timer Visualization */}
+                    <div className="flex items-center justify-center py-8">
+                      <div className="relative w-[220px] h-[220px]">
+                        {/* Background circle */}
+                        <div className="absolute inset-0 rounded-full border border-gray-200 dark:border-gray-800" />
+                        
+                        {/* Progress arc */}
+                        {!isEndless && (
+                          <svg
+                            className="absolute inset-0 w-full h-full -rotate-90"
+                            viewBox="0 0 100 100"
+                          >
+                            {/* First arc (clockwise) */}
+                            <circle
+                              className={cn(
+                                "transition-all duration-300",
+                                hoveredPreset !== null && "filter blur-[1px]"
+                              )}
+                              cx="50"
+                              cy="50"
+                              r="48"
+                              fill="none"
+                              stroke={bgColorClass.split('-')[1]}
+                              strokeWidth={hoveredPreset !== null ? "2" : "1.5"}
+                              strokeDasharray={`${(rotationDegrees / 360) * 302} 302`}
+                              style={{ opacity: hoveredPreset !== null ? 0.9 : 0.8 }}
+                            />
+                            {/* Second arc (counterclockwise) */}
+                            <circle
+                              className={cn(
+                                "transition-all duration-300",
+                                hoveredPreset !== null && "filter blur-[1px]"
+                              )}
+                              cx="50"
+                              cy="50"
+                              r="48"
+                              fill="none"
+                              stroke={bgColorClass.split('-')[1]}
+                              strokeWidth={hoveredPreset !== null ? "2" : "1.5"}
+                              strokeDasharray={`${(rotationDegrees / 360) * 302} 302`}
+                              transform="rotate(180 50 50)"
+                              style={{ opacity: hoveredPreset !== null ? 0.9 : 0.8 }}
+                            />
+                          </svg>
                         )}
-                      >
-                        Set
-                      </Button>
-                    </form>
-                  </div>
 
-                  {/* Endless Mode */}
-                  <div className="flex items-center justify-between border-2 border-black/10 dark:border-white/10 rounded-xl p-4">
-                    <div className="flex items-center gap-3">
-                      <InfinityIcon className="h-5 w-5 text-black dark:text-white" />
-                      <div>
-                        <h3 className="text-lg font-medium text-black dark:text-white">Endless Mode</h3>
-                        <p className="text-sm text-black/60 dark:text-white/60">Meditate without time limit</p>
+                        {/* Center content */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <AnimatePresence mode="wait">
+                            <motion.div
+                              key={isEndless ? 'endless' : 'timed'}
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.9 }}
+                              className="flex flex-col items-center"
+                            >
+                              {isEndless ? (
+                                <div className="opacity-20 dark:opacity-40">
+                                  <InfinityIcon className="w-12 h-12 dark:text-white" />
+                                </div>
+                              ) : (
+                                <>
+                                  <span className={cn("text-4xl font-light", textColorClass)}>
+                                    {rotationDegrees.toFixed(0)}°
+                                  </span>
+                                  <span className="text-sm text-gray-400 dark:text-gray-300 mt-1">
+                                    {isCustom ? customDuration : (selectedPreset || hoveredPreset || 0)}min
+                                  </span>
+                                </>
+                              )}
+                            </motion.div>
+                          </AnimatePresence>
+                        </div>
                       </div>
                     </div>
-                    <Switch
-                      checked={isEndless}
-                      onCheckedChange={(checked) => {
-                        setIsEndless(checked)
-                        if (checked) {
-                          setSelectedPreset(null)
-                          setIsCustom(false)
-                          setIsCustomConfirmed(false)
-                        }
-                      }}
-                      className={cn(
-                        "data-[state=checked]:bg-black dark:data-[state=checked]:bg-white"
-                      )}
-                    />
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          ) : (
-            renderWordsStep()
-          )}
-        </AnimatePresence>
 
-        {/* Navigation */}
-        <div className="absolute bottom-6 right-6 flex items-center gap-3">
-          {step === 'words' && (
-            <Button
-              onClick={handleBack}
-              className="px-6 py-6 rounded-xl text-lg font-medium bg-transparent border-2 border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5"
-            >
-              <ArrowLeft className="h-5 w-5 mr-2" />
-              Back
-            </Button>
-          )}
-          <Button
-            onClick={handleNext}
-            disabled={!canProceed()}
-            className={cn(
-              "px-6 py-6 rounded-xl text-lg font-medium transition-all",
-              canProceed()
-                ? `${textColorClass} bg-black/5 dark:bg-white/10`
-                : "text-black/40 dark:text-white/40 bg-black/5 dark:bg-white/5 cursor-not-allowed"
-            )}
-          >
-            {step === 'duration' ? (
-              <>
-                Next
-                <ChevronRight className="h-5 w-5 ml-2" />
-              </>
-            ) : (
-              <>
-                Start
-                <Timer className="h-5 w-5 ml-2" />
-              </>
-            )}
-          </Button>
+                    {/* Controls */}
+                    <div className="flex flex-col gap-3 py-8">
+                      {/* Endless Mode Toggle */}
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-sm font-medium text-black dark:text-white">Endless Session</h3>
+                          <p className="text-xs text-gray-400 dark:text-gray-300">No time limit</p>
+                        </div>
+                        <Switch
+                          checked={isEndless}
+                          onCheckedChange={(checked) => {
+                            setIsEndless(checked)
+                            if (checked) {
+                              setSelectedPreset(null)
+                              setIsCustom(false)
+                              setIsCustomConfirmed(false)
+                            }
+                          }}
+                          className={isEndless ? bgColorClass : ''}
+                        />
+                      </div>
+
+                      {/* Time Presets */}
+                      <div className="grid grid-cols-2 gap-2">
+                        {timePresets.map((preset) => (
+                          <motion.button
+                            key={preset}
+                            onClick={() => {
+                              setSelectedPreset(preset)
+                              setIsCustom(false)
+                              setIsCustomConfirmed(false)
+                              setIsEndless(false)
+                            }}
+                            onHoverStart={() => setHoveredPreset(preset)}
+                            onHoverEnd={() => setHoveredPreset(null)}
+                            className={cn(
+                              "relative h-10 rounded-lg text-sm font-medium transition-all",
+                              selectedPreset === preset
+                                ? `${bgColorClass} text-white shadow-sm` 
+                                : 'bg-gray-50/80 dark:bg-white/5 text-black dark:text-white hover:bg-gray-100/80 dark:hover:bg-white/10'
+                            )}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="text-base">{preset}</span>
+                              <span className="text-xs ml-0.5">min</span>
+                            </div>
+                          </motion.button>
+                        ))}
+                      </div>
+
+                      {/* Custom Duration */}
+                      <div>
+                        <div className="text-xs text-gray-400 dark:text-gray-300 mb-1.5">OR CUSTOM</div>
+                        <form onSubmit={handleCustomSubmit} className="flex gap-2">
+                          <Input
+                            type="number"
+                            min="1"
+                            max="120"
+                            value={customDuration}
+                            onChange={(e) => {
+                              setCustomDuration(e.target.value)
+                              setIsCustom(true)
+                              setIsCustomConfirmed(false)
+                            }}
+                            placeholder="Enter duration"
+                            className={cn(
+                              "h-10 text-base",
+                              "border-gray-200 dark:border-gray-800 dark:text-white dark:bg-black",
+                              "hover:border-gray-300 dark:hover:border-gray-700",
+                              "placeholder:text-gray-400 dark:placeholder:text-gray-500",
+                              isCustom && isCustomConfirmed && "ring-1",
+                              isCustom && isCustomConfirmed && bgColorClass.replace('bg-', 'ring-')
+                            )}
+                          />
+                          <Button
+                            type="submit"
+                            className={cn(
+                              "h-10 w-10 p-0",
+                              isCustom && isCustomConfirmed 
+                                ? `${bgColorClass} text-white` 
+                                : 'bg-gray-50/80 dark:bg-white/5 text-black dark:text-white hover:bg-gray-100/80 dark:hover:bg-white/10'
+                            )}
+                          >
+                            <Check className="w-4 h-4" />
+                          </Button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {step === 'words' && renderWordsStep()}
+            </AnimatePresence>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
