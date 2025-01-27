@@ -295,9 +295,9 @@ export default function SessionsPage() {
                         </div>
                         <button 
                           onClick={() => handleStartSession(session.clockId, clockColors[session.clockId])}
-                          className="p-2 rounded-full hover:bg-gray-50 dark:hover:bg-white/5"
+                          className="p-3 rounded-full hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
                         >
-                          <Play className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                          <Play className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                         </button>
                       </>
                     ) : (
@@ -315,9 +315,9 @@ export default function SessionsPage() {
                           <div className="flex items-center gap-1">
                             <button 
                               onClick={() => handleStartSession(session.clockId, clockColors[session.clockId])}
-                              className="p-2 rounded-full hover:bg-gray-50 dark:hover:bg-white/5"
+                              className="p-3 rounded-full hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
                             >
-                              <Play className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                              <Play className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                             </button>
                           </div>
                         </div>
@@ -497,7 +497,7 @@ export default function SessionsPage() {
                   <div className={`flex gap-2 ${isCreateListView ? '' : 'mt-auto'}`}>
                     <Button
                       onClick={() => handleStartSession(clock.id, clock.color)}
-                      className={`flex-1 flex items-center justify-center px-4 py-2 rounded-lg text-center transition-all bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] ${
+                      className={`flex-1 flex items-center justify-center px-6 py-3 rounded-lg text-center transition-all bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] ${
                         clock.color.includes('red') ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]' :
                         clock.color.includes('orange') ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]' :
                         clock.color.includes('yellow') ? 'hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]' :
@@ -509,13 +509,14 @@ export default function SessionsPage() {
                         'hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
                       }`}
                     >
-                      <span className={`text-sm font-medium ${clock.color.split(' ')[0]}`}>
+                      <Play className="h-5 w-5 mr-2" />
+                      <span className={`text-base font-medium ${clock.color.split(' ')[0]}`}>
                         Start Session
                       </span>
                     </Button>
                     <Link
                       href={`/clock/${i + 1}`}
-                      className={`w-24 flex items-center justify-center px-4 py-2 rounded-lg text-center transition-all bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] ${
+                      className={`w-32 flex items-center justify-center px-6 py-3 rounded-lg text-center transition-all bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] ${
                         clock.color.includes('red') ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]' :
                         clock.color.includes('orange') ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]' :
                         clock.color.includes('yellow') ? 'hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]' :
@@ -527,7 +528,7 @@ export default function SessionsPage() {
                         'hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
                       }`}
                     >
-                      <span className={`text-sm font-medium ${clock.color.split(' ')[0]}`}>
+                      <span className={`text-base font-medium ${clock.color.split(' ')[0]}`}>
                         View
                       </span>
                     </Link>
