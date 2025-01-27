@@ -13,18 +13,21 @@ export default function VerifyEmailPage() {
 
     async function attemptVerification() {
       try {
-        // If the user has been enrolled in email verification
-        // but they haven't completed it yet, signUp.verifications.emailAddress.status
-        // will equal "pending".
-        if (signUp?.verifications?.emailAddress?.status === "pending") {
+        const status = signUp?.verifications?.emailAddress?.status;
+        
+        if (!status) {
+          console.error('No verification status available');
+          return;
+        }
+
+        if (status === 'pending') {
           // The user needs to verify their email
           // You can display UI here to prompt them to check their email
           return;
         }
 
         // If the user has completed email verification, status will equal "verified"
-        // In this case, we can complete the sign up and authenticate the user
-        if (signUp?.verifications?.emailAddress?.status === "verified") {
+        if (status === 'verified' && signUp.createdSessionId) {
           await setActive({ session: signUp.createdSessionId });
           router.push('/');
         }
