@@ -17,9 +17,6 @@ const nextConfig = {
       allowedOrigins: ['localhost:3000']
     },
   },
-  middleware: {
-    runtime: 'edge',
-  },
 }
 
 module.exports = nextConfig 
