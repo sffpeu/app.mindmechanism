@@ -258,7 +258,7 @@ export default function SessionsPage() {
                     key={index}
                     className={`${isListView 
                       ? 'flex items-center justify-between p-2.5' 
-                      : 'p-3'} rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all group hover:shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] relative ${
+                      : 'p-3'} rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all group hover:shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] relative ${
                         clockColors[session.clockId].includes('red') ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]' :
                         clockColors[session.clockId].includes('orange') ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]' :
                         clockColors[session.clockId].includes('yellow') ? 'hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]' :
