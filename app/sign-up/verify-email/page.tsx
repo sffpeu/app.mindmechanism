@@ -3,7 +3,6 @@
 import { useEffect } from 'react'
 import { useSignUp } from "@clerk/nextjs";
 import { useRouter } from 'next/navigation';
-import type { VerificationStatus } from '@clerk/types';
 
 export default function VerifyEmailPage() {
   const { isLoaded, signUp, setActive } = useSignUp();
@@ -22,8 +21,8 @@ export default function VerifyEmailPage() {
         }
 
         switch (verification.status) {
-          case 'unverified':
-          case 'pending':
+          case 'missing':
+          case 'attempted':
             // The user needs to verify their email
             return;
           case 'verified':
