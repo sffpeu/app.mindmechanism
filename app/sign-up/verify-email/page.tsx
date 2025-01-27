@@ -13,23 +13,26 @@ export default function VerifyEmailPage() {
 
     async function attemptVerification() {
       try {
-        const status = signUp?.verifications?.emailAddress?.status;
+        const verification = signUp?.verifications?.emailAddress;
         
-        if (!status) {
-          console.error('No verification status available');
+        if (!verification) {
+          console.error('No verification available');
           return;
         }
 
-        if (status === 'pending') {
-          // The user needs to verify their email
-          // You can display UI here to prompt them to check their email
-          return;
-        }
-
-        // If the user has completed email verification, status will equal "verified"
-        if (status === 'verified' && signUp.createdSessionId) {
-          await setActive({ session: signUp.createdSessionId });
-          router.push('/');
+        switch (verification.status) {
+          case 'pending':
+            // The user needs to verify their email
+            return;
+          case 'verified':
+            if (signUp.createdSessionId) {
+              await setActive({ session: signUp.createdSessionId });
+              router.push('/');
+            }
+            return;
+          default:
+            console.error('Unexpected verification status:', verification.status);
+            return;
         }
       } catch (err) {
         console.error('Error during verification:', err);
