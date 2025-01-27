@@ -112,8 +112,6 @@ export function SessionDurationDialog({
     if (step === 'duration') {
       setStep('words')
     } else if (step === 'words') {
-      setStep('confirm')
-    } else {
       if (isEndless) {
         onNext(null)
       } else if (isCustom && isCustomConfirmed) {
@@ -128,8 +126,6 @@ export function SessionDurationDialog({
   const handleBack = () => {
     if (step === 'words') {
       setStep('duration')
-    } else if (step === 'confirm') {
-      setStep('words')
     }
   }
 
@@ -144,8 +140,7 @@ export function SessionDurationDialog({
 
   const handleStepClick = (newStep: Step) => {
     if (newStep === 'duration' || 
-        (newStep === 'words' && step !== 'duration') || 
-        (newStep === 'confirm' && step === 'confirm')) {
+        (newStep === 'words' && step === 'words')) {
       setStep(newStep)
     }
   }
@@ -153,23 +148,19 @@ export function SessionDurationDialog({
   const renderStepIndicator = () => (
     <div className="absolute top-0 left-0 right-0 flex justify-center">
       <div className="flex items-center gap-1 py-2 px-3 rounded-full bg-gray-100/80 dark:bg-white/5 backdrop-blur-sm">
-        {(['duration', 'words', 'confirm'] as Step[]).map((s, index) => (
+        {(['duration', 'words'] as Step[]).map((s, index) => (
           <React.Fragment key={s}>
             <button
               onClick={() => handleStepClick(s)}
               className={cn(
                 "w-2 h-2 rounded-full transition-all hover:scale-125",
                 step === s ? bgColorClass : 'bg-gray-300 dark:bg-gray-700',
-                s === 'words' && step === 'duration' && 'cursor-not-allowed opacity-50',
-                s === 'confirm' && step !== 'confirm' && 'cursor-not-allowed opacity-50'
+                s === 'words' && step === 'duration' && 'cursor-not-allowed opacity-50'
               )}
-              disabled={
-                (s === 'words' && step === 'duration') ||
-                (s === 'confirm' && step !== 'confirm')
-              }
+              disabled={s === 'words' && step === 'duration'}
               aria-label={`Go to ${s} step`}
             />
-            {index < 2 && (
+            {index < 1 && (
               <div className="w-12 h-[1px] bg-gray-200 dark:bg-gray-700" />
             )}
           </React.Fragment>
@@ -223,7 +214,7 @@ export function SessionDurationDialog({
                     {/* Focus Nodes */}
                     {Array.from({ length: focusNodesCount }).map((_, index) => {
                       const angle = ((360 / focusNodesCount) * index - 90) * (Math.PI / 180)
-                      const radius = 60 // Increased radius to move nodes outside
+                      const radius = 45 // Reduced radius to bring nodes closer
                       const x = 50 + radius * Math.cos(angle)
                       const y = 50 + radius * Math.sin(angle)
 
@@ -238,11 +229,11 @@ export function SessionDurationDialog({
                           }}
                         >
                           <div className={cn(
-                            "relative w-6 h-6 rounded-full flex items-center justify-center",
+                            "relative w-5 h-5 rounded-full flex items-center justify-center", // Reduced size from w-6 h-6
                             bgColorClass,
                             words[index] ? 'opacity-100' : 'opacity-50'
                           )}>
-                            <span className="text-[10px] font-medium text-white">
+                            <span className="text-[9px] font-medium text-white"> {/* Reduced text size */}
                               {index + 1}
                             </span>
                             <motion.div
@@ -475,7 +466,21 @@ export function SessionDurationDialog({
                 <ArrowLeft className="w-4 h-4 text-black/70 dark:text-white/70 group-hover:-translate-x-0.5 transition-transform" />
               </button>
             )}
-            {step !== 'confirm' && (
+            {step === 'words' ? (
+              <button
+                onClick={handleNext}
+                disabled={!canProceed()}
+                className={cn(
+                  "h-8 px-4 rounded-full flex items-center text-sm font-medium transition-all",
+                  bgColorClass,
+                  "text-white hover:opacity-90 disabled:opacity-50",
+                  "disabled:cursor-not-allowed"
+                )}
+              >
+                Start
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </button>
+            ) : step === 'duration' && (
               <button
                 onClick={handleNext}
                 disabled={!canProceed()}
