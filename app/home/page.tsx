@@ -9,7 +9,6 @@ import { motion } from 'framer-motion'
 import styles from './page.module.css'
 import DotNavigation from '@/components/DotNavigation'
 import { clockSettings } from '@/lib/clockSettings'
-import { AuthButtons } from '@/components/AuthButtons'
 
 export default function HomePage() {
   const { isDarkMode } = useTheme()
@@ -25,10 +24,6 @@ export default function HomePage() {
         showSatellites={showSatellites}
         onSatellitesChange={setShowSatellites}
       />
-      
-      <div className="fixed top-4 right-4 z-50">
-        <AuthButtons />
-      </div>
       
       <div className="max-w-7xl mx-auto px-4 py-12">
         {/* Hero Section */}
@@ -49,13 +44,6 @@ export default function HomePage() {
               >
                 <Play className="h-5 w-5" />
                 Start Session
-              </button>
-              <button 
-                onClick={() => router.push('/glossary')}
-                className="px-8 py-4 rounded-xl bg-transparent border-2 border-black/10 dark:border-white/10 text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-all flex items-center gap-2"
-              >
-                <BookOpen className="h-5 w-5" />
-                Explore Words
               </button>
             </div>
           </div>
