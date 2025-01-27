@@ -1,4 +1,4 @@
-import { clerkMiddleware } from "@clerk/nextjs/server";
+import { clerkMiddleware, getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
@@ -17,8 +17,9 @@ function isIgnored(path: string) {
   );
 }
 
-export default clerkMiddleware((request: NextRequest) => {
-  const path = request.nextUrl.pathname;
+export default clerkMiddleware(async (req) => {
+  const { userId } = getAuth(req);
+  const path = req.nextUrl.pathname;
   
   if (isIgnored(path)) {
     return NextResponse.next();
@@ -29,10 +30,9 @@ export default clerkMiddleware((request: NextRequest) => {
   }
   
   // If the user is not signed in and the path is not public, redirect them to the sign-in page
-  const { userId } = request.auth;
   if (!userId) {
-    const signInUrl = new URL('/sign-in', request.url);
-    signInUrl.searchParams.set('redirect_url', request.url);
+    const signInUrl = new URL('/sign-in', req.url);
+    signInUrl.searchParams.set('redirect_url', req.url);
     return NextResponse.redirect(signInUrl);
   }
   
