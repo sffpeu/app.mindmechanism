@@ -1,3 +1,5 @@
+'use client'
+
 import { useTheme } from '@/app/ThemeContext'
 
 export const Logo = () => {
