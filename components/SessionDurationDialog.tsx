@@ -177,7 +177,7 @@ export function SessionDurationDialog({
       if (selectedFilter === 'Default') return word.version === 'Default'
       if (selectedLetter) return word.word.toUpperCase().startsWith(selectedLetter)
       return true
-    })
+    }).sort((a, b) => a.word.localeCompare(b.word))
 
     return (
       <motion.div
@@ -185,11 +185,11 @@ export function SessionDurationDialog({
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -20 }}
-        className="w-full h-[calc(100%-4rem)] px-6 overflow-hidden"
+        className="w-full h-[calc(100%-1rem)] px-6 overflow-hidden"
       >
-        <div className="grid grid-cols-[300px_1fr] gap-6 h-full">
+        <div className="grid grid-cols-[280px_1fr] gap-4 h-full">
           {/* Left side: Focus Nodes and Selected Words */}
-          <div className="space-y-4 overflow-y-auto pr-2 max-h-full scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
+          <div className="space-y-3 overflow-y-auto pr-2 max-h-full scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
             {/* Focus Nodes Card */}
             <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
               <div className="p-3 border-b border-gray-200 dark:border-gray-800">
@@ -199,7 +199,7 @@ export function SessionDurationDialog({
                 </p>
               </div>
               <div className="aspect-square relative">
-                <div className="absolute inset-6">
+                <div className="absolute inset-4">
                   <div className="relative w-full h-full">
                     <div className="absolute inset-0 rounded-full border border-gray-200 dark:border-gray-800" />
                     {Array.from({ length: focusNodesCount }).map((_, index) => {
@@ -239,12 +239,12 @@ export function SessionDurationDialog({
                   {words.filter(w => w).length} of {focusNodesCount} words selected
                 </p>
               </div>
-              <div className="p-3 space-y-2">
+              <div className="p-2 space-y-2">
                 {Array.from({ length: focusNodesCount }).map((_, index) => (
                   <div
                     key={index}
                     className={cn(
-                      "px-4 py-3 rounded-lg",
+                      "px-3 py-2 rounded-lg",
                       words[index]
                         ? "bg-gray-50 dark:bg-white/5"
                         : "border border-dashed border-gray-200 dark:border-gray-800"
@@ -280,7 +280,7 @@ export function SessionDurationDialog({
 
           {/* Right side: Word Selection */}
           <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden flex flex-col max-h-full">
-            <div className="p-3 border-b border-gray-200 dark:border-gray-800 space-y-3">
+            <div className="p-3 border-b border-gray-200 dark:border-gray-800 space-y-2">
               {/* Search */}
               <div className="flex items-center space-x-3">
                 <div className="flex-1 relative">
@@ -297,7 +297,7 @@ export function SessionDurationDialog({
               </div>
 
               {/* Filters */}
-              <div className="flex flex-wrap gap-1.5 max-h-[80px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
+              <div className="flex flex-wrap gap-1.5">
                 {['All', 'Default', 'Positive', 'Neutral', 'Negative'].map(filter => (
                   <button
                     key={filter}
@@ -317,7 +317,7 @@ export function SessionDurationDialog({
               </div>
 
               {/* Alphabet */}
-              <div className="flex flex-wrap gap-1 max-h-[80px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
+              <div className="flex flex-wrap gap-1">
                 {alphabet.map(letter => (
                   <button
                     key={letter}
@@ -339,7 +339,7 @@ export function SessionDurationDialog({
 
             {/* Word Grid */}
             <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
-              <div className="grid grid-cols-3 gap-3 p-3">
+              <div className="grid grid-cols-3 gap-2 p-2">
                 {filteredWords.length === 0 ? (
                   <div className="col-span-3 py-6 text-center text-gray-500 dark:text-gray-400">
                     No words found
@@ -358,7 +358,7 @@ export function SessionDurationDialog({
                       }}
                       disabled={words.includes(word.word)}
                       className={cn(
-                        "p-3 rounded-xl text-left transition-all",
+                        "p-2.5 rounded-lg text-left transition-all",
                         words.includes(word.word)
                           ? "opacity-50 cursor-not-allowed"
                           : "hover:bg-gray-50 dark:hover:bg-white/5",
@@ -366,7 +366,7 @@ export function SessionDurationDialog({
                       )}
                       aria-label={`Select word ${word.word}${words.includes(word.word) ? ' (already selected)' : ''}`}
                     >
-                      <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-start justify-between mb-1.5">
                         <div>
                           <h3 className="text-sm font-medium text-black dark:text-white">
                             {word.word}
@@ -409,12 +409,12 @@ export function SessionDurationDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(
         "bg-white dark:bg-black border-white/20 dark:border-white/10",
-        step === 'words' ? "sm:max-w-[1200px] sm:h-[700px]" : "sm:max-w-[800px]",
+        step === 'words' ? "sm:max-w-[1200px] sm:h-[800px]" : "sm:max-w-[800px]",
         step === 'duration' && "sm:h-[500px]",
         step === 'confirm' && "sm:h-[500px]"
       )}>
         <div className={cn(
-          "relative w-full h-full flex flex-col",
+          "relative w-full h-full flex flex-col max-h-[800px]",
           step === 'duration' && "justify-center"
         )}>
           {/* Step indicator */}
@@ -671,7 +671,7 @@ export function SessionDurationDialog({
           </div>
 
           {/* Footer Navigation */}
-          <div className="px-6 py-3 mt-2 border-t border-gray-200 dark:border-gray-800">
+          <div className="px-6 py-3 mt-auto border-t border-gray-200 dark:border-gray-800">
             <div className="flex items-center justify-between">
               {step !== 'duration' ? (
                 <Button
