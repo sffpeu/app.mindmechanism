@@ -9,7 +9,7 @@ export default function VerifyEmailPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoaded) return;
+    if (!isLoaded || !setActive) return;
 
     async function attemptVerification() {
       try {
@@ -25,7 +25,7 @@ export default function VerifyEmailPage() {
             // The user needs to verify their email
             return;
           case 'verified':
-            if (signUp.createdSessionId) {
+            if (signUp?.createdSessionId) {
               await setActive({ session: signUp.createdSessionId });
               router.push('/');
             }
