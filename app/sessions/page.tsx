@@ -67,8 +67,6 @@ export default function SessionsPage() {
   const [selectedClockId, setSelectedClockId] = useState<number | null>(null)
   const [selectedClockColor, setSelectedClockColor] = useState<string>('')
   const [isDurationDialogOpen, setIsDurationDialogOpen] = useState(false)
-  const [showRecentSessions, setShowRecentSessions] = useState(recentSessions.length > 0)
-  const [selectedSessions, setSelectedSessions] = useState<number[]>([])
   const router = useRouter()
 
   // Mock recent sessions data
@@ -88,6 +86,9 @@ export default function SessionsPage() {
       clockId: 1
     }
   ]
+
+  const [showRecentSessions, setShowRecentSessions] = useState(recentSessions.length > 0)
+  const [selectedSessions, setSelectedSessions] = useState<number[]>([])
 
   // Function to calculate elapsed time
   const getElapsedTime = (startDate: Date): string => {
