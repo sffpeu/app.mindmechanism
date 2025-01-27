@@ -29,6 +29,8 @@ export default function ClockPage() {
   const searchParams = useSearchParams()
   const id = parseInt(params.id as string)
   const duration = searchParams.get('duration') ? parseInt(searchParams.get('duration') as string) : null
+  const encodedWords = searchParams.get('words')
+  const words = encodedWords ? JSON.parse(decodeURIComponent(encodedWords)) : []
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(false)
   const [showInfoCards, setShowInfoCards] = useState(true)
@@ -94,6 +96,7 @@ export default function ClockPage() {
         isMultiView={false}
         isMultiView2={false}
         allClocks={clockSettings}
+        customWords={words}
       />
       {showSettings && (
         <ClockSettings

@@ -171,11 +171,12 @@ export default function SessionsPage() {
     setIsDurationDialogOpen(true)
   }
 
-  const handleDurationSelected = (duration: number | null) => {
+  const handleDurationSelected = (duration: number | null, words: string[]) => {
     if (selectedClockId !== null) {
-      // Navigate to the clock page with the selected duration
+      // Navigate to the clock page with the selected duration and words
       const durationMs = duration === null ? undefined : duration * 60000 // Convert minutes to milliseconds
-      router.push(`/clock/${selectedClockId}?duration=${durationMs}`)
+      const encodedWords = encodeURIComponent(JSON.stringify(words))
+      router.push(`/clock/${selectedClockId}?duration=${durationMs}&words=${encodedWords}`)
     }
     setIsDurationDialogOpen(false)
   }

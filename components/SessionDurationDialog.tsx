@@ -16,7 +16,7 @@ interface SessionDurationDialogProps {
   onOpenChange: (open: boolean) => void
   clockId: number
   clockColor: string
-  onNext: (duration: number | null) => void
+  onNext: (duration: number | null, words: string[]) => void
 }
 
 const timePresets = [15, 30, 45, 60, 120]
@@ -113,11 +113,11 @@ export function SessionDurationDialog({
       setStep('words')
     } else if (step === 'words') {
       if (isEndless) {
-        onNext(null)
+        onNext(null, words)
       } else if (isCustom && isCustomConfirmed) {
-        onNext(Number(customDuration))
+        onNext(Number(customDuration), words)
       } else if (selectedPreset !== null) {
-        onNext(selectedPreset)
+        onNext(selectedPreset, words)
       }
       onOpenChange(false)
     }

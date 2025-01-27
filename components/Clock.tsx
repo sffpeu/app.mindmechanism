@@ -145,7 +145,8 @@ export default function Clock({
   onToggleShow, 
   hideControls = false,
   showSatellites = false,
-  showInfo = true
+  showInfo = true,
+  customWords = []
 }: ClockProps) {
   if (!(startDateTime instanceof Date) || isNaN(startDateTime.getTime())) {
     console.error(`Invalid startDateTime for clock ${id}:`, startDateTime);
@@ -161,6 +162,7 @@ export default function Clock({
   const lastRotation = useRef(rotation);
   const [showInfoCards, setShowInfoCards] = useState(true);
   const [displayState, setDisplayState] = useState<DisplayState>('info');
+  const [selectedNodeIndex, setSelectedNodeIndex] = useState<number | null>(null);
 
   // Handle image error
   const handleImageError = () => {
@@ -249,6 +251,8 @@ export default function Clock({
           const x = 50 + radius * Math.cos(radians);
           const y = 50 + radius * Math.sin(radians);
 
+          const isSelected = selectedNodeIndex === index;
+
           return (
             <motion.div
               key={`${clockId}-${index}`}
@@ -258,13 +262,41 @@ export default function Clock({
                 top: `${y}%`,
                 transform: 'translate(-50%, -50%)',
                 backgroundColor: dotColors[clockId % dotColors.length].replace('bg-[', '').replace(']', ''),
-                boxShadow: '0 0 8px rgba(0, 0, 0, 0.3)',
+                boxShadow: isSelected ? '0 0 12px rgba(0, 0, 0, 0.5)' : '0 0 8px rgba(0, 0, 0, 0.3)',
               }}
               whileHover={{ scale: 1.5 }}
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
+              onClick={() => {
+                if (selectedNodeIndex === index) {
+                  setSelectedNodeIndex(null);
+                } else {
+                  setSelectedNodeIndex(index);
+                }
+              }}
             />
           );
         })}
+        {selectedNodeIndex !== null && customWords && customWords[selectedNodeIndex] && (
+          <motion.div
+            className="absolute"
+            style={{
+              left: '50%',
+              top: '50%',
+              transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
+              transformOrigin: 'center',
+              zIndex: 1000,
+            }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+          >
+            <div className="bg-white/90 dark:bg-black/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-lg">
+              <p className="text-sm font-medium text-black dark:text-white whitespace-nowrap">
+                {customWords[selectedNodeIndex]}
+              </p>
+            </div>
+          </motion.div>
+        )}
       </div>
     );
   };
