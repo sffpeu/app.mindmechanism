@@ -9,12 +9,6 @@ import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Note } from '@/types/Note'
 
-interface Note {
-  title: string
-  content: string
-  date: string
-}
-
 export default function NotesPage() {
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(false)
