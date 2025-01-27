@@ -497,7 +497,7 @@ export function SessionDurationDialog({
                 className="w-8 h-8 rounded-full bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors flex items-center justify-center group"
                 aria-label="Go back"
               >
-                <ArrowLeft className="w-4 h-4 text-black/70 dark:text-white/70 group-hover:-translate-x-0.5 transition-transform" />
+                <ArrowLeft className="w-4 h-4 text-black/70 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
               </button>
             )}
             {step === 'words' ? (
@@ -534,16 +534,16 @@ export function SessionDurationDialog({
               className="w-8 h-8 rounded-full bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors flex items-center justify-center"
               aria-label="Close dialog"
             >
-              <X className="w-4 h-4 text-black/70 dark:text-white/70" />
+              <X className="w-4 h-4 text-black/70 dark:text-white" />
             </button>
           </div>
 
           {/* Header */}
           <div className="absolute left-6 top-4 flex items-center">
-            {step === 'duration' && <Timer className="w-4 h-4 mr-2 text-black/70 dark:text-white/70" />}
-            {step === 'words' && <PenLine className="w-4 h-4 mr-2 text-black/70 dark:text-white/70" />}
-            {step === 'confirm' && <Check className="w-4 h-4 mr-2 text-black/70 dark:text-white/70" />}
-            <h2 className="text-base font-medium text-black/90 dark:text-white/90">
+            {step === 'duration' && <Timer className="w-4 h-4 mr-2 text-black/70 dark:text-white" />}
+            {step === 'words' && <PenLine className="w-4 h-4 mr-2 text-black/70 dark:text-white" />}
+            {step === 'confirm' && <Check className="w-4 h-4 mr-2 text-black/70 dark:text-white" />}
+            <h2 className="text-base font-medium text-black/90 dark:text-white">
               {step === 'duration' && 'Set Duration'}
               {step === 'words' && 'Assign Words'}
               {step === 'confirm' && 'Confirm Session'}
@@ -622,15 +622,15 @@ export function SessionDurationDialog({
                               className="flex flex-col items-center"
                             >
                               {isEndless ? (
-                                <div className="opacity-20">
-                                  <InfinityIcon className="w-12 h-12" />
+                                <div className="opacity-20 dark:opacity-40">
+                                  <InfinityIcon className="w-12 h-12 dark:text-white" />
                                 </div>
                               ) : (
                                 <>
                                   <span className={cn("text-4xl font-light", textColorClass)}>
                                     {rotationDegrees.toFixed(0)}°
                                   </span>
-                                  <span className="text-sm text-gray-400 mt-1">
+                                  <span className="text-sm text-gray-400 dark:text-gray-300 mt-1">
                                     {isCustom ? customDuration : (selectedPreset || hoveredPreset || 0)}min
                                   </span>
                                 </>
@@ -646,8 +646,8 @@ export function SessionDurationDialog({
                       {/* Endless Mode Toggle */}
                       <div className="flex items-center justify-between">
                         <div>
-                          <h3 className="text-sm font-medium">Endless Session</h3>
-                          <p className="text-xs text-gray-400">No time limit</p>
+                          <h3 className="text-sm font-medium text-black dark:text-white">Endless Session</h3>
+                          <p className="text-xs text-gray-400 dark:text-gray-300">No time limit</p>
                         </div>
                         <Switch
                           checked={isEndless}
@@ -680,7 +680,7 @@ export function SessionDurationDialog({
                               "relative h-10 rounded-lg text-sm font-medium transition-all",
                               selectedPreset === preset 
                                 ? `${bgColorClass} text-white shadow-sm` 
-                                : 'bg-gray-50/80 dark:bg-white/5 hover:bg-gray-100/80 dark:hover:bg-white/10'
+                                : 'bg-gray-50/80 dark:bg-white/5 text-black dark:text-white hover:bg-gray-100/80 dark:hover:bg-white/10'
                             )}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
@@ -695,7 +695,7 @@ export function SessionDurationDialog({
 
                       {/* Custom Duration */}
                       <div>
-                        <div className="text-xs text-gray-400 mb-1.5">OR CUSTOM</div>
+                        <div className="text-xs text-gray-400 dark:text-gray-300 mb-1.5">OR CUSTOM</div>
                         <form onSubmit={handleCustomSubmit} className="flex gap-2">
                           <Input
                             type="number"
@@ -710,8 +710,9 @@ export function SessionDurationDialog({
                             placeholder="Enter duration"
                             className={cn(
                               "h-10 text-base",
-                              "border-gray-200 dark:border-gray-800",
+                              "border-gray-200 dark:border-gray-800 dark:text-white dark:bg-black",
                               "hover:border-gray-300 dark:hover:border-gray-700",
+                              "placeholder:text-gray-400 dark:placeholder:text-gray-500",
                               isCustom && isCustomConfirmed && "ring-1",
                               isCustom && isCustomConfirmed && bgColorClass.replace('bg-', 'ring-')
                             )}
@@ -720,7 +721,9 @@ export function SessionDurationDialog({
                             type="submit"
                             className={cn(
                               "h-10 w-10 p-0",
-                              isCustom && isCustomConfirmed ? `${bgColorClass} text-white` : 'bg-gray-50/80 dark:bg-white/5'
+                              isCustom && isCustomConfirmed 
+                                ? `${bgColorClass} text-white` 
+                                : 'bg-gray-50/80 dark:bg-white/5 text-black dark:text-white hover:bg-gray-100/80 dark:hover:bg-white/10'
                             )}
                           >
                             <Check className="w-4 h-4" />

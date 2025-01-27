@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
-import { Play, Clock, Calendar, RotateCw, Timer, Compass, LayoutGrid, List } from 'lucide-react'
+import { Play, Clock, Calendar, RotateCw, Timer, Compass, LayoutGrid, List, Trash2, ChevronUp, ChevronDown } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import DotNavigation from '@/components/DotNavigation'
@@ -67,6 +67,8 @@ export default function SessionsPage() {
   const [selectedClockId, setSelectedClockId] = useState<number | null>(null)
   const [selectedClockColor, setSelectedClockColor] = useState<string>('')
   const [isDurationDialogOpen, setIsDurationDialogOpen] = useState(false)
+  const [showRecentSessions, setShowRecentSessions] = useState(recentSessions.length > 0)
+  const [selectedSessions, setSelectedSessions] = useState<number[]>([])
   const router = useRouter()
 
   // Mock recent sessions data
@@ -198,147 +200,203 @@ export default function SessionsPage() {
         onSatellitesChange={setShowSatellites}
       />
       
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-5xl mx-auto px-4 py-6">
         {/* Recent Sessions Section */}
-        <section className="mb-12">
-          <div className="mb-6">
+        <section className="mb-8">
+          <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-2xl font-medium text-gray-900 dark:text-white">Recent Sessions</h2>
-              <button 
-                onClick={() => setIsListView(!isListView)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
-              >
-                {isListView ? (
-                  <>
-                    <LayoutGrid className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Grid</span>
-                  </>
-                ) : (
-                  <>
-                    <List className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">List</span>
-                  </>
+              <h2 className="text-xl font-medium text-gray-900 dark:text-white">Recent Sessions</h2>
+              <div className="flex items-center gap-2">
+                {selectedSessions.length > 0 && (
+                  <button
+                    onClick={() => {
+                      // Delete selected sessions logic here
+                      const updatedSessions = recentSessions.filter((_, index) => !selectedSessions.includes(index))
+                      // Update sessions state
+                      setSelectedSessions([])
+                    }}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span className="text-sm">Delete</span>
+                  </button>
                 )}
-              </button>
+                <button 
+                  onClick={() => setIsListView(!isListView)}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
+                >
+                  {isListView ? (
+                    <>
+                      <LayoutGrid className="h-4 w-4 text-gray-600 dark:text-white" />
+                      <span className="text-sm text-gray-600 dark:text-white">Grid</span>
+                    </>
+                  ) : (
+                    <>
+                      <List className="h-4 w-4 text-gray-600 dark:text-white" />
+                      <span className="text-sm text-gray-600 dark:text-white">List</span>
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => setShowRecentSessions(!showRecentSessions)}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
+                >
+                  {showRecentSessions ? (
+                    <>
+                      <ChevronUp className="h-4 w-4 text-gray-600 dark:text-white" />
+                      <span className="text-sm text-gray-600 dark:text-white">Hide</span>
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="h-4 w-4 text-gray-600 dark:text-white" />
+                      <span className="text-sm text-gray-600 dark:text-white">Show</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 max-w-lg">
-              Track your meditation journey with a chronological view of your sessions.
-            </p>
+            {showRecentSessions && (
+              <p className="text-sm text-gray-600 dark:text-gray-400 max-w-lg">
+                Track your meditation journey with a chronological view of your sessions.
+              </p>
+            )}
           </div>
-          <div className={isListView ? "space-y-2" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"}>
-            {recentSessions.map((session, index) => (
-              <div 
-                key={index}
-                className={`${isListView 
-                  ? 'flex items-center justify-between p-3' 
-                  : 'p-4'} rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all group hover:shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] ${
-                    clockColors[session.clockId].includes('red') ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]' :
-                    clockColors[session.clockId].includes('orange') ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]' :
-                    clockColors[session.clockId].includes('yellow') ? 'hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]' :
-                    clockColors[session.clockId].includes('green') ? 'hover:shadow-[0_0_15px_rgba(34,197,94,0.1)]' :
-                    clockColors[session.clockId].includes('blue') ? 'hover:shadow-[0_0_15px_rgba(59,130,246,0.1)]' :
-                    clockColors[session.clockId].includes('pink') ? 'hover:shadow-[0_0_15px_rgba(236,72,153,0.1)]' :
-                    clockColors[session.clockId].includes('purple') ? 'hover:shadow-[0_0_15px_rgba(147,51,234,0.1)]' :
-                    clockColors[session.clockId].includes('indigo') ? 'hover:shadow-[0_0_15px_rgba(99,102,241,0.1)]' :
-                    'hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
-                  }`}
-              >
-                {isListView ? (
-                  <>
-                    <div className="flex items-center gap-4">
-                      <div>
-                        <h3 className={`text-base font-medium ${clockColors[session.clockId].split(' ')[0]}`}>
-                          {session.title}
-                        </h3>
-                        <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
-                          <div className="flex items-center gap-1.5">
-                            <Calendar className="h-3.5 w-3.5" />
-                            {formatDate(session.date)}
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <Clock className="h-3.5 w-3.5" />
-                            {formatTime(session.timeRemaining)}
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <div className={`w-1.5 h-1.5 rounded-full ${clockColors[session.clockId].split(' ')[1]}`} />
-                            {session.progress}% Complete
-                          </div>
-                        </div>
-                      </div>
+          {showRecentSessions && (
+            <div className={isListView ? "space-y-2" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"}>
+              {recentSessions.length === 0 ? (
+                <div className="col-span-full py-8 text-center text-gray-500 dark:text-gray-400">
+                  No recent sessions
+                </div>
+              ) : (
+                recentSessions.map((session, index) => (
+                  <div 
+                    key={index}
+                    className={`${isListView 
+                      ? 'flex items-center justify-between p-2.5' 
+                      : 'p-3'} rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all group hover:shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] relative ${
+                        clockColors[session.clockId].includes('red') ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]' :
+                        clockColors[session.clockId].includes('orange') ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]' :
+                        clockColors[session.clockId].includes('yellow') ? 'hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]' :
+                        clockColors[session.clockId].includes('green') ? 'hover:shadow-[0_0_15px_rgba(34,197,94,0.1)]' :
+                        clockColors[session.clockId].includes('blue') ? 'hover:shadow-[0_0_15px_rgba(59,130,246,0.1)]' :
+                        clockColors[session.clockId].includes('pink') ? 'hover:shadow-[0_0_15px_rgba(236,72,153,0.1)]' :
+                        clockColors[session.clockId].includes('purple') ? 'hover:shadow-[0_0_15px_rgba(147,51,234,0.1)]' :
+                        clockColors[session.clockId].includes('indigo') ? 'hover:shadow-[0_0_15px_rgba(99,102,241,0.1)]' :
+                        'hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
+                      }`}
+                  >
+                    <div className="absolute top-2 right-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedSessions.includes(index)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedSessions([...selectedSessions, index])
+                          } else {
+                            setSelectedSessions(selectedSessions.filter(i => i !== index))
+                          }
+                        }}
+                        className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
+                      />
                     </div>
-                    <button 
-                      onClick={() => handleStartSession(session.clockId, clockColors[session.clockId])}
-                      className="p-2 rounded-full hover:bg-gray-50 dark:hover:bg-white/5"
-                    >
-                      <Play className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <h3 className={`text-base font-medium ${clockColors[session.clockId].split(' ')[0]}`}>
-                          {session.title}
-                        </h3>
-                        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                          <Calendar className="h-3.5 w-3.5" />
-                          {formatDate(session.date)}
+                    {isListView ? (
+                      <>
+                        <div className="flex items-center gap-4">
+                          <div>
+                            <h3 className={`text-base font-medium ${clockColors[session.clockId].split(' ')[0]}`}>
+                              {session.title}
+                            </h3>
+                            <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+                              <div className="flex items-center gap-1.5">
+                                <Calendar className="h-3.5 w-3.5" />
+                                {formatDate(session.date)}
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <Clock className="h-3.5 w-3.5" />
+                                {formatTime(session.timeRemaining)}
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <div className={`w-1.5 h-1.5 rounded-full ${clockColors[session.clockId].split(' ')[1]}`} />
+                                {session.progress}% Complete
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-1">
                         <button 
                           onClick={() => handleStartSession(session.clockId, clockColors[session.clockId])}
                           className="p-2 rounded-full hover:bg-gray-50 dark:hover:bg-white/5"
                         >
                           <Play className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                         </button>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
-                        <div className="flex items-center gap-1.5 mb-0.5">
-                          <Clock className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
-                          <span className="text-xs text-gray-500 dark:text-gray-400">Remaining</span>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <h3 className={`text-base font-medium ${clockColors[session.clockId].split(' ')[0]}`}>
+                              {session.title}
+                            </h3>
+                            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                              <Calendar className="h-3.5 w-3.5" />
+                              {formatDate(session.date)}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button 
+                              onClick={() => handleStartSession(session.clockId, clockColors[session.clockId])}
+                              className="p-2 rounded-full hover:bg-gray-50 dark:hover:bg-white/5"
+                            >
+                              <Play className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                            </button>
+                          </div>
                         </div>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {formatTime(session.timeRemaining)}
-                        </span>
-                      </div>
-                      <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
-                        <div className="flex items-center gap-1.5 mb-0.5">
-                          <div className={`w-1.5 h-1.5 rounded-full ${clockColors[session.clockId].split(' ')[1]}`} />
-                          <span className="text-xs text-gray-500 dark:text-gray-400">Progress</span>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                            <div className="flex items-center gap-1.5 mb-0.5">
+                              <Clock className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
+                              <span className="text-xs text-gray-500 dark:text-gray-400">Remaining</span>
+                            </div>
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                              {formatTime(session.timeRemaining)}
+                            </span>
+                          </div>
+                          <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                            <div className="flex items-center gap-1.5 mb-0.5">
+                              <div className={`w-1.5 h-1.5 rounded-full ${clockColors[session.clockId].split(' ')[1]}`} />
+                              <span className="text-xs text-gray-500 dark:text-gray-400">Progress</span>
+                            </div>
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                              {session.progress}% Complete
+                            </span>
+                          </div>
                         </div>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {session.progress}% Complete
-                        </span>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
+                      </>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          )}
         </section>
 
         {/* Create Session Section */}
         <section>
-          <div className="mb-6">
+          <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-2xl font-medium text-gray-900 dark:text-white">Create Session</h2>
+              <h2 className="text-xl font-medium text-gray-900 dark:text-white">Create Session</h2>
               <button 
                 onClick={() => setIsCreateListView(!isCreateListView)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
               >
                 {isCreateListView ? (
                   <>
-                    <LayoutGrid className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Grid</span>
+                    <LayoutGrid className="h-4 w-4 text-gray-600 dark:text-white" />
+                    <span className="text-sm text-gray-600 dark:text-white">Grid</span>
                   </>
                 ) : (
                   <>
-                    <List className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">List</span>
+                    <List className="h-4 w-4 text-gray-600 dark:text-white" />
+                    <span className="text-sm text-gray-600 dark:text-white">List</span>
                   </>
                 )}
               </button>
