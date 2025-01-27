@@ -16,14 +16,12 @@ export default function VerifyEmailPage() {
       try {
         const verification = signUp?.verifications?.emailAddress;
         
-        if (!verification) {
+        if (!verification || verification.status === null) {
           console.error('No verification available');
           return;
         }
 
-        const status: VerificationStatus = verification.status;
-
-        switch (status) {
+        switch (verification.status) {
           case 'unverified':
           case 'pending':
             // The user needs to verify their email
@@ -38,7 +36,7 @@ export default function VerifyEmailPage() {
             console.error('Verification has expired');
             return;
           default:
-            console.error('Unexpected verification status:', status);
+            console.error('Unexpected verification status:', verification.status);
             return;
         }
       } catch (err) {
