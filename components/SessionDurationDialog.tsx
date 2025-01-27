@@ -408,6 +408,14 @@ export function SessionDurationDialog({
                           )}>
                             {word.grade}
                           </div>
+                          <div className={cn(
+                            "w-5 h-5 rounded-full flex items-center justify-center text-xs font-medium",
+                            word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
+                            word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
+                            'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                          )}>
+                            {word.rating}
+                          </div>
                           {word.version === 'Default' && (
                             <div className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-medium bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
                               D
@@ -453,6 +461,21 @@ export function SessionDurationDialog({
                 aria-label="Go back"
               >
                 <ArrowLeft className="w-4 h-4 text-black/70 dark:text-white/70 group-hover:-translate-x-0.5 transition-transform" />
+              </button>
+            )}
+            {step !== 'confirm' && (
+              <button
+                onClick={handleNext}
+                disabled={!canProceed()}
+                className={cn(
+                  "h-8 px-4 rounded-full flex items-center text-sm font-medium transition-all",
+                  bgColorClass,
+                  "text-white hover:opacity-90 disabled:opacity-50",
+                  "disabled:cursor-not-allowed"
+                )}
+              >
+                Next
+                <ChevronRight className="w-4 h-4 ml-1" />
               </button>
             )}
             <button
@@ -718,41 +741,7 @@ export function SessionDurationDialog({
 
           {/* Footer Navigation */}
           <div className="px-6 py-3 mt-auto border-t border-gray-200 dark:border-gray-800">
-            <div className="flex items-center justify-between">
-              {step !== 'duration' ? (
-                <Button
-                  onClick={handleBack}
-                  variant="outline"
-                  className="text-black/70 dark:text-white/70 border-gray-200 dark:border-gray-800"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
-                </Button>
-              ) : (
-                <Button
-                  onClick={() => onOpenChange(false)}
-                  variant="outline"
-                  className="text-black/70 dark:text-white/70 border-gray-200 dark:border-gray-800"
-                >
-                  Cancel
-                </Button>
-              )}
-
-              {step !== 'confirm' && (
-                <Button
-                  onClick={handleNext}
-                  disabled={!canProceed()}
-                  className={cn(
-                    "text-white transition-all",
-                    bgColorClass,
-                    "hover:opacity-90 disabled:opacity-50"
-                  )}
-                >
-                  Next
-                  <ChevronRight className="w-4 h-4 ml-2" />
-                </Button>
-              )}
-
+            <div className="flex items-center justify-end">
               {step === 'confirm' && (
                 <Button
                   onClick={handleNext}
