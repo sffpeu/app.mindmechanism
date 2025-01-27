@@ -21,8 +21,7 @@ export default function VerifyEmailPage() {
         }
 
         switch (verification.status) {
-          case 'missing':
-          case 'attempted':
+          case 'unverified':
             // The user needs to verify their email
             return;
           case 'verified':
@@ -30,9 +29,6 @@ export default function VerifyEmailPage() {
               await setActive({ session: signUp.createdSessionId });
               router.push('/');
             }
-            return;
-          case 'expired':
-            console.error('Verification has expired');
             return;
           default:
             console.error('Unexpected verification status:', verification.status);
