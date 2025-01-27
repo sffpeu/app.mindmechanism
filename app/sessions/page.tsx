@@ -515,7 +515,7 @@ export default function SessionsPage() {
                   <div className={`flex gap-3 mt-auto`}>
                     <Button
                       onClick={() => handleStartSession(clock.id, clock.color)}
-                      className={`flex-1 flex items-center justify-center px-6 py-3 rounded-lg text-center transition-all bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:bg-white dark:hover:bg-white/10 ${
+                      className={`flex-1 flex items-center justify-center px-6 py-4 rounded-lg text-center transition-all bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:bg-white dark:hover:bg-white/10 ${
                         clock.color.includes('red') ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]' :
                         clock.color.includes('orange') ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]' :
                         clock.color.includes('yellow') ? 'hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]' :
@@ -527,14 +527,13 @@ export default function SessionsPage() {
                         'hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
                       }`}
                     >
-                      <Play className={`h-5 w-5 mr-2 ${clock.color.split(' ')[0]}`} />
                       <span className={`text-base font-medium ${clock.color.split(' ')[0]}`}>
                         Start Session
                       </span>
                     </Button>
                     <Link
                       href={`/clock/${i + 1}`}
-                      className={`w-12 h-12 flex items-center justify-center rounded-full transition-all bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:bg-white dark:hover:bg-white/10 ${
+                      className={`w-10 h-10 flex items-center justify-center rounded-full transition-all bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:bg-white dark:hover:bg-white/10 ${
                         clock.color.includes('red') ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]' :
                         clock.color.includes('orange') ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]' :
                         clock.color.includes('yellow') ? 'hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]' :
@@ -546,7 +545,7 @@ export default function SessionsPage() {
                         'hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
                       }`}
                     >
-                      <Eye className={`h-5 w-5 ${clock.color.split(' ')[0]}`} />
+                      <Eye className={`h-4 w-4 ${clock.color.split(' ')[0]}`} />
                     </Link>
                   </div>
                 </div>
