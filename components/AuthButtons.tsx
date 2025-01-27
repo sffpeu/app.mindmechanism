@@ -6,16 +6,16 @@ export function AuthButtons() {
   const router = useRouter()
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-2">
       <button
         onClick={() => router.push('/signin')}
-        className="px-4 py-2 rounded-lg text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+        className="px-3 py-1.5 text-sm rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-lg border border-black/10 dark:border-white/20 text-black dark:text-white hover:bg-white/20 dark:hover:bg-black/20 transition-all"
       >
         Sign In
       </button>
       <button
         onClick={() => router.push('/signup')}
-        className="px-4 py-2 rounded-lg bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 transition-all"
+        className="px-3 py-1.5 text-sm rounded-lg bg-black dark:bg-white backdrop-blur-lg text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 transition-all"
       >
         Sign Up
       </button>
