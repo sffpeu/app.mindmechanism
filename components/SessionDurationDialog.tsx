@@ -217,8 +217,8 @@ export function SessionDurationDialog({
           {/* Left side: Focus Nodes and Selected Words */}
           <div className="space-y-3 overflow-y-auto pr-2 max-h-full scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
             {/* Focus Nodes Card */}
-            <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
-              <div className="p-3 border-b border-gray-200 dark:border-gray-800">
+            <div className="bg-white dark:bg-black border border-gray-200 dark:border-white/20 rounded-xl overflow-hidden">
+              <div className="p-3 border-b border-gray-200 dark:border-white/20">
                 <h3 className="text-sm font-medium text-black/90 dark:text-white/90">Focus Nodes</h3>
                 <p className="text-xs text-black/60 dark:text-white/60 mt-0.5">
                   {focusNodesCount} active node{focusNodesCount !== 1 ? 's' : ''}
@@ -270,8 +270,8 @@ export function SessionDurationDialog({
             </div>
 
             {/* Selected Words */}
-            <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
-              <div className="p-3 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+            <div className="bg-white dark:bg-black border border-gray-200 dark:border-white/20 rounded-xl overflow-hidden">
+              <div className="p-3 border-b border-gray-200 dark:border-white/20 flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-medium text-black/90 dark:text-white/90">Selected Words</h3>
                   <p className="text-xs text-black/60 dark:text-white/60 mt-0.5">
@@ -282,10 +282,10 @@ export function SessionDurationDialog({
                   onClick={handleRandomWords}
                   disabled={words.every(word => word.trim() !== '')}
                   className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center transition-all",
+                    "w-8 h-8 rounded-full flex items-center justify-center transition-all border border-transparent",
                     words.every(word => word.trim() !== '')
-                      ? "bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed"
-                      : "bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
+                      ? "bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed dark:border-white/10"
+                      : "bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 dark:border-white/20"
                   )}
                   aria-label="Fill empty slots with random words"
                 >
@@ -299,8 +299,8 @@ export function SessionDurationDialog({
                     className={cn(
                       "px-3 py-2 rounded-lg flex items-center gap-2",
                       words[index]
-                        ? "bg-gray-50 dark:bg-white/5"
-                        : "border border-dashed border-gray-200 dark:border-gray-800"
+                        ? "bg-gray-50 dark:bg-white/5 border border-transparent dark:border-white/20"
+                        : "border border-dashed border-gray-200 dark:border-white/20"
                     )}
                   >
                     <div className={cn(
@@ -340,15 +340,15 @@ export function SessionDurationDialog({
           </div>
 
           {/* Right side: Word Selection */}
-          <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden flex flex-col max-h-full">
-            <div className="p-3 border-b border-gray-200 dark:border-gray-800 space-y-2">
+          <div className="bg-white dark:bg-black border border-gray-200 dark:border-white/20 rounded-xl overflow-hidden flex flex-col max-h-full">
+            <div className="p-3 border-b border-gray-200 dark:border-white/20 space-y-2">
               {/* Search */}
               <div className="flex items-center space-x-3">
                 <div className="flex-1 relative">
                   <input
                     type="text"
                     placeholder="Search words or definitions"
-                    className="w-full pl-9 pr-4 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                    className="w-full pl-9 pr-4 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/20 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     aria-label="Search words or definitions"
@@ -364,10 +364,10 @@ export function SessionDurationDialog({
                     key={filter}
                     onClick={() => setSelectedFilter(filter)}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-sm transition-all shrink-0",
+                      "px-3 py-1.5 rounded-lg text-sm transition-all shrink-0 border border-transparent",
                       selectedFilter === filter
-                        ? `${bgColorClass} text-white`
-                        : 'bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10'
+                        ? `${bgColorClass} text-white dark:border-white/20`
+                        : 'bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 dark:border-white/20'
                     )}
                     aria-pressed={selectedFilter === filter}
                     aria-label={`Filter by ${filter} words`}
@@ -419,11 +419,11 @@ export function SessionDurationDialog({
                       }}
                       disabled={words.includes(word.word)}
                       className={cn(
-                        "p-2.5 rounded-lg text-left transition-all",
+                        "p-2.5 rounded-lg text-left transition-all border",
                         words.includes(word.word)
-                          ? "opacity-50 cursor-not-allowed"
-                          : "hover:bg-gray-50 dark:hover:bg-white/5",
-                        "bg-white dark:bg-black border border-gray-200 dark:border-gray-800"
+                          ? "opacity-50 cursor-not-allowed border-transparent dark:border-white/10"
+                          : "hover:bg-gray-50 dark:hover:bg-white/5 border-gray-200 dark:border-white/20",
+                        "bg-white dark:bg-black"
                       )}
                       aria-label={`Select word ${word.word}${words.includes(word.word) ? ' (already selected)' : ''}`}
                     >
@@ -477,7 +477,7 @@ export function SessionDurationDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(
-        "bg-white dark:bg-black border-white/20 dark:border-white/10",
+        "bg-white dark:bg-black border-white/20 dark:border-white/20 shadow-lg dark:shadow-white/10",
         step === 'words' ? "sm:max-w-[1200px] sm:h-[800px]" : "sm:max-w-[800px]",
         step === 'duration' && "sm:h-[500px]",
         step === 'confirm' && "sm:h-[500px]"
@@ -494,7 +494,7 @@ export function SessionDurationDialog({
             {step !== 'duration' && (
               <button
                 onClick={handleBack}
-                className="w-8 h-8 rounded-full bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors flex items-center justify-center group"
+                className="w-8 h-8 rounded-full bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors flex items-center justify-center group border border-transparent dark:border-white/20"
                 aria-label="Go back"
               >
                 <ArrowLeft className="w-4 h-4 text-black/70 dark:text-white group-hover:-translate-x-0.5 transition-transform" />
@@ -531,7 +531,7 @@ export function SessionDurationDialog({
             )}
             <button
               onClick={() => onOpenChange(false)}
-              className="w-8 h-8 rounded-full bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors flex items-center justify-center"
+              className="w-8 h-8 rounded-full bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors flex items-center justify-center border border-transparent dark:border-white/20"
               aria-label="Close dialog"
             >
               <X className="w-4 h-4 text-black/70 dark:text-white" />
@@ -564,12 +564,12 @@ export function SessionDurationDialog({
                   exit={{ opacity: 0, x: 20 }}
                   className="w-full h-full flex items-center justify-center px-6"
                 >
-                  <div className="w-full grid grid-cols-[1fr_1fr] gap-8 bg-white dark:bg-black rounded-xl mx-auto max-w-3xl">
+                  <div className="w-full grid grid-cols-[1fr_1fr] gap-8 bg-white dark:bg-black rounded-xl mx-auto max-w-3xl border border-gray-200 dark:border-white/20">
                     {/* Timer Visualization */}
                     <div className="flex items-center justify-center py-8">
                       <div className="relative w-[220px] h-[220px]">
                         {/* Background circle */}
-                        <div className="absolute inset-0 rounded-full border border-gray-200 dark:border-gray-800" />
+                        <div className="absolute inset-0 rounded-full border border-gray-200 dark:border-white/20" />
                         
                         {/* Progress arc */}
                         {!isEndless && (
@@ -710,8 +710,8 @@ export function SessionDurationDialog({
                             placeholder="Enter duration"
                             className={cn(
                               "h-10 text-base",
-                              "border-gray-200 dark:border-gray-800 dark:text-white dark:bg-black",
-                              "hover:border-gray-300 dark:hover:border-gray-700",
+                              "border-gray-200 dark:border-white/20 dark:text-white dark:bg-black",
+                              "hover:border-gray-300 dark:hover:border-white/30",
                               "placeholder:text-gray-400 dark:placeholder:text-gray-500",
                               isCustom && isCustomConfirmed && "ring-1",
                               isCustom && isCustomConfirmed && bgColorClass.replace('bg-', 'ring-')
@@ -749,7 +749,7 @@ export function SessionDurationDialog({
                     <div className="space-y-6">
                       {/* Session Summary */}
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50/80 dark:bg-white/5">
+                        <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50/80 dark:bg-white/5 border border-transparent dark:border-white/20">
                           <div>
                             <div className="text-sm font-medium">Duration</div>
                             <div className={cn("text-2xl font-medium mt-1", textColorClass)}>
@@ -759,7 +759,7 @@ export function SessionDurationDialog({
                           <Timer className={cn("w-6 h-6", textColorClass)} />
                         </div>
 
-                        <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50/80 dark:bg-white/5">
+                        <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50/80 dark:bg-white/5 border border-transparent dark:border-white/20">
                           <div>
                             <div className="text-sm font-medium">Words</div>
                             <div className="space-y-1 mt-1">
