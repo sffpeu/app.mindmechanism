@@ -1,5 +1,4 @@
-import { authMiddleware } from "@clerk/nextjs/edge";
-import { NextResponse } from "next/server";
+import { authMiddleware } from "@clerk/nextjs";
 
 export default authMiddleware({
   // Routes that can be accessed while signed out
@@ -12,17 +11,15 @@ export default authMiddleware({
   // Routes that always bypass authentication
   ignoredRoutes: [
     "/api/webhooks(.*)",
-  ],
-  // Return a response when a user visits a protected route
-  afterAuth(auth, req) {
-    if (!auth.userId && !auth.isPublicRoute) {
-      return NextResponse.redirect(new URL('/', req.url));
-    }
-  }
+  ]
 });
 
-// See https://clerk.com/docs/references/nextjs/auth-middleware for more information about configuring your Middleware
+// See https://clerk.com/docs/references/nextjs/auth-middleware for more information about configuring your middleware
 export const config = {
-  matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
-  runtime: 'experimental-edge',
+  matcher: [
+    // Skip Next.js internals and all static files
+    "/((?!.*\\..*|_next).*)",
+    // Optional: Protect API routes
+    "/api/(.*)",
+  ],
 }; 
