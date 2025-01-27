@@ -1,5 +1,6 @@
-import { withClerkMiddleware, NextResponse } from "@clerk/nextjs/server";
-import { NextRequest } from "next/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 const publicPaths = ["/", "/glossary", "/api/public(.*)", "/about"];
 const ignoredPaths = ["/api/webhooks(.*)"];
@@ -16,7 +17,7 @@ function isIgnored(path: string) {
   );
 }
 
-export default withClerkMiddleware((request: NextRequest) => {
+export default clerkMiddleware((request: NextRequest) => {
   const path = request.nextUrl.pathname;
   
   if (isIgnored(path)) {
