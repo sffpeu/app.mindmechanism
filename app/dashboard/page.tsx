@@ -6,7 +6,6 @@ import { useTheme } from '@/app/ThemeContext'
 import Clock from '@/components/Clock'
 import { Home } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { Watermark } from '@/components/Watermark'
 
 export default function DashboardPage() {
   const { isDarkMode } = useTheme()
@@ -26,7 +25,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95 flex flex-col">
-      <Watermark />
       <Menu
         showElements={showElements}
         onToggleShow={() => setShowElements(!showElements)}

@@ -48,10 +48,10 @@
                 </g>
             </g>
             <g transform="matrix(1,0,0,1,763.177,823.318)">
-                <path d="M0,-181.226L104.631,0L-104.631,0L0,-181.226Z" style="fill:white;fill-rule:nonzero;stroke:rgb(35,31,32);stroke-width:3.76px;"/>
+                <path d="M0,-181.226L104.631,0L-104.631,0L0,-181.226Z" style="fill:none;fill-rule:nonzero;stroke:rgb(35,31,32);stroke-width:3.76px;"/>
             </g>
             <g transform="matrix(1,0,0,1,867.808,883.695)">
-                <path d="M0,-181.226L-209.262,-181.226L-104.631,0L0,-181.226ZM-1.732,-180.226L-104.631,-2L-207.53,-180.226L-1.732,-180.226Z" style="fill:rgb(35,31,32);fill-rule:nonzero;stroke:black;stroke-width:3.76px;stroke-linejoin:round;stroke-miterlimit:2;"/>
+                <path d="M0,-181.226L-209.262,-181.226L-104.631,0L0,-181.226ZM-1.732,-180.226L-104.631,-2L-207.53,-180.226L-1.732,-180.226Z" style="fill:none;fill-rule:nonzero;stroke:black;stroke-width:3.76px;stroke-linejoin:round;stroke-miterlimit:2;"/>
             </g>
             <g transform="matrix(1,0,0,1,763.278,775.327)">
                 <path d="M0,14.117C-26.313,14.117 -48.422,-3.877 -54.689,-28.235C-55.852,-23.722 -56.469,-18.992 -56.469,-14.118C-56.469,17.07 -31.188,42.352 0,42.352C31.188,42.352 56.469,17.07 56.469,-14.118C56.469,-18.992 55.852,-23.722 54.689,-28.235C48.422,-3.877 26.311,14.117 0,14.117Z" style="fill:none;fill-rule:nonzero;stroke:rgb(35,31,32);stroke-width:3.76px;"/>

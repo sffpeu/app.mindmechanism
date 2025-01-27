@@ -5,7 +5,9 @@ import { Menu } from '@/components/Menu'
 import { Card } from '@/components/ui/card'
 import { RotateCcw, PenLine, Files } from 'lucide-react'
 import { useTheme } from '@/app/ThemeContext'
-import { Watermark } from '@/components/Watermark'
+import { Plus } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Note } from '@/types/Note'
 
 interface Note {
   title: string
@@ -37,7 +39,6 @@ export default function NotesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95">
-      <Watermark />
       <Menu
         showElements={showElements}
         onToggleShow={() => setShowElements(!showElements)}
