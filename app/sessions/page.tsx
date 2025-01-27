@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
-import { Play, Clock, Calendar, RotateCw, Timer, Compass, LayoutGrid, List, Trash2, ChevronUp, ChevronDown, MoreVertical, Heart, FileText } from 'lucide-react'
+import { Play, Clock, Calendar, RotateCw, Timer, Compass, LayoutGrid, List, Trash2, ChevronUp, ChevronDown } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import DotNavigation from '@/components/DotNavigation'
@@ -12,12 +12,6 @@ import { SatelliteSettings } from '@/types/ClockSettings'
 import { SessionDurationDialog } from '@/components/SessionDurationDialog'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 
 // Update satellites count for each clock
 const clockSatellites: Record<number, number> = {
@@ -95,14 +89,6 @@ export default function SessionsPage() {
 
   const [showRecentSessions, setShowRecentSessions] = useState(recentSessions.length > 0)
   const [selectedSessions, setSelectedSessions] = useState<number[]>([])
-  const [isRecentSessionsVisible, setIsRecentSessionsVisible] = useState(recentSessions.length > 0)
-  const [likedSessions, setLikedSessions] = useState<number[]>([])
-
-  useEffect(() => {
-    if (recentSessions.length === 0) {
-      setIsRecentSessionsVisible(false)
-    }
-  }, [recentSessions.length])
 
   // Function to calculate elapsed time
   const getElapsedTime = (startDate: Date): string => {
@@ -198,26 +184,6 @@ export default function SessionsPage() {
     setIsDurationDialogOpen(false)
   }
 
-  const handleRemoveSession = (index: number) => {
-    const updatedSessions = recentSessions.filter((_, i) => i !== index)
-    // Update sessions state
-    setSelectedSessions(selectedSessions.filter(i => i !== index))
-    setLikedSessions(likedSessions.filter(i => i !== index))
-  }
-
-  const handleToggleLike = (index: number) => {
-    setLikedSessions(prev => 
-      prev.includes(index) 
-        ? prev.filter(i => i !== index)
-        : [...prev, index]
-    )
-  }
-
-  const handleOpenNotes = (index: number) => {
-    // Navigate to notes page with session id
-    router.push(`/notes?session=${index}`)
-  }
-
   return (
     <div className="min-h-screen bg-white dark:bg-black/95">
       {showElements && (
@@ -240,25 +206,7 @@ export default function SessionsPage() {
         <section className="mb-8">
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-medium text-gray-900 dark:text-white">Recent Sessions</h2>
-                <button
-                  onClick={() => setIsRecentSessionsVisible(!isRecentSessionsVisible)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
-                >
-                  {isRecentSessionsVisible ? (
-                    <>
-                      <ChevronUp className="h-4 w-4 text-gray-600 dark:text-white" />
-                      <span className="text-sm text-gray-600 dark:text-white">Hide</span>
-                    </>
-                  ) : (
-                    <>
-                      <ChevronDown className="h-4 w-4 text-gray-600 dark:text-white" />
-                      <span className="text-sm text-gray-600 dark:text-white">Show</span>
-                    </>
-                  )}
-                </button>
-              </div>
+              <h2 className="text-xl font-medium text-gray-900 dark:text-white">Recent Sessions</h2>
               <div className="flex items-center gap-2">
                 {selectedSessions.length > 0 && (
                   <button
@@ -290,15 +238,31 @@ export default function SessionsPage() {
                     </>
                   )}
                 </button>
+                <button
+                  onClick={() => setShowRecentSessions(!showRecentSessions)}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
+                >
+                  {showRecentSessions ? (
+                    <>
+                      <ChevronUp className="h-4 w-4 text-gray-600 dark:text-white" />
+                      <span className="text-sm text-gray-600 dark:text-white">Hide</span>
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="h-4 w-4 text-gray-600 dark:text-white" />
+                      <span className="text-sm text-gray-600 dark:text-white">Show</span>
+                    </>
+                  )}
+                </button>
               </div>
             </div>
-            {isRecentSessionsVisible && (
+            {showRecentSessions && (
               <p className="text-sm text-gray-600 dark:text-gray-400 max-w-lg">
                 Track your meditation journey with a chronological view of your sessions.
               </p>
             )}
           </div>
-          <div className={`transform transition-all duration-300 ease-in-out ${isRecentSessionsVisible ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0 h-0 overflow-hidden'}`}>
+          {showRecentSessions && (
             <div className={isListView ? "space-y-2" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"}>
               {recentSessions.length === 0 ? (
                 <div className="col-span-full py-8 text-center text-gray-500 dark:text-gray-400">
@@ -322,7 +286,7 @@ export default function SessionsPage() {
                         'hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
                       }`}
                   >
-                    <div className="absolute top-2 right-2 flex items-center gap-2">
+                    <div className="absolute top-2 right-2">
                       <input
                         type="checkbox"
                         checked={selectedSessions.includes(index)}
@@ -335,27 +299,6 @@ export default function SessionsPage() {
                         }}
                         className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
                       />
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
-                            <MoreVertical className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-40">
-                          <DropdownMenuItem onClick={() => handleOpenNotes(index)} className="flex items-center gap-2">
-                            <FileText className="h-4 w-4" />
-                            <span>Notes</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleToggleLike(index)} className="flex items-center gap-2">
-                            <Heart className={`h-4 w-4 ${likedSessions.includes(index) ? 'fill-current text-red-500' : ''}`} />
-                            <span>{likedSessions.includes(index) ? 'Unlike' : 'Like'}</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleRemoveSession(index)} className="flex items-center gap-2 text-red-600 dark:text-red-400">
-                            <Trash2 className="h-4 w-4" />
-                            <span>Remove</span>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
                     </div>
                     {isListView ? (
                       <>
