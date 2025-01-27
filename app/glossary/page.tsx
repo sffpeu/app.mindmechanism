@@ -85,7 +85,7 @@ export default function GlossaryPage() {
         showSatellites={showSatellites}
         onSatellitesChange={setShowSatellites}
       />
-      <div className="max-w-6xl mx-auto p-4 md:p-6 pt-24">
+      <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="mb-8">
           <h1 className="text-2xl font-semibold dark:text-white mb-2">Glossary</h1>
           <p className="text-gray-600 dark:text-gray-400">Browse and search through meditation focus words</p>
