@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useSignUp } from "@clerk/nextjs";
 import { useRouter } from 'next/navigation';
+import type { VerificationStatus } from '@clerk/types';
 
 export default function VerifyEmailPage() {
   const { isLoaded, signUp, setActive } = useSignUp();
@@ -20,7 +21,10 @@ export default function VerifyEmailPage() {
           return;
         }
 
-        switch (verification.status) {
+        const status: VerificationStatus = verification.status;
+
+        switch (status) {
+          case 'unverified':
           case 'pending':
             // The user needs to verify their email
             return;
@@ -30,8 +34,11 @@ export default function VerifyEmailPage() {
               router.push('/');
             }
             return;
+          case 'expired':
+            console.error('Verification has expired');
+            return;
           default:
-            console.error('Unexpected verification status:', verification.status);
+            console.error('Unexpected verification status:', status);
             return;
         }
       } catch (err) {
