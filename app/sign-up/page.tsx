@@ -22,9 +22,8 @@ export default function SignUpPage() {
         routing="path"
         path="/sign-up"
         signInUrl="/sign-in"
-        afterSignUpUrl="/"
+        afterSignUpUrl="/sign-up/verify-email"
         redirectUrl="/"
-        verifyEmailUrl="/sign-up/verify-email"
       />
     </div>
   );
