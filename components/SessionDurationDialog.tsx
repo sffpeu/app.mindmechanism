@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Timer, ChevronRight, InfinityIcon, X, Check, ArrowLeft, PenLine, Search, Tag, ThumbsUp } from 'lucide-react'
+import { Timer, ChevronRight, InfinityIcon, X, Check, ArrowLeft, PenLine, Search, Tag, ThumbsUp, Shuffle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { clockSettings } from '@/lib/clockSettings'
 import { GlossaryWord } from '@/types/Glossary'
@@ -133,7 +133,7 @@ export function SessionDurationDialog({
     if (step === 'duration') {
       return isEndless || selectedPreset !== null || (isCustom && isCustomConfirmed)
     } else if (step === 'words') {
-      return words.filter(word => word.trim() !== '').length >= 1
+      return words.every(word => word.trim() !== '')
     }
     return true
   }
@@ -143,6 +143,25 @@ export function SessionDurationDialog({
         (newStep === 'words' && step === 'words')) {
       setStep(newStep)
     }
+  }
+
+  const handleRandomWords = () => {
+    const availableWords = glossaryWords.filter(word => !words.includes(word.word))
+    if (availableWords.length === 0) return
+
+    const emptySlots = words.map((word, index) => word ? null : index).filter(index => index !== null) as number[]
+    if (emptySlots.length === 0) return
+
+    const newWords = [...words]
+    emptySlots.forEach(slotIndex => {
+      const randomIndex = Math.floor(Math.random() * availableWords.length)
+      const randomWord = availableWords[randomIndex]
+      if (randomWord) {
+        newWords[slotIndex] = randomWord.word
+        availableWords.splice(randomIndex, 1)
+      }
+    })
+    setWords(newWords)
   }
 
   const renderStepIndicator = () => (
@@ -252,11 +271,26 @@ export function SessionDurationDialog({
 
             {/* Selected Words */}
             <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
-              <div className="p-3 border-b border-gray-200 dark:border-gray-800">
-                <h3 className="text-sm font-medium text-black/90 dark:text-white/90">Selected Words</h3>
-                <p className="text-xs text-black/60 dark:text-white/60 mt-0.5">
-                  {words.filter(w => w).length} of {focusNodesCount} words selected
-                </p>
+              <div className="p-3 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-medium text-black/90 dark:text-white/90">Selected Words</h3>
+                  <p className="text-xs text-black/60 dark:text-white/60 mt-0.5">
+                    {words.filter(w => w).length} of {focusNodesCount} words selected
+                  </p>
+                </div>
+                <button
+                  onClick={handleRandomWords}
+                  disabled={words.every(word => word.trim() !== '')}
+                  className={cn(
+                    "w-8 h-8 rounded-full flex items-center justify-center transition-all",
+                    words.every(word => word.trim() !== '')
+                      ? "bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                      : "bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
+                  )}
+                  aria-label="Fill empty slots with random words"
+                >
+                  <Shuffle className="w-4 h-4" />
+                </button>
               </div>
               <div className="p-2 space-y-2">
                 {Array.from({ length: focusNodesCount }).map((_, index) => (

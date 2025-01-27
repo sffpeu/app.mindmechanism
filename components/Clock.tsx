@@ -800,7 +800,7 @@ export default function Clock({
               />
             </div>
             <motion.div 
-              className="h-[60px] flex items-center justify-center"
+              className="h-[60px] flex items-center justify-center overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800"
               initial={false}
               animate={{ 
                 height: showInfoCards ? "60px" : "0px",
@@ -809,29 +809,29 @@ export default function Clock({
               transition={{ duration: 0.3, ease: "easeInOut" }}
             >
               <div className="w-full">
-                <div className="flex flex-wrap justify-center items-start gap-1.5">
-                  <div className="w-[130px]">
+                <div className="flex justify-start items-center gap-1.5 px-2">
+                  <div className="shrink-0">
                     <InfoCard icon={<ClockIcon className="h-4 w-4" />} title="Current" value={currentTime.toLocaleTimeString()} onHide={() => setShowInfoCards(false)} />
                   </div>
-                  <div className="w-[130px]">
+                  <div className="shrink-0">
                     <InfoCard icon={<Calendar className="h-4 w-4" />} title="Started" value={startDateTime.toLocaleDateString()} onHide={() => setShowInfoCards(false)} />
                   </div>
-                  <div className="w-[130px]">
+                  <div className="shrink-0">
                     <InfoCard icon={<RotateCw className="h-4 w-4" />} title="Rotation" value={`${rotationDirection === 'clockwise' ? '+' : ''}${rotation.toFixed(3)}°`} onHide={() => setShowInfoCards(false)} />
                   </div>
-                  <div className="w-[130px]">
+                  <div className="shrink-0">
                     <InfoCard icon={<Repeat className="h-4 w-4" />} title="R. Complete" value={rotationsCompleted.toString()} onHide={() => setShowInfoCards(false)} />
                   </div>
-                  <div className="w-[130px]">
+                  <div className="shrink-0">
                     <InfoCard icon={<Timer className="h-4 w-4" />} title="Elapsed" value={elapsedTime} onHide={() => setShowInfoCards(false)} />
                   </div>
-                  <div className="w-[130px]">
+                  <div className="shrink-0">
                     <InfoCard icon={<Compass className="h-4 w-4" />} title="Start °" value={`${startingDegree.toFixed(1)}°`} onHide={() => setShowInfoCards(false)} />
                   </div>
-                  <div className="w-[130px]">
+                  <div className="shrink-0">
                     <InfoCard icon={<RotateCw className="h-4 w-4" />} title="Rot. Time" value={`${rotationTime / 1000}s`} onHide={() => setShowInfoCards(false)} />
                   </div>
-                  <div className="w-[130px]">
+                  <div className="shrink-0">
                     <InfoCard icon={<div className={`w-4 h-4 ${dotColors[id % dotColors.length]} rounded-full`} />} title="Focus Nodes" value={focusNodes.toString()} onHide={() => setShowInfoCards(false)} />
                   </div>
                 </div>
