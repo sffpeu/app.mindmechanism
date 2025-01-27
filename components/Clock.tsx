@@ -276,28 +276,33 @@ export default function Clock({
             />
           );
         })}
-        {selectedNodeIndex !== null && customWords && customWords[selectedNodeIndex] && (
-          <motion.div
-            className="absolute"
-            style={{
-              left: '50%',
-              top: '50%',
-              transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
-              transformOrigin: 'center',
-              zIndex: 1000,
-            }}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-          >
-            <div className="bg-white/90 dark:bg-black/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-lg">
-              <p className="text-sm font-medium text-black dark:text-white whitespace-nowrap">
-                {customWords[selectedNodeIndex]}
-              </p>
-            </div>
-          </motion.div>
-        )}
       </div>
+    );
+  };
+
+  const renderWordDisplay = () => {
+    if (selectedNodeIndex === null || !customWords || !customWords[selectedNodeIndex]) return null;
+
+    return (
+      <motion.div
+        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+        style={{ zIndex: 1000 }}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.8 }}
+      >
+        <motion.div
+          className="bg-white/90 dark:bg-black/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-lg"
+          style={{
+            transform: `rotate(${rotation}deg)`,
+            transformOrigin: 'center',
+          }}
+        >
+          <p className="text-sm font-medium text-black dark:text-white whitespace-nowrap">
+            {customWords[selectedNodeIndex]}
+          </p>
+        </motion.div>
+      </motion.div>
     );
   };
 
@@ -501,6 +506,9 @@ export default function Clock({
             {renderFocusNodes(rotation, focusNodes, startingDegree, id)}
           </div>
         </motion.div>
+
+        {/* Word display */}
+        {renderWordDisplay()}
 
         {/* Satellites layer */}
         <div className="absolute inset-[-20%]" style={{ pointerEvents: 'auto', zIndex: 1000 }}>
