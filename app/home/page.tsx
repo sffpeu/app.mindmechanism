@@ -9,6 +9,7 @@ import { motion } from 'framer-motion'
 import styles from './page.module.css'
 import DotNavigation from '@/components/DotNavigation'
 import { clockSettings } from '@/lib/clockSettings'
+import { AuthButtons } from '@/components/AuthButtons'
 
 export default function HomePage() {
   const { isDarkMode } = useTheme()
@@ -18,14 +19,19 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95">
-      <Menu
-        showElements={showElements}
-        onToggleShow={() => setShowElements(!showElements)}
-        showSatellites={showSatellites}
-        onSatellitesChange={setShowSatellites}
-      />
+      <div className="fixed top-0 left-0 right-0 z-50 bg-gray-50/80 dark:bg-black/80 backdrop-blur-lg border-b border-black/5 dark:border-white/10">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+          <Menu
+            showElements={showElements}
+            onToggleShow={() => setShowElements(!showElements)}
+            showSatellites={showSatellites}
+            onSatellitesChange={setShowSatellites}
+          />
+          <AuthButtons />
+        </div>
+      </div>
       
-      <div className="max-w-7xl mx-auto px-4 py-12">
+      <div className="max-w-7xl mx-auto px-4 pt-24 pb-12">
         {/* Hero Section */}
         <div className="mb-24">
           <div className="space-y-8">
