@@ -217,15 +217,17 @@ export function Menu({
 
                   <div className="h-px bg-black/10 dark:bg-white/10 mx-2" />
 
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                    }}
-                    className="w-full flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-800 dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-                  >
-                    <LogIn className="h-4 w-4" />
-                    Sign In
-                  </button>
+                  <div className="px-1 py-1">
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-800 dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                    >
+                      <Settings className="h-4 w-4" />
+                      Settings
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             )}
