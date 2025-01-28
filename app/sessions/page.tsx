@@ -223,6 +223,13 @@ export default function SessionsPage() {
               <h2 className="text-xl font-medium text-gray-900 dark:text-white">Recent Sessions</h2>
               <div className="flex items-center gap-2">
                 <button 
+                  onClick={() => loadRecentSessions()}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
+                >
+                  <RotateCw className="h-4 w-4 text-gray-600 dark:text-white" />
+                  <span className="text-sm text-gray-600 dark:text-white">Refresh</span>
+                </button>
+                <button 
                   onClick={() => setIsListView(!isListView)}
                   className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
                 >
@@ -268,9 +275,13 @@ export default function SessionsPage() {
                 <div className="col-span-full py-8 text-center text-gray-500 dark:text-gray-400">
                   Loading sessions...
                 </div>
+              ) : !session?.user ? (
+                <div className="col-span-full py-8 text-center text-gray-500 dark:text-gray-400">
+                  Please sign in to view your sessions
+                </div>
               ) : recentSessions.length === 0 ? (
                 <div className="col-span-full py-8 text-center text-gray-500 dark:text-gray-400">
-                  No recent sessions
+                  No recent sessions. Start a new session to begin tracking your progress.
                 </div>
               ) : (
                 recentSessions.map((session, index) => (

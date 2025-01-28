@@ -441,10 +441,10 @@ export default function DashboardPage() {
             <Clock className="h-4 w-4 text-gray-500" />
           </div>
           <div className="text-2xl font-bold dark:text-white">
-            {formatDuration(userStats.totalTime)}
+            {!session?.user ? "-" : formatDuration(userStats.totalTime)}
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {userStats.totalSessions} sessions completed
+            {!session?.user ? "-" : `${userStats.totalSessions} sessions completed`}
           </p>
         </Card>
 
@@ -458,36 +458,42 @@ export default function DashboardPage() {
             <div>
               <div className="flex items-center justify-between text-sm mb-1">
                 <span className="text-gray-600 dark:text-gray-400">Sessions</span>
-                <span className="font-medium dark:text-white">{userStats.monthlyProgress.totalSessions}</span>
+                <span className="font-medium dark:text-white">
+                  {!session?.user ? "-" : userStats.monthlyProgress.totalSessions}
+                </span>
               </div>
               <div className="h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-blue-500 rounded-full transition-all"
-                  style={{ width: `${Math.min(100, (userStats.monthlyProgress.totalSessions / 30) * 100)}%` }}
+                  style={{ width: !session?.user ? "0%" : `${Math.min(100, (userStats.monthlyProgress.totalSessions / 30) * 100)}%` }}
                 />
               </div>
             </div>
             <div>
               <div className="flex items-center justify-between text-sm mb-1">
                 <span className="text-gray-600 dark:text-gray-400">Time</span>
-                <span className="font-medium dark:text-white">{formatDuration(userStats.monthlyProgress.totalTime)}</span>
+                <span className="font-medium dark:text-white">
+                  {!session?.user ? "-" : formatDuration(userStats.monthlyProgress.totalTime)}
+                </span>
               </div>
               <div className="h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-green-500 rounded-full transition-all"
-                  style={{ width: `${Math.min(100, (userStats.monthlyProgress.totalTime / (30 * 60 * 60 * 1000)) * 100)}%` }}
+                  style={{ width: !session?.user ? "0%" : `${Math.min(100, (userStats.monthlyProgress.totalTime / (30 * 60 * 60 * 1000)) * 100)}%` }}
                 />
               </div>
             </div>
             <div>
               <div className="flex items-center justify-between text-sm mb-1">
                 <span className="text-gray-600 dark:text-gray-400">Completion Rate</span>
-                <span className="font-medium dark:text-white">{userStats.monthlyProgress.completionRate.toFixed(1)}%</span>
+                <span className="font-medium dark:text-white">
+                  {!session?.user ? "-" : `${userStats.monthlyProgress.completionRate.toFixed(1)}%`}
+                </span>
               </div>
               <div className="h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-purple-500 rounded-full transition-all"
-                  style={{ width: `${userStats.monthlyProgress.completionRate}%` }}
+                  style={{ width: !session?.user ? "0%" : `${userStats.monthlyProgress.completionRate}%` }}
                 />
               </div>
             </div>
