@@ -199,7 +199,7 @@ export default function SessionsPage() {
         onSatellitesChange={setShowSatellites}
       />
       
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-5xl mx-auto px-4 py-6">
         {/* Recent Sessions Section */}
         <section className="mb-8">
           <div className="mb-4">

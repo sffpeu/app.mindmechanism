@@ -51,7 +51,7 @@ export function Menu({
               </motion.button>
             </Link>
 
-            <Link href="/">
+            <Link href="/dashboard">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}

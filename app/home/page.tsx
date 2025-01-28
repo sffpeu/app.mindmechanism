@@ -68,9 +68,8 @@ export default function HomePage() {
             <div className="flex items-center gap-3">
               <button 
                 onClick={() => router.push('/sessions')}
-                className="px-6 py-2.5 rounded-lg bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 transition-all flex items-center gap-2 text-sm"
+                className="px-6 py-2.5 rounded-lg bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 transition-all text-sm"
               >
-                <Play className="h-4 w-4" />
                 Explore
               </button>
               {!session && (
