@@ -26,9 +26,9 @@ export default function HomePage() {
       />
       
       <div className="max-w-5xl mx-auto px-4 py-8">
-        {/* User Section */}
+        {/* User Profile - Top Right */}
         <div className="mb-8 flex justify-end">
-          {session ? (
+          {session && (
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-3 p-2 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10">
                 {session.user?.image && (
@@ -51,14 +51,6 @@ export default function HomePage() {
                 <LogOut className="h-4 w-4 text-black dark:text-white" />
               </button>
             </div>
-          ) : (
-            <button
-              onClick={() => router.push('/auth/signin')}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all text-sm"
-            >
-              <LogIn className="h-4 w-4" />
-              Sign In
-            </button>
           )}
         </div>
 
@@ -79,8 +71,17 @@ export default function HomePage() {
                 className="px-6 py-2.5 rounded-lg bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 transition-all flex items-center gap-2 text-sm"
               >
                 <Play className="h-4 w-4" />
-                Start Session
+                Explore
               </button>
+              {!session && (
+                <button
+                  onClick={() => router.push('/auth/signin')}
+                  className="px-6 py-2.5 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all flex items-center gap-2 text-sm text-black dark:text-white"
+                >
+                  <LogIn className="h-4 w-4" />
+                  Sign In
+                </button>
+              )}
             </div>
           </div>
         </div>
