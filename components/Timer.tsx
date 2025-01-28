@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Play, Pause } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -10,19 +10,39 @@ interface TimerProps {
 
 export function Timer({ duration, clockColor = 'text-gray-500 bg-gray-500', onComplete }: TimerProps) {
   const [isPaused, setIsPaused] = useState(false)
-  const [timeLeft, setTimeLeft] = useState(duration)
+  const [timeLeft, setTimeLeft] = useState<number | null>(duration)
+  const startTimeRef = useRef<number | null>(null)
+  const pausedTimeRef = useRef<number | null>(null)
   const colorClass = clockColor?.split(' ')?.[1] || 'bg-gray-500'
   const textColorClass = clockColor?.split(' ')?.[0] || 'text-gray-500'
 
   useEffect(() => {
-    if (!duration || isPaused) return
+    setTimeLeft(duration)
+    startTimeRef.current = null
+    pausedTimeRef.current = null
+    setIsPaused(false)
+  }, [duration])
 
-    const startTime = Date.now()
-    const initialDuration = duration
+  useEffect(() => {
+    if (!duration || isPaused) {
+      if (isPaused) {
+        pausedTimeRef.current = timeLeft
+      }
+      return
+    }
+
+    if (!startTimeRef.current) {
+      startTimeRef.current = Date.now()
+      if (pausedTimeRef.current) {
+        // Adjust start time to account for paused duration
+        startTimeRef.current = Date.now() - (duration - pausedTimeRef.current)
+      }
+    }
 
     const interval = setInterval(() => {
-      const elapsedTime = Date.now() - startTime
-      const remaining = initialDuration - elapsedTime
+      const now = Date.now()
+      const elapsed = now - startTimeRef.current!
+      const remaining = duration - elapsed
 
       if (remaining <= 0) {
         clearInterval(interval)
@@ -32,23 +52,34 @@ export function Timer({ duration, clockColor = 'text-gray-500 bg-gray-500', onCo
       }
 
       setTimeLeft(remaining)
-    }, 100) // Update more frequently for smoother countdown
+    }, 100)
 
     return () => clearInterval(interval)
   }, [duration, isPaused, onComplete])
 
   const formatTime = (ms: number | null) => {
     if (ms === null) return '∞'
-    const totalSeconds = Math.max(0, Math.ceil(ms / 1000))
+    const totalSeconds = Math.max(0, Math.floor(ms / 1000))
     const minutes = Math.floor(totalSeconds / 60)
     const seconds = totalSeconds % 60
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
   }
 
+  const handlePlayPause = () => {
+    if (!isPaused) {
+      // Pausing
+      pausedTimeRef.current = timeLeft
+    } else {
+      // Resuming
+      startTimeRef.current = Date.now() - (duration! - (pausedTimeRef.current || 0))
+    }
+    setIsPaused(!isPaused)
+  }
+
   return (
     <div className="fixed bottom-8 left-8 flex items-center gap-4">
       <motion.button
-        onClick={() => setIsPaused(!isPaused)}
+        onClick={handlePlayPause}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         className={`w-12 h-12 rounded-full flex items-center justify-center ${colorClass} bg-opacity-10 dark:bg-opacity-20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-colors`}
