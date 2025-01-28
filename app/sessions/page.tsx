@@ -82,8 +82,10 @@ export default function SessionsPage() {
   }, [session?.user?.id])
 
   const loadRecentSessions = async () => {
+    if (!session?.user?.id) return
+    
     try {
-      const sessions = await getUserSessions(session!.user!.id)
+      const sessions = await getUserSessions(session.user.id)
       setRecentSessions(sessions.map(s => ({
         title: clockTitles[s.clock_id],
         date: new Date(s.start_time),
