@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Menu as MenuIcon, X, Settings, Sun, Moon, User, LogIn, LayoutGrid, Play, BookOpen, ClipboardList, Eye, Home } from 'lucide-react'
+import { Menu as MenuIcon, X, Settings, Sun, Moon, Eye, Home, LayoutGrid, Play, BookOpen, ClipboardList } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -197,13 +197,6 @@ export function Menu({
                 className="fixed top-14 right-4 bg-white/90 dark:bg-black/90 backdrop-blur-md rounded-xl shadow-lg z-20 min-w-[200px] overflow-hidden border border-black/10 dark:border-white/20"
               >
                 <div className="py-2 space-y-1">
-                  <button
-                    className="w-full flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-800 dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-                  >
-                    <User className="h-4 w-4" />
-                    Profile
-                  </button>
-
                   <div className="px-3 py-1.5 flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-800 dark:text-white flex items-center gap-2">
                       {isDarkMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
