@@ -3,15 +3,18 @@
 import { useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
-import { Play, BookOpen, ClipboardList, ArrowRight } from 'lucide-react'
+import { Play, BookOpen, ClipboardList, ArrowRight, LogIn, LogOut, User } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
+import { useSession, signOut } from 'next-auth/react'
+import Image from 'next/image'
 
 export default function HomePage() {
   const { isDarkMode } = useTheme()
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(false)
   const router = useRouter()
+  const { data: session } = useSession()
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95">
@@ -23,6 +26,42 @@ export default function HomePage() {
       />
       
       <div className="max-w-5xl mx-auto px-4 py-8">
+        {/* User Section */}
+        <div className="mb-8 flex justify-end">
+          {session ? (
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3 p-2 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10">
+                {session.user?.image && (
+                  <Image
+                    src={session.user.image}
+                    alt="Profile"
+                    width={32}
+                    height={32}
+                    className="rounded-full"
+                  />
+                )}
+                <span className="text-sm font-medium dark:text-white">
+                  {session.user?.name}
+                </span>
+              </div>
+              <button
+                onClick={() => signOut()}
+                className="p-2 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
+              >
+                <LogOut className="h-4 w-4 text-black dark:text-white" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => router.push('/auth/signin')}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all text-sm"
+            >
+              <LogIn className="h-4 w-4" />
+              Sign In
+            </button>
+          )}
+        </div>
+
         {/* Hero Section */}
         <div className="mb-16">
           <div className="space-y-6">
