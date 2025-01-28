@@ -26,34 +26,6 @@ export default function HomePage() {
       />
       
       <div className="max-w-5xl mx-auto px-4 py-8">
-        {/* User Profile - Top Right */}
-        <div className="mb-8 flex justify-end">
-          {session && (
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-3 p-2 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10">
-                {session.user?.image && (
-                  <Image
-                    src={session.user.image}
-                    alt="Profile"
-                    width={32}
-                    height={32}
-                    className="rounded-full"
-                  />
-                )}
-                <span className="text-sm font-medium dark:text-white">
-                  {session.user?.name}
-                </span>
-              </div>
-              <button
-                onClick={() => signOut()}
-                className="p-2 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
-              >
-                <LogOut className="h-4 w-4 text-black dark:text-white" />
-              </button>
-            </div>
-          )}
-        </div>
-
         {/* Hero Section */}
         <div className="mb-16">
           <div className="space-y-6">

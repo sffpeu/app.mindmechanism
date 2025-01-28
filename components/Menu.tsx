@@ -1,12 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { Menu as MenuIcon, X, Settings, Sun, Moon, Eye, Home, LayoutGrid, Play, BookOpen, ClipboardList } from 'lucide-react'
+import { Menu as MenuIcon, X, Settings, Sun, Moon, Eye, Home, LayoutGrid, Play, BookOpen, ClipboardList, LogOut } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { useTheme } from '@/app/ThemeContext'
+import { useSession, signOut } from 'next-auth/react'
+import Image from 'next/image'
 
 interface MenuProps {
   showElements: boolean
@@ -31,6 +33,7 @@ export function Menu({
   const pathname = usePathname()
   const isClockPage = pathname?.includes('/clock/')
   const { isDarkMode, setIsDarkMode } = useTheme()
+  const { data: session } = useSession()
 
   return (
     <>
@@ -197,6 +200,26 @@ export function Menu({
                 className="fixed top-14 right-4 bg-white/90 dark:bg-black/90 backdrop-blur-md rounded-xl shadow-lg z-20 min-w-[200px] overflow-hidden border border-black/10 dark:border-white/20"
               >
                 <div className="py-2 space-y-1">
+                  {session && (
+                    <>
+                      <div className="px-3 py-2 flex items-center gap-3">
+                        {session.user?.image && (
+                          <Image
+                            src={session.user.image}
+                            alt="Profile"
+                            width={32}
+                            height={32}
+                            className="rounded-full"
+                          />
+                        )}
+                        <span className="text-sm font-medium text-gray-800 dark:text-white">
+                          {session.user?.name}
+                        </span>
+                      </div>
+                      <div className="h-px bg-black/10 dark:bg-white/10 mx-2" />
+                    </>
+                  )}
+
                   <div className="px-3 py-1.5 flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-800 dark:text-white flex items-center gap-2">
                       {isDarkMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
@@ -220,6 +243,15 @@ export function Menu({
                       <Settings className="h-4 w-4" />
                       Settings
                     </button>
+                    {session && (
+                      <button
+                        onClick={() => signOut()}
+                        className="w-full flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-800 dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        Sign Out
+                      </button>
+                    )}
                   </div>
                 </div>
               </motion.div>
