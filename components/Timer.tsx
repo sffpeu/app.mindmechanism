@@ -17,24 +17,29 @@ export function Timer({ duration, clockColor = 'text-gray-500 bg-gray-500', onCo
   useEffect(() => {
     if (!duration || isPaused) return
 
+    const startTime = Date.now()
+    const initialDuration = duration
+
     const interval = setInterval(() => {
-      setTimeLeft((current) => {
-        if (current === null) return null
-        if (current <= 0) {
-          clearInterval(interval)
-          onComplete?.()
-          return 0
-        }
-        return current - 1000
-      })
-    }, 1000)
+      const elapsedTime = Date.now() - startTime
+      const remaining = initialDuration - elapsedTime
+
+      if (remaining <= 0) {
+        clearInterval(interval)
+        setTimeLeft(0)
+        onComplete?.()
+        return
+      }
+
+      setTimeLeft(remaining)
+    }, 100) // Update more frequently for smoother countdown
 
     return () => clearInterval(interval)
   }, [duration, isPaused, onComplete])
 
   const formatTime = (ms: number | null) => {
     if (ms === null) return '∞'
-    const totalSeconds = Math.max(0, Math.floor(ms / 1000))
+    const totalSeconds = Math.max(0, Math.ceil(ms / 1000))
     const minutes = Math.floor(totalSeconds / 60)
     const seconds = totalSeconds % 60
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
