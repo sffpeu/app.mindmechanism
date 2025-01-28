@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { Card } from '@/components/ui/card'
-import { Calendar, Clock, Cloud, Droplets, Gauge, Wind, Moon, ClipboardList, BookOpen, Sun, MapPin, Mountain, Waves, User } from 'lucide-react'
+import { Calendar, Clock, Cloud, Droplets, Gauge, Wind, Moon, ClipboardList, BookOpen, Sun, MapPin, Mountain, Waves, User, BarChart2 } from 'lucide-react'
 import { useTheme } from '@/app/ThemeContext'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { getUserStats } from '@/lib/sessions'
 
 interface WeatherResponse {
   location: {
@@ -53,6 +54,16 @@ export default function DashboardPage() {
   const [locationError, setLocationError] = useState<string | null>(null)
   const router = useRouter()
   const { data: session } = useSession()
+  const [userStats, setUserStats] = useState({
+    totalTime: 0,
+    totalSessions: 0,
+    completionRate: 0,
+    monthlyProgress: {
+      totalSessions: 0,
+      totalTime: 0,
+      completionRate: 0
+    }
+  })
 
   // Handle mounting
   useEffect(() => {
@@ -159,6 +170,29 @@ export default function DashboardPage() {
     const interval = setInterval(fetchData, 5 * 60 * 1000)
     return () => clearInterval(interval)
   }, [mounted, location])
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      loadUserStats()
+    }
+  }, [session?.user?.id])
+
+  const loadUserStats = async () => {
+    if (!session?.user?.id) return
+    
+    try {
+      const stats = await getUserStats(session.user.id)
+      setUserStats(stats)
+    } catch (error) {
+      console.error('Error loading user stats:', error)
+    }
+  }
+
+  const formatDuration = (ms: number) => {
+    const hours = Math.floor(ms / (1000 * 60 * 60))
+    const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60))
+    return `${hours}h ${minutes}m`
+  }
 
   if (!mounted) {
     return null
@@ -399,6 +433,66 @@ export default function DashboardPage() {
             </Card>
           </div>
         )}
+
+        {/* Total Time Card */}
+        <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold dark:text-white">Total Time</h2>
+            <Clock className="h-4 w-4 text-gray-500" />
+          </div>
+          <div className="text-2xl font-bold dark:text-white">
+            {formatDuration(userStats.totalTime)}
+          </div>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            {userStats.totalSessions} sessions completed
+          </p>
+        </Card>
+
+        {/* Monthly Progress Card */}
+        <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold dark:text-white">Monthly Progress</h2>
+            <BarChart2 className="h-4 w-4 text-gray-500" />
+          </div>
+          <div className="space-y-4">
+            <div>
+              <div className="flex items-center justify-between text-sm mb-1">
+                <span className="text-gray-600 dark:text-gray-400">Sessions</span>
+                <span className="font-medium dark:text-white">{userStats.monthlyProgress.totalSessions}</span>
+              </div>
+              <div className="h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-blue-500 rounded-full transition-all"
+                  style={{ width: `${Math.min(100, (userStats.monthlyProgress.totalSessions / 30) * 100)}%` }}
+                />
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center justify-between text-sm mb-1">
+                <span className="text-gray-600 dark:text-gray-400">Time</span>
+                <span className="font-medium dark:text-white">{formatDuration(userStats.monthlyProgress.totalTime)}</span>
+              </div>
+              <div className="h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-green-500 rounded-full transition-all"
+                  style={{ width: `${Math.min(100, (userStats.monthlyProgress.totalTime / (30 * 60 * 60 * 1000)) * 100)}%` }}
+                />
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center justify-between text-sm mb-1">
+                <span className="text-gray-600 dark:text-gray-400">Completion Rate</span>
+                <span className="font-medium dark:text-white">{userStats.monthlyProgress.completionRate.toFixed(1)}%</span>
+              </div>
+              <div className="h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-purple-500 rounded-full transition-all"
+                  style={{ width: `${userStats.monthlyProgress.completionRate}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        </Card>
       </div>
     </div>
   )

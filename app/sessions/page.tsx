@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { Play, Clock, Calendar, RotateCw, Timer, Compass, LayoutGrid, List, ChevronUp, ChevronDown, Eye } from 'lucide-react'
@@ -12,6 +12,8 @@ import { SatelliteSettings } from '@/types/ClockSettings'
 import { SessionDurationDialog } from '@/components/SessionDurationDialog'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { useSession } from 'next-auth/react'
+import { getUserSessions } from '@/lib/sessions'
 
 // Update satellites count for each clock
 const clockSatellites: Record<number, number> = {
@@ -69,24 +71,36 @@ export default function SessionsPage() {
   const [selectedClockColor, setSelectedClockColor] = useState<string>('')
   const [isDurationDialogOpen, setIsDurationDialogOpen] = useState(false)
   const router = useRouter()
+  const { data: session } = useSession()
+  const [recentSessions, setRecentSessions] = useState<Session[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Mock recent sessions data
-  const recentSessions: Session[] = [
-    {
-      title: "Galileo's First Observation",
-      date: new Date('2025-01-20T10:36:00'),
-      timeRemaining: 3600,
-      progress: 0,
-      clockId: 0
-    },
-    {
-      title: "Galileo's First Observation",
-      date: new Date('2025-01-20T10:35:00'),
-      timeRemaining: 3528,
-      progress: 2,
-      clockId: 1
+  useEffect(() => {
+    if (session?.user?.id) {
+      loadRecentSessions()
     }
-  ]
+  }, [session?.user?.id])
+
+  const loadRecentSessions = async () => {
+    try {
+      const sessions = await getUserSessions(session!.user!.id)
+      setRecentSessions(sessions.map(s => ({
+        title: clockTitles[s.clock_id],
+        date: new Date(s.start_time),
+        timeRemaining: s.status === 'in_progress' ? 
+          s.duration - (Date.now() - new Date(s.start_time).getTime()) : 0,
+        progress: s.status === 'completed' ? 100 : 
+          s.status === 'aborted' ? 
+            Math.round((s.actual_duration / s.duration) * 100) : 
+            Math.round(((Date.now() - new Date(s.start_time).getTime()) / s.duration) * 100),
+        clockId: s.clock_id
+      })))
+    } catch (error) {
+      console.error('Error loading recent sessions:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   // Function to calculate elapsed time
   const getElapsedTime = (startDate: Date): string => {
@@ -248,7 +262,11 @@ export default function SessionsPage() {
           </div>
           {showRecentSessions && (
             <div className={isListView ? "space-y-2" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"}>
-              {recentSessions.length === 0 ? (
+              {isLoading ? (
+                <div className="col-span-full py-8 text-center text-gray-500 dark:text-gray-400">
+                  Loading sessions...
+                </div>
+              ) : recentSessions.length === 0 ? (
                 <div className="col-span-full py-8 text-center text-gray-500 dark:text-gray-400">
                   No recent sessions
                 </div>
