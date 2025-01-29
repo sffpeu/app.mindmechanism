@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Timer, ChevronRight, InfinityIcon, X, Check, ArrowLeft, PenLine, Search, Tag, ThumbsUp, Shuffle } from 'lucide-react'
+import { Timer, ChevronRight, InfinityIcon, X, Check, ArrowLeft, PenLine, Search, Tag, ThumbsUp, Shuffle, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { clockSettings } from '@/lib/clockSettings'
 import { GlossaryWord } from '@/types/Glossary'
@@ -321,7 +321,7 @@ export function SessionDurationDialog({
                     onClick={handleRandomDefaultWords}
                     disabled={words.every(word => word.trim() !== '')}
                     className={cn(
-                      "w-8 h-8 rounded-full flex items-center justify-center transition-all font-medium text-xs",
+                      "w-8 h-8 rounded-full flex items-center justify-center transition-all font-bold text-xs",
                       words.every(word => word.trim() !== '')
                         ? "bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed"
                         : "bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
@@ -334,18 +334,18 @@ export function SessionDurationDialog({
                     onClick={handleResetAllWords}
                     disabled={words.every(word => !word)}
                     className={cn(
-                      "w-8 h-8 rounded-full flex items-center justify-center transition-all",
+                      "w-6 h-6 rounded-full flex items-center justify-center transition-all ml-1",
                       words.every(word => !word)
                         ? "bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed"
                         : "bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
                     )}
                     aria-label="Reset all words"
                   >
-                    <X className="w-4 h-4" />
+                    <Trash2 className="w-3 h-3" />
                   </button>
                 </div>
               </div>
-              <div className="p-2 space-y-2">
+              <div className="p-2 pb-4 space-y-2">
                 {Array.from({ length: focusNodesCount }).map((_, index) => (
                   <div
                     key={index}
