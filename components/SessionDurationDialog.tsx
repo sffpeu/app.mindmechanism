@@ -164,6 +164,31 @@ export function SessionDurationDialog({
     setWords(newWords)
   }
 
+  const handleRandomDefaultWords = () => {
+    const availableDefaultWords = glossaryWords.filter(word => 
+      !words.includes(word.word) && word.version === 'Default'
+    )
+    if (availableDefaultWords.length === 0) return
+
+    const emptySlots = words.map((word, index) => word ? null : index).filter(index => index !== null) as number[]
+    if (emptySlots.length === 0) return
+
+    const newWords = [...words]
+    emptySlots.forEach(slotIndex => {
+      const randomIndex = Math.floor(Math.random() * availableDefaultWords.length)
+      const randomWord = availableDefaultWords[randomIndex]
+      if (randomWord) {
+        newWords[slotIndex] = randomWord.word
+        availableDefaultWords.splice(randomIndex, 1)
+      }
+    })
+    setWords(newWords)
+  }
+
+  const handleResetAllWords = () => {
+    setWords(Array(words.length).fill(''))
+  }
+
   const renderStepIndicator = () => (
     <div className="absolute top-0 left-0 right-0 flex justify-center">
       <div className="flex items-center gap-1 py-2 px-3 rounded-full bg-gray-100/80 dark:bg-white/5 backdrop-blur-sm">
@@ -278,19 +303,47 @@ export function SessionDurationDialog({
                     {words.filter(w => w).length} of {focusNodesCount} words selected
                   </p>
                 </div>
-                <button
-                  onClick={handleRandomWords}
-                  disabled={words.every(word => word.trim() !== '')}
-                  className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center transition-all",
-                    words.every(word => word.trim() !== '')
-                      ? "bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed"
-                      : "bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
-                  )}
-                  aria-label="Fill empty slots with random words"
-                >
-                  <Shuffle className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleRandomWords}
+                    disabled={words.every(word => word.trim() !== '')}
+                    className={cn(
+                      "w-8 h-8 rounded-full flex items-center justify-center transition-all",
+                      words.every(word => word.trim() !== '')
+                        ? "bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                        : "bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
+                    )}
+                    aria-label="Fill empty slots with random words"
+                  >
+                    <Shuffle className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={handleRandomDefaultWords}
+                    disabled={words.every(word => word.trim() !== '')}
+                    className={cn(
+                      "w-8 h-8 rounded-full flex items-center justify-center transition-all font-medium text-xs",
+                      words.every(word => word.trim() !== '')
+                        ? "bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                        : "bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
+                    )}
+                    aria-label="Fill empty slots with random default words"
+                  >
+                    D
+                  </button>
+                  <button
+                    onClick={handleResetAllWords}
+                    disabled={words.every(word => !word)}
+                    className={cn(
+                      "w-8 h-8 rounded-full flex items-center justify-center transition-all",
+                      words.every(word => !word)
+                        ? "bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                        : "bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
+                    )}
+                    aria-label="Reset all words"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
               <div className="p-2 space-y-2">
                 {Array.from({ length: focusNodesCount }).map((_, index) => (
