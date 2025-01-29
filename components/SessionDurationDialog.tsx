@@ -477,7 +477,7 @@ export function SessionDurationDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(
-        "bg-white dark:bg-black border-white/20 dark:border-white/10",
+        "bg-white dark:bg-black border-white/20 dark:border-white/10 overflow-hidden",
         step === 'words' ? "sm:max-w-[1200px] sm:h-[800px]" : "sm:max-w-[800px]",
         step === 'duration' && "sm:h-[500px]",
         step === 'confirm' && "sm:h-[500px]"
@@ -486,11 +486,13 @@ export function SessionDurationDialog({
           "relative w-full h-full flex flex-col max-h-[800px]",
           step === 'duration' && "justify-center"
         )}>
-          {/* Step indicator */}
-          {renderStepIndicator()}
+          {/* Step indicator - Moved inside the dialog */}
+          <div className="relative pt-2">
+            {renderStepIndicator()}
+          </div>
 
-          {/* Top Navigation */}
-          <div className="absolute right-6 top-4 flex items-center gap-2">
+          {/* Top Navigation - Fixed positioning */}
+          <div className="absolute right-6 top-4 flex items-center gap-2 z-10">
             {step !== 'duration' && (
               <button
                 onClick={handleBack}
@@ -538,8 +540,8 @@ export function SessionDurationDialog({
             </button>
           </div>
 
-          {/* Header */}
-          <div className="absolute left-6 top-4 flex items-center">
+          {/* Header - Fixed positioning */}
+          <div className="absolute left-6 top-4 flex items-center z-10">
             {step === 'duration' && <Timer className="w-4 h-4 mr-2 text-black/70 dark:text-white" />}
             {step === 'words' && <PenLine className="w-4 h-4 mr-2 text-black/70 dark:text-white" />}
             {step === 'confirm' && <Check className="w-4 h-4 mr-2 text-black/70 dark:text-white" />}
@@ -550,10 +552,10 @@ export function SessionDurationDialog({
             </h2>
           </div>
 
-          {/* Main Content */}
+          {/* Main Content - Adjusted padding and overflow */}
           <div className={cn(
             "flex-1 overflow-hidden",
-            step === 'duration' ? "mt-0" : "mt-14"
+            step === 'duration' ? "mt-4" : "mt-14"
           )}>
             <AnimatePresence mode="wait">
               {step === 'duration' && (
