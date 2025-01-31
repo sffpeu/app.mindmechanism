@@ -270,7 +270,7 @@ export default function SessionsPage() {
             )}
           </div>
           {showRecentSessions && (
-            <div className={isListView ? "space-y-2" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"}>
+            <div className={isListView ? "space-y-2" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 px-1"}>
               {isLoading ? (
                 <div className="col-span-full py-8 text-center text-gray-500 dark:text-gray-400">
                   Loading sessions...
@@ -289,7 +289,7 @@ export default function SessionsPage() {
                     key={index}
                     className={`${isListView 
                       ? 'flex items-center justify-between p-2.5' 
-                      : 'p-3'} rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border transition-all group relative ${
+                      : 'p-2'} rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border transition-all group relative ${
                         clockColors[session.clockId].includes('red') ? 'border-black/5 dark:border-white/10 hover:border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.3)]' :
                         clockColors[session.clockId].includes('orange') ? 'border-black/5 dark:border-white/10 hover:border-orange-500/50 hover:shadow-[0_0_15px_rgba(249,115,22,0.3)]' :
                         clockColors[session.clockId].includes('yellow') ? 'border-black/5 dark:border-white/10 hover:border-yellow-500/50 hover:shadow-[0_0_15px_rgba(234,179,8,0.3)]' :
@@ -413,7 +413,7 @@ export default function SessionsPage() {
               Choose from nine unique clock designs to begin your meditation practice.
             </p>
           </div>
-          <div className={isCreateListView ? "space-y-4" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"}>
+          <div className={isCreateListView ? "space-y-4" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-1"}>
             {clockData.map((clock, i) => (
               <div key={i} className={`p-6 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border transition-all group relative ${
                 clock.color.includes('red') ? 'border-black/5 dark:border-white/10 hover:border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.3)]' :
