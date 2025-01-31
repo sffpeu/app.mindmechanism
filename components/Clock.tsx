@@ -497,12 +497,13 @@ export default function Clock({
           className="absolute inset-0"
           style={{ 
             willChange: 'transform',
-            zIndex: 50,
+            zIndex: 100,
+            pointerEvents: 'none',
           }}
           animate={{ rotate: rotation }}
           transition={transitionConfig}
         >
-          <div className="absolute inset-0" style={{ transform: `rotate(${imageOrientation}deg)` }}>
+          <div className="absolute inset-0" style={{ transform: `rotate(${imageOrientation}deg)`, pointerEvents: 'auto' }}>
             {renderFocusNodes(rotation, focusNodes, startingDegree, id)}
           </div>
         </motion.div>
