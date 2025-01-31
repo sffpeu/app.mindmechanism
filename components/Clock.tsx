@@ -525,7 +525,7 @@ export default function Clock({
                       backgroundColor: dotColors[id % dotColors.length].replace('bg-[', '').replace(']', ''),
                       boxShadow: isSelected ? '0 0 12px rgba(0, 0, 0, 0.5)' : '0 0 8px rgba(0, 0, 0, 0.3)',
                       pointerEvents: 'auto',
-                      zIndex: 10,
+                      zIndex: 300,
                     }}
                     whileHover={{ scale: 1.5 }}
                     transition={{ type: "spring", stiffness: 400, damping: 25 }}
