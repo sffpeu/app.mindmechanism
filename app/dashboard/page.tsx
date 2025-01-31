@@ -221,10 +221,10 @@ export default function DashboardPage() {
               <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                 {currentTime?.toLocaleDateString('en-US', {
                   weekday: 'long',
-                  month: 'long',
                   day: 'numeric',
-                  year: 'numeric',
-                })}
+                  month: 'long',
+                  year: 'numeric'
+                })} ({new Intl.DateTimeFormat('en-US', { timeZoneName: 'short' }).formatToParts(new Date()).find(part => part.type === 'timeZoneName')?.value})
               </p>
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 {Intl.DateTimeFormat().resolvedOptions().timeZone}
@@ -401,7 +401,7 @@ export default function DashboardPage() {
 
         {/* Total Time Card */}
         <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all relative">
-          <div className="absolute inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-[2px] rounded-xl z-10 flex items-center justify-center">
+          <div className="absolute inset-0 bg-white/90 dark:bg-black/90 backdrop-blur-[2px] rounded-xl z-10 flex items-center justify-center">
             <div className="text-center">
               <p className="text-sm font-medium text-gray-900 dark:text-white">Available Soon</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">Currently in Development</p>
@@ -421,7 +421,7 @@ export default function DashboardPage() {
 
         {/* Monthly Progress Card */}
         <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all relative">
-          <div className="absolute inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-[2px] rounded-xl z-10 flex items-center justify-center">
+          <div className="absolute inset-0 bg-white/90 dark:bg-black/90 backdrop-blur-[2px] rounded-xl z-10 flex items-center justify-center">
             <div className="text-center">
               <p className="text-sm font-medium text-gray-900 dark:text-white">Available Soon</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">Currently in Development</p>
