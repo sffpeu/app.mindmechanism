@@ -497,14 +497,49 @@ export default function Clock({
           className="absolute inset-0"
           style={{ 
             willChange: 'transform',
-            zIndex: 100,
+            zIndex: 200,
             pointerEvents: 'none',
           }}
           animate={{ rotate: rotation }}
           transition={transitionConfig}
         >
           <div className="absolute inset-0" style={{ transform: `rotate(${imageOrientation}deg)`, pointerEvents: 'auto' }}>
-            {renderFocusNodes(rotation, focusNodes, startingDegree, id)}
+            <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
+              {Array.from({ length: Math.max(0, focusNodes || 0) }).map((_, index) => {
+                const angle = ((360 / Math.max(1, focusNodes || 1)) * index + startingDegree) % 360;
+                const radians = angle * (Math.PI / 180);
+                const radius = isMultiView ? 53 : 55;
+                const x = 50 + radius * Math.cos(radians);
+                const y = 50 + radius * Math.sin(radians);
+
+                const isSelected = selectedNodeIndex === index;
+
+                return (
+                  <motion.div
+                    key={`${id}-${index}`}
+                    className={`absolute ${isMultiView ? 'w-2 h-2' : 'w-3 h-3'} rounded-full cursor-pointer`}
+                    style={{
+                      left: `${x}%`,
+                      top: `${y}%`,
+                      transform: 'translate(-50%, -50%)',
+                      backgroundColor: dotColors[id % dotColors.length].replace('bg-[', '').replace(']', ''),
+                      boxShadow: isSelected ? '0 0 12px rgba(0, 0, 0, 0.5)' : '0 0 8px rgba(0, 0, 0, 0.3)',
+                      pointerEvents: 'auto',
+                      zIndex: 10,
+                    }}
+                    whileHover={{ scale: 1.5 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    onClick={() => {
+                      if (selectedNodeIndex === index) {
+                        setSelectedNodeIndex(null);
+                      } else {
+                        setSelectedNodeIndex(index);
+                      }
+                    }}
+                  />
+                );
+              })}
+            </div>
           </div>
         </motion.div>
 
