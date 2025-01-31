@@ -435,7 +435,13 @@ export default function DashboardPage() {
         )}
 
         {/* Total Time Card */}
-        <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+        <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all relative">
+          <div className="absolute inset-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm rounded-xl z-10 flex items-center justify-center">
+            <div className="text-center">
+              <p className="text-sm font-medium text-gray-900 dark:text-white">Available Soon</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Currently in Development</p>
+            </div>
+          </div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-semibold dark:text-white">Total Time</h2>
             <Clock className="h-4 w-4 text-gray-500" />
@@ -449,7 +455,13 @@ export default function DashboardPage() {
         </Card>
 
         {/* Monthly Progress Card */}
-        <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+        <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all relative">
+          <div className="absolute inset-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm rounded-xl z-10 flex items-center justify-center">
+            <div className="text-center">
+              <p className="text-sm font-medium text-gray-900 dark:text-white">Available Soon</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Currently in Development</p>
+            </div>
+          </div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-semibold dark:text-white">Monthly Progress</h2>
             <BarChart2 className="h-4 w-4 text-gray-500" />
@@ -465,7 +477,7 @@ export default function DashboardPage() {
               <div className="h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-blue-500 rounded-full transition-all"
-                  style={{ width: !session?.user ? "0%" : `${Math.min(100, (userStats.monthlyProgress.totalSessions / 30) * 100)}%` }}
+                  style={{ width: "50%" }}
                 />
               </div>
             </div>
@@ -479,7 +491,7 @@ export default function DashboardPage() {
               <div className="h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-green-500 rounded-full transition-all"
-                  style={{ width: !session?.user ? "0%" : `${Math.min(100, (userStats.monthlyProgress.totalTime / (30 * 60 * 60 * 1000)) * 100)}%` }}
+                  style={{ width: "50%" }}
                 />
               </div>
             </div>
@@ -493,7 +505,7 @@ export default function DashboardPage() {
               <div className="h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-purple-500 rounded-full transition-all"
-                  style={{ width: !session?.user ? "0%" : `${userStats.monthlyProgress.completionRate}%` }}
+                  style={{ width: "50%" }}
                 />
               </div>
             </div>
