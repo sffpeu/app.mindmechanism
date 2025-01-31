@@ -289,16 +289,16 @@ export default function SessionsPage() {
                     key={index}
                     className={`${isListView 
                       ? 'flex items-center justify-between p-2.5' 
-                      : 'p-3'} rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-transparent dark:hover:border-transparent transition-all group hover:shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] relative before:absolute before:inset-0 before:rounded-xl before:p-[1px] before:bg-gradient-to-r before:from-transparent before:via-transparent before:to-transparent hover:before:via-[--hover-color] before:transition-all before:duration-500 before:-z-10 ${
-                        clockColors[session.clockId].includes('red') ? '[--hover-color:rgba(239,68,68,0.5)] hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]' :
-                        clockColors[session.clockId].includes('orange') ? '[--hover-color:rgba(249,115,22,0.5)] hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]' :
-                        clockColors[session.clockId].includes('yellow') ? '[--hover-color:rgba(234,179,8,0.5)] hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]' :
-                        clockColors[session.clockId].includes('green') ? '[--hover-color:rgba(34,197,94,0.5)] hover:shadow-[0_0_15px_rgba(34,197,94,0.1)]' :
-                        clockColors[session.clockId].includes('blue') ? '[--hover-color:rgba(59,130,246,0.5)] hover:shadow-[0_0_15px_rgba(59,130,246,0.1)]' :
-                        clockColors[session.clockId].includes('pink') ? '[--hover-color:rgba(236,72,153,0.5)] hover:shadow-[0_0_15px_rgba(236,72,153,0.1)]' :
-                        clockColors[session.clockId].includes('purple') ? '[--hover-color:rgba(147,51,234,0.5)] hover:shadow-[0_0_15px_rgba(147,51,234,0.1)]' :
-                        clockColors[session.clockId].includes('indigo') ? '[--hover-color:rgba(99,102,241,0.5)] hover:shadow-[0_0_15px_rgba(99,102,241,0.1)]' :
-                        '[--hover-color:rgba(6,182,212,0.5)] hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
+                      : 'p-3'} rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border transition-all group relative ${
+                        clockColors[session.clockId].includes('red') ? 'border-black/5 dark:border-white/10 hover:border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.3)]' :
+                        clockColors[session.clockId].includes('orange') ? 'border-black/5 dark:border-white/10 hover:border-orange-500/50 hover:shadow-[0_0_15px_rgba(249,115,22,0.3)]' :
+                        clockColors[session.clockId].includes('yellow') ? 'border-black/5 dark:border-white/10 hover:border-yellow-500/50 hover:shadow-[0_0_15px_rgba(234,179,8,0.3)]' :
+                        clockColors[session.clockId].includes('green') ? 'border-black/5 dark:border-white/10 hover:border-green-500/50 hover:shadow-[0_0_15px_rgba(34,197,94,0.3)]' :
+                        clockColors[session.clockId].includes('blue') ? 'border-black/5 dark:border-white/10 hover:border-blue-500/50 hover:shadow-[0_0_15px_rgba(59,130,246,0.3)]' :
+                        clockColors[session.clockId].includes('pink') ? 'border-black/5 dark:border-white/10 hover:border-pink-500/50 hover:shadow-[0_0_15px_rgba(236,72,153,0.3)]' :
+                        clockColors[session.clockId].includes('purple') ? 'border-black/5 dark:border-white/10 hover:border-purple-500/50 hover:shadow-[0_0_15px_rgba(147,51,234,0.3)]' :
+                        clockColors[session.clockId].includes('indigo') ? 'border-black/5 dark:border-white/10 hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.3)]' :
+                        'border-black/5 dark:border-white/10 hover:border-cyan-500/50 hover:shadow-[0_0_15px_rgba(6,182,212,0.3)]'
                       }`}
                   >
                     {isListView ? (
@@ -415,16 +415,16 @@ export default function SessionsPage() {
           </div>
           <div className={isCreateListView ? "space-y-4" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"}>
             {clockData.map((clock, i) => (
-              <div key={i} className={`p-6 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-transparent dark:hover:border-transparent transition-all group hover:shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] relative before:absolute before:inset-0 before:rounded-xl before:p-[1px] before:bg-gradient-to-r before:from-transparent before:via-transparent before:to-transparent hover:before:via-[--hover-color] before:transition-all before:duration-500 before:-z-10 ${
-                clock.color.includes('red') ? '[--hover-color:rgba(239,68,68,0.5)] hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]' :
-                clock.color.includes('orange') ? '[--hover-color:rgba(249,115,22,0.5)] hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]' :
-                clock.color.includes('yellow') ? '[--hover-color:rgba(234,179,8,0.5)] hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]' :
-                clock.color.includes('green') ? '[--hover-color:rgba(34,197,94,0.5)] hover:shadow-[0_0_15px_rgba(34,197,94,0.1)]' :
-                clock.color.includes('blue') ? '[--hover-color:rgba(59,130,246,0.5)] hover:shadow-[0_0_15px_rgba(59,130,246,0.1)]' :
-                clock.color.includes('pink') ? '[--hover-color:rgba(236,72,153,0.5)] hover:shadow-[0_0_15px_rgba(236,72,153,0.1)]' :
-                clock.color.includes('purple') ? '[--hover-color:rgba(147,51,234,0.5)] hover:shadow-[0_0_15px_rgba(147,51,234,0.1)]' :
-                clock.color.includes('indigo') ? '[--hover-color:rgba(99,102,241,0.5)] hover:shadow-[0_0_15px_rgba(99,102,241,0.1)]' :
-                '[--hover-color:rgba(6,182,212,0.5)] hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
+              <div key={i} className={`p-6 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border transition-all group relative ${
+                clock.color.includes('red') ? 'border-black/5 dark:border-white/10 hover:border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.3)]' :
+                clock.color.includes('orange') ? 'border-black/5 dark:border-white/10 hover:border-orange-500/50 hover:shadow-[0_0_15px_rgba(249,115,22,0.3)]' :
+                clock.color.includes('yellow') ? 'border-black/5 dark:border-white/10 hover:border-yellow-500/50 hover:shadow-[0_0_15px_rgba(234,179,8,0.3)]' :
+                clock.color.includes('green') ? 'border-black/5 dark:border-white/10 hover:border-green-500/50 hover:shadow-[0_0_15px_rgba(34,197,94,0.3)]' :
+                clock.color.includes('blue') ? 'border-black/5 dark:border-white/10 hover:border-blue-500/50 hover:shadow-[0_0_15px_rgba(59,130,246,0.3)]' :
+                clock.color.includes('pink') ? 'border-black/5 dark:border-white/10 hover:border-pink-500/50 hover:shadow-[0_0_15px_rgba(236,72,153,0.3)]' :
+                clock.color.includes('purple') ? 'border-black/5 dark:border-white/10 hover:border-purple-500/50 hover:shadow-[0_0_15px_rgba(147,51,234,0.3)]' :
+                clock.color.includes('indigo') ? 'border-black/5 dark:border-white/10 hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.3)]' :
+                'border-black/5 dark:border-white/10 hover:border-cyan-500/50 hover:shadow-[0_0_15px_rgba(6,182,212,0.3)]'
               } ${isCreateListView ? 'flex gap-8 items-start' : 'flex flex-col'}`}>
                 <div className={`aspect-square relative flex items-center justify-center ${isCreateListView ? 'w-40 shrink-0' : ''}`}>
                   <div className="w-3/4 h-3/4 relative">
