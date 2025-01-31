@@ -226,30 +226,9 @@ export default function DashboardPage() {
                   year: 'numeric',
                 })}
               </p>
-              <div className="mt-4 grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-200">
-                    <div className="p-2 rounded-full bg-gray-100 dark:bg-white/20">
-                      <Clock className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="text-lg font-semibold dark:text-white">1 day</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Current Streak</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-200">
-                    <div className="p-2 rounded-full bg-gray-100 dark:bg-white/20">
-                      <Calendar className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="text-lg font-semibold dark:text-white">2h</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Total Time</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                {Intl.DateTimeFormat().resolvedOptions().timeZone}
+              </p>
             </Card>
 
             <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
@@ -274,20 +253,6 @@ export default function DashboardPage() {
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Member since March 2024
                   </p>
-                  <div className="mt-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-base font-semibold dark:text-white">Monthly Progress</h2>
-                      <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-white/20 text-gray-600 dark:text-gray-200">
-                        0 / 2 sessions
-                      </span>
-                    </div>
-                    <div className="h-2 bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
-                      <div className="h-full w-1/3 bg-blue-500 dark:bg-blue-400 rounded-full" />
-                    </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Next milestone: 5 sessions
-                    </p>
-                  </div>
                 </div>
               </div>
             </Card>
@@ -436,7 +401,7 @@ export default function DashboardPage() {
 
         {/* Total Time Card */}
         <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all relative">
-          <div className="absolute inset-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm rounded-xl z-10 flex items-center justify-center">
+          <div className="absolute inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-[2px] rounded-xl z-10 flex items-center justify-center">
             <div className="text-center">
               <p className="text-sm font-medium text-gray-900 dark:text-white">Available Soon</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">Currently in Development</p>
@@ -456,7 +421,7 @@ export default function DashboardPage() {
 
         {/* Monthly Progress Card */}
         <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all relative">
-          <div className="absolute inset-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm rounded-xl z-10 flex items-center justify-center">
+          <div className="absolute inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-[2px] rounded-xl z-10 flex items-center justify-center">
             <div className="text-center">
               <p className="text-sm font-medium text-gray-900 dark:text-white">Available Soon</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">Currently in Development</p>
