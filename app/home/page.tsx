@@ -37,6 +37,15 @@ export default function HomePage() {
                 Track your meditation journey with an innovative clock system, explore meditation focus words, and document your progress.
               </p>
             </div>
+            <div className="relative w-full h-[300px] rounded-2xl overflow-hidden">
+              <Image
+                src="/satelite.jpg"
+                alt="Meditation Space"
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
             <div className="flex items-center gap-3">
               <button 
                 onClick={() => router.push('/sessions')}
