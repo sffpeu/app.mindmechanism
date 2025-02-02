@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card'
 import { Calendar, Clock, Cloud, Droplets, Gauge, Wind, Moon, ClipboardList, BookOpen, Sun, MapPin, Mountain, Waves, User, BarChart2 } from 'lucide-react'
 import { useTheme } from '@/app/ThemeContext'
 import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
+import { useAuth } from '@/lib/FirebaseAuthContext'
 import { getUserStats } from '@/lib/sessions'
 
 interface WeatherResponse {
@@ -42,6 +42,9 @@ interface MoonData {
 }
 
 export default function DashboardPage() {
+  const router = useRouter()
+  const { user } = useAuth()
+  const [isLoading, setIsLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(false)
@@ -52,8 +55,6 @@ export default function DashboardPage() {
   const { isDarkMode } = useTheme()
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null)
   const [locationError, setLocationError] = useState<string | null>(null)
-  const router = useRouter()
-  const { data: session } = useSession()
   const [userStats, setUserStats] = useState({
     totalTime: 0,
     totalSessions: 0,
@@ -65,7 +66,13 @@ export default function DashboardPage() {
     }
   })
 
-  // Handle mounting
+  useEffect(() => {
+    if (!user && !isLoading) {
+      router.push('/auth/signin')
+    }
+    setIsLoading(false)
+  }, [user, router, isLoading])
+
   useEffect(() => {
     setMounted(true)
     setCurrentTime(new Date())
@@ -79,7 +86,6 @@ export default function DashboardPage() {
     return `${hours}:${minutes}:${seconds}`
   }
 
-  // Initialize dark mode from system preference
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -89,7 +95,6 @@ export default function DashboardPage() {
     }
   }, [])
 
-  // Handle dark mode changes
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark')
@@ -98,7 +103,6 @@ export default function DashboardPage() {
     }
   }, [isDarkMode])
 
-  // Update current time every second
   useEffect(() => {
     if (!mounted) return
 
@@ -108,7 +112,6 @@ export default function DashboardPage() {
     return () => clearInterval(timer)
   }, [mounted])
 
-  // Request location permission and get coordinates
   useEffect(() => {
     if (!mounted) return
 
@@ -140,7 +143,6 @@ export default function DashboardPage() {
     getLocation()
   }, [mounted])
 
-  // Fetch weather and moon data with precise location
   useEffect(() => {
     if (!mounted) return
 
@@ -172,16 +174,16 @@ export default function DashboardPage() {
   }, [mounted, location])
 
   useEffect(() => {
-    if (session?.user?.id) {
+    if (user) {
       loadUserStats()
     }
-  }, [session?.user?.id])
+  }, [user])
 
   const loadUserStats = async () => {
-    if (!session?.user?.id) return
+    if (!user) return
     
     try {
-      const stats = await getUserStats(session.user.id)
+      const stats = await getUserStats(user.uid)
       setUserStats(stats)
     } catch (error) {
       console.error('Error loading user stats:', error)
@@ -194,7 +196,11 @@ export default function DashboardPage() {
     return `${hours}h ${minutes}m`
   }
 
-  if (!mounted) {
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
+
+  if (!user) {
     return null
   }
 
@@ -235,20 +241,20 @@ export default function DashboardPage() {
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-white/20 flex items-center justify-center">
                   <span className="text-xl font-semibold dark:text-white">
-                    {session?.user?.name?.[0] || 'U'}
+                    {user.displayName?.[0] || 'U'}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-2">
                     <h1 className="text-xl font-semibold dark:text-white truncate">
-                      {session?.user?.name || 'User'}
+                      {user.displayName || 'User'}
                     </h1>
                     <button className="px-3 py-1.5 text-sm bg-white dark:bg-white/20 rounded-md dark:text-white shadow-sm hover:shadow-md transition-shadow">
                       Edit
                     </button>
                   </div>
                   <p className="text-gray-600 dark:text-gray-200 text-sm truncate">
-                    {session?.user?.email || 'user@example.com'}
+                    {user.email || 'user@example.com'}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Member since March 2024
@@ -412,10 +418,10 @@ export default function DashboardPage() {
             <Clock className="h-4 w-4 text-gray-500" />
           </div>
           <div className="text-2xl font-bold dark:text-white">
-            {!session?.user ? "-" : formatDuration(userStats.totalTime)}
+            {!user ? "-" : formatDuration(userStats.totalTime)}
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {!session?.user ? "-" : `${userStats.totalSessions} sessions completed`}
+            {!user ? "-" : `${userStats.totalSessions} sessions completed`}
           </p>
         </Card>
 
@@ -436,7 +442,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between text-sm mb-1">
                 <span className="text-gray-600 dark:text-gray-400">Sessions</span>
                 <span className="font-medium dark:text-white">
-                  {!session?.user ? "-" : userStats.monthlyProgress.totalSessions}
+                  {!user ? "-" : userStats.monthlyProgress.totalSessions}
                 </span>
               </div>
               <div className="h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
@@ -450,7 +456,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between text-sm mb-1">
                 <span className="text-gray-600 dark:text-gray-400">Time</span>
                 <span className="font-medium dark:text-white">
-                  {!session?.user ? "-" : formatDuration(userStats.monthlyProgress.totalTime)}
+                  {!user ? "-" : formatDuration(userStats.monthlyProgress.totalTime)}
                 </span>
               </div>
               <div className="h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
@@ -464,7 +470,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between text-sm mb-1">
                 <span className="text-gray-600 dark:text-gray-400">Completion Rate</span>
                 <span className="font-medium dark:text-white">
-                  {!session?.user ? "-" : `${userStats.monthlyProgress.completionRate.toFixed(1)}%`}
+                  {!user ? "-" : `${userStats.monthlyProgress.completionRate.toFixed(1)}%`}
                 </span>
               </div>
               <div className="h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">

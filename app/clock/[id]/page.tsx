@@ -10,6 +10,8 @@ import { ClockSettings } from '@/components/ClockSettings'
 import { ClockSettings as ClockSettingsType } from '@/types/ClockSettings'
 import { useTheme } from '@/app/ThemeContext'
 import { Timer } from '@/components/Timer'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/lib/FirebaseAuthContext'
 
 interface WeatherResponse {
   location: {
@@ -57,10 +59,14 @@ const clockColors = [
 ]
 
 export default function ClockPage() {
-  const params = useParams()
+  const router = useRouter()
   const searchParams = useSearchParams()
+  const params = useParams()
+  const { user } = useAuth()
+  const [isRunning, setIsRunning] = useState(false)
+  const [duration, setDuration] = useState(0)
   const id = parseInt(params.id as string)
-  const duration = searchParams.get('duration') ? parseInt(searchParams.get('duration') as string) : null
+  const durationParam = searchParams.get('duration')
   const encodedWords = searchParams.get('words')
   const words = encodedWords ? JSON.parse(decodeURIComponent(encodedWords)) : []
   const [showElements, setShowElements] = useState(true)
@@ -76,6 +82,17 @@ export default function ClockPage() {
   const [moon, setMoon] = useState<MoonData | null>(null)
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null)
   const [locationError, setLocationError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!user) {
+      router.push('/auth/signin')
+      return
+    }
+
+    if (durationParam) {
+      setDuration(parseInt(durationParam))
+    }
+  }, [user, router, searchParams])
 
   // Initialize current time
   useEffect(() => {
@@ -152,9 +169,29 @@ export default function ClockPage() {
     setSyncTrigger(prev => prev + 1)
   }
 
+  const handleComplete = () => {
+    setIsRunning(false)
+    // Add any completion logic here
+  }
+
+  const handleToggle = () => {
+    setIsRunning(!isRunning)
+  }
+
+  const handleReset = () => {
+    setIsRunning(false)
+    if (durationParam) {
+      setDuration(parseInt(durationParam))
+    }
+  }
+
   // Don't render clock until we have client-side time
   if (!currentTime) {
     return null;
+  }
+
+  if (!user) {
+    return null
   }
 
   return (
@@ -198,23 +235,10 @@ export default function ClockPage() {
       )}
       <Timer
         duration={duration}
-        clockColor={clockColors[id]}
-        clockId={id}
-        words={words}
-        weatherData={weatherData?.current}
-        moonData={moon}
-        locationData={{
-          city: weatherData?.location?.name,
-          country: weatherData?.location?.country,
-          elevation: 0, // Not available in the current API response
-          seaLevel: 0, // Not available in the current API response
-          lat: weatherData?.location?.lat,
-          lon: weatherData?.location?.lon
-        }}
-        onComplete={() => {
-          // Handle timer completion
-          console.log('Timer completed')
-        }}
+        onComplete={handleComplete}
+        isRunning={isRunning}
+        onToggle={handleToggle}
+        onReset={handleReset}
       />
     </div>
   )

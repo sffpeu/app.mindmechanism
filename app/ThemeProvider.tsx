@@ -30,7 +30,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [isDarkMode])
 
   return (
-    <ThemeContext.Provider value={{ isDarkMode, setIsDarkMode }}>
+    <ThemeContext.Provider 
+      value={{ 
+        isDarkMode, 
+        setIsDarkMode,
+        theme: isDarkMode ? 'dark' : 'light'
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   )
