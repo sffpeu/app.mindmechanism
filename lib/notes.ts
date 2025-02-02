@@ -7,7 +7,6 @@ import {
   doc,
   getDocs,
   query,
-  where,
   orderBy,
   Timestamp,
   serverTimestamp,
@@ -26,7 +25,6 @@ if (process.env.NODE_ENV === 'development') {
 
 export interface Note {
   id: string;
-  userId: string;
   title: string;
   content: string;
   createdAt: Timestamp;
@@ -38,14 +36,13 @@ export const createNote = async (userId: string, title: string, content: string)
   
   try {
     const noteData = {
-      userId,
       title,
       content,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };
     
-    await addDoc(collection(db, 'notes'), noteData);
+    await addDoc(collection(db, `users/${userId}/notes`), noteData);
   } catch (error: unknown) {
     console.error('Error creating note:', error);
     // If offline, the operation will be queued
@@ -60,8 +57,7 @@ export async function getUserNotes(userId: string): Promise<Note[]> {
   console.log('Fetching notes for user:', userId);
   
   const notesQuery = query(
-    collection(db, 'notes'),
-    where('userId', '==', userId),
+    collection(db, `users/${userId}/notes`),
     orderBy('updatedAt', 'desc')
   );
 
@@ -73,7 +69,6 @@ export async function getUserNotes(userId: string): Promise<Note[]> {
       const data = doc.data();
       return {
         id: doc.id,
-        userId: data.userId,
         title: data.title,
         content: data.content,
         createdAt: data.createdAt,
@@ -93,8 +88,7 @@ export const subscribeToUserNotes = (userId: string, callback: (notes: Note[]) =
   console.log('Setting up notes subscription for user:', userId);
   
   const notesQuery = query(
-    collection(db, 'notes'),
-    where('userId', '==', userId),
+    collection(db, `users/${userId}/notes`),
     orderBy('updatedAt', 'desc')
   );
 
@@ -121,11 +115,11 @@ export const subscribeToUserNotes = (userId: string, callback: (notes: Note[]) =
   );
 };
 
-export const updateNote = async (noteId: string, title: string, content: string): Promise<void> => {
-  console.log('Updating note:', { noteId, title });
+export const updateNote = async (userId: string, noteId: string, title: string, content: string): Promise<void> => {
+  console.log('Updating note:', { userId, noteId, title });
   
   try {
-    const noteRef = doc(db, 'notes', noteId);
+    const noteRef = doc(db, `users/${userId}/notes`, noteId);
     await updateDoc(noteRef, {
       title,
       content,
@@ -141,9 +135,9 @@ export const updateNote = async (noteId: string, title: string, content: string)
   }
 };
 
-export const deleteNote = async (noteId: string): Promise<void> => {
+export const deleteNote = async (userId: string, noteId: string): Promise<void> => {
   try {
-    const noteRef = doc(db, 'notes', noteId);
+    const noteRef = doc(db, `users/${userId}/notes`, noteId);
     await deleteDoc(noteRef);
   } catch (error: unknown) {
     console.error('Error deleting note:', error);

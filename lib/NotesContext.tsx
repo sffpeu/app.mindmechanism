@@ -18,19 +18,11 @@ const NotesContext = createContext<NotesContextType | undefined>(undefined)
 
 export function NotesProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
-  const [mounted, setMounted] = useState(false)
   const [notes, setNotes] = useState<Note[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Handle mounting
   useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  useEffect(() => {
-    if (!mounted) return
-
     if (!user) {
       setNotes([])
       setIsLoading(false)
@@ -41,113 +33,97 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     const unsubscribe = subscribeToUserNotes(user.uid, (updatedNotes) => {
       setNotes(updatedNotes)
       setIsLoading(false)
-      setError(null)
-    });
+    })
 
-    // Cleanup subscription on unmount
     return () => unsubscribe()
-  }, [user, mounted])
+  }, [user])
 
   const addNote = async (title: string, content: string) => {
     if (!user) {
       toast({
-        title: "Authentication Required",
-        description: "Please sign in to create notes"
+        title: "Error",
+        description: "You must be signed in to create notes",
+        variant: "destructive"
       })
       return
     }
 
     try {
-      setError(null)
       await createNote(user.uid, title, content)
       toast({
+        title: "Success",
         description: "Note created successfully"
       })
     } catch (error) {
       console.error('Error adding note:', error)
-      setError('Failed to add note')
       toast({
         title: "Error",
-        description: "Failed to create note. Please try again."
+        description: "Failed to create note",
+        variant: "destructive"
       })
-      throw error
     }
   }
 
   const editNote = async (noteId: string, title: string, content: string) => {
     if (!user) {
       toast({
-        title: "Authentication Required",
-        description: "Please sign in to edit notes"
+        title: "Error",
+        description: "You must be signed in to edit notes",
+        variant: "destructive"
       })
       return
     }
 
     try {
-      setError(null)
-      await updateNote(noteId, title, content)
+      await updateNote(user.uid, noteId, title, content)
       toast({
+        title: "Success",
         description: "Note updated successfully"
       })
     } catch (error) {
       console.error('Error updating note:', error)
-      setError('Failed to update note')
       toast({
         title: "Error",
-        description: "Failed to update note. Please try again."
+        description: "Failed to update note",
+        variant: "destructive"
       })
-      throw error
     }
   }
 
   const removeNote = async (noteId: string) => {
     if (!user) {
       toast({
-        title: "Authentication Required",
-        description: "Please sign in to delete notes"
+        title: "Error",
+        description: "You must be signed in to delete notes",
+        variant: "destructive"
       })
       return
     }
 
     try {
-      setError(null)
-      await deleteNote(noteId)
+      await deleteNote(user.uid, noteId)
       toast({
+        title: "Success",
         description: "Note deleted successfully"
       })
     } catch (error) {
       console.error('Error deleting note:', error)
-      setError('Failed to delete note')
       toast({
         title: "Error",
-        description: "Failed to delete note. Please try again."
+        description: "Failed to delete note",
+        variant: "destructive"
       })
-      throw error
     }
   }
 
-  // Don't render anything until mounted to prevent hydration issues
-  if (!mounted) {
-    return null
-  }
-
   return (
-    <NotesContext.Provider 
-      value={{ 
-        notes, 
-        isLoading, 
-        error, 
-        addNote, 
-        editNote, 
-        removeNote
-      }}
-    >
+    <NotesContext.Provider value={{ notes, isLoading, error, addNote, editNote, removeNote }}>
       {children}
     </NotesContext.Provider>
   )
 }
 
-export function useNotes() {
+export const useNotes = () => {
   const context = useContext(NotesContext)
   if (context === undefined) {
     throw new Error('useNotes must be used within a NotesProvider')

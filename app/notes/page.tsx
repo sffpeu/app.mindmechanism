@@ -7,9 +7,14 @@ import { RotateCcw, PenLine, Files, Clock, ArrowUpDown, Save, Edit, X } from 'lu
 import { useTheme } from '@/app/ThemeContext'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Note } from '@/types/Note'
+import { useAuth } from '@/lib/FirebaseAuthContext'
+import { useNotes } from '@/lib/NotesContext'
+import { Note } from '@/lib/notes'
+import { toast } from '@/components/ui/use-toast'
 
 export default function NotesPage() {
+  const { user } = useAuth()
+  const { notes, isLoading, addNote, editNote, removeNote } = useNotes()
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(false)
   const [noteTitle, setNoteTitle] = useState('')
@@ -26,31 +31,49 @@ export default function NotesPage() {
     { title: "Galileo's First Observation", date: '20/01/2025' },
   ]
 
-  // Initialize empty saved notes array
-  const [savedNotes, setSavedNotes] = useState<Note[]>([])
-
-  const handleSaveNote = () => {
-    if (!noteTitle.trim() || !noteContent.trim()) return
-
-    const newNote: Note = {
-      id: selectedNote?.id || Date.now().toString(),
-      title: noteTitle,
-      content: noteContent,
-      date: selectedNote?.date || new Date().toISOString(),
-      sessionId: selectedSession
+  const handleSaveNote = async () => {
+    if (!noteTitle.trim() || !noteContent.trim()) {
+      toast({
+        title: "Error",
+        description: "Title and content are required",
+        variant: "destructive"
+      })
+      return
     }
 
-    if (selectedNote) {
-      // Update existing note
-      setSavedNotes(prev => prev.map(note => 
-        note.id === selectedNote.id ? newNote : note
-      ))
-    } else {
-      // Create new note
-      setSavedNotes(prev => [newNote, ...prev])
+    try {
+      if (selectedNote && isEditing) {
+        await editNote(selectedNote.id, noteTitle, noteContent)
+      } else {
+        await addNote(noteTitle, noteContent)
+      }
+      clearForm()
+    } catch (error) {
+      console.error('Error saving note:', error)
+      toast({
+        title: "Error",
+        description: "Failed to save note",
+        variant: "destructive"
+      })
     }
+  }
 
-    clearForm()
+  const handleDeleteNote = async (noteId: string) => {
+    if (!confirm('Are you sure you want to delete this note?')) return
+
+    try {
+      await removeNote(noteId)
+      if (selectedNote?.id === noteId) {
+        clearForm()
+      }
+    } catch (error) {
+      console.error('Error deleting note:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete note",
+        variant: "destructive"
+      })
+    }
   }
 
   const clearForm = () => {
@@ -67,8 +90,9 @@ export default function NotesPage() {
     setIsEditing(false)
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
+  const formatDate = (timestamp: any) => {
+    if (!timestamp) return ''
+    const date = timestamp.toDate()
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',
       day: 'numeric',
@@ -77,11 +101,30 @@ export default function NotesPage() {
     }).format(date)
   }
 
-  const sortedNotes = [...savedNotes].sort((a, b) => {
-    const dateA = new Date(a.date).getTime()
-    const dateB = new Date(b.date).getTime()
+  const sortedNotes = [...notes].sort((a, b) => {
+    const dateA = a.updatedAt.toDate().getTime()
+    const dateB = b.updatedAt.toDate().getTime()
     return sortOrder === 'newest' ? dateB - dateA : dateA - dateB
   })
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-black/95">
+        <Menu
+          showElements={showElements}
+          onToggleShow={() => setShowElements(!showElements)}
+          showSatellites={showSatellites}
+          onSatellitesChange={setShowSatellites}
+        />
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="text-center py-8">
+            <h2 className="text-xl font-medium text-black dark:text-white mb-2">Sign In Required</h2>
+            <p className="text-gray-500 dark:text-gray-400">Please sign in to view and manage your notes.</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95">
@@ -117,7 +160,9 @@ export default function NotesPage() {
                 </div>
               </div>
               <div className="mt-4 space-y-3">
-                {sortedNotes.length === 0 ? (
+                {isLoading ? (
+                  <p className="text-center text-black/50 dark:text-white/50 py-8">Loading notes...</p>
+                ) : sortedNotes.length === 0 ? (
                   <p className="text-center text-black/50 dark:text-white/50 py-8">No saved notes yet</p>
                 ) : (
                   sortedNotes.map((note) => (
@@ -131,7 +176,7 @@ export default function NotesPage() {
                       <h3 className="font-medium text-black dark:text-white">{note.title}</h3>
                       <div className="flex items-center gap-2 mt-1">
                         <Clock className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
-                        <p className="text-sm text-black/50 dark:text-white/50">{formatDate(note.date)}</p>
+                        <p className="text-sm text-black/50 dark:text-white/50">{formatDate(note.updatedAt)}</p>
                       </div>
                       <p className="text-sm text-black/50 dark:text-white/50 mt-1 line-clamp-2">{note.content}</p>
                     </div>
@@ -191,6 +236,12 @@ export default function NotesPage() {
                           <Edit className="h-5 w-5 text-black/50 dark:text-white/50" />
                         )}
                       </button>
+                      <button
+                        onClick={() => handleDeleteNote(selectedNote.id)}
+                        className="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                      >
+                        <X className="h-5 w-5 text-red-500" />
+                      </button>
                     </>
                   )}
                   <PenLine className="h-5 w-5 text-black/50 dark:text-white/50" />
@@ -206,9 +257,11 @@ export default function NotesPage() {
                     className="bg-transparent w-full text-black dark:text-white placeholder-black/50 dark:placeholder-white/50 outline-none"
                     readOnly={Boolean(selectedNote && !isEditing)}
                   />
-                  <span className="text-sm text-black/50 dark:text-white/50">
-                    {selectedNote ? formatDate(selectedNote.date) : new Date().toLocaleDateString()}
-                  </span>
+                  {selectedNote && (
+                    <span className="text-sm text-black/50 dark:text-white/50">
+                      {formatDate(selectedNote.updatedAt)}
+                    </span>
+                  )}
                 </div>
                 <textarea
                   placeholder="Write your note here..."
