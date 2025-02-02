@@ -29,12 +29,6 @@ export function Timer({ minutes, isRunning, onToggle, onReset, onComplete, clock
   const [mins, setMins] = useState(minutes)
   const [secs, setSecs] = useState(0)
 
-  // Format time to show as MM:SS
-  const formatTime = (minutes: number, seconds: number) => {
-    const formattedMinutes = minutes < 100 ? minutes.toString().padStart(2, '0') : minutes.toString()
-    return `${formattedMinutes}:${seconds.toString().padStart(2, '0')}`
-  }
-
   // Reset timer when minutes prop changes
   useEffect(() => {
     setMins(minutes)
@@ -65,6 +59,8 @@ export function Timer({ minutes, isRunning, onToggle, onReset, onComplete, clock
   }, [isRunning, mins, secs, onComplete])
 
   const clockColor = clockColors[clockId % clockColors.length]
+  // Simple display time calculation with proper padding
+  const displayTime = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
 
   return (
     <motion.div
@@ -76,7 +72,7 @@ export function Timer({ minutes, isRunning, onToggle, onReset, onComplete, clock
         className="font-mono font-medium text-lg"
         style={{ color: clockColor }}
       >
-        {formatTime(mins, secs)}
+        {displayTime}
       </div>
       <div className="flex items-center gap-1">
         <button
