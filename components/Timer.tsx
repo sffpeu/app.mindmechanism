@@ -59,8 +59,13 @@ export function Timer({ minutes, isRunning, onToggle, onReset, onComplete, clock
   }, [isRunning, mins, secs, onComplete])
 
   const clockColor = clockColors[clockId % clockColors.length]
-  // Simple display time calculation with proper padding
-  const displayTime = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+
+  const formatTime = (minutes: number, seconds: number) => {
+    const totalSeconds = minutes * 60 + seconds
+    const displayMinutes = Math.floor(totalSeconds / 60)
+    const displaySeconds = totalSeconds % 60
+    return `${displayMinutes.toString().padStart(2, '0')}:${displaySeconds.toString().padStart(2, '0')}`
+  }
 
   return (
     <motion.div
@@ -72,7 +77,7 @@ export function Timer({ minutes, isRunning, onToggle, onReset, onComplete, clock
         className="font-mono font-medium text-lg"
         style={{ color: clockColor }}
       >
-        {displayTime}
+        {formatTime(mins, secs)}
       </div>
       <div className="flex items-center gap-1">
         <button
