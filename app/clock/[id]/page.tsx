@@ -10,8 +10,6 @@ import { ClockSettings } from '@/components/ClockSettings'
 import { ClockSettings as ClockSettingsType } from '@/types/ClockSettings'
 import { useTheme } from '@/app/ThemeContext'
 import { Timer } from '@/components/Timer'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/lib/FirebaseAuthContext'
 
 interface WeatherResponse {
   location: {
@@ -59,14 +57,10 @@ const clockColors = [
 ]
 
 export default function ClockPage() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
   const params = useParams()
-  const { user } = useAuth()
-  const [isRunning, setIsRunning] = useState(false)
-  const [duration, setDuration] = useState(0)
+  const searchParams = useSearchParams()
   const id = parseInt(params.id as string)
-  const durationParam = searchParams.get('duration')
+  const duration = searchParams.get('duration') ? parseInt(searchParams.get('duration') as string) : 0
   const encodedWords = searchParams.get('words')
   const words = encodedWords ? JSON.parse(decodeURIComponent(encodedWords)) : []
   const [showElements, setShowElements] = useState(true)
@@ -82,17 +76,7 @@ export default function ClockPage() {
   const [moon, setMoon] = useState<MoonData | null>(null)
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null)
   const [locationError, setLocationError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!user) {
-      router.push('/auth/signin')
-      return
-    }
-
-    if (durationParam) {
-      setDuration(parseInt(durationParam))
-    }
-  }, [user, router, searchParams])
+  const [isRunning, setIsRunning] = useState(false)
 
   // Initialize current time
   useEffect(() => {
@@ -171,7 +155,8 @@ export default function ClockPage() {
 
   const handleComplete = () => {
     setIsRunning(false)
-    // Add any completion logic here
+    // Handle timer completion
+    console.log('Timer completed')
   }
 
   const handleToggle = () => {
@@ -180,18 +165,11 @@ export default function ClockPage() {
 
   const handleReset = () => {
     setIsRunning(false)
-    if (durationParam) {
-      setDuration(parseInt(durationParam))
-    }
   }
 
   // Don't render clock until we have client-side time
   if (!currentTime) {
     return null;
-  }
-
-  if (!user) {
-    return null
   }
 
   return (
