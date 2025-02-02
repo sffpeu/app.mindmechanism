@@ -5,7 +5,8 @@ import {
   persistentLocalCache,
   persistentMultipleTabManager,
   connectFirestoreEmulator,
-  FirestoreSettings
+  initializeFirestore,
+  type FirestoreSettings
 } from 'firebase/firestore';
 
 // Debug: Log Firebase config (without sensitive values)
@@ -37,8 +38,7 @@ const firestoreSettings: FirestoreSettings = {
   })
 };
 
-export const db = getFirestore(app);
-db.settings(firestoreSettings);
+export const db = initializeFirestore(app, firestoreSettings);
 
 console.log('Firebase initialization complete');
 export default app; 
