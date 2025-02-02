@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { Card } from '@/components/ui/card'
-import { Calendar, Clock, Cloud, Droplets, Gauge, Wind, Moon, ClipboardList, BookOpen, Sun, MapPin, Mountain, Waves, User, BarChart2, Pencil, Trash2 } from 'lucide-react'
+import { Calendar, Clock, Cloud, Droplets, Gauge, Wind, Moon, ClipboardList, BookOpen, Sun, MapPin, Mountain, Waves, User, BarChart2, Pencil, Trash2, Globe } from 'lucide-react'
 import { useTheme } from '@/app/ThemeContext'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/FirebaseAuthContext'
@@ -238,34 +238,10 @@ export default function DashboardPage() {
         onSatellitesChange={setShowSatellites}
       />
       <div className="max-w-6xl mx-auto space-y-4 p-4">
-        {/* User Card */}
-        {user && (
-          <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-semibold dark:text-white">Profile</h2>
-              <User className="h-4 w-4 text-gray-500" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                {user.photoURL && (
-                  <img src={user.photoURL} alt="Profile" className="w-12 h-12 rounded-full" />
-                )}
-                <div>
-                  <p className="font-medium dark:text-white">{user.displayName || 'User'}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
-                </div>
-              </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                <p>Last sign in: {user.metadata.lastSignInTime ? new Date(user.metadata.lastSignInTime).toLocaleString() : 'N/A'}</p>
-                <p>Account created: {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleString() : 'N/A'}</p>
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {/* Time Card */}
+        {/* Time and User Profile Section */}
         {showInfoCards && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Time Card */}
             <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-base font-semibold dark:text-white">Time</h2>
@@ -280,38 +256,37 @@ export default function DashboardPage() {
                   day: 'numeric',
                   month: 'long',
                   year: 'numeric'
-                })} ({new Intl.DateTimeFormat('en-US', { timeZoneName: 'short' }).formatToParts(new Date()).find(part => part.type === 'timeZoneName')?.value})
+                })}
               </p>
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 {Intl.DateTimeFormat().resolvedOptions().timeZone}
               </p>
             </Card>
 
-            <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-white/20 flex items-center justify-center">
-                  <span className="text-xl font-semibold dark:text-white">
-                    U
-                  </span>
+            {/* User Profile Card */}
+            {user && (
+              <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-base font-semibold dark:text-white">Profile</h2>
+                  <User className="h-4 w-4 text-gray-500" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <h1 className="text-xl font-semibold dark:text-white truncate">
-                      User
-                    </h1>
-                    <button className="px-3 py-1.5 text-sm bg-white dark:bg-white/20 rounded-md dark:text-white shadow-sm hover:shadow-md transition-shadow">
-                      Edit
-                    </button>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    {user.photoURL && (
+                      <img src={user.photoURL} alt="Profile" className="w-12 h-12 rounded-full" />
+                    )}
+                    <div>
+                      <p className="font-medium dark:text-white">{user.displayName || 'User'}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
+                    </div>
                   </div>
-                  <p className="text-gray-600 dark:text-gray-200 text-sm truncate">
-                    user@example.com
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Member since March 2024
-                  </p>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    <p>Last sign in: {user.metadata.lastSignInTime ? new Date(user.metadata.lastSignInTime).toLocaleString() : 'N/A'}</p>
+                    <p>Account created: {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleString() : 'N/A'}</p>
+                  </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            )}
           </div>
         )}
 
@@ -393,199 +368,96 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Location Section */}
-        {showInfoCards && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {weatherData && (
-              <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-base font-semibold dark:text-white">Location</h2>
-                  <MapPin className="h-4 w-4 text-gray-500" />
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 rounded-full bg-gray-100 dark:bg-white/20">
-                      <MapPin className="h-4 w-4 text-gray-600 dark:text-gray-200" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium dark:text-white">{weatherData.location.name}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{weatherData.location.country}</p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-200">
-                        <Mountain className="h-3.5 w-3.5" />
-                        <span className="text-xs">Elevation</span>
-                      </div>
-                      <p className="text-sm font-medium dark:text-white">1,234 m</p>
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-200">
-                        <Waves className="h-3.5 w-3.5" />
-                        <span className="text-xs">Sea Level</span>
-                      </div>
-                      <p className="text-sm font-medium dark:text-white">+45 m</p>
-                    </div>
-                  </div>
-                  <div className="pt-2 text-xs text-gray-500 dark:text-gray-400">
-                    {weatherData.location.lat.toFixed(4)}°N, {weatherData.location.lon.toFixed(4)}°E
-                  </div>
-                </div>
-              </Card>
-            )}
-
-            {/* Notes Section */}
-            <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all md:col-span-2">
+        {/* Location and Recent Notes Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Location Card */}
+          {weatherData && (
+            <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-base font-semibold dark:text-white">Notes</h2>
+                <h2 className="text-base font-semibold dark:text-white">Location</h2>
+                <MapPin className="h-4 w-4 text-gray-500" />
+              </div>
+              <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <Dialog open={isAddNoteOpen} onOpenChange={setIsAddNoteOpen}>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" className="text-blue-500 hover:text-blue-600">
-                        Add Note
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Add New Note</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4 mt-4">
-                        <Input
-                          placeholder="Title"
-                          value={noteTitle}
-                          onChange={handleTitleChange}
-                        />
-                        <Textarea
-                          placeholder="Content"
-                          value={noteContent}
-                          onChange={handleContentChange}
-                          rows={5}
-                        />
-                        <Button onClick={handleAddNote}>Save Note</Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                  <div className="p-2 rounded-full bg-gray-100 dark:bg-white/20">
+                    <MapPin className="h-4 w-4 text-gray-600 dark:text-gray-200" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium dark:text-white">{weatherData.location.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {weatherData.location.region && `${weatherData.location.region}, `}{weatherData.location.country}
+                    </p>
+                  </div>
                 </div>
-              </div>
-
-              {!user ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 dark:text-gray-400">Sign in to view and create notes</p>
-                </div>
-              ) : notesLoading ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 dark:text-gray-400">Loading notes...</p>
-                </div>
-              ) : notes.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 dark:text-gray-400">No notes yet. Create your first note!</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {notes.map((note) => (
-                    <div
-                      key={note.id}
-                      className="p-4 rounded-lg border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 transition-all"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-medium dark:text-white">{note.title}</h3>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => openEditNote(note)}
-                            className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-all"
-                          >
-                            <Pencil className="h-4 w-4 text-gray-500" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteNote(note.id)}
-                            className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-all"
-                          >
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </button>
-                        </div>
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">
-                        {note.content}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-2">
-                        {note.updatedAt.toDate().toLocaleString()}
-                      </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-200">
+                      <Clock className="h-3.5 w-3.5" />
+                      <span className="text-xs">Local Time</span>
                     </div>
-                  ))}
-                </div>
-              )}
-
-              <Dialog open={isEditNoteOpen} onOpenChange={setIsEditNoteOpen}>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Edit Note</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4 mt-4">
-                    <Input
-                      placeholder="Title"
-                      value={noteTitle}
-                      onChange={handleTitleChange}
-                    />
-                    <Textarea
-                      placeholder="Content"
-                      value={noteContent}
-                      onChange={handleContentChange}
-                      rows={5}
-                    />
-                    <Button onClick={handleEditNote}>Update Note</Button>
+                    <p className="text-sm font-medium dark:text-white">{weatherData.location.localtime.split(' ')[1]}</p>
                   </div>
-                </DialogContent>
-              </Dialog>
-            </Card>
-          </div>
-        )}
-
-        {/* Recent Notes */}
-        <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-semibold dark:text-white">Recent Notes</h2>
-            <div className="flex items-center gap-2">
-              <ClipboardList className="h-4 w-4 text-gray-500" />
-              <Link href="/notes" className="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300">
-                View All
-              </Link>
-            </div>
-          </div>
-          <div className="space-y-2">
-            {recentNotes.map((note) => (
-              <div
-                key={note.id}
-                className="p-3 rounded-lg bg-gray-50 dark:bg-black/20 border border-black/5 dark:border-white/10"
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <h3 className="font-medium dark:text-white">{note.title}</h3>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => openEditNote(note)}
-                      className="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-white/10"
-                    >
-                      <Pencil className="h-4 w-4 text-gray-500" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteNote(note.id)}
-                      className="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-white/10"
-                    >
-                      <Trash2 className="h-4 w-4 text-gray-500" />
-                    </button>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-200">
+                      <Globe className="h-3.5 w-3.5" />
+                      <span className="text-xs">Time Zone</span>
+                    </div>
+                    <p className="text-sm font-medium dark:text-white">{weatherData.location.tz_id}</p>
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{note.content}</p>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                  {note.updatedAt.toDate().toLocaleString()}
-                </p>
+                <div className="pt-2 text-xs text-gray-500 dark:text-gray-400">
+                  {weatherData.location.lat.toFixed(4)}°N, {weatherData.location.lon.toFixed(4)}°E
+                </div>
               </div>
-            ))}
-            {recentNotes.length === 0 && (
-              <p className="text-sm text-gray-500 dark:text-gray-400">No notes yet</p>
-            )}
-          </div>
-        </Card>
+            </Card>
+          )}
+
+          {/* Recent Notes Card */}
+          <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all md:col-span-2">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-base font-semibold dark:text-white">Recent Notes</h2>
+              <div className="flex items-center gap-2">
+                <ClipboardList className="h-4 w-4 text-gray-500" />
+                <Link href="/notes" className="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300">
+                  View All
+                </Link>
+              </div>
+            </div>
+            <div className="space-y-2">
+              {recentNotes.map((note) => (
+                <div
+                  key={note.id}
+                  className="p-3 rounded-lg bg-gray-50 dark:bg-black/20 border border-black/5 dark:border-white/10"
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="font-medium dark:text-white">{note.title}</h3>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => openEditNote(note)}
+                        className="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-white/10"
+                      >
+                        <Pencil className="h-4 w-4 text-gray-500" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteNote(note.id)}
+                        className="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-white/10"
+                      >
+                        <Trash2 className="h-4 w-4 text-gray-500" />
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{note.content}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    {note.updatedAt.toDate().toLocaleString()}
+                  </p>
+                </div>
+              ))}
+              {recentNotes.length === 0 && (
+                <p className="text-sm text-gray-500 dark:text-gray-400">No notes yet</p>
+              )}
+            </div>
+          </Card>
+        </div>
 
         {/* Total Time Card */}
         <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all relative">
@@ -659,6 +531,56 @@ export default function DashboardPage() {
           </div>
         </Card>
       </div>
+
+      {/* Note dialogs */}
+      <Dialog open={isAddNoteOpen} onOpenChange={setIsAddNoteOpen}>
+        <DialogTrigger asChild>
+          <Button variant="outline" className="text-blue-500 hover:text-blue-600">
+            Add Note
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Note</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <Input
+              placeholder="Title"
+              value={noteTitle}
+              onChange={handleTitleChange}
+            />
+            <Textarea
+              placeholder="Content"
+              value={noteContent}
+              onChange={handleContentChange}
+              rows={5}
+            />
+            <Button onClick={handleAddNote}>Save Note</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isEditNoteOpen} onOpenChange={setIsEditNoteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Note</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <Input
+              placeholder="Title"
+              value={noteTitle}
+              onChange={handleTitleChange}
+            />
+            <Textarea
+              placeholder="Content"
+              value={noteContent}
+              onChange={handleContentChange}
+              rows={5}
+            />
+            <Button onClick={handleEditNote}>Update Note</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 } 
