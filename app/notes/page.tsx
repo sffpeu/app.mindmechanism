@@ -204,7 +204,7 @@ export default function NotesPage() {
                     value={noteTitle}
                     onChange={(e) => setNoteTitle(e.target.value)}
                     className="bg-transparent w-full text-black dark:text-white placeholder-black/50 dark:placeholder-white/50 outline-none"
-                    readOnly={selectedNote && !isEditing}
+                    readOnly={Boolean(selectedNote && !isEditing)}
                   />
                   <span className="text-sm text-black/50 dark:text-white/50">
                     {selectedNote ? formatDate(selectedNote.date) : new Date().toLocaleDateString()}
@@ -217,7 +217,7 @@ export default function NotesPage() {
                   className={`w-full h-[500px] bg-black/5 dark:bg-white/5 rounded-lg p-3 text-black dark:text-white placeholder-black/50 dark:placeholder-white/50 outline-none resize-none ${
                     selectedNote && !isEditing ? 'cursor-default' : ''
                   }`}
-                  readOnly={selectedNote && !isEditing}
+                  readOnly={Boolean(selectedNote && !isEditing)}
                 />
                 {(!selectedNote || isEditing) && (
                   <button
