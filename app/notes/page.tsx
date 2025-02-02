@@ -42,7 +42,7 @@ export default function NotesPage() {
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-          {/* Left Column: Saved Notes */}
+          {/* Left Column: Saved Notes and Select Session */}
           <div className="space-y-4">
             {/* Saved Notes Card */}
             <Card className="p-4 bg-white/90 dark:bg-black/90 backdrop-blur-lg border-black/10 dark:border-white/20">
@@ -67,10 +67,7 @@ export default function NotesPage() {
                 )}
               </div>
             </Card>
-          </div>
 
-          {/* Right Column: Select Session (with development hint) and Write Note */}
-          <div className="md:col-span-2 space-y-4">
             {/* Select Session Card */}
             <Card className="p-4 bg-white/90 dark:bg-black/90 backdrop-blur-lg border-black/10 dark:border-white/20 relative">
               <div className="absolute inset-0 bg-white/90 dark:bg-black/90 backdrop-blur-[2px] rounded-xl z-10 flex items-center justify-center">
@@ -100,7 +97,10 @@ export default function NotesPage() {
                 ))}
               </div>
             </Card>
+          </div>
 
+          {/* Right Column: Write Note */}
+          <div className="md:col-span-2">
             {/* Write Note Card */}
             <Card className="p-4 bg-white/90 dark:bg-black/90 backdrop-blur-lg border-black/10 dark:border-white/20">
               <div className="flex items-center justify-between mb-4">
