@@ -114,6 +114,19 @@ const shadowKeyframes = {
   "100%": { boxShadow: "0 0 50px rgba(var(--shadow-color), 0)" }
 };
 
+// Helper function to format time
+const formatTime = (ms: number) => {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+};
+
 // Helper function to convert hex to RGB
 function hexToRgb(hex: string) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex.replace('bg-[#', '').replace(']', ''));
@@ -163,6 +176,35 @@ export default function Clock({
   const [showInfoCards, setShowInfoCards] = useState(true);
   const [displayState, setDisplayState] = useState<DisplayState>('info');
   const [selectedNodeIndex, setSelectedNodeIndex] = useState<number | null>(null);
+  const [remainingTime, setRemainingTime] = useState<number | null>(null);
+  const searchParams = new URLSearchParams(window.location.search);
+  const duration = searchParams.get('duration');
+
+  // Initialize and update remaining time
+  useEffect(() => {
+    if (duration) {
+      const durationMs = parseInt(duration);
+      const startTime = new Date().getTime();
+      
+      const updateRemainingTime = () => {
+        const now = new Date().getTime();
+        const elapsed = now - startTime;
+        const remaining = durationMs - elapsed;
+        
+        if (remaining <= 0) {
+          setRemainingTime(0);
+          return;
+        }
+        
+        setRemainingTime(remaining);
+      };
+      
+      updateRemainingTime();
+      const timer = setInterval(updateRemainingTime, 1000);
+      
+      return () => clearInterval(timer);
+    }
+  }, [duration]);
 
   // Handle image error
   const handleImageError = () => {
@@ -438,6 +480,17 @@ export default function Clock({
     
     return (
       <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px]">
+        {/* Countdown Timer */}
+        {remainingTime !== null && (
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
+            <div className="px-4 py-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10">
+              <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                {formatTime(remainingTime)}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Glow effect */}
         {id !== 9 && (
           <motion.div
