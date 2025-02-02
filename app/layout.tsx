@@ -1,10 +1,7 @@
-import { Inter } from 'next/font/google'
 import './globals.css'
-import { Providers } from './providers'
-import { ThemeProvider } from './ThemeProvider'
-import { Logo } from '@/components/Logo'
-
-const inter = Inter({ subsets: ['latin'] })
+import { ThemeProvider } from './ThemeContext'
+import { FirebaseAuthProvider } from '@/lib/FirebaseAuthContext'
+import { Toaster } from '@/components/ui/toaster'
 
 export default function RootLayout({
   children,
@@ -12,13 +9,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" suppressHydrationWarning>
+      <body>
         <ThemeProvider>
-          <Logo />
-          <Providers>
+          <FirebaseAuthProvider>
             {children}
-          </Providers>
+            <Toaster />
+          </FirebaseAuthProvider>
         </ThemeProvider>
       </body>
     </html>

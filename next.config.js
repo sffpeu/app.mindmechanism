@@ -2,7 +2,12 @@
 const nextConfig = {
   images: {
     unoptimized: true,
-    remotePatterns: [],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+    ],
   },
   trailingSlash: true,
   typescript: {

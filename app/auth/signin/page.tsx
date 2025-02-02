@@ -1,11 +1,21 @@
 'use client'
 
-import { signIn } from 'next-auth/react'
+import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 
 export default function SignIn() {
   const router = useRouter()
+  const { signInWithGoogle } = useAuth()
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle()
+      router.push('/')
+    } catch (error) {
+      console.error('Error signing in:', error)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95 flex items-center justify-center">
@@ -22,7 +32,7 @@ export default function SignIn() {
           </p>
           
           <button
-            onClick={() => signIn('google', { callbackUrl: '/' })}
+            onClick={handleGoogleSignIn}
             className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
