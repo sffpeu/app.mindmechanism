@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Menu as MenuIcon, X, Settings, Sun, Moon, Eye, Home, LayoutGrid, Play, BookOpen, ClipboardList, LogOut, Info } from 'lucide-react'
+import { Menu as MenuIcon, X, Settings, Sun, Moon, Eye, Home, LayoutGrid, Play, BookOpen, ClipboardList, LogOut, Info, LayoutDashboard } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -63,6 +63,13 @@ export function Menu({
               >
                 <Home className="h-5 w-5" />
                 Home
+              </Link>
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-all"
+              >
+                <LayoutDashboard className="h-5 w-5" />
+                Dashboard
               </Link>
               <Link
                 href="/sessions"
