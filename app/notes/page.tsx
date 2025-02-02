@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { Card } from '@/components/ui/card'
-import { RotateCcw, PenLine, Files } from 'lucide-react'
+import { RotateCcw, PenLine, Files, Clock, ArrowUpDown } from 'lucide-react'
 import { useTheme } from '@/app/ThemeContext'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -15,6 +15,7 @@ export default function NotesPage() {
   const [noteTitle, setNoteTitle] = useState('')
   const [noteContent, setNoteContent] = useState('')
   const [selectedSession, setSelectedSession] = useState<string | null>(null)
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest')
   const { isDarkMode } = useTheme()
 
   // Example sessions - replace with actual data
@@ -23,13 +24,55 @@ export default function NotesPage() {
     { title: "Galileo's First Observation", date: '20/01/2025' },
   ]
 
-  // Example saved notes - replace with actual data
-  const savedNotes: Note[] = []
+  // Example saved notes with timestamps - replace with actual data from database later
+  const [savedNotes, setSavedNotes] = useState<Note[]>([
+    {
+      id: '1',
+      title: 'First Meditation Session',
+      content: 'Today I focused on breath awareness...',
+      date: new Date(2024, 2, 20, 14, 30).toISOString(),
+      sessionId: null
+    },
+    {
+      id: '2',
+      title: 'Morning Reflection',
+      content: 'The morning session was particularly...',
+      date: new Date(2024, 2, 21, 9, 15).toISOString(),
+      sessionId: null
+    }
+  ])
 
   const handleSaveNote = () => {
-    // Implement note saving functionality
-    console.log('Saving note:', { title: noteTitle, content: noteContent })
+    if (!noteTitle.trim() || !noteContent.trim()) return
+
+    const newNote: Note = {
+      id: Date.now().toString(),
+      title: noteTitle,
+      content: noteContent,
+      date: new Date().toISOString(),
+      sessionId: selectedSession
+    }
+
+    setSavedNotes(prev => [newNote, ...prev])
+    setNoteTitle('')
+    setNoteContent('')
   }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date)
+  }
+
+  const sortedNotes = [...savedNotes].sort((a, b) => {
+    const dateA = new Date(a.date).getTime()
+    const dateB = new Date(b.date).getTime()
+    return sortOrder === 'newest' ? dateB - dateA : dateA - dateB
+  })
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95">
@@ -48,20 +91,32 @@ export default function NotesPage() {
             <Card className="p-4 bg-white/90 dark:bg-black/90 backdrop-blur-lg border-black/10 dark:border-white/20">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-medium text-black dark:text-white">Saved Notes</h2>
-                <Files className="h-5 w-5 text-black/50 dark:text-white/50" />
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')}
+                    className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                  >
+                    <ArrowUpDown className="h-4 w-4" />
+                    {sortOrder === 'newest' ? 'Newest' : 'Oldest'}
+                  </button>
+                  <Files className="h-5 w-5 text-black/50 dark:text-white/50" />
+                </div>
               </div>
-              <p className="text-sm text-black/50 dark:text-white/50">Recent notes</p>
               <div className="mt-4 space-y-3">
-                {savedNotes.length === 0 ? (
+                {sortedNotes.length === 0 ? (
                   <p className="text-center text-black/50 dark:text-white/50 py-8">No saved notes yet</p>
                 ) : (
-                  savedNotes.map((note, index) => (
+                  sortedNotes.map((note) => (
                     <div
-                      key={index}
+                      key={note.id}
                       className="p-3 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
                     >
                       <h3 className="font-medium text-black dark:text-white">{note.title}</h3>
-                      <p className="text-sm text-black/50 dark:text-white/50">{note.date}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Clock className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
+                        <p className="text-sm text-black/50 dark:text-white/50">{formatDate(note.date)}</p>
+                      </div>
+                      <p className="text-sm text-black/50 dark:text-white/50 mt-1 line-clamp-2">{note.content}</p>
                     </div>
                   ))
                 )}
