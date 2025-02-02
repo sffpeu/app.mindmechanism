@@ -3,7 +3,7 @@ import { getAuth } from 'firebase/auth';
 import { 
   getFirestore, 
   initializeFirestore,
-  enableIndexedDbPersistence,
+  enableMultiTabIndexedDbPersistence,
   CACHE_SIZE_UNLIMITED,
   connectFirestoreEmulator
 } from 'firebase/firestore';
@@ -30,14 +30,12 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
 console.log('Initializing Firestore...');
-// Initialize Firestore with default settings first
+// Initialize Firestore with multi-tab persistence
 export const db = getFirestore(app);
 
-// Enable offline persistence
+// Enable multi-tab persistence
 if (typeof window !== 'undefined') {
-  enableIndexedDbPersistence(db, {
-    synchronizeTabs: false // This ensures only one tab has persistence enabled
-  }).catch((err) => {
+  enableMultiTabIndexedDbPersistence(db).catch((err) => {
     if (err.code === 'failed-precondition') {
       // Multiple tabs open, persistence can only be enabled in one tab at a time.
       console.warn('Multiple tabs open, persistence disabled');
