@@ -7,7 +7,7 @@ import { Play, Pause, RotateCw } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 interface TimerProps {
-  duration: number // duration in milliseconds
+  duration: number // duration in minutes
   onComplete?: () => void
   isRunning: boolean
   onToggle: () => void
@@ -28,13 +28,14 @@ const clockColors = [
 ]
 
 export function Timer({ duration, onComplete, isRunning, onToggle, onReset, clockId }: TimerProps) {
-  const [timeLeft, setTimeLeft] = useState(duration)
+  // Convert duration from minutes to total seconds for internal state
+  const [secondsLeft, setSecondsLeft] = useState(duration * 60)
   const router = useRouter()
   const { user } = useAuth()
 
-  // Update timeLeft when duration changes
+  // Update seconds when duration changes
   useEffect(() => {
-    setTimeLeft(duration)
+    setSecondsLeft(duration * 60)
   }, [duration])
 
   useEffect(() => {
@@ -45,15 +46,15 @@ export function Timer({ duration, onComplete, isRunning, onToggle, onReset, cloc
 
     let interval: NodeJS.Timeout
 
-    if (isRunning && timeLeft > 0) {
+    if (isRunning && secondsLeft > 0) {
       interval = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1000) {
+        setSecondsLeft((prev) => {
+          if (prev <= 1) {
             clearInterval(interval)
             onComplete?.()
             return 0
           }
-          return prev - 1000
+          return prev - 1
         })
       }, 1000)
     }
@@ -63,12 +64,12 @@ export function Timer({ duration, onComplete, isRunning, onToggle, onReset, cloc
         clearInterval(interval)
       }
     }
-  }, [isRunning, timeLeft, onComplete, user, router])
+  }, [isRunning, secondsLeft, onComplete, user, router])
 
-  const formatTime = useCallback((ms: number) => {
-    const totalMinutes = Math.floor(ms / (60 * 1000))
-    const seconds = Math.floor((ms % (60 * 1000)) / 1000)
-    return `${totalMinutes}:${seconds.toString().padStart(2, '0')}`
+  const formatTime = useCallback((totalSeconds: number) => {
+    const minutes = Math.floor(totalSeconds / 60)
+    const seconds = totalSeconds % 60
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
   }, [])
 
   const clockColor = clockColors[clockId % clockColors.length]
@@ -84,10 +85,10 @@ export function Timer({ duration, onComplete, isRunning, onToggle, onReset, cloc
       style={style}
     >
       <div 
-        className="font-mono font-medium"
+        className="font-mono font-medium text-lg"
         style={{ color: clockColor }}
       >
-        {formatTime(timeLeft)}
+        {formatTime(secondsLeft)}
       </div>
       <div className="flex items-center gap-1">
         <button
