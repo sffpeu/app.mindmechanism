@@ -90,12 +90,16 @@ export async function getUserNotes(userId: string): Promise<Note[]> {
     
     return snapshot.docs.map(doc => {
       const data = doc.data();
+      // Handle potentially null timestamps
+      const createdAt = data.createdAt || Timestamp.now();
+      const updatedAt = data.updatedAt || createdAt;
+      
       return {
         id: doc.id,
-        title: data.title,
-        content: data.content,
-        createdAt: data.createdAt,
-        updatedAt: data.updatedAt
+        title: data.title || '',
+        content: data.content || '',
+        createdAt,
+        updatedAt
       };
     });
   } catch (error) {
@@ -128,31 +132,32 @@ export const subscribeToUserNotes = (userId: string, callback: (notes: Note[]) =
       try {
         const notes = snapshot.docs.map(doc => {
           const data = doc.data();
+          // Handle potentially null timestamps
+          const createdAt = data.createdAt || Timestamp.now();
+          const updatedAt = data.updatedAt || createdAt;
+          
           return {
             id: doc.id,
             title: data.title || '',
             content: data.content || '',
-            createdAt: data.createdAt,
-            updatedAt: data.updatedAt
+            createdAt,
+            updatedAt
           } as Note;
         });
         console.log('Received notes update, count:', notes.length);
         callback(notes);
       } catch (error) {
         console.error('Error processing notes snapshot:', error);
-        // Return empty array instead of crashing
         callback([]);
       }
     },
     (error: FirestoreError) => {
       console.error('Error in notes subscription:', error);
-      // Handle errors gracefully without throwing
       if (error.code === 'permission-denied') {
         console.error('Permission denied to access notes');
         callback([]);
       } else if (error.code === 'unavailable') {
         console.log('Operating in offline mode');
-        // Try to disable network gracefully
         disableNetwork(db).catch(err => {
           console.error('Error disabling network:', err);
         });
