@@ -4,7 +4,6 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { Note, createNote, updateNote, deleteNote, subscribeToUserNotes } from '@/lib/notes'
 import { toast } from '@/components/ui/use-toast'
-import { ToastAction } from '@/components/ui/toast'
 
 interface NotesContextType {
   notes: Note[]
@@ -44,8 +43,8 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   const addNote = async (title: string, content: string) => {
     if (!user) {
       toast({
-        title: "Error",
-        description: "You must be signed in to create notes"
+        title: "Authentication Required",
+        description: "Please sign in to create notes"
       })
       return
     }
@@ -54,7 +53,6 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       setError(null)
       await createNote(user.uid, title, content)
       toast({
-        title: "Success",
         description: "Note created successfully"
       })
     } catch (err) {
@@ -62,8 +60,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       setError('Failed to add note')
       toast({
         title: "Error",
-        description: "Failed to create note",
-        action: <ToastAction altText="Try again">Try again</ToastAction>
+        description: "Failed to create note. Please try again."
       })
       throw err
     }
@@ -72,8 +69,8 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   const editNote = async (noteId: string, title: string, content: string) => {
     if (!user) {
       toast({
-        title: "Error",
-        description: "You must be signed in to edit notes"
+        title: "Authentication Required",
+        description: "Please sign in to edit notes"
       })
       return
     }
@@ -82,7 +79,6 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       setError(null)
       await updateNote(noteId, title, content)
       toast({
-        title: "Success",
         description: "Note updated successfully"
       })
     } catch (err) {
@@ -90,8 +86,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       setError('Failed to update note')
       toast({
         title: "Error",
-        description: "Failed to update note",
-        action: <ToastAction altText="Try again">Try again</ToastAction>
+        description: "Failed to update note. Please try again."
       })
       throw err
     }
@@ -100,8 +95,8 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   const removeNote = async (noteId: string) => {
     if (!user) {
       toast({
-        title: "Error",
-        description: "You must be signed in to delete notes"
+        title: "Authentication Required",
+        description: "Please sign in to delete notes"
       })
       return
     }
@@ -110,7 +105,6 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       setError(null)
       await deleteNote(noteId)
       toast({
-        title: "Success",
         description: "Note deleted successfully"
       })
     } catch (err) {
@@ -118,8 +112,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       setError('Failed to delete note')
       toast({
         title: "Error",
-        description: "Failed to delete note",
-        action: <ToastAction altText="Try again">Try again</ToastAction>
+        description: "Failed to delete note. Please try again."
       })
       throw err
     }
