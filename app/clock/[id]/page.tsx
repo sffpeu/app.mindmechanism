@@ -78,12 +78,14 @@ export default function ClockPage() {
   const [locationError, setLocationError] = useState<string | null>(null)
   const [isRunning, setIsRunning] = useState(false)
 
-  // Initialize duration from URL params
+  // Initialize duration and start timer from URL params
   useEffect(() => {
     const durationParam = searchParams.get('duration')
     if (durationParam) {
       const durationMs = parseInt(durationParam) * 60 * 1000 // Convert minutes to milliseconds
       setDuration(durationMs)
+      // Automatically start the timer
+      setIsRunning(true)
     }
   }, [searchParams])
 

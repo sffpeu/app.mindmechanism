@@ -19,6 +19,11 @@ export function Timer({ duration, onComplete, isRunning, onToggle, onReset }: Ti
   const router = useRouter()
   const { user } = useAuth()
 
+  // Update timeLeft when duration changes
+  useEffect(() => {
+    setTimeLeft(duration)
+  }, [duration])
+
   useEffect(() => {
     if (!user) {
       router.push('/auth/signin')
