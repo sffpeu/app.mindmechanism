@@ -238,6 +238,7 @@ export default function ClockPage() {
         isRunning={isRunning}
         onToggle={handleToggle}
         onReset={handleReset}
+        clockId={id}
       />
     </div>
   )
