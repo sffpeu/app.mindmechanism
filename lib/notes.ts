@@ -12,7 +12,8 @@ import {
   Timestamp,
   serverTimestamp,
   onSnapshot,
-  setLogLevel
+  setLogLevel,
+  FirestoreError
 } from 'firebase/firestore';
 
 // Enable debug logging in development
@@ -55,7 +56,10 @@ export async function createNote(userId: string, title: string, content: string)
     };
   } catch (error) {
     console.error('Error creating note:', error);
-    throw new Error('Failed to create note: ' + error.message);
+    if (error instanceof FirestoreError) {
+      throw new Error(`Failed to create note: ${error.message}`);
+    }
+    throw new Error('Failed to create note: An unexpected error occurred');
   }
 }
 
@@ -85,7 +89,10 @@ export async function getUserNotes(userId: string): Promise<Note[]> {
     });
   } catch (error) {
     console.error('Error fetching notes:', error);
-    throw new Error('Failed to fetch notes: ' + error.message);
+    if (error instanceof FirestoreError) {
+      throw new Error(`Failed to fetch notes: ${error.message}`);
+    }
+    throw new Error('Failed to fetch notes: An unexpected error occurred');
   }
 }
 
@@ -115,7 +122,7 @@ export function subscribeToUserNotes(userId: string, callback: (notes: Note[]) =
       });
       callback(notes);
     },
-    (error) => {
+    (error: FirestoreError) => {
       console.error('Notes subscription error:', error);
       // Call callback with empty array on error to prevent UI from hanging
       callback([]);
@@ -136,7 +143,10 @@ export async function updateNote(noteId: string, title: string, content: string)
     console.log('Note updated successfully');
   } catch (error) {
     console.error('Error updating note:', error);
-    throw new Error('Failed to update note: ' + error.message);
+    if (error instanceof FirestoreError) {
+      throw new Error(`Failed to update note: ${error.message}`);
+    }
+    throw new Error('Failed to update note: An unexpected error occurred');
   }
 }
 
@@ -149,6 +159,9 @@ export async function deleteNote(noteId: string): Promise<void> {
     console.log('Note deleted successfully');
   } catch (error) {
     console.error('Error deleting note:', error);
-    throw new Error('Failed to delete note: ' + error.message);
+    if (error instanceof FirestoreError) {
+      throw new Error(`Failed to delete note: ${error.message}`);
+    }
+    throw new Error('Failed to delete note: An unexpected error occurred');
   }
 } 
