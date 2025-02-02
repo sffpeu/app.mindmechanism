@@ -13,7 +13,10 @@ import {
   serverTimestamp,
   onSnapshot,
   setLogLevel,
-  FirestoreError
+  FirestoreError,
+  enableNetwork,
+  disableNetwork,
+  DocumentData
 } from 'firebase/firestore';
 
 // Enable debug logging in development
@@ -26,42 +29,32 @@ export interface Note {
   userId: string;
   title: string;
   content: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
 }
 
-export async function createNote(userId: string, title: string, content: string): Promise<Note> {
+export const createNote = async (userId: string, title: string, content: string): Promise<void> => {
   console.log('Creating note:', { userId, title });
   
-  const noteData = {
-    userId,
-    title,
-    content,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp()
-  };
-
   try {
-    const docRef = await addDoc(collection(db, 'notes'), noteData);
-    console.log('Note created with ID:', docRef.id);
-    
-    // Return the note with JavaScript Date objects
-    return {
-      id: docRef.id,
+    const noteData = {
       userId,
       title,
       content,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
     };
-  } catch (error) {
+    
+    await addDoc(collection(db, 'notes'), noteData);
+  } catch (error: unknown) {
     console.error('Error creating note:', error);
-    if (error instanceof FirestoreError) {
-      throw new Error(`Failed to create note: ${error.message}`);
+    // If offline, the operation will be queued
+    if (error instanceof FirestoreError && error.code === 'unavailable') {
+      console.log('Note will be created when back online');
     }
-    throw new Error('Failed to create note: An unexpected error occurred');
+    throw error;
   }
-}
+};
 
 export async function getUserNotes(userId: string): Promise<Note[]> {
   console.log('Fetching notes for user:', userId);
@@ -96,7 +89,7 @@ export async function getUserNotes(userId: string): Promise<Note[]> {
   }
 }
 
-export function subscribeToUserNotes(userId: string, callback: (notes: Note[]) => void) {
+export const subscribeToUserNotes = (userId: string, callback: (notes: Note[]) => void) => {
   console.log('Setting up notes subscription for user:', userId);
   
   const notesQuery = query(
@@ -105,32 +98,30 @@ export function subscribeToUserNotes(userId: string, callback: (notes: Note[]) =
     orderBy('updatedAt', 'desc')
   );
 
-  return onSnapshot(
-    notesQuery,
+  return onSnapshot(notesQuery, 
     (snapshot) => {
-      console.log('Received notes update, count:', snapshot.size);
-      const notes = snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          userId: data.userId,
-          title: data.title,
-          content: data.content,
-          createdAt: data.createdAt?.toDate() || new Date(),
-          updatedAt: data.updatedAt?.toDate() || new Date()
-        };
-      });
+      const notes = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Note[];
+      console.log('Received notes update, count:', notes.length);
       callback(notes);
     },
     (error: FirestoreError) => {
-      console.error('Notes subscription error:', error);
-      // Call callback with empty array on error to prevent UI from hanging
-      callback([]);
+      console.error('Error in notes subscription:', error);
+      // If we're offline, we'll still get cached data
+      if (error.code === 'unavailable') {
+        console.log('Operating in offline mode');
+        // Optionally disable network to force offline mode
+        disableNetwork(db).then(() => {
+          console.log('Network disabled, using cached data');
+        });
+      }
     }
   );
-}
+};
 
-export async function updateNote(noteId: string, title: string, content: string): Promise<void> {
+export const updateNote = async (noteId: string, title: string, content: string): Promise<void> => {
   console.log('Updating note:', { noteId, title });
   
   try {
@@ -138,30 +129,38 @@ export async function updateNote(noteId: string, title: string, content: string)
     await updateDoc(noteRef, {
       title,
       content,
-      updatedAt: serverTimestamp()
+      updatedAt: serverTimestamp(),
     });
-    console.log('Note updated successfully');
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error updating note:', error);
-    if (error instanceof FirestoreError) {
-      throw new Error(`Failed to update note: ${error.message}`);
+    // If offline, the operation will be queued
+    if (error instanceof FirestoreError && error.code === 'unavailable') {
+      console.log('Note will be updated when back online');
     }
-    throw new Error('Failed to update note: An unexpected error occurred');
+    throw error;
   }
-}
+};
 
-export async function deleteNote(noteId: string): Promise<void> {
-  console.log('Deleting note:', noteId);
-  
+export const deleteNote = async (noteId: string): Promise<void> => {
   try {
     const noteRef = doc(db, 'notes', noteId);
     await deleteDoc(noteRef);
-    console.log('Note deleted successfully');
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error deleting note:', error);
-    if (error instanceof FirestoreError) {
-      throw new Error(`Failed to delete note: ${error.message}`);
+    // If offline, the operation will be queued
+    if (error instanceof FirestoreError && error.code === 'unavailable') {
+      console.log('Note will be deleted when back online');
     }
-    throw new Error('Failed to delete note: An unexpected error occurred');
+    throw error;
   }
-} 
+};
+
+// Helper function to check online status
+export const checkOnlineStatus = async (): Promise<void> => {
+  try {
+    await enableNetwork(db);
+    console.log('Back online, syncing data...');
+  } catch (error) {
+    console.error('Error checking online status:', error);
+  }
+}; 
