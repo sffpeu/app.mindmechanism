@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { Note, createNote, updateNote, deleteNote, subscribeToUserNotes } from '@/lib/notes'
 import { toast } from '@/components/ui/use-toast'
+import { ToastAction } from '@/components/ui/toast'
 
 interface NotesContextType {
   notes: Note[]
@@ -44,8 +45,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     if (!user) {
       toast({
         title: "Error",
-        description: "You must be signed in to create notes",
-        variant: "destructive"
+        description: "You must be signed in to create notes"
       })
       return
     }
@@ -63,7 +63,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       toast({
         title: "Error",
         description: "Failed to create note",
-        variant: "destructive"
+        action: <ToastAction altText="Try again">Try again</ToastAction>
       })
       throw err
     }
@@ -73,8 +73,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     if (!user) {
       toast({
         title: "Error",
-        description: "You must be signed in to edit notes",
-        variant: "destructive"
+        description: "You must be signed in to edit notes"
       })
       return
     }
@@ -92,7 +91,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       toast({
         title: "Error",
         description: "Failed to update note",
-        variant: "destructive"
+        action: <ToastAction altText="Try again">Try again</ToastAction>
       })
       throw err
     }
@@ -102,8 +101,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     if (!user) {
       toast({
         title: "Error",
-        description: "You must be signed in to delete notes",
-        variant: "destructive"
+        description: "You must be signed in to delete notes"
       })
       return
     }
@@ -121,7 +119,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       toast({
         title: "Error",
         description: "Failed to delete note",
-        variant: "destructive"
+        action: <ToastAction altText="Try again">Try again</ToastAction>
       })
       throw err
     }
