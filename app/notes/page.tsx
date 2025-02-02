@@ -24,23 +24,8 @@ export default function NotesPage() {
     { title: "Galileo's First Observation", date: '20/01/2025' },
   ]
 
-  // Example saved notes with timestamps - replace with actual data from database later
-  const [savedNotes, setSavedNotes] = useState<Note[]>([
-    {
-      id: '1',
-      title: 'First Meditation Session',
-      content: 'Today I focused on breath awareness...',
-      date: new Date(2024, 2, 20, 14, 30).toISOString(),
-      sessionId: null
-    },
-    {
-      id: '2',
-      title: 'Morning Reflection',
-      content: 'The morning session was particularly...',
-      date: new Date(2024, 2, 21, 9, 15).toISOString(),
-      sessionId: null
-    }
-  ])
+  // Initialize empty saved notes array
+  const [savedNotes, setSavedNotes] = useState<Note[]>([])
 
   const handleSaveNote = () => {
     if (!noteTitle.trim() || !noteContent.trim()) return
