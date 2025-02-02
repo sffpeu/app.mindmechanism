@@ -32,7 +32,7 @@ export const auth = getAuth(app);
 console.log('Initializing Firestore...');
 // Initialize Firestore with multi-tab persistence
 export const db = initializeFirestore(app, {
-  cache: persistentLocalCache({
+  localCache: persistentLocalCache({
     tabManager: persistentMultipleTabManager(),
     cacheSizeBytes: CACHE_SIZE_UNLIMITED
   })
