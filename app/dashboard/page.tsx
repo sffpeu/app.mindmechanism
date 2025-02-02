@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Note } from '@/lib/notes'
 import { ChangeEvent } from 'react'
+import Link from 'next/link'
 
 interface WeatherResponse {
   location: {
@@ -221,6 +222,9 @@ export default function DashboardPage() {
   const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => setNoteTitle(e.target.value)
   const handleContentChange = (e: ChangeEvent<HTMLTextAreaElement>) => setNoteContent(e.target.value)
 
+  // Get recent notes
+  const recentNotes = notes?.slice(0, 3) || []
+
   if (!mounted) {
     return null
   }
@@ -234,6 +238,31 @@ export default function DashboardPage() {
         onSatellitesChange={setShowSatellites}
       />
       <div className="max-w-6xl mx-auto space-y-4 p-4">
+        {/* User Card */}
+        {user && (
+          <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-base font-semibold dark:text-white">Profile</h2>
+              <User className="h-4 w-4 text-gray-500" />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                {user.photoURL && (
+                  <img src={user.photoURL} alt="Profile" className="w-12 h-12 rounded-full" />
+                )}
+                <div>
+                  <p className="font-medium dark:text-white">{user.displayName || 'User'}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
+                </div>
+              </div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                <p>Last sign in: {user.metadata.lastSignInTime ? new Date(user.metadata.lastSignInTime).toLocaleString() : 'N/A'}</p>
+                <p>Account created: {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleString() : 'N/A'}</p>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* Time Card */}
         {showInfoCards && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -511,6 +540,52 @@ export default function DashboardPage() {
             </Card>
           </div>
         )}
+
+        {/* Recent Notes */}
+        <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold dark:text-white">Recent Notes</h2>
+            <div className="flex items-center gap-2">
+              <ClipboardList className="h-4 w-4 text-gray-500" />
+              <Link href="/notes" className="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300">
+                View All
+              </Link>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {recentNotes.map((note) => (
+              <div
+                key={note.id}
+                className="p-3 rounded-lg bg-gray-50 dark:bg-black/20 border border-black/5 dark:border-white/10"
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className="font-medium dark:text-white">{note.title}</h3>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => openEditNote(note)}
+                      className="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-white/10"
+                    >
+                      <Pencil className="h-4 w-4 text-gray-500" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteNote(note.id)}
+                      className="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-white/10"
+                    >
+                      <Trash2 className="h-4 w-4 text-gray-500" />
+                    </button>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{note.content}</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                  {note.updatedAt.toDate().toLocaleString()}
+                </p>
+              </div>
+            ))}
+            {recentNotes.length === 0 && (
+              <p className="text-sm text-gray-500 dark:text-gray-400">No notes yet</p>
+            )}
+          </div>
+        </Card>
 
         {/* Total Time Card */}
         <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all relative">
