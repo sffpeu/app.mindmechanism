@@ -37,7 +37,8 @@ const firestoreSettings: FirestoreSettings = {
   })
 };
 
-export const db = getFirestore(app, firestoreSettings);
+export const db = getFirestore(app);
+db.settings(firestoreSettings);
 
 console.log('Firebase initialization complete');
 export default app; 
