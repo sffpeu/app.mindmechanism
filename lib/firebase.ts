@@ -36,7 +36,7 @@ export const db = getFirestore(app);
 // Enable offline persistence
 if (typeof window !== 'undefined') {
   enableIndexedDbPersistence(db, {
-    forceOwningTab: true
+    synchronizeTabs: false // This ensures only one tab has persistence enabled
   }).catch((err) => {
     if (err.code === 'failed-precondition') {
       // Multiple tabs open, persistence can only be enabled in one tab at a time.
