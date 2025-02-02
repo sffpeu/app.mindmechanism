@@ -30,36 +30,51 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     }
 
     setIsLoading(true)
-    const unsubscribe = subscribeToUserNotes(user.uid, (updatedNotes) => {
-      setNotes(updatedNotes)
-      setIsLoading(false)
-    })
+    let unsubscribe: (() => void) | undefined;
 
-    return () => unsubscribe()
+    try {
+      unsubscribe = subscribeToUserNotes(user.uid, (updatedNotes) => {
+        setNotes(updatedNotes)
+        setIsLoading(false)
+        setError(null)
+      });
+    } catch (error) {
+      console.error('Error subscribing to notes:', error)
+      setError(error instanceof Error ? error.message : 'Failed to load notes')
+      setIsLoading(false)
+    }
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe()
+      }
+    }
   }, [user])
 
   const addNote = async (title: string, content: string) => {
     if (!user) {
       toast({
-        title: "Error",
-        description: "You must be signed in to create notes",
-        variant: "destructive"
+        title: "Authentication Error",
+        description: "You must be signed in to create notes"
       })
       return
     }
 
     try {
-      await createNote(user.uid, title, content)
+      setError(null)
+      const noteId = await createNote(user.uid, title, content)
       toast({
         title: "Success",
         description: "Note created successfully"
       })
+      return noteId
     } catch (error) {
       console.error('Error adding note:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create note'
+      setError(errorMessage)
       toast({
         title: "Error",
-        description: "Failed to create note",
-        variant: "destructive"
+        description: errorMessage
       })
     }
   }
@@ -67,14 +82,14 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   const editNote = async (noteId: string, title: string, content: string) => {
     if (!user) {
       toast({
-        title: "Error",
-        description: "You must be signed in to edit notes",
-        variant: "destructive"
+        title: "Authentication Error",
+        description: "You must be signed in to edit notes"
       })
       return
     }
 
     try {
+      setError(null)
       await updateNote(user.uid, noteId, title, content)
       toast({
         title: "Success",
@@ -82,10 +97,11 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       })
     } catch (error) {
       console.error('Error updating note:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update note'
+      setError(errorMessage)
       toast({
         title: "Error",
-        description: "Failed to update note",
-        variant: "destructive"
+        description: errorMessage
       })
     }
   }
@@ -93,14 +109,14 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   const removeNote = async (noteId: string) => {
     if (!user) {
       toast({
-        title: "Error",
-        description: "You must be signed in to delete notes",
-        variant: "destructive"
+        title: "Authentication Error",
+        description: "You must be signed in to delete notes"
       })
       return
     }
 
     try {
+      setError(null)
       await deleteNote(user.uid, noteId)
       toast({
         title: "Success",
@@ -108,10 +124,11 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       })
     } catch (error) {
       console.error('Error deleting note:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete note'
+      setError(errorMessage)
       toast({
         title: "Error",
-        description: "Failed to delete note",
-        variant: "destructive"
+        description: errorMessage
       })
     }
   }

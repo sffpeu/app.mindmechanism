@@ -3,23 +3,39 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{userId}/notes/{noteId} {
-      allow read: if request.auth != null && request.auth.uid == userId;
+      // Helper functions
+      function isSignedIn() {
+        return request.auth != null;
+      }
       
-      allow create: if request.auth != null 
-        && request.auth.uid == userId
-        && request.resource.data.title is string
-        && request.resource.data.content is string
-        && request.resource.data.createdAt is timestamp
-        && request.resource.data.updatedAt is timestamp;
+      function isOwner() {
+        return request.auth.uid == userId;
+      }
       
-      allow update: if request.auth != null 
-        && request.auth.uid == userId
-        && request.resource.data.title is string
-        && request.resource.data.content is string
-        && request.resource.data.updatedAt is timestamp;
+      function isValidNote() {
+        let note = request.resource.data;
+        return note.title is string
+          && note.title.size() > 0
+          && note.title.size() <= 100
+          && note.content is string
+          && note.content.size() <= 10000
+          && note.createdAt is timestamp
+          && note.updatedAt is timestamp;
+      }
+
+      // Rules
+      allow read: if isSignedIn() && isOwner();
       
-      allow delete: if request.auth != null 
-        && request.auth.uid == userId;
+      allow create: if isSignedIn() 
+        && isOwner()
+        && isValidNote();
+      
+      allow update: if isSignedIn() 
+        && isOwner()
+        && isValidNote()
+        && request.resource.data.createdAt == resource.data.createdAt;
+      
+      allow delete: if isSignedIn() && isOwner();
     }
   }
 } 

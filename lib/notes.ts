@@ -15,7 +15,8 @@ import {
   FirestoreError,
   enableNetwork,
   disableNetwork,
-  DocumentData
+  DocumentData,
+  getDoc
 } from 'firebase/firestore';
 
 // Enable debug logging in development
@@ -31,23 +32,45 @@ export interface Note {
   updatedAt: Timestamp;
 }
 
-export const createNote = async (userId: string, title: string, content: string): Promise<void> => {
+// Validation functions
+const validateNoteData = (title: string, content: string) => {
+  if (!title || typeof title !== 'string' || title.length === 0 || title.length > 100) {
+    throw new Error('Title must be between 1 and 100 characters');
+  }
+  if (!content || typeof content !== 'string' || content.length > 10000) {
+    throw new Error('Content must not exceed 10000 characters');
+  }
+};
+
+export const createNote = async (userId: string, title: string, content: string): Promise<string> => {
   console.log('Creating note:', { userId, title });
   
   try {
+    // Validate input data
+    validateNoteData(title, content);
+
     const noteData = {
-      title,
-      content,
+      title: title.trim(),
+      content: content.trim(),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };
     
-    await addDoc(collection(db, `users/${userId}/notes`), noteData);
+    const docRef = await addDoc(collection(db, `users/${userId}/notes`), noteData);
+    console.log('Note created with ID:', docRef.id);
+    return docRef.id;
   } catch (error: unknown) {
     console.error('Error creating note:', error);
-    // If offline, the operation will be queued
-    if (error instanceof FirestoreError && error.code === 'unavailable') {
-      console.log('Note will be created when back online');
+    if (error instanceof FirestoreError) {
+      switch (error.code) {
+        case 'permission-denied':
+          throw new Error('You do not have permission to create notes');
+        case 'unavailable':
+          console.log('Note will be created when back online');
+          throw new Error('Currently offline. Note will be saved when back online');
+        default:
+          throw new Error(`Failed to create note: ${error.message}`);
+      }
     }
     throw error;
   }
@@ -56,12 +79,12 @@ export const createNote = async (userId: string, title: string, content: string)
 export async function getUserNotes(userId: string): Promise<Note[]> {
   console.log('Fetching notes for user:', userId);
   
-  const notesQuery = query(
-    collection(db, `users/${userId}/notes`),
-    orderBy('updatedAt', 'desc')
-  );
-
   try {
+    const notesQuery = query(
+      collection(db, `users/${userId}/notes`),
+      orderBy('updatedAt', 'desc')
+    );
+
     const snapshot = await getDocs(notesQuery);
     console.log('Fetched notes count:', snapshot.size);
     
@@ -78,7 +101,14 @@ export async function getUserNotes(userId: string): Promise<Note[]> {
   } catch (error) {
     console.error('Error fetching notes:', error);
     if (error instanceof FirestoreError) {
-      throw new Error(`Failed to fetch notes: ${error.message}`);
+      switch (error.code) {
+        case 'permission-denied':
+          throw new Error('You do not have permission to access these notes');
+        case 'unavailable':
+          throw new Error('Unable to fetch notes. Please check your connection');
+        default:
+          throw new Error(`Failed to fetch notes: ${error.message}`);
+      }
     }
     throw new Error('Failed to fetch notes: An unexpected error occurred');
   }
@@ -92,7 +122,8 @@ export const subscribeToUserNotes = (userId: string, callback: (notes: Note[]) =
     orderBy('updatedAt', 'desc')
   );
 
-  return onSnapshot(notesQuery, 
+  return onSnapshot(
+    notesQuery, 
     (snapshot) => {
       const notes = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -103,6 +134,9 @@ export const subscribeToUserNotes = (userId: string, callback: (notes: Note[]) =
     },
     (error: FirestoreError) => {
       console.error('Error in notes subscription:', error);
+      if (error.code === 'permission-denied') {
+        throw new Error('You do not have permission to access these notes');
+      }
       // If we're offline, we'll still get cached data
       if (error.code === 'unavailable') {
         console.log('Operating in offline mode');
@@ -119,17 +153,36 @@ export const updateNote = async (userId: string, noteId: string, title: string, 
   console.log('Updating note:', { userId, noteId, title });
   
   try {
+    // Validate input data
+    validateNoteData(title, content);
+
+    // Verify the note exists and belongs to the user
     const noteRef = doc(db, `users/${userId}/notes`, noteId);
+    const noteDoc = await getDoc(noteRef);
+    
+    if (!noteDoc.exists()) {
+      throw new Error('Note not found');
+    }
+
     await updateDoc(noteRef, {
-      title,
-      content,
+      title: title.trim(),
+      content: content.trim(),
       updatedAt: serverTimestamp(),
     });
   } catch (error: unknown) {
     console.error('Error updating note:', error);
-    // If offline, the operation will be queued
-    if (error instanceof FirestoreError && error.code === 'unavailable') {
-      console.log('Note will be updated when back online');
+    if (error instanceof FirestoreError) {
+      switch (error.code) {
+        case 'permission-denied':
+          throw new Error('You do not have permission to update this note');
+        case 'not-found':
+          throw new Error('Note not found');
+        case 'unavailable':
+          console.log('Note will be updated when back online');
+          throw new Error('Currently offline. Changes will be saved when back online');
+        default:
+          throw new Error(`Failed to update note: ${error.message}`);
+      }
     }
     throw error;
   }
@@ -137,24 +190,41 @@ export const updateNote = async (userId: string, noteId: string, title: string, 
 
 export const deleteNote = async (userId: string, noteId: string): Promise<void> => {
   try {
+    // Verify the note exists and belongs to the user
     const noteRef = doc(db, `users/${userId}/notes`, noteId);
+    const noteDoc = await getDoc(noteRef);
+    
+    if (!noteDoc.exists()) {
+      throw new Error('Note not found');
+    }
+
     await deleteDoc(noteRef);
   } catch (error: unknown) {
     console.error('Error deleting note:', error);
-    // If offline, the operation will be queued
-    if (error instanceof FirestoreError && error.code === 'unavailable') {
-      console.log('Note will be deleted when back online');
+    if (error instanceof FirestoreError) {
+      switch (error.code) {
+        case 'permission-denied':
+          throw new Error('You do not have permission to delete this note');
+        case 'not-found':
+          throw new Error('Note not found');
+        case 'unavailable':
+          console.log('Note will be deleted when back online');
+          throw new Error('Currently offline. Note will be deleted when back online');
+        default:
+          throw new Error(`Failed to delete note: ${error.message}`);
+      }
     }
     throw error;
   }
 };
 
-// Helper function to check online status
+// Helper function to check online status and enable network
 export const checkOnlineStatus = async (): Promise<void> => {
   try {
     await enableNetwork(db);
     console.log('Back online, syncing data...');
   } catch (error) {
     console.error('Error checking online status:', error);
+    throw new Error('Failed to check online status');
   }
 }; 
