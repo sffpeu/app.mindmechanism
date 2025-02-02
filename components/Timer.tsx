@@ -26,42 +26,37 @@ const clockColors = [
 ]
 
 export function Timer({ minutes, isRunning, onToggle, onReset, onComplete, clockId }: TimerProps) {
-  const [mins, setMins] = useState(minutes)
-  const [secs, setSecs] = useState(0)
+  // Convert initial minutes to total seconds
+  const [timeLeft, setTimeLeft] = useState(minutes * 60)
 
   // Reset timer when minutes prop changes
   useEffect(() => {
-    setMins(minutes)
-    setSecs(0)
+    setTimeLeft(minutes * 60)
   }, [minutes])
 
   // Handle countdown
   useEffect(() => {
     let interval: NodeJS.Timeout
 
-    if (isRunning && (mins > 0 || secs > 0)) {
+    if (isRunning && timeLeft > 0) {
       interval = setInterval(() => {
-        if (secs === 0) {
-          if (mins === 0) {
+        setTimeLeft(prev => {
+          if (prev <= 0) {
             clearInterval(interval)
             onComplete?.()
-          } else {
-            setMins(m => m - 1)
-            setSecs(59)
+            return 0
           }
-        } else {
-          setSecs(s => s - 1)
-        }
+          return prev - 1
+        })
       }, 1000)
     }
 
     return () => clearInterval(interval)
-  }, [isRunning, mins, secs, onComplete])
+  }, [isRunning, onComplete])
 
   const clockColor = clockColors[clockId % clockColors.length]
 
-  const formatTime = (minutes: number, seconds: number) => {
-    const totalSeconds = minutes * 60 + seconds
+  const formatTime = (totalSeconds: number) => {
     const displayMinutes = Math.floor(totalSeconds / 60)
     const displaySeconds = totalSeconds % 60
     return `${displayMinutes.toString().padStart(2, '0')}:${displaySeconds.toString().padStart(2, '0')}`
@@ -77,7 +72,7 @@ export function Timer({ minutes, isRunning, onToggle, onReset, onComplete, clock
         className="font-mono font-medium text-lg"
         style={{ color: clockColor }}
       >
-        {formatTime(mins, secs)}
+        {formatTime(timeLeft)}
       </div>
       <div className="flex items-center gap-1">
         <button
@@ -92,7 +87,10 @@ export function Timer({ minutes, isRunning, onToggle, onReset, onComplete, clock
           )}
         </button>
         <button
-          onClick={onReset}
+          onClick={() => {
+            setTimeLeft(minutes * 60)
+            onReset()
+          }}
           className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
           style={{ color: clockColor }}
         >
