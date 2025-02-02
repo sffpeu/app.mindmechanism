@@ -180,64 +180,57 @@ export default function Clock({
   const [isPaused, setIsPaused] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const [pausedTimeRemaining, setPausedTimeRemaining] = useState<number | null>(null);
+  const [initialDuration, setInitialDuration] = useState<number | null>(null);
   const searchParams = new URLSearchParams(window.location.search);
   const duration = searchParams.get('duration');
 
-  // Initialize and update remaining time
+  // Initialize session
   useEffect(() => {
     if (duration) {
       const durationMs = parseInt(duration);
-      const startTime = new Date().getTime();
-      setSessionStartTime(startTime);
-      
-      const updateRemainingTime = () => {
-        if (isPaused) {
-          if (pausedTimeRemaining !== null) {
-            setRemainingTime(pausedTimeRemaining);
-          }
-          return;
-        }
-
-        const now = new Date().getTime();
-        const elapsed = now - (sessionStartTime || startTime);
-        const remaining = durationMs - elapsed;
-        
-        if (remaining <= 0) {
-          setRemainingTime(0);
-          return;
-        }
-        
-        setRemainingTime(remaining);
-      };
-      
-      updateRemainingTime();
-      const timer = setInterval(updateRemainingTime, 1000);
-      
-      return () => clearInterval(timer);
+      setInitialDuration(durationMs);
+      setRemainingTime(durationMs);
+      setSessionStartTime(new Date().getTime());
     }
-  }, [duration, isPaused, sessionStartTime, pausedTimeRemaining]);
+  }, [duration]);
+
+  // Timer effect
+  useEffect(() => {
+    if (!initialDuration || isPaused) return;
+
+    const timer = setInterval(() => {
+      const now = new Date().getTime();
+      const elapsed = now - (sessionStartTime || now);
+      const remaining = initialDuration - elapsed;
+      
+      if (remaining <= 0) {
+        setRemainingTime(0);
+        clearInterval(timer);
+        return;
+      }
+      
+      setRemainingTime(remaining);
+    }, 1000);
+    
+    return () => clearInterval(timer);
+  }, [initialDuration, isPaused, sessionStartTime]);
 
   const handlePauseResume = () => {
     if (isPaused) {
-      // Resuming - update the session start time based on the paused remaining time
-      if (pausedTimeRemaining !== null) {
-        const now = new Date().getTime();
-        const newStartTime = now - (parseInt(duration!) - pausedTimeRemaining);
-        setSessionStartTime(newStartTime);
-      }
+      // Resuming - adjust start time based on remaining time
+      const now = new Date().getTime();
+      const newStartTime = now - (initialDuration! - (remainingTime || 0));
+      setSessionStartTime(newStartTime);
     } else {
-      // Pausing - store the current remaining time
-      setPausedTimeRemaining(remainingTime);
+      // Pausing - no need to adjust anything as the remaining time is already correct
     }
     setIsPaused(!isPaused);
   };
 
   const handleReset = () => {
-    if (duration) {
-      const now = new Date().getTime();
-      setSessionStartTime(now);
-      setRemainingTime(parseInt(duration));
-      setPausedTimeRemaining(null);
+    if (initialDuration) {
+      setRemainingTime(initialDuration);
+      setSessionStartTime(new Date().getTime());
       setIsPaused(false);
     }
   };
@@ -516,35 +509,6 @@ export default function Clock({
     
     return (
       <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px]">
-        {/* Countdown Timer */}
-        {remainingTime !== null && (
-          <div className="absolute bottom-4 left-4 z-50 flex items-center gap-2">
-            <div className="px-4 py-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10">
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                {formatTime(remainingTime)}
-              </span>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={handlePauseResume}
-                className="p-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors"
-              >
-                {isPaused ? (
-                  <Play className="h-5 w-5 text-gray-900 dark:text-white" />
-                ) : (
-                  <Pause className="h-5 w-5 text-gray-900 dark:text-white" />
-                )}
-              </button>
-              <button
-                onClick={handleReset}
-                className="p-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors"
-              >
-                <RotateCw className="h-5 w-5 text-gray-900 dark:text-white" />
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* Glow effect */}
         {id !== 9 && (
           <motion.div
@@ -972,6 +936,36 @@ export default function Clock({
       <div className="flex-grow flex items-center justify-center">
         {renderSingleClock()}
       </div>
+
+      {/* Timer Controls */}
+      {remainingTime !== null && (
+        <div className="fixed bottom-8 left-8 z-50 flex items-center gap-2">
+          <div className="px-4 py-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10">
+            <span className="text-2xl font-bold text-gray-900 dark:text-white">
+              {formatTime(remainingTime)}
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handlePauseResume}
+              className="p-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors"
+            >
+              {isPaused ? (
+                <Play className="h-5 w-5 text-gray-900 dark:text-white" />
+              ) : (
+                <Pause className="h-5 w-5 text-gray-900 dark:text-white" />
+              )}
+            </button>
+            <button
+              onClick={handleReset}
+              className="p-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors"
+            >
+              <RotateCw className="h-5 w-5 text-gray-900 dark:text-white" />
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="w-full max-w-[1000px] mx-auto mb-2 px-3 relative">
         {showElements && (
           <>
