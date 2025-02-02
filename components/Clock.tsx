@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ClockIcon, Calendar, RotateCw, Timer, Compass, ChevronUp, ChevronDown, Repeat, Eye, EyeOff, Settings } from 'lucide-react';
+import { ClockIcon, Calendar, RotateCw, Timer, Compass, ChevronUp, ChevronDown, Repeat, Eye, EyeOff, Settings, Play, Pause } from 'lucide-react';
 import { ClockSettings } from '../types/ClockSettings';
 import { motion } from 'framer-motion';
 
@@ -177,6 +177,9 @@ export default function Clock({
   const [displayState, setDisplayState] = useState<DisplayState>('info');
   const [selectedNodeIndex, setSelectedNodeIndex] = useState<number | null>(null);
   const [remainingTime, setRemainingTime] = useState<number | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
+  const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
+  const [pausedTimeRemaining, setPausedTimeRemaining] = useState<number | null>(null);
   const searchParams = new URLSearchParams(window.location.search);
   const duration = searchParams.get('duration');
 
@@ -185,10 +188,18 @@ export default function Clock({
     if (duration) {
       const durationMs = parseInt(duration);
       const startTime = new Date().getTime();
+      setSessionStartTime(startTime);
       
       const updateRemainingTime = () => {
+        if (isPaused) {
+          if (pausedTimeRemaining !== null) {
+            setRemainingTime(pausedTimeRemaining);
+          }
+          return;
+        }
+
         const now = new Date().getTime();
-        const elapsed = now - startTime;
+        const elapsed = now - (sessionStartTime || startTime);
         const remaining = durationMs - elapsed;
         
         if (remaining <= 0) {
@@ -204,7 +215,32 @@ export default function Clock({
       
       return () => clearInterval(timer);
     }
-  }, [duration]);
+  }, [duration, isPaused, sessionStartTime, pausedTimeRemaining]);
+
+  const handlePauseResume = () => {
+    if (isPaused) {
+      // Resuming - update the session start time based on the paused remaining time
+      if (pausedTimeRemaining !== null) {
+        const now = new Date().getTime();
+        const newStartTime = now - (parseInt(duration!) - pausedTimeRemaining);
+        setSessionStartTime(newStartTime);
+      }
+    } else {
+      // Pausing - store the current remaining time
+      setPausedTimeRemaining(remainingTime);
+    }
+    setIsPaused(!isPaused);
+  };
+
+  const handleReset = () => {
+    if (duration) {
+      const now = new Date().getTime();
+      setSessionStartTime(now);
+      setRemainingTime(parseInt(duration));
+      setPausedTimeRemaining(null);
+      setIsPaused(false);
+    }
+  };
 
   // Handle image error
   const handleImageError = () => {
@@ -482,11 +518,29 @@ export default function Clock({
       <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px]">
         {/* Countdown Timer */}
         {remainingTime !== null && (
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
+          <div className="absolute bottom-4 left-4 z-50 flex items-center gap-2">
             <div className="px-4 py-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10">
               <span className="text-2xl font-bold text-gray-900 dark:text-white">
                 {formatTime(remainingTime)}
               </span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handlePauseResume}
+                className="p-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors"
+              >
+                {isPaused ? (
+                  <Play className="h-5 w-5 text-gray-900 dark:text-white" />
+                ) : (
+                  <Pause className="h-5 w-5 text-gray-900 dark:text-white" />
+                )}
+              </button>
+              <button
+                onClick={handleReset}
+                className="p-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors"
+              >
+                <RotateCw className="h-5 w-5 text-gray-900 dark:text-white" />
+              </button>
             </div>
           </div>
         )}
