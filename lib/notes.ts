@@ -1,4 +1,4 @@
-import { db } from './firebase';
+import { db } from '@/lib/firebase';
 import { 
   collection,
   addDoc,
@@ -8,11 +8,11 @@ import {
   getDocs,
   query,
   where,
-  DocumentData
+  orderBy
 } from 'firebase/firestore';
 
 export interface Note {
-  id?: string;
+  id: string;
   userId: string;
   title: string;
   content: string;
@@ -20,56 +20,49 @@ export interface Note {
   updatedAt: Date;
 }
 
-export async function createNote(note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>) {
-  try {
-    const docRef = await addDoc(collection(db, 'notes'), {
-      ...note,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    });
-    return docRef.id;
-  } catch (error) {
-    console.error('Error creating note:', error);
-    throw error;
-  }
-}
+export async function createNote(userId: string, title: string, content: string): Promise<Note> {
+  const now = new Date();
+  const noteData = {
+    userId,
+    title,
+    content,
+    createdAt: now,
+    updatedAt: now
+  };
 
-export async function updateNote(id: string, note: Partial<Omit<Note, 'id' | 'userId' | 'createdAt'>>) {
-  try {
-    const noteRef = doc(db, 'notes', id);
-    await updateDoc(noteRef, {
-      ...note,
-      updatedAt: new Date()
-    });
-  } catch (error) {
-    console.error('Error updating note:', error);
-    throw error;
-  }
-}
-
-export async function deleteNote(id: string) {
-  try {
-    const noteRef = doc(db, 'notes', id);
-    await deleteDoc(noteRef);
-  } catch (error) {
-    console.error('Error deleting note:', error);
-    throw error;
-  }
+  const docRef = await addDoc(collection(db, 'notes'), noteData);
+  return {
+    id: docRef.id,
+    ...noteData
+  };
 }
 
 export async function getUserNotes(userId: string): Promise<Note[]> {
-  try {
-    const q = query(collection(db, 'notes'), where('userId', '==', userId));
-    const querySnapshot = await getDocs(q);
-    
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt.toDate(),
-      updatedAt: doc.data().updatedAt.toDate()
-    })) as Note[];
-  } catch (error) {
-    console.error('Error getting user notes:', error);
-    throw error;
-  }
+  const notesQuery = query(
+    collection(db, 'notes'),
+    where('userId', '==', userId),
+    orderBy('updatedAt', 'desc')
+  );
+
+  const snapshot = await getDocs(notesQuery);
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+    createdAt: doc.data().createdAt.toDate(),
+    updatedAt: doc.data().updatedAt.toDate()
+  })) as Note[];
+}
+
+export async function updateNote(noteId: string, title: string, content: string): Promise<void> {
+  const noteRef = doc(db, 'notes', noteId);
+  await updateDoc(noteRef, {
+    title,
+    content,
+    updatedAt: new Date()
+  });
+}
+
+export async function deleteNote(noteId: string): Promise<void> {
+  const noteRef = doc(db, 'notes', noteId);
+  await deleteDoc(noteRef);
 } 

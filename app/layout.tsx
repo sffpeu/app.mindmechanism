@@ -2,6 +2,7 @@ import './globals.css'
 import { ThemeProvider } from './ThemeContext'
 import { FirebaseAuthProvider } from '@/lib/FirebaseAuthContext'
 import { Toaster } from '@/components/ui/toaster'
+import { NotesProvider } from '@/lib/NotesContext'
 
 export default function RootLayout({
   children,
@@ -13,7 +14,9 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <FirebaseAuthProvider>
-            {children}
+            <NotesProvider>
+              {children}
+            </NotesProvider>
             <Toaster />
           </FirebaseAuthProvider>
         </ThemeProvider>
