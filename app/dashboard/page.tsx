@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Note } from '@/lib/notes'
 import { ChangeEvent } from 'react'
 import Link from 'next/link'
+import { getUserStats, getUserSessions } from '@/lib/sessions'
 
 interface WeatherResponse {
   location: {
@@ -48,6 +49,36 @@ interface MoonData {
   next_new_moon: string
 }
 
+interface UserStats {
+  totalTime: number
+  totalSessions: number
+  completionRate: number
+  monthlyProgress: {
+    totalSessions: number
+    totalTime: number
+    completionRate: number
+  }
+}
+
+interface Session {
+  id: string
+  clock_id: number
+  status: 'completed' | 'in_progress' | 'aborted'
+  actual_duration: number
+  start_time: string
+}
+
+interface FirebaseUser {
+  uid: string
+  photoURL: string | null
+  displayName: string | null
+  email: string | null
+  metadata: {
+    creationTime?: string
+    lastSignInTime?: string
+  }
+}
+
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false)
   const [showElements, setShowElements] = useState(true)
@@ -60,13 +91,15 @@ export default function DashboardPage() {
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null)
   const [locationError, setLocationError] = useState<string | null>(null)
   const router = useRouter()
-  const { user } = useAuth()
+  const { user } = useAuth() as { user: FirebaseUser | null }
   const { notes, isLoading: notesLoading, addNote, editNote, removeNote } = useNotes()
   const [isAddNoteOpen, setIsAddNoteOpen] = useState(false)
   const [isEditNoteOpen, setIsEditNoteOpen] = useState(false)
   const [selectedNote, setSelectedNote] = useState<Note | null>(null)
   const [noteTitle, setNoteTitle] = useState('')
   const [noteContent, setNoteContent] = useState('')
+  const [userStats, setUserStats] = useState<UserStats | null>(null)
+  const [recentSessions, setRecentSessions] = useState<Session[]>([])
 
   // Handle mounting
   useEffect(() => {
@@ -174,6 +207,42 @@ export default function DashboardPage() {
     return () => clearInterval(interval)
   }, [mounted, location])
 
+  // Load user stats and sessions
+  useEffect(() => {
+    if (user?.uid) {
+      loadUserStats()
+      loadRecentSessions()
+    }
+  }, [user?.uid])
+
+  const loadUserStats = async () => {
+    if (!user?.uid) return
+    
+    try {
+      const stats = await getUserStats(user.uid)
+      setUserStats(stats)
+    } catch (error) {
+      console.error('Error loading user stats:', error)
+    }
+  }
+
+  const loadRecentSessions = async () => {
+    if (!user?.uid) return
+    
+    try {
+      const sessions = await getUserSessions(user.uid)
+      setRecentSessions(sessions)
+    } catch (error) {
+      console.error('Error loading recent sessions:', error)
+    }
+  }
+
+  const formatDuration = (ms: number) => {
+    const hours = Math.floor(ms / (1000 * 60 * 60))
+    const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60))
+    return `${hours}h ${minutes}m`
+  }
+
   const handleAddNote = async () => {
     if (!noteTitle.trim() || !noteContent.trim()) return
 
@@ -250,17 +319,35 @@ export default function DashboardPage() {
               <p className="text-5xl font-bold dark:text-white tracking-tight">
                 {formatTime(currentTime)}
               </p>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                {currentTime?.toLocaleDateString('en-US', {
-                  weekday: 'long',
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric'
-                })}
-              </p>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {Intl.DateTimeFormat().resolvedOptions().timeZone}
-              </p>
+              {userStats && (
+                <div className="mt-4 grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Total Time</p>
+                    <p className="text-lg font-semibold dark:text-white">{formatDuration(userStats.totalTime)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Sessions</p>
+                    <p className="text-lg font-semibold dark:text-white">{userStats.totalSessions}</p>
+                  </div>
+                </div>
+              )}
+              {/* Recent Sessions */}
+              {recentSessions.length > 0 && (
+                <div className="mt-4">
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Recent Sessions</h3>
+                  <div className="space-y-2">
+                    {recentSessions.slice(0, 3).map((session: any) => (
+                      <div key={session.id} className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${session.status === 'completed' ? 'bg-green-500' : session.status === 'aborted' ? 'bg-red-500' : 'bg-yellow-500'}`} />
+                          <span className="dark:text-white">Clock {session.clock_id + 1}</span>
+                        </div>
+                        <span className="text-gray-500 dark:text-gray-400">{formatDuration(session.actual_duration)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </Card>
 
             {/* User Profile Card */}
