@@ -10,7 +10,8 @@ import {
   where,
   orderBy,
   Timestamp,
-  serverTimestamp
+  serverTimestamp,
+  onSnapshot
 } from 'firebase/firestore';
 
 export interface Note {
@@ -62,6 +63,29 @@ export async function getUserNotes(userId: string): Promise<Note[]> {
       createdAt: data.createdAt?.toDate() || new Date(),
       updatedAt: data.updatedAt?.toDate() || new Date()
     };
+  });
+}
+
+export function subscribeToUserNotes(userId: string, callback: (notes: Note[]) => void) {
+  const notesQuery = query(
+    collection(db, 'notes'),
+    where('userId', '==', userId),
+    orderBy('updatedAt', 'desc')
+  );
+
+  return onSnapshot(notesQuery, (snapshot) => {
+    const notes = snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        userId: data.userId,
+        title: data.title,
+        content: data.content,
+        createdAt: data.createdAt?.toDate() || new Date(),
+        updatedAt: data.updatedAt?.toDate() || new Date()
+      };
+    });
+    callback(notes);
   });
 }
 
