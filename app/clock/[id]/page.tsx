@@ -60,7 +60,7 @@ export default function ClockPage() {
   const params = useParams()
   const searchParams = useSearchParams()
   const id = parseInt(params.id as string)
-  const duration = searchParams.get('duration') ? parseInt(searchParams.get('duration') as string) : 0
+  const [duration, setDuration] = useState(0)
   const encodedWords = searchParams.get('words')
   const words = encodedWords ? JSON.parse(decodeURIComponent(encodedWords)) : []
   const [showElements, setShowElements] = useState(true)
@@ -77,6 +77,15 @@ export default function ClockPage() {
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null)
   const [locationError, setLocationError] = useState<string | null>(null)
   const [isRunning, setIsRunning] = useState(false)
+
+  // Initialize duration from URL params
+  useEffect(() => {
+    const durationParam = searchParams.get('duration')
+    if (durationParam) {
+      const durationMs = parseInt(durationParam) * 60 * 1000 // Convert minutes to milliseconds
+      setDuration(durationMs)
+    }
+  }, [searchParams])
 
   // Initialize current time
   useEffect(() => {
@@ -165,6 +174,12 @@ export default function ClockPage() {
 
   const handleReset = () => {
     setIsRunning(false)
+    // Reset duration to initial value from URL params
+    const durationParam = searchParams.get('duration')
+    if (durationParam) {
+      const durationMs = parseInt(durationParam) * 60 * 1000
+      setDuration(durationMs)
+    }
   }
 
   // Don't render clock until we have client-side time

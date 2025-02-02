@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { Play, Pause, RotateCw } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 interface TimerProps {
   duration: number
@@ -48,28 +49,32 @@ export function Timer({ duration, onComplete, isRunning, onToggle, onReset }: Ti
   }, [])
 
   return (
-    <div className="flex items-center gap-4">
-      <div className="text-4xl font-mono font-medium text-black dark:text-white">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="fixed bottom-4 left-4 flex items-center gap-2 px-4 py-2 rounded-lg bg-white/50 dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
+    >
+      <div className="font-mono font-medium text-black dark:text-white">
         {formatTime(timeLeft)}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
         <button
           onClick={onToggle}
-          className="p-2 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
+          className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
         >
           {isRunning ? (
-            <Pause className="h-5 w-5 text-black dark:text-white" />
+            <Pause className="h-4 w-4 text-black dark:text-white" />
           ) : (
-            <Play className="h-5 w-5 text-black dark:text-white" />
+            <Play className="h-4 w-4 text-black dark:text-white" />
           )}
         </button>
         <button
           onClick={onReset}
-          className="p-2 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
+          className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
         >
-          <RotateCw className="h-5 w-5 text-black dark:text-white" />
+          <RotateCw className="h-4 w-4 text-black dark:text-white" />
         </button>
       </div>
-    </div>
+    </motion.div>
   )
 } 
