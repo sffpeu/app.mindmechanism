@@ -43,7 +43,13 @@ export default function NotesPage() {
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
           {/* Select Session Card */}
-          <Card className="p-4 bg-white/90 dark:bg-black/90 backdrop-blur-lg border-black/10 dark:border-white/20">
+          <Card className="p-4 bg-white/90 dark:bg-black/90 backdrop-blur-lg border-black/10 dark:border-white/20 relative">
+            <div className="absolute inset-0 bg-white/90 dark:bg-black/90 backdrop-blur-[2px] rounded-xl z-10 flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-sm font-medium text-gray-900 dark:text-white">Available Soon</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Currently in Development</p>
+              </div>
+            </div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-medium text-black dark:text-white">Select Session</h2>
               <RotateCcw className="h-5 w-5 text-black/50 dark:text-white/50" />
@@ -67,7 +73,13 @@ export default function NotesPage() {
           </Card>
 
           {/* Write Note Card */}
-          <Card className="p-4 bg-white/90 dark:bg-black/90 backdrop-blur-lg border-black/10 dark:border-white/20 md:col-span-1">
+          <Card className="p-4 bg-white/90 dark:bg-black/90 backdrop-blur-lg border-black/10 dark:border-white/20 md:col-span-1 relative">
+            <div className="absolute inset-0 bg-white/90 dark:bg-black/90 backdrop-blur-[2px] rounded-xl z-10 flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-sm font-medium text-gray-900 dark:text-white">Available Soon</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Currently in Development</p>
+              </div>
+            </div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-medium text-black dark:text-white">Write Note</h2>
               <PenLine className="h-5 w-5 text-black/50 dark:text-white/50" />
@@ -99,7 +111,13 @@ export default function NotesPage() {
           </Card>
 
           {/* Saved Notes Card */}
-          <Card className="p-4 bg-white/90 dark:bg-black/90 backdrop-blur-lg border-black/10 dark:border-white/20">
+          <Card className="p-4 bg-white/90 dark:bg-black/90 backdrop-blur-lg border-black/10 dark:border-white/20 relative">
+            <div className="absolute inset-0 bg-white/90 dark:bg-black/90 backdrop-blur-[2px] rounded-xl z-10 flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-sm font-medium text-gray-900 dark:text-white">Available Soon</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Currently in Development</p>
+              </div>
+            </div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-medium text-black dark:text-white">Saved Notes</h2>
               <Files className="h-5 w-5 text-black/50 dark:text-white/50" />
