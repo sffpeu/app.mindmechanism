@@ -8,7 +8,9 @@ import {
   getDocs,
   query,
   where,
-  orderBy
+  orderBy,
+  Timestamp,
+  serverTimestamp
 } from 'firebase/firestore';
 
 export interface Note {
@@ -21,19 +23,24 @@ export interface Note {
 }
 
 export async function createNote(userId: string, title: string, content: string): Promise<Note> {
-  const now = new Date();
   const noteData = {
     userId,
     title,
     content,
-    createdAt: now,
-    updatedAt: now
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
   };
 
   const docRef = await addDoc(collection(db, 'notes'), noteData);
+  
+  // Return the note with JavaScript Date objects
   return {
     id: docRef.id,
-    ...noteData
+    userId,
+    title,
+    content,
+    createdAt: new Date(),
+    updatedAt: new Date()
   };
 }
 
@@ -45,12 +52,17 @@ export async function getUserNotes(userId: string): Promise<Note[]> {
   );
 
   const snapshot = await getDocs(notesQuery);
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-    createdAt: doc.data().createdAt.toDate(),
-    updatedAt: doc.data().updatedAt.toDate()
-  })) as Note[];
+  return snapshot.docs.map(doc => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      userId: data.userId,
+      title: data.title,
+      content: data.content,
+      createdAt: data.createdAt?.toDate() || new Date(),
+      updatedAt: data.updatedAt?.toDate() || new Date()
+    };
+  });
 }
 
 export async function updateNote(noteId: string, title: string, content: string): Promise<void> {
@@ -58,7 +70,7 @@ export async function updateNote(noteId: string, title: string, content: string)
   await updateDoc(noteRef, {
     title,
     content,
-    updatedAt: new Date()
+    updatedAt: serverTimestamp()
   });
 }
 
