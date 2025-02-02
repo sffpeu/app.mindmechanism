@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { ClockIcon, Calendar, RotateCw, Timer, Compass, ChevronUp, ChevronDown, Repeat, Eye, EyeOff, Settings, Play, Pause } from 'lucide-react';
 import { ClockSettings } from '../types/ClockSettings';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/lib/FirebaseAuthContext'
+import { updateSession } from '@/lib/sessions'
 
 const dotColors = [
   'bg-[#fd290a]', // 1. Red
@@ -181,8 +183,10 @@ export default function Clock({
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const [pausedTimeRemaining, setPausedTimeRemaining] = useState<number | null>(null);
   const [initialDuration, setInitialDuration] = useState<number | null>(null);
+  const { user } = useAuth() as { user: { uid: string } | null }
   const searchParams = new URLSearchParams(window.location.search);
   const duration = searchParams.get('duration');
+  const sessionId = searchParams.get('sessionId');
 
   // Initialize session
   useEffect(() => {
@@ -206,6 +210,7 @@ export default function Clock({
       if (remaining <= 0) {
         setRemainingTime(0);
         clearInterval(timer);
+        handleSessionComplete();
         return;
       }
       
@@ -214,6 +219,20 @@ export default function Clock({
     
     return () => clearInterval(timer);
   }, [initialDuration, isPaused, sessionStartTime]);
+
+  const handleSessionComplete = async () => {
+    if (!sessionId || !user?.uid) return;
+
+    try {
+      await updateSession(sessionId, {
+        status: 'completed',
+        end_time: new Date().toISOString(),
+        actual_duration: initialDuration || 0
+      });
+    } catch (error) {
+      console.error('Error completing session:', error);
+    }
+  };
 
   const handlePauseResume = () => {
     if (isPaused) {
@@ -227,11 +246,24 @@ export default function Clock({
     setIsPaused(!isPaused);
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     if (initialDuration) {
       setRemainingTime(initialDuration);
       setSessionStartTime(new Date().getTime());
       setIsPaused(false);
+
+      // Mark the session as aborted if it exists
+      if (sessionId && user?.uid) {
+        try {
+          await updateSession(sessionId, {
+            status: 'aborted',
+            end_time: new Date().toISOString(),
+            actual_duration: initialDuration - (remainingTime || 0)
+          });
+        } catch (error) {
+          console.error('Error aborting session:', error);
+        }
+      }
     }
   };
 

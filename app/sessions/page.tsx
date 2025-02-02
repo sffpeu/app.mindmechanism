@@ -12,6 +12,8 @@ import { SatelliteSettings } from '@/types/ClockSettings'
 import { SessionDurationDialog } from '@/components/SessionDurationDialog'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { createSession } from '@/lib/sessions'
+import { useAuth } from '@/lib/FirebaseAuthContext'
 
 // Update satellites count for each clock
 const clockSatellites: Record<number, number> = {
@@ -69,6 +71,7 @@ export default function SessionsPage() {
   const [selectedClockColor, setSelectedClockColor] = useState<string>('')
   const [isDurationDialogOpen, setIsDurationDialogOpen] = useState(false)
   const router = useRouter()
+  const { user } = useAuth() as { user: { uid: string } | null }
 
   // Function to calculate elapsed time
   const getElapsedTime = (startDate: Date): string => {
@@ -154,12 +157,44 @@ export default function SessionsPage() {
     setIsDurationDialogOpen(true)
   }
 
-  const handleDurationSelected = (duration: number | null, words: string[]) => {
-    if (selectedClockId !== null) {
-      // Navigate to the clock page with the selected duration and words
-      const durationMs = duration === null ? undefined : duration * 60000 // Convert minutes to milliseconds
-      const encodedWords = encodeURIComponent(JSON.stringify(words))
-      router.push(`/clock/${selectedClockId}?duration=${durationMs}&words=${encodedWords}`)
+  const handleDurationSelected = async (duration: number | null, words: string[]) => {
+    if (selectedClockId !== null && duration !== null && user?.uid) {
+      try {
+        // Create a new session
+        const session = await createSession({
+          user_id: user.uid,
+          clock_id: selectedClockId,
+          duration: duration * 60000, // Convert minutes to milliseconds
+          words: words,
+          moon_phase: '',
+          moon_illumination: 0,
+          moon_rise: '',
+          moon_set: '',
+          weather_condition: '',
+          temperature: 0,
+          humidity: 0,
+          uv_index: 0,
+          pressure: 0,
+          wind_speed: 0,
+          city: '',
+          country: '',
+          elevation: 0,
+          sea_level: 0,
+          latitude: 0,
+          longitude: 0
+        });
+
+        // Navigate to the clock page with the session ID
+        const durationMs = duration * 60000 // Convert minutes to milliseconds
+        const encodedWords = encodeURIComponent(JSON.stringify(words))
+        router.push(`/clock/${selectedClockId}?duration=${durationMs}&words=${encodedWords}&sessionId=${session.id}`)
+      } catch (error) {
+        console.error('Error creating session:', error);
+        // Still navigate to clock page even if session creation fails
+        const durationMs = duration * 60000
+        const encodedWords = encodeURIComponent(JSON.stringify(words))
+        router.push(`/clock/${selectedClockId}?duration=${durationMs}&words=${encodedWords}`)
+      }
     }
     setIsDurationDialogOpen(false)
   }
