@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { Card } from '@/components/ui/card'
-import { RotateCcw, PenLine, Files, Clock, ArrowUpDown } from 'lucide-react'
+import { RotateCcw, PenLine, Files, Clock, ArrowUpDown, Save, Edit, X } from 'lucide-react'
 import { useTheme } from '@/app/ThemeContext'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -16,6 +16,8 @@ export default function NotesPage() {
   const [noteContent, setNoteContent] = useState('')
   const [selectedSession, setSelectedSession] = useState<string | null>(null)
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest')
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
   const { isDarkMode } = useTheme()
 
   // Example sessions - replace with actual data
@@ -31,16 +33,38 @@ export default function NotesPage() {
     if (!noteTitle.trim() || !noteContent.trim()) return
 
     const newNote: Note = {
-      id: Date.now().toString(),
+      id: selectedNote?.id || Date.now().toString(),
       title: noteTitle,
       content: noteContent,
-      date: new Date().toISOString(),
+      date: selectedNote?.date || new Date().toISOString(),
       sessionId: selectedSession
     }
 
-    setSavedNotes(prev => [newNote, ...prev])
+    if (selectedNote) {
+      // Update existing note
+      setSavedNotes(prev => prev.map(note => 
+        note.id === selectedNote.id ? newNote : note
+      ))
+    } else {
+      // Create new note
+      setSavedNotes(prev => [newNote, ...prev])
+    }
+
+    clearForm()
+  }
+
+  const clearForm = () => {
     setNoteTitle('')
     setNoteContent('')
+    setSelectedNote(null)
+    setIsEditing(false)
+  }
+
+  const handleNoteClick = (note: Note) => {
+    setSelectedNote(note)
+    setNoteTitle(note.title)
+    setNoteContent(note.content)
+    setIsEditing(false)
   }
 
   const formatDate = (dateString: string) => {
@@ -84,7 +108,12 @@ export default function NotesPage() {
                     <ArrowUpDown className="h-4 w-4" />
                     {sortOrder === 'newest' ? 'Newest' : 'Oldest'}
                   </button>
-                  <Files className="h-5 w-5 text-black/50 dark:text-white/50" />
+                  <button
+                    onClick={clearForm}
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    <Plus className="h-5 w-5" />
+                  </button>
                 </div>
               </div>
               <div className="mt-4 space-y-3">
@@ -94,7 +123,10 @@ export default function NotesPage() {
                   sortedNotes.map((note) => (
                     <div
                       key={note.id}
-                      className="p-3 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                      onClick={() => handleNoteClick(note)}
+                      className={`p-3 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer ${
+                        selectedNote?.id === note.id ? 'bg-black/5 dark:bg-white/10' : ''
+                      }`}
                     >
                       <h3 className="font-medium text-black dark:text-white">{note.title}</h3>
                       <div className="flex items-center gap-2 mt-1">
@@ -139,13 +171,30 @@ export default function NotesPage() {
             </Card>
           </div>
 
-          {/* Right Column: Write Note */}
+          {/* Right Column: Write/View Note */}
           <div className="md:col-span-2">
-            {/* Write Note Card */}
             <Card className="p-4 bg-white/90 dark:bg-black/90 backdrop-blur-lg border-black/10 dark:border-white/20">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-medium text-black dark:text-white">Write Note</h2>
-                <PenLine className="h-5 w-5 text-black/50 dark:text-white/50" />
+                <h2 className="text-lg font-medium text-black dark:text-white">
+                  {selectedNote ? (isEditing ? 'Edit Note' : 'View Note') : 'Write Note'}
+                </h2>
+                <div className="flex items-center gap-2">
+                  {selectedNote && (
+                    <>
+                      <button
+                        onClick={() => setIsEditing(!isEditing)}
+                        className="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                      >
+                        {isEditing ? (
+                          <X className="h-5 w-5 text-black/50 dark:text-white/50" />
+                        ) : (
+                          <Edit className="h-5 w-5 text-black/50 dark:text-white/50" />
+                        )}
+                      </button>
+                    </>
+                  )}
+                  <PenLine className="h-5 w-5 text-black/50 dark:text-white/50" />
+                </div>
               </div>
               <div className="space-y-4">
                 <div className="flex items-center justify-between bg-black/5 dark:bg-white/5 rounded-lg p-3">
@@ -155,21 +204,29 @@ export default function NotesPage() {
                     value={noteTitle}
                     onChange={(e) => setNoteTitle(e.target.value)}
                     className="bg-transparent w-full text-black dark:text-white placeholder-black/50 dark:placeholder-white/50 outline-none"
+                    readOnly={selectedNote && !isEditing}
                   />
-                  <span className="text-sm text-black/50 dark:text-white/50">21/01/2025</span>
+                  <span className="text-sm text-black/50 dark:text-white/50">
+                    {selectedNote ? formatDate(selectedNote.date) : new Date().toLocaleDateString()}
+                  </span>
                 </div>
                 <textarea
                   placeholder="Write your note here..."
                   value={noteContent}
                   onChange={(e) => setNoteContent(e.target.value)}
-                  className="w-full h-[500px] bg-black/5 dark:bg-white/5 rounded-lg p-3 text-black dark:text-white placeholder-black/50 dark:placeholder-white/50 outline-none resize-none"
+                  className={`w-full h-[500px] bg-black/5 dark:bg-white/5 rounded-lg p-3 text-black dark:text-white placeholder-black/50 dark:placeholder-white/50 outline-none resize-none ${
+                    selectedNote && !isEditing ? 'cursor-default' : ''
+                  }`}
+                  readOnly={selectedNote && !isEditing}
                 />
-                <button
-                  onClick={handleSaveNote}
-                  className="w-full py-3 bg-gray-400/80 hover:bg-gray-400/90 dark:bg-gray-600/80 dark:hover:bg-gray-600/90 text-white rounded-lg transition-colors"
-                >
-                  Save Note
-                </button>
+                {(!selectedNote || isEditing) && (
+                  <button
+                    onClick={handleSaveNote}
+                    className="w-full py-3 bg-gray-400/80 hover:bg-gray-400/90 dark:bg-gray-600/80 dark:hover:bg-gray-600/90 text-white rounded-lg transition-colors"
+                  >
+                    {selectedNote ? 'Save Changes' : 'Save Note'}
+                  </button>
+                )}
               </div>
             </Card>
           </div>
