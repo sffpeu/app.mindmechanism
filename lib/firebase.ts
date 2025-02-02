@@ -5,6 +5,7 @@ import {
   persistentLocalCache,
   persistentMultipleTabManager,
   connectFirestoreEmulator,
+  FirestoreSettings
 } from 'firebase/firestore';
 
 // Debug: Log Firebase config (without sensitive values)
@@ -30,11 +31,13 @@ export const auth = getAuth(app);
 
 console.log('Initializing Firestore...');
 // Initialize Firestore with modern persistence settings
-export const db = getFirestore(app, {
+const firestoreSettings: FirestoreSettings = {
   localCache: persistentLocalCache({
     tabManager: persistentMultipleTabManager()
   })
-});
+};
+
+export const db = getFirestore(app, firestoreSettings);
 
 console.log('Firebase initialization complete');
 export default app; 

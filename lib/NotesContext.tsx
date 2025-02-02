@@ -9,7 +9,7 @@ interface NotesContextType {
   notes: Note[]
   isLoading: boolean
   error: string | null
-  addNote: (title: string, content: string) => Promise<void>
+  addNote: (title: string, content: string) => Promise<string | undefined>
   editNote: (noteId: string, title: string, content: string) => Promise<void>
   removeNote: (noteId: string) => Promise<void>
 }
@@ -51,7 +51,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     }
   }, [user])
 
-  const addNote = async (title: string, content: string) => {
+  const addNote = async (title: string, content: string): Promise<string | undefined> => {
     if (!user) {
       toast({
         title: "Authentication Error",

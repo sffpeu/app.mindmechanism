@@ -44,7 +44,10 @@ export default function NotesPage() {
       if (selectedNote && isEditing) {
         await editNote(selectedNote.id, noteTitle, noteContent)
       } else {
-        await addNote(noteTitle, noteContent)
+        const noteId = await addNote(noteTitle, noteContent)
+        if (noteId) {
+          console.log('Created note with ID:', noteId)
+        }
       }
       clearForm()
     } catch (error) {
