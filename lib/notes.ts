@@ -125,25 +125,40 @@ export const subscribeToUserNotes = (userId: string, callback: (notes: Note[]) =
   return onSnapshot(
     notesQuery, 
     (snapshot) => {
-      const notes = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Note[];
-      console.log('Received notes update, count:', notes.length);
-      callback(notes);
+      try {
+        const notes = snapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            title: data.title || '',
+            content: data.content || '',
+            createdAt: data.createdAt,
+            updatedAt: data.updatedAt
+          } as Note;
+        });
+        console.log('Received notes update, count:', notes.length);
+        callback(notes);
+      } catch (error) {
+        console.error('Error processing notes snapshot:', error);
+        // Return empty array instead of crashing
+        callback([]);
+      }
     },
     (error: FirestoreError) => {
       console.error('Error in notes subscription:', error);
+      // Handle errors gracefully without throwing
       if (error.code === 'permission-denied') {
-        throw new Error('You do not have permission to access these notes');
-      }
-      // If we're offline, we'll still get cached data
-      if (error.code === 'unavailable') {
+        console.error('Permission denied to access notes');
+        callback([]);
+      } else if (error.code === 'unavailable') {
         console.log('Operating in offline mode');
-        // Optionally disable network to force offline mode
-        disableNetwork(db).then(() => {
-          console.log('Network disabled, using cached data');
+        // Try to disable network gracefully
+        disableNetwork(db).catch(err => {
+          console.error('Error disabling network:', err);
         });
+      } else {
+        console.error('Unexpected error in notes subscription:', error);
+        callback([]);
       }
     }
   );
