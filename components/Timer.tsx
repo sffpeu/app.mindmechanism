@@ -7,7 +7,7 @@ import { Play, Pause, RotateCw } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 interface TimerProps {
-  duration: number
+  duration: number // duration in milliseconds
   onComplete?: () => void
   isRunning: boolean
   onToggle: () => void
@@ -30,24 +30,41 @@ export function Timer({ duration, onComplete, isRunning, onToggle, onReset }: Ti
       return
     }
 
-    let timer: NodeJS.Timeout
-    if (isRunning && timeLeft > 0) {
-      timer = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1000) {
-            clearInterval(timer)
-            onComplete?.()
-            return 0
-          }
-          return prev - 1000
-        })
-      }, 1000)
+    let startTime: number
+    let animationFrameId: number
+
+    const updateTimer = (timestamp: number) => {
+      if (!startTime) startTime = timestamp
+      const elapsed = timestamp - startTime
+      
+      setTimeLeft((prevTime) => {
+        const newTime = Math.max(0, prevTime - elapsed)
+        if (newTime <= 0) {
+          onComplete?.()
+          return 0
+        }
+        return newTime
+      })
+
+      startTime = timestamp
+      if (isRunning && timeLeft > 0) {
+        animationFrameId = requestAnimationFrame(updateTimer)
+      }
     }
-    return () => clearInterval(timer)
+
+    if (isRunning && timeLeft > 0) {
+      animationFrameId = requestAnimationFrame(updateTimer)
+    }
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId)
+      }
+    }
   }, [isRunning, timeLeft, onComplete, user, router])
 
   const formatTime = useCallback((ms: number) => {
-    const totalSeconds = Math.floor(ms / 1000)
+    const totalSeconds = Math.ceil(ms / 1000)
     const minutes = Math.floor(totalSeconds / 60)
     const seconds = totalSeconds % 60
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`

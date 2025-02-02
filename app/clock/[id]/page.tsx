@@ -82,7 +82,9 @@ export default function ClockPage() {
   useEffect(() => {
     const durationParam = searchParams.get('duration')
     if (durationParam) {
-      const durationMs = parseInt(durationParam) * 60 * 1000 // Convert minutes to milliseconds
+      // Convert minutes to milliseconds (1 minute = 60 seconds = 60,000 milliseconds)
+      const minutes = parseInt(durationParam)
+      const durationMs = minutes * 60 * 1000
       setDuration(durationMs)
       // Automatically start the timer
       setIsRunning(true)
@@ -179,7 +181,9 @@ export default function ClockPage() {
     // Reset duration to initial value from URL params
     const durationParam = searchParams.get('duration')
     if (durationParam) {
-      const durationMs = parseInt(durationParam) * 60 * 1000
+      // Convert minutes to milliseconds
+      const minutes = parseInt(durationParam)
+      const durationMs = minutes * 60 * 1000
       setDuration(durationMs)
     }
   }
