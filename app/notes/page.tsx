@@ -35,8 +35,7 @@ export default function NotesPage() {
     if (!noteTitle.trim() || !noteContent.trim()) {
       toast({
         title: "Error",
-        description: "Title and content are required",
-        variant: "destructive"
+        description: "Title and content are required"
       })
       return
     }
@@ -50,10 +49,10 @@ export default function NotesPage() {
       clearForm()
     } catch (error) {
       console.error('Error saving note:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save note'
       toast({
         title: "Error",
-        description: "Failed to save note",
-        variant: "destructive"
+        description: errorMessage
       })
     }
   }
@@ -68,10 +67,10 @@ export default function NotesPage() {
       }
     } catch (error) {
       console.error('Error deleting note:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete note'
       toast({
         title: "Error",
-        description: "Failed to delete note",
-        variant: "destructive"
+        description: errorMessage
       })
     }
   }
