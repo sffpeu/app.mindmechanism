@@ -76,8 +76,8 @@ export async function getUserNotes(userId: string): Promise<Note[]> {
         userId: data.userId,
         title: data.title,
         content: data.content,
-        createdAt: data.createdAt?.toDate() || new Date(),
-        updatedAt: data.updatedAt?.toDate() || new Date()
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt
       };
     });
   } catch (error) {

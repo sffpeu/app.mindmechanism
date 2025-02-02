@@ -480,7 +480,7 @@ export default function DashboardPage() {
                         {note.content}
                       </p>
                       <p className="text-xs text-gray-400 mt-2">
-                        {new Date(note.updatedAt).toLocaleString()}
+                        {note.updatedAt.toDate().toLocaleString()}
                       </p>
                     </div>
                   ))}
