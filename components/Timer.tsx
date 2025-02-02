@@ -70,7 +70,7 @@ export function Timer({ minutes, isRunning, onToggle, onReset, onComplete, clock
         className="font-mono font-medium text-lg"
         style={{ color: clockColor }}
       >
-        {`${mins}:${secs.toString().padStart(2, '0')}`}
+        {`${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`}
       </div>
       <div className="flex items-center gap-1">
         <button
