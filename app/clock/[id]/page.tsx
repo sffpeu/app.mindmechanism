@@ -231,7 +231,7 @@ export default function ClockPage() {
         />
       )}
       <Timer
-        duration={duration}
+        minutes={duration}
         onComplete={handleComplete}
         isRunning={isRunning}
         onToggle={handleToggle}

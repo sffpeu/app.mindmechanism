@@ -1,17 +1,15 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/lib/FirebaseAuthContext'
+import { useState, useEffect } from 'react'
 import { Play, Pause, RotateCw } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 interface TimerProps {
-  duration: number // duration in minutes
-  onComplete?: () => void
+  minutes: number // duration in minutes (e.g., 15 for 15 minutes)
   isRunning: boolean
   onToggle: () => void
   onReset: () => void
+  onComplete?: () => void
   clockId: number
 }
 
@@ -27,64 +25,38 @@ const clockColors = [
   '#56c1ff', // 9. Light Blue
 ]
 
-export function Timer({ duration, onComplete, isRunning, onToggle, onReset, clockId }: TimerProps) {
-  const [timeLeft, setTimeLeft] = useState<{ minutes: number; seconds: number }>({
-    minutes: duration,
-    seconds: 0
-  })
-  const router = useRouter()
-  const { user } = useAuth()
+export function Timer({ minutes, isRunning, onToggle, onReset, onComplete, clockId }: TimerProps) {
+  const [mins, setMins] = useState(minutes)
+  const [secs, setSecs] = useState(0)
 
-  // Update time when duration changes
+  // Reset timer when minutes prop changes
   useEffect(() => {
-    setTimeLeft({
-      minutes: duration,
-      seconds: 0
-    })
-  }, [duration])
+    setMins(minutes)
+    setSecs(0)
+  }, [minutes])
 
+  // Handle countdown
   useEffect(() => {
-    if (!user) {
-      router.push('/auth/signin')
-      return
-    }
-
     let interval: NodeJS.Timeout
 
-    if (isRunning && (timeLeft.minutes > 0 || timeLeft.seconds > 0)) {
+    if (isRunning && (mins > 0 || secs > 0)) {
       interval = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev.minutes === 0 && prev.seconds === 0) {
+        if (secs === 0) {
+          if (mins === 0) {
             clearInterval(interval)
             onComplete?.()
-            return prev
+          } else {
+            setMins(m => m - 1)
+            setSecs(59)
           }
-          
-          if (prev.seconds === 0) {
-            return {
-              minutes: prev.minutes - 1,
-              seconds: 59
-            }
-          }
-          
-          return {
-            minutes: prev.minutes,
-            seconds: prev.seconds - 1
-          }
-        })
+        } else {
+          setSecs(s => s - 1)
+        }
       }, 1000)
     }
 
-    return () => {
-      if (interval) {
-        clearInterval(interval)
-      }
-    }
-  }, [isRunning, timeLeft, onComplete, user, router])
-
-  const formatTime = useCallback((minutes: number, seconds: number) => {
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
-  }, [])
+    return () => clearInterval(interval)
+  }, [isRunning, mins, secs, onComplete])
 
   const clockColor = clockColors[clockId % clockColors.length]
 
@@ -98,7 +70,7 @@ export function Timer({ duration, onComplete, isRunning, onToggle, onReset, cloc
         className="font-mono font-medium text-lg"
         style={{ color: clockColor }}
       >
-        {formatTime(timeLeft.minutes, timeLeft.seconds)}
+        {`${mins}:${secs.toString().padStart(2, '0')}`}
       </div>
       <div className="flex items-center gap-1">
         <button
