@@ -18,11 +18,19 @@ const NotesContext = createContext<NotesContextType | undefined>(undefined)
 
 export function NotesProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
+  const [mounted, setMounted] = useState(false)
   const [notes, setNotes] = useState<Note[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Handle mounting
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
+
     if (!user) {
       setNotes([])
       setIsLoading(false)
@@ -38,7 +46,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
     // Cleanup subscription on unmount
     return () => unsubscribe()
-  }, [user])
+  }, [user, mounted])
 
   const addNote = async (title: string, content: string) => {
     if (!user) {
@@ -55,14 +63,14 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       toast({
         description: "Note created successfully"
       })
-    } catch (err) {
-      console.error('Error adding note:', err)
+    } catch (error) {
+      console.error('Error adding note:', error)
       setError('Failed to add note')
       toast({
         title: "Error",
         description: "Failed to create note. Please try again."
       })
-      throw err
+      throw error
     }
   }
 
@@ -81,14 +89,14 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       toast({
         description: "Note updated successfully"
       })
-    } catch (err) {
-      console.error('Error updating note:', err)
+    } catch (error) {
+      console.error('Error updating note:', error)
       setError('Failed to update note')
       toast({
         title: "Error",
         description: "Failed to update note. Please try again."
       })
-      throw err
+      throw error
     }
   }
 
@@ -107,15 +115,20 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       toast({
         description: "Note deleted successfully"
       })
-    } catch (err) {
-      console.error('Error deleting note:', err)
+    } catch (error) {
+      console.error('Error deleting note:', error)
       setError('Failed to delete note')
       toast({
         title: "Error",
         description: "Failed to delete note. Please try again."
       })
-      throw err
+      throw error
     }
+  }
+
+  // Don't render anything until mounted to prevent hydration issues
+  if (!mounted) {
+    return null
   }
 
   return (
