@@ -9,7 +9,6 @@ import { Menu } from '@/components/Menu'
 import { ClockSettings } from '@/components/ClockSettings'
 import { ClockSettings as ClockSettingsType } from '@/types/ClockSettings'
 import { useTheme } from '@/app/ThemeContext'
-import { Timer } from '@/components/Timer'
 
 interface WeatherResponse {
   location: {
@@ -60,7 +59,6 @@ export default function ClockPage() {
   const params = useParams()
   const searchParams = useSearchParams()
   const id = parseInt(params.id as string)
-  const [duration, setDuration] = useState(0)
   const encodedWords = searchParams.get('words')
   const words = encodedWords ? JSON.parse(decodeURIComponent(encodedWords)) : []
   const [showElements, setShowElements] = useState(true)
@@ -76,19 +74,6 @@ export default function ClockPage() {
   const [moon, setMoon] = useState<MoonData | null>(null)
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null)
   const [locationError, setLocationError] = useState<string | null>(null)
-  const [isRunning, setIsRunning] = useState(false)
-
-  // Initialize duration and start timer from URL params
-  useEffect(() => {
-    const durationParam = searchParams.get('duration')
-    if (durationParam) {
-      // Duration is already in minutes from SessionDurationDialog
-      const minutes = parseInt(durationParam)
-      setDuration(minutes)
-      // Automatically start the timer
-      setIsRunning(true)
-    }
-  }, [searchParams])
 
   // Initialize current time
   useEffect(() => {
@@ -165,27 +150,6 @@ export default function ClockPage() {
     setSyncTrigger(prev => prev + 1)
   }
 
-  const handleComplete = () => {
-    setIsRunning(false)
-    // Handle timer completion
-    console.log('Timer completed')
-  }
-
-  const handleToggle = () => {
-    setIsRunning(!isRunning)
-  }
-
-  const handleReset = () => {
-    setIsRunning(false)
-    // Reset duration to initial value from URL params
-    const durationParam = searchParams.get('duration')
-    if (durationParam) {
-      // Duration is already in minutes
-      const minutes = parseInt(durationParam)
-      setDuration(minutes)
-    }
-  }
-
   // Don't render clock until we have client-side time
   if (!currentTime) {
     return null;
@@ -230,14 +194,6 @@ export default function ClockPage() {
           onCancel={() => setShowSettings(false)}
         />
       )}
-      <Timer
-        minutes={duration}
-        onComplete={handleComplete}
-        isRunning={isRunning}
-        onToggle={handleToggle}
-        onReset={handleReset}
-        clockId={id}
-      />
     </div>
   )
 } 
