@@ -16,6 +16,7 @@ import { Note } from '@/lib/notes'
 import { ChangeEvent } from 'react'
 import Link from 'next/link'
 import { getUserStats, getUserSessions } from '@/lib/sessions'
+import { Timestamp } from 'firebase/firestore'
 
 interface WeatherResponse {
   location: {
@@ -65,7 +66,27 @@ interface Session {
   clock_id: number
   status: 'completed' | 'in_progress' | 'aborted'
   actual_duration: number
-  start_time: string
+  start_time: Timestamp
+  end_time?: Timestamp
+  user_id: string
+  duration: number
+  words: string[]
+  moon_phase: string
+  moon_illumination: number
+  moon_rise: string
+  moon_set: string
+  weather_condition: string
+  temperature: number
+  humidity: number
+  uv_index: number
+  pressure: number
+  wind_speed: number
+  city: string
+  country: string
+  elevation: number
+  sea_level: number
+  latitude: number
+  longitude: number
 }
 
 interface FirebaseUser {
@@ -98,7 +119,16 @@ export default function DashboardPage() {
   const [selectedNote, setSelectedNote] = useState<Note | null>(null)
   const [noteTitle, setNoteTitle] = useState('')
   const [noteContent, setNoteContent] = useState('')
-  const [userStats, setUserStats] = useState<UserStats | null>(null)
+  const [userStats, setUserStats] = useState<UserStats>({
+    totalTime: 0,
+    totalSessions: 0,
+    completionRate: 0,
+    monthlyProgress: {
+      totalSessions: 0,
+      totalTime: 0,
+      completionRate: 0
+    }
+  })
   const [recentSessions, setRecentSessions] = useState<Session[]>([])
 
   // Handle mounting
@@ -336,13 +366,19 @@ export default function DashboardPage() {
                 <div className="mt-4">
                   <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Recent Sessions</h3>
                   <div className="space-y-2">
-                    {recentSessions.slice(0, 3).map((session: any) => (
+                    {recentSessions.slice(0, 3).map((session) => (
                       <div key={session.id} className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full ${session.status === 'completed' ? 'bg-green-500' : session.status === 'aborted' ? 'bg-red-500' : 'bg-yellow-500'}`} />
+                          <div className={`w-2 h-2 rounded-full ${
+                            session.status === 'completed' ? 'bg-green-500' : 
+                            session.status === 'aborted' ? 'bg-red-500' : 
+                            'bg-yellow-500'
+                          }`} />
                           <span className="dark:text-white">Clock {session.clock_id + 1}</span>
                         </div>
-                        <span className="text-gray-500 dark:text-gray-400">{formatDuration(session.actual_duration)}</span>
+                        <span className="text-gray-500 dark:text-gray-400">
+                          {formatDuration(session.actual_duration)}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -547,33 +583,21 @@ export default function DashboardPage() {
         </div>
 
         {/* Total Time Card */}
-        <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all relative">
-          <div className="absolute inset-0 bg-white/90 dark:bg-black/90 backdrop-blur-[2px] rounded-xl z-10 flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-sm font-medium text-gray-900 dark:text-white">Available Soon</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Currently in Development</p>
-            </div>
-          </div>
+        <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-semibold dark:text-white">Total Time</h2>
             <Clock className="h-4 w-4 text-gray-500" />
           </div>
           <div className="text-2xl font-bold dark:text-white">
-            0h 0m
+            {!user ? "-" : formatDuration(userStats.totalTime)}
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            0 sessions completed
+            {!user ? "-" : `${userStats.totalSessions} sessions completed`}
           </p>
         </Card>
 
         {/* Monthly Progress Card */}
-        <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all relative">
-          <div className="absolute inset-0 bg-white/90 dark:bg-black/90 backdrop-blur-[2px] rounded-xl z-10 flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-sm font-medium text-gray-900 dark:text-white">Available Soon</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Currently in Development</p>
-            </div>
-          </div>
+        <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-semibold dark:text-white">Monthly Progress</h2>
             <BarChart2 className="h-4 w-4 text-gray-500" />
@@ -582,36 +606,42 @@ export default function DashboardPage() {
             <div>
               <div className="flex items-center justify-between text-sm mb-1">
                 <span className="text-gray-600 dark:text-gray-400">Sessions</span>
-                <span className="font-medium dark:text-white">0</span>
+                <span className="font-medium dark:text-white">
+                  {!user ? "-" : userStats.monthlyProgress.totalSessions}
+                </span>
               </div>
               <div className="h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-blue-500 rounded-full transition-all"
-                  style={{ width: "50%" }}
+                  style={{ width: `${userStats.monthlyProgress.completionRate}%` }}
                 />
               </div>
             </div>
             <div>
               <div className="flex items-center justify-between text-sm mb-1">
                 <span className="text-gray-600 dark:text-gray-400">Time</span>
-                <span className="font-medium dark:text-white">0h 0m</span>
+                <span className="font-medium dark:text-white">
+                  {!user ? "-" : formatDuration(userStats.monthlyProgress.totalTime)}
+                </span>
               </div>
               <div className="h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-green-500 rounded-full transition-all"
-                  style={{ width: "50%" }}
+                  style={{ width: `${userStats.monthlyProgress.completionRate}%` }}
                 />
               </div>
             </div>
             <div>
               <div className="flex items-center justify-between text-sm mb-1">
                 <span className="text-gray-600 dark:text-gray-400">Completion Rate</span>
-                <span className="font-medium dark:text-white">0%</span>
+                <span className="font-medium dark:text-white">
+                  {!user ? "-" : `${userStats.monthlyProgress.completionRate.toFixed(1)}%`}
+                </span>
               </div>
               <div className="h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-purple-500 rounded-full transition-all"
-                  style={{ width: "50%" }}
+                  style={{ width: `${userStats.monthlyProgress.completionRate}%` }}
                 />
               </div>
             </div>
