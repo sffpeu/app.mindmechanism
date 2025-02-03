@@ -62,7 +62,7 @@ export const calculateUserTimeStats = async (userId: string) => {
     const now = new Date();
     let totalTime = 0;
     let monthlyTime = 0;
-    let lastSignInTime = null;
+    let lastSignInTime: Date | null = null;
 
     snapshot.forEach((doc) => {
       const data = doc.data() as TimeEntry;
