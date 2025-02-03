@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { createSession } from '@/lib/sessions'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useTimeTracking } from '@/lib/hooks/useTimeTracking'
+import { RecentSessions } from '@/components/RecentSessions'
 
 // Update satellites count for each clock
 const clockSatellites: Record<number, number> = {
@@ -407,6 +408,30 @@ export default function SessionsPage() {
               ))}
             </div>
           </div>
+
+          {/* Recent Sessions Section */}
+          {showRecentSessions && (
+            <div>
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-xl font-medium text-gray-900 dark:text-white">Recent Sessions</h2>
+                  <button 
+                    onClick={() => setShowRecentSessions(!showRecentSessions)}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
+                  >
+                    <Eye className="h-4 w-4 text-gray-600 dark:text-white" />
+                    <span className="text-sm text-gray-600 dark:text-white">
+                      {showRecentSessions ? 'Hide' : 'Show'}
+                    </span>
+                  </button>
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400 max-w-lg">
+                  View your meditation journey through past sessions and track your progress.
+                </p>
+              </div>
+              <RecentSessions />
+            </div>
+          )}
         </div>
       </div>
       <SessionDurationDialog
