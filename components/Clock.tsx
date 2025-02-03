@@ -177,6 +177,7 @@ export default function Clock({
   const animationRef = useRef<number>();
   const lastRotation = useRef(rotation);
   const [showInfoCards, setShowInfoCards] = useState(true);
+  const [infoCardsHiddenByNode, setInfoCardsHiddenByNode] = useState(false);
   const [displayState, setDisplayState] = useState<DisplayState>('info');
   const [selectedNodeIndex, setSelectedNodeIndex] = useState<number | null>(null);
   const [remainingTime, setRemainingTime] = useState<number | null>(null);
@@ -346,6 +347,17 @@ export default function Clock({
     };
   }, [startDateTime, rotationTime, startingDegree, rotationDirection, isTransitioning]);
 
+  const handleNodeClick = (index: number) => {
+    if (selectedNodeIndex === index) {
+      setSelectedNodeIndex(null);
+      setInfoCardsHiddenByNode(false);
+    } else {
+      setSelectedNodeIndex(index);
+      setInfoCardsHiddenByNode(true);
+      setShowInfoCards(false);
+    }
+  };
+
   const renderFocusNodes = (clockRotation: number, clockFocusNodes: number, clockStartingDegree: number, clockId: number) => {
     return (
       <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
@@ -371,13 +383,7 @@ export default function Clock({
               }}
               whileHover={{ scale: 1.5 }}
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
-              onClick={() => {
-                if (selectedNodeIndex === index) {
-                  setSelectedNodeIndex(null);
-                } else {
-                  setSelectedNodeIndex(index);
-                }
-              }}
+              onClick={() => handleNodeClick(index)}
             />
           );
         })}
@@ -634,13 +640,7 @@ export default function Clock({
                     }}
                     whileHover={{ scale: 1.5 }}
                     transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                    onClick={() => {
-                      if (selectedNodeIndex === index) {
-                        setSelectedNodeIndex(null);
-                      } else {
-                        setSelectedNodeIndex(index);
-                      }
-                    }}
+                    onClick={() => handleNodeClick(index)}
                   />
                 );
               })}
@@ -1005,7 +1005,11 @@ export default function Clock({
           <>
             <div className="flex justify-center gap-2 mb-2">
               <motion.button
-                onClick={() => setShowInfoCards(prev => !prev)}
+                onClick={() => {
+                  if (!infoCardsHiddenByNode) {
+                    setShowInfoCards(prev => !prev);
+                  }
+                }}
                 className="w-20 h-1 rounded-full bg-gray-200 dark:bg-gray-700 shadow-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300 ease-out"
                 whileHover={{ scaleX: 1.2 }}
               />
@@ -1015,7 +1019,8 @@ export default function Clock({
               initial={false}
               animate={{ 
                 height: showInfoCards ? "60px" : "0px",
-                opacity: showInfoCards ? 1 : 0
+                opacity: showInfoCards ? 1 : 0,
+                y: showInfoCards ? 0 : 20
               }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
             >
