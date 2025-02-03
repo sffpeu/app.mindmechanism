@@ -9,6 +9,8 @@ import { Menu } from '@/components/Menu'
 import { ClockSettings } from '@/components/ClockSettings'
 import { ClockSettings as ClockSettingsType } from '@/types/ClockSettings'
 import { useTheme } from '@/app/ThemeContext'
+import { useTimeTracking } from '@/lib/hooks/useTimeTracking'
+import { useAuth } from '@/lib/FirebaseAuthContext'
 
 interface WeatherResponse {
   location: {
@@ -74,6 +76,10 @@ export default function ClockPage() {
   const [moon, setMoon] = useState<MoonData | null>(null)
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null)
   const [locationError, setLocationError] = useState<string | null>(null)
+  const { user } = useAuth()
+
+  // Add time tracking
+  useTimeTracking(user?.uid, `clock-${params.id}`)
 
   // Initialize current time
   useEffect(() => {

@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { createSession } from '@/lib/sessions'
 import { useAuth } from '@/lib/FirebaseAuthContext'
+import { useTimeTracking } from '@/lib/hooks/useTimeTracking'
 
 // Update satellites count for each clock
 const clockSatellites: Record<number, number> = {
@@ -71,7 +72,10 @@ export default function SessionsPage() {
   const [selectedClockColor, setSelectedClockColor] = useState<string>('')
   const [isDurationDialogOpen, setIsDurationDialogOpen] = useState(false)
   const router = useRouter()
-  const { user } = useAuth() as { user: { uid: string } | null }
+  const { user } = useAuth()
+  
+  // Add time tracking
+  useTimeTracking(user?.uid, 'sessions')
 
   // Function to calculate elapsed time
   const getElapsedTime = (startDate: Date): string => {

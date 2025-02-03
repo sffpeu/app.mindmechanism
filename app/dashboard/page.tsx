@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { Card } from '@/components/ui/card'
-import { Calendar, Clock, Cloud, Droplets, Gauge, Wind, Moon, ClipboardList, BookOpen, Sun, MapPin, Mountain, Waves, User, BarChart2, Pencil, Trash2, Globe } from 'lucide-react'
+import { Calendar, Clock, Cloud, Droplets, Gauge, Wind, Moon, ClipboardList, BookOpen, Sun, MapPin, Mountain, Waves, User, BarChart2, Pencil, Trash2, Globe, RefreshCw } from 'lucide-react'
 import { useTheme } from '@/app/ThemeContext'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/FirebaseAuthContext'
@@ -17,6 +17,7 @@ import { ChangeEvent } from 'react'
 import Link from 'next/link'
 import { getUserStats, getUserSessions } from '@/lib/sessions'
 import { Timestamp } from 'firebase/firestore'
+import { startTimeTracking, endTimeTracking, calculateUserTimeStats } from '@/lib/timeTracking'
 
 interface WeatherResponse {
   location: {
@@ -100,6 +101,11 @@ interface FirebaseUser {
   }
 }
 
+interface TimeStats {
+  totalTime: number;
+  monthlyTime: number;
+}
+
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false)
   const [showElements, setShowElements] = useState(true)
@@ -130,6 +136,9 @@ export default function DashboardPage() {
     }
   })
   const [recentSessions, setRecentSessions] = useState<Session[]>([])
+  const [timeStats, setTimeStats] = useState<TimeStats>({ totalTime: 0, monthlyTime: 0 })
+  const [timeEntryId, setTimeEntryId] = useState<string | null>(null)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   // Handle mounting
   useEffect(() => {
@@ -323,6 +332,61 @@ export default function DashboardPage() {
 
   // Get recent notes
   const recentNotes = notes?.slice(0, 3) || []
+
+  // Start time tracking when the page loads
+  useEffect(() => {
+    let entryId: string | null = null;
+    
+    const startTracking = async () => {
+      if (user?.uid) {
+        entryId = await startTimeTracking(user.uid, 'dashboard');
+        setTimeEntryId(entryId);
+      }
+    };
+
+    startTracking();
+
+    // End time tracking when the user leaves the page
+    return () => {
+      if (entryId) {
+        endTimeTracking(entryId);
+      }
+    };
+  }, [user?.uid]);
+
+  // Load time stats
+  const loadTimeStats = async () => {
+    if (!user?.uid) return;
+    
+    try {
+      const stats = await calculateUserTimeStats(user.uid);
+      setTimeStats(stats);
+    } catch (error) {
+      console.error('Error loading time stats:', error);
+    }
+  };
+
+  // Load all stats
+  const loadAllStats = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([
+        loadUserStats(),
+        loadTimeStats()
+      ]);
+    } catch (error) {
+      console.error('Error refreshing stats:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Load stats on mount and when user changes
+  useEffect(() => {
+    if (user?.uid) {
+      loadAllStats();
+    }
+  }, [user?.uid]);
 
   if (!mounted) {
     return null
@@ -600,7 +664,18 @@ export default function DashboardPage() {
         <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-semibold dark:text-white">Monthly Progress</h2>
-            <BarChart2 className="h-4 w-4 text-gray-500" />
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={loadAllStats}
+                disabled={isRefreshing}
+                className={`h-8 w-8 ${isRefreshing ? 'animate-spin' : ''}`}
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+              <BarChart2 className="h-4 w-4 text-gray-500" />
+            </div>
           </div>
           <div className="space-y-4">
             <div>
@@ -619,15 +694,15 @@ export default function DashboardPage() {
             </div>
             <div>
               <div className="flex items-center justify-between text-sm mb-1">
-                <span className="text-gray-600 dark:text-gray-400">Time</span>
+                <span className="text-gray-600 dark:text-gray-400">Time Spent</span>
                 <span className="font-medium dark:text-white">
-                  {!user ? "-" : formatDuration(userStats.monthlyProgress.totalTime)}
+                  {!user ? "-" : formatDuration(timeStats.monthlyTime)}
                 </span>
               </div>
               <div className="h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-green-500 rounded-full transition-all"
-                  style={{ width: `${userStats.monthlyProgress.completionRate}%` }}
+                  style={{ width: `${(timeStats.monthlyTime / (30 * 24 * 60 * 60 * 1000)) * 100}%` }}
                 />
               </div>
             </div>
