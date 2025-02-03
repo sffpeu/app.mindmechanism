@@ -86,6 +86,7 @@ export default function ClockPage() {
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null)
   const [locationError, setLocationError] = useState<string | null>(null)
   const { user } = useAuth()
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
   // Add time tracking
   useTimeTracking(user?.uid, `clock-${params.id}`)
@@ -158,6 +159,16 @@ export default function ClockPage() {
     return () => clearInterval(interval)
   }, [location])
 
+  // Update fullscreen effect to handle escape key
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement)
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  }, [])
+
   const handleSettingsSave = (newSettings: Partial<ClockSettingsType>) => {
     setLocalClockSettings({ ...localClockSettings, ...newSettings })
     setShowSettings(false)
@@ -167,31 +178,29 @@ export default function ClockPage() {
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
-      setIsFullscreen(true);
+      document.documentElement.requestFullscreen()
     } else {
-      document.exitFullscreen();
-      setIsFullscreen(false);
+      document.exitFullscreen()
     }
-  };
+  }
 
   // Don't render clock until we have client-side time
   if (!currentTime) {
-    return null;
+    return null
   }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95">
       {/* Settings Dropdown */}
       <div className="fixed top-4 right-4 z-50">
-        <DropdownMenu>
+        <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
           <DropdownMenuTrigger asChild>
             <button className="p-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors">
               <Settings className="h-5 w-5 text-gray-700 dark:text-gray-300" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem className="flex items-center justify-between">
+            <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
               <div className="flex items-center gap-2">
                 <Satellite className="h-4 w-4" />
                 <span>Satellites</span>
@@ -201,7 +210,7 @@ export default function ClockPage() {
                 onCheckedChange={setShowSatellites}
               />
             </DropdownMenuItem>
-            <DropdownMenuItem className="flex items-center justify-between">
+            <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
               <div className="flex items-center gap-2">
                 <Info className="h-4 w-4" />
                 <span>Info Cards</span>
@@ -211,21 +220,19 @@ export default function ClockPage() {
                 onCheckedChange={setShowInfoCards}
               />
             </DropdownMenuItem>
-            <DropdownMenuItem 
-              className="flex items-center gap-2"
-              onClick={toggleFullscreen}
-            >
-              {isFullscreen ? (
-                <>
+            <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
+              <div className="flex items-center gap-2">
+                {isFullscreen ? (
                   <Minimize2 className="h-4 w-4" />
-                  <span>Exit Fullscreen</span>
-                </>
-              ) : (
-                <>
+                ) : (
                   <Maximize2 className="h-4 w-4" />
-                  <span>Enter Fullscreen</span>
-                </>
-              )}
+                )}
+                <span>Fullscreen</span>
+              </div>
+              <Switch
+                checked={isFullscreen}
+                onCheckedChange={() => toggleFullscreen()}
+              />
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -255,7 +262,7 @@ export default function ClockPage() {
         syncTrigger={syncTrigger}
         hideControls={false}
         showSatellites={showSatellites}
-        showInfo={showInfoCards}
+        showInfo={showInfoCards && !isFullscreen}
         isMultiView={false}
         isMultiView2={false}
         allClocks={clockSettings}
