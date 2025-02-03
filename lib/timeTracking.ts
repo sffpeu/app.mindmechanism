@@ -13,7 +13,8 @@ import {
   DocumentData,
   onSnapshot,
   QuerySnapshot,
-  FieldValue
+  FieldValue,
+  Firestore
 } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
@@ -83,9 +84,17 @@ function checkAuth() {
   return auth.currentUser;
 }
 
+function checkDb(): Firestore {
+  if (!db) {
+    throw new Error('Firestore is not initialized');
+  }
+  return db;
+}
+
 export const startTimeTracking = async (userId: string, page: string) => {
   try {
     const currentUser = checkAuth();
+    const firestore = checkDb();
     
     if (!userId || userId !== currentUser.uid) {
       throw new Error('Invalid user ID');
@@ -103,7 +112,7 @@ export const startTimeTracking = async (userId: string, page: string) => {
 
     validateTimeEntry(timeEntry);
     
-    const docRef = await addDoc(collection(db, 'timeTracking'), timeEntry);
+    const docRef = await addDoc(collection(firestore, 'timeTracking'), timeEntry);
     return docRef.id;
   } catch (error) {
     console.error('Error starting time tracking:', error);
@@ -114,12 +123,13 @@ export const startTimeTracking = async (userId: string, page: string) => {
 export const endTimeTracking = async (entryId: string) => {
   try {
     const currentUser = checkAuth();
+    const firestore = checkDb();
 
     if (!entryId) {
       throw new Error('Entry ID is required');
     }
 
-    const entryRef = doc(db, 'timeTracking', entryId);
+    const entryRef = doc(firestore, 'timeTracking', entryId);
     
     await updateDoc(entryRef, {
       endTime: serverTimestamp(),
@@ -205,4 +215,102 @@ function processTimeEntries(snapshot: QuerySnapshot<DocumentData>): TimeStats {
     monthlyTime,
     lastSignInTime
   };
-} 
+}
+
+export const getTimeStats = async (userId: string): Promise<TimeStats> => {
+  try {
+    const currentUser = checkAuth();
+    const firestore = checkDb();
+    
+    if (!userId || userId !== currentUser.uid) {
+      throw new Error('Invalid user ID');
+    }
+
+    const timeQuery = query(
+      collection(firestore, 'timeTracking'),
+      where('userId', '==', userId),
+      orderBy('startTime', 'desc')
+    );
+
+    const snapshot = await getDocs(timeQuery);
+    const entries = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as TimeEntry[];
+
+    const now = new Date();
+    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const totalTime = entries.reduce((acc, entry) => {
+      if (entry.duration) {
+        return acc + entry.duration;
+      }
+      return acc;
+    }, 0);
+
+    const monthlyTime = entries.reduce((acc, entry) => {
+      if (entry.startTime && entry.duration) {
+        const entryDate = entry.startTime.toDate();
+        if (entryDate >= thisMonth) {
+          return acc + entry.duration;
+        }
+      }
+      return acc;
+    }, 0);
+
+    return {
+      totalTime,
+      monthlyTime,
+      lastSignInTime: currentUser.metadata.lastSignInTime 
+        ? new Date(currentUser.metadata.lastSignInTime) 
+        : null
+    };
+  } catch (error) {
+    console.error('Error getting time stats:', error);
+    throw error;
+  }
+};
+
+export const subscribeToTimeTracking = (
+  userId: string,
+  onUpdate: (entries: TimeEntry[]) => void,
+  onError: (error: Error) => void
+) => {
+  try {
+    const firestore = checkDb();
+    
+    if (!userId) {
+      throw new Error('User ID is required');
+    }
+
+    const timeQuery = query(
+      collection(firestore, 'timeTracking'),
+      where('userId', '==', userId),
+      orderBy('startTime', 'desc')
+    );
+
+    return onSnapshot(
+      timeQuery,
+      (snapshot: QuerySnapshot<DocumentData>) => {
+        const entries = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as TimeEntry[];
+        onUpdate(entries);
+      },
+      error => {
+        console.error('Error in time tracking subscription:', error);
+        onError(error);
+      }
+    );
+  } catch (error) {
+    console.error('Error setting up time tracking subscription:', error);
+    if (error instanceof Error) {
+      onError(error);
+    } else {
+      onError(new Error('Unknown error occurred'));
+    }
+    // Return a no-op unsubscribe function
+    return () => {};
+  }
+}; 
