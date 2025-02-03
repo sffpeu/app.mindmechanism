@@ -475,7 +475,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">
                     <p>Last sign in: {timeStats.lastSignInTime ? timeStats.lastSignInTime.toLocaleString() : 'N/A'}</p>
-                    <p>Account created: {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleString() : 'N/A'}</p>
+                    <p>Member since {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('en-US', { month: '2-digit', year: 'numeric' }) : 'N/A'}</p>
                   </div>
                 </div>
               </Card>
@@ -656,20 +656,6 @@ export default function DashboardPage() {
         <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-semibold dark:text-white">Total App Usage</h2>
-            <Clock className="h-4 w-4 text-gray-500" />
-          </div>
-          <div className="text-2xl font-bold dark:text-white">
-            {!user ? "-" : formatDuration(userStats.totalTime)}
-          </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {!user ? "-" : `${userStats.totalSessions} sessions completed`}
-          </p>
-        </Card>
-
-        {/* Monthly Progress Card */}
-        <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-semibold dark:text-white">My Statistics</h2>
             <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
@@ -680,53 +666,15 @@ export default function DashboardPage() {
               >
                 <RefreshCw className="h-4 w-4" />
               </Button>
-              <BarChart2 className="h-4 w-4 text-gray-500" />
+              <Clock className="h-4 w-4 text-gray-500" />
             </div>
           </div>
-          <div className="space-y-4">
-            <div>
-              <div className="flex items-center justify-between text-sm mb-1">
-                <span className="text-gray-600 dark:text-gray-400">Sessions</span>
-                <span className="font-medium dark:text-white">
-                  {!user ? "-" : userStats.monthlyProgress.totalSessions}
-                </span>
-              </div>
-              <div className="h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-blue-500 rounded-full transition-all"
-                  style={{ width: `${userStats.monthlyProgress.completionRate}%` }}
-                />
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center justify-between text-sm mb-1">
-                <span className="text-gray-600 dark:text-gray-400">Monthly Time</span>
-                <span className="font-medium dark:text-white">
-                  {!user ? "-" : formatDuration(timeStats.monthlyTime)}
-                </span>
-              </div>
-              <div className="h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-green-500 rounded-full transition-all"
-                  style={{ width: `${Math.min((timeStats.monthlyTime / (30 * 24 * 60 * 60 * 1000)) * 100, 100)}%` }}
-                />
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center justify-between text-sm mb-1">
-                <span className="text-gray-600 dark:text-gray-400">Total Time</span>
-                <span className="font-medium dark:text-white">
-                  {!user ? "-" : formatDuration(timeStats.totalTime)}
-                </span>
-              </div>
-              <div className="h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-purple-500 rounded-full transition-all"
-                  style={{ width: `${Math.min((timeStats.totalTime / (30 * 24 * 60 * 60 * 1000)) * 100, 100)}%` }}
-                />
-              </div>
-            </div>
+          <div className="text-2xl font-bold dark:text-white">
+            {!user ? "-" : formatDuration(timeStats.totalTime)}
           </div>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            {!user ? "-" : `${userStats.totalSessions} sessions completed`}
+          </p>
         </Card>
       </div>
     </div>
