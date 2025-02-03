@@ -11,6 +11,10 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
 
+    function isValidPage(page) {
+      return page in ['dashboard', 'clock', 'sessions', 'notes'];
+    }
+
     match /users/{userId}/notes/{noteId} {
       function isValidNote() {
         let note = request.resource.data;
@@ -42,14 +46,25 @@ service cloud.firestore {
       function isValidTimeEntry() {
         let entry = request.resource.data;
         return entry.userId is string
+          && entry.userId == request.auth.uid
           && entry.startTime is timestamp
           && (entry.endTime == null || entry.endTime is timestamp)
-          && entry.page is string;
+          && entry.page is string
+          && isValidPage(entry.page);
       }
 
-      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid);
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid && isValidTimeEntry();
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read: if isAuthenticated() && (
+        resource == null || 
+        resource.data.userId == request.auth.uid
+      );
+      
+      allow create: if isAuthenticated() && isValidTimeEntry();
+      
+      allow update: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid && 
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.startTime == resource.data.startTime;
+      
       allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
 
