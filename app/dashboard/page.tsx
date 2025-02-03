@@ -655,7 +655,7 @@ export default function DashboardPage() {
         {/* Total Time Card */}
         <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-semibold dark:text-white">Total Time</h2>
+            <h2 className="text-base font-semibold dark:text-white">Total App Usage</h2>
             <Clock className="h-4 w-4 text-gray-500" />
           </div>
           <div className="text-2xl font-bold dark:text-white">
@@ -669,7 +669,7 @@ export default function DashboardPage() {
         {/* Monthly Progress Card */}
         <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-semibold dark:text-white">Monthly Progress</h2>
+            <h2 className="text-base font-semibold dark:text-white">My Statistics</h2>
             <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
@@ -729,56 +729,6 @@ export default function DashboardPage() {
           </div>
         </Card>
       </div>
-
-      {/* Note dialogs */}
-      <Dialog open={isAddNoteOpen} onOpenChange={setIsAddNoteOpen}>
-        <DialogTrigger asChild>
-          <Button variant="outline" className="text-blue-500 hover:text-blue-600">
-            Add Note
-          </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add New Note</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 mt-4">
-            <Input
-              placeholder="Title"
-              value={noteTitle}
-              onChange={handleTitleChange}
-            />
-            <Textarea
-              placeholder="Content"
-              value={noteContent}
-              onChange={handleContentChange}
-              rows={5}
-            />
-            <Button onClick={handleAddNote}>Save Note</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isEditNoteOpen} onOpenChange={setIsEditNoteOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Note</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 mt-4">
-            <Input
-              placeholder="Title"
-              value={noteTitle}
-              onChange={handleTitleChange}
-            />
-            <Textarea
-              placeholder="Content"
-              value={noteContent}
-              onChange={handleContentChange}
-              rows={5}
-            />
-            <Button onClick={handleEditNote}>Update Note</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 } 
