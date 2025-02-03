@@ -234,10 +234,19 @@ export const getTimeStats = async (userId: string): Promise<TimeStats> => {
     );
 
     const snapshot = await getDocs(timeQuery);
-    const entries = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as TimeEntry[];
+    const entries = snapshot.docs
+      .map(doc => {
+        const data = doc.data();
+        if (!isValidTimeEntry(data)) {
+          console.warn('Invalid time entry found:', doc.id, data);
+          return null;
+        }
+        return {
+          id: doc.id,
+          ...data
+        } as TimeEntry;
+      })
+      .filter((entry): entry is TimeEntry => entry !== null);
 
     const now = new Date();
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -293,10 +302,19 @@ export const subscribeToTimeTracking = (
     return onSnapshot(
       timeQuery,
       (snapshot: QuerySnapshot<DocumentData>) => {
-        const entries = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as TimeEntry[];
+        const entries = snapshot.docs
+          .map(doc => {
+            const data = doc.data();
+            if (!isValidTimeEntry(data)) {
+              console.warn('Invalid time entry found:', doc.id, data);
+              return null;
+            }
+            return {
+              id: doc.id,
+              ...data
+            } as TimeEntry;
+          })
+          .filter((entry): entry is TimeEntry => entry !== null);
         onUpdate(entries);
       },
       error => {
