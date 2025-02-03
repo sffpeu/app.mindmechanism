@@ -20,6 +20,7 @@ import {
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 interface TimeEntry {
+  id?: string;  // Make id optional since it comes from Firestore
   userId: string;
   startTime: Timestamp;
   endTime?: Timestamp;
@@ -203,9 +204,9 @@ function processTimeEntries(snapshot: QuerySnapshot<DocumentData>): TimeStats {
         return null;
       }
       return {
-        id: doc.id,
-        ...data
-      };
+        ...data,
+        id: doc.id
+      } as TimeEntry;
     })
     .filter((entry): entry is TimeEntry => entry !== null)
     .sort((a, b) => a.startTime.toDate().getTime() - b.startTime.toDate().getTime());
@@ -286,8 +287,8 @@ export const getTimeStats = async (userId: string): Promise<TimeStats> => {
           return null;
         }
         return {
-          id: doc.id,
-          ...data
+          ...data,
+          id: doc.id
         } as TimeEntry;
       })
       .filter((entry): entry is TimeEntry => entry !== null);
@@ -354,8 +355,8 @@ export const subscribeToTimeTracking = (
               return null;
             }
             return {
-              id: doc.id,
-              ...data
+              ...data,
+              id: doc.id
             } as TimeEntry;
           })
           .filter((entry): entry is TimeEntry => entry !== null);
