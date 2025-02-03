@@ -143,13 +143,14 @@ export const endTimeTracking = async (entryId: string) => {
 export const calculateUserTimeStats = async (userId: string): Promise<TimeStats> => {
   try {
     const currentUser = checkAuth();
+    const firestore = checkDb();
     
     if (!userId || userId !== currentUser.uid) {
       throw new Error('Invalid user ID');
     }
 
     const timeQuery = query(
-      collection(db, 'timeTracking'),
+      collection(firestore, 'timeTracking'),
       where('userId', '==', userId),
       orderBy('startTime', 'desc')
     );
