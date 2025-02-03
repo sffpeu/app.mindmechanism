@@ -215,7 +215,7 @@ function processTimeEntries(snapshot: QuerySnapshot<DocumentData>): TimeStats {
 
   entries.forEach((entry) => {
     try {
-      const startDate = entry.startTime.toDate();
+      let startDate = entry.startTime.toDate();
       let endDate: Date;
 
       if (entry.endTime?.toDate) {
