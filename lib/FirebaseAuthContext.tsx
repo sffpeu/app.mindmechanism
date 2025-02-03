@@ -8,7 +8,8 @@ import {
   signOut as firebaseSignOut,
   onAuthStateChanged,
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword
+  signInWithEmailAndPassword,
+  Auth
 } from 'firebase/auth';
 import { auth } from './firebase';
 
@@ -37,7 +38,12 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    if (!auth) {
+      setLoading(false);
+      return;
+    }
+
+    const unsubscribe = onAuthStateChanged(auth as Auth, (user) => {
       setUser(user);
       setLoading(false);
     });
@@ -46,6 +52,8 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    if (!auth) throw new Error('Firebase auth not initialized');
+    
     try {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
@@ -55,6 +63,8 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   };
 
   const signUp = async (email: string, password: string) => {
+    if (!auth) throw new Error('Firebase auth not initialized');
+
     try {
       await createUserWithEmailAndPassword(auth, email, password);
     } catch (error) {
@@ -64,6 +74,8 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   };
 
   const signInWithGoogle = async () => {
+    if (!auth) throw new Error('Firebase auth not initialized');
+
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
@@ -74,6 +86,8 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   };
 
   const signOut = async () => {
+    if (!auth) throw new Error('Firebase auth not initialized');
+
     try {
       await firebaseSignOut(auth);
     } catch (error) {
