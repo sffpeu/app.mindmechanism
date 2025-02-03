@@ -14,7 +14,8 @@ import {
   onSnapshot,
   QuerySnapshot,
   FieldValue,
-  Firestore
+  Firestore,
+  writeBatch
 } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
@@ -104,6 +105,26 @@ export const startTimeTracking = async (userId: string, page: string) => {
       throw new Error(`Invalid page. Must be one of: ${VALID_PAGES.join(', ')}`);
     }
 
+    // Check for existing active sessions for this user and page
+    const activeSessionsQuery = query(
+      collection(firestore, 'timeTracking'),
+      where('userId', '==', userId),
+      where('page', '==', page),
+      where('endTime', '==', null)
+    );
+
+    const activeSessions = await getDocs(activeSessionsQuery);
+    
+    // End any existing active sessions
+    const batch = writeBatch(firestore);
+    activeSessions.forEach(doc => {
+      batch.update(doc.ref, {
+        endTime: serverTimestamp()
+      });
+    });
+    await batch.commit();
+
+    // Create new time entry
     const timeEntry: TimeEntryInput = {
       userId,
       startTime: serverTimestamp(),
@@ -173,24 +194,44 @@ function processTimeEntries(snapshot: QuerySnapshot<DocumentData>): TimeStats {
   let monthlyTime = 0;
   let lastSignInTime: Date | null = null;
 
-  snapshot.forEach((doc) => {
-    const data = doc.data();
-    
-    if (!isValidTimeEntry(data)) {
-      console.warn('Invalid time entry found:', doc.id, data);
-      return;
-    }
-
-    try {
-      const startDate = data.startTime.toDate();
-      let duration = 0;
-
-      if (data.endTime?.toDate) {
-        duration = data.endTime.toDate().getTime() - startDate.getTime();
-      } else {
-        // For active sessions, calculate duration up to now
-        duration = now.getTime() - startDate.getTime();
+  // Sort entries by start time to handle overlapping sessions
+  const entries = snapshot.docs
+    .map(doc => {
+      const data = doc.data();
+      if (!isValidTimeEntry(data)) {
+        console.warn('Invalid time entry found:', doc.id, data);
+        return null;
       }
+      return {
+        id: doc.id,
+        ...data
+      };
+    })
+    .filter((entry): entry is TimeEntry => entry !== null)
+    .sort((a, b) => a.startTime.toDate().getTime() - b.startTime.toDate().getTime());
+
+  let lastEndTime: Date | null = null;
+
+  entries.forEach((entry) => {
+    try {
+      const startDate = entry.startTime.toDate();
+      let endDate: Date;
+
+      if (entry.endTime?.toDate) {
+        endDate = entry.endTime.toDate();
+      } else {
+        // For active sessions, use current time
+        endDate = now;
+      }
+
+      // Handle overlapping sessions
+      if (lastEndTime && startDate < lastEndTime) {
+        // If this session starts before the last one ended,
+        // use the later time as the start time
+        startDate = lastEndTime;
+      }
+
+      const duration = endDate.getTime() - startDate.getTime();
 
       if (duration > 0) {
         totalTime += duration;
@@ -205,9 +246,12 @@ function processTimeEntries(snapshot: QuerySnapshot<DocumentData>): TimeStats {
             startDate.getFullYear() === now.getFullYear()) {
           monthlyTime += duration;
         }
+
+        // Update lastEndTime for next iteration
+        lastEndTime = endDate;
       }
     } catch (err) {
-      console.warn('Error processing time entry:', doc.id, err);
+      console.warn('Error processing time entry:', entry.id, err);
     }
   });
 
