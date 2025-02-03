@@ -636,9 +636,9 @@ export default function DashboardPage() {
         {/* Recent Sessions Card */}
         <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-semibold dark:text-white">Recent Sessions</h2>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white">Recent Sessions</h2>
             <div className="flex items-center gap-2">
-              <Link href="/sessions" className="text-xs text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300">
+              <Link href="/sessions" className="text-xs text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
                 View All
               </Link>
             </div>

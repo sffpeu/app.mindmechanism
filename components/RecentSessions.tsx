@@ -126,11 +126,11 @@ export function RecentSessions() {
               )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-6 w-6">
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10">
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="bg-white dark:bg-black/90 border border-gray-200 dark:border-white/10">
                   <DropdownMenuItem onClick={() => handleRestartSession(session)}>
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Restart
@@ -238,7 +238,7 @@ export function RecentSessions() {
             variant="ghost"
             size="icon"
             onClick={() => setIsListView(!isListView)}
-            className="h-8 w-8"
+            className="h-8 w-8 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10"
           >
             {isListView ? (
               <Grid className="h-4 w-4" />
@@ -260,6 +260,7 @@ export function RecentSessions() {
           <Button
             variant="ghost"
             onClick={() => setShowAllSessions(!showAllSessions)}
+            className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10"
           >
             {showAllSessions ? 'Show Less' : 'Show More'}
           </Button>
@@ -267,9 +268,9 @@ export function RecentSessions() {
       )}
 
       <Dialog open={isWordsDialogOpen} onOpenChange={setIsWordsDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-white dark:bg-black/90 border border-gray-200 dark:border-white/10">
           <DialogHeader>
-            <DialogTitle>Assigned Words</DialogTitle>
+            <DialogTitle className="text-gray-900 dark:text-white">Assigned Words</DialogTitle>
           </DialogHeader>
           <div className="flex flex-wrap gap-2 p-4">
             {selectedWords.map((word, index) => (

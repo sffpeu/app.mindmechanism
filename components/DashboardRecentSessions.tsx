@@ -99,7 +99,7 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
                 ) : session.status === 'in_progress' && (
                   <button
                     onClick={() => handleContinueSession(session)}
-                    className={`p-1 rounded-full border ${clockColor} border-current hover:bg-${clockColor.split('-')[1]}-50 dark:hover:bg-${clockColor.split('-')[1]}-500/10`}
+                    className={`p-1 rounded-full border ${clockColor} border-current hover:bg-${clockColor.split('-')[1]}-50 dark:hover:bg-${clockColor.split('-')[1]}-500/10 transition-colors`}
                   >
                     <Play className={`h-3 w-3 ${clockColor}`} />
                   </button>
@@ -122,7 +122,7 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
                   {session.words.slice(0, 3).map((word, index) => (
                     <span 
                       key={index}
-                      className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium border ${clockColor} border-current bg-transparent`}
+                      className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium border ${clockColor} border-current bg-transparent hover:bg-${clockColor.split('-')[1]}-50 dark:hover:bg-${clockColor.split('-')[1]}-500/10 transition-colors`}
                     >
                       {word}
                     </span>
@@ -155,15 +155,15 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
       </div>
 
       <Dialog open={isWordsDialogOpen} onOpenChange={setIsWordsDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-white dark:bg-black/90 border border-gray-200 dark:border-white/10">
           <DialogHeader>
-            <DialogTitle>Assigned Words</DialogTitle>
+            <DialogTitle className="text-gray-900 dark:text-white">Assigned Words</DialogTitle>
           </DialogHeader>
           <div className="flex flex-wrap gap-2 p-4">
             {selectedWords.map((word, index) => (
               <span 
                 key={index}
-                className="inline-flex items-center px-2 py-1 rounded-full text-sm font-medium border text-gray-700 dark:text-gray-300 border-current bg-transparent"
+                className="inline-flex items-center px-2 py-1 rounded-full text-sm font-medium border text-gray-700 dark:text-gray-300 border-current bg-transparent hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
               >
                 {word}
               </span>
