@@ -1,8 +1,20 @@
 import { useEffect, useState } from 'react';
 import { Session, getUserSessions } from '@/lib/sessions';
 import { useAuth } from '@/lib/FirebaseAuthContext';
-import { clockSettings } from '@/lib/clockSettings';
 import { Clock, CheckCircle2, Timer } from 'lucide-react';
+
+// Clock titles mapping
+const clockTitles = [
+  "Galileo's First Observation",
+  "Neptune's Discovery",
+  "Galileo's Spring Observation",
+  "Jupiter's Moons",
+  "Uranus Discovery",
+  "Saturn's Rings",
+  "Ancient Star Charts",
+  "Winter Solstice Study",
+  "Medieval Observations"
+];
 
 export function RecentSessions() {
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -44,7 +56,7 @@ export function RecentSessions() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {sessions.map((session) => {
-        const clockType = clockSettings[session.clock_id]?.title || 'Unknown Clock';
+        const clockType = clockTitles[session.clock_id] || 'Unknown Clock';
         const startTime = session.start_time.toDate();
         const progress = session.status === 'completed' ? 100 : 
           session.status === 'aborted' ? 
