@@ -12,7 +12,8 @@ import {
   orderBy,
   DocumentData,
   onSnapshot,
-  QuerySnapshot
+  QuerySnapshot,
+  FieldValue
 } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
@@ -21,6 +22,14 @@ interface TimeEntry {
   startTime: Timestamp;
   endTime?: Timestamp;
   duration?: number; // in milliseconds
+  page: string;
+}
+
+interface TimeEntryInput {
+  userId: string;
+  startTime: Timestamp | FieldValue;
+  endTime?: Timestamp | FieldValue;
+  duration?: number;
   page: string;
 }
 
@@ -48,7 +57,7 @@ function isValidTimeEntry(entry: any): entry is TimeEntry {
   );
 }
 
-function validateTimeEntry(entry: Partial<TimeEntry>) {
+function validateTimeEntry(entry: Partial<TimeEntryInput>) {
   if (!entry.userId) {
     throw new Error('Invalid time entry: Missing user ID');
   }
@@ -58,10 +67,10 @@ function validateTimeEntry(entry: Partial<TimeEntry>) {
   if (!isValidPage(entry.page)) {
     throw new Error(`Invalid time entry: Invalid page. Must be one of: ${VALID_PAGES.join(', ')}`);
   }
-  if (entry.startTime && !(entry.startTime instanceof Timestamp)) {
+  if (entry.startTime && !(entry.startTime instanceof Timestamp) && !(entry.startTime instanceof FieldValue)) {
     throw new Error('Invalid time entry: Invalid startTime format');
   }
-  if (entry.endTime && !(entry.endTime instanceof Timestamp)) {
+  if (entry.endTime && !(entry.endTime instanceof Timestamp) && !(entry.endTime instanceof FieldValue)) {
     throw new Error('Invalid time entry: Invalid endTime format');
   }
 }
@@ -86,7 +95,7 @@ export const startTimeTracking = async (userId: string, page: string) => {
       throw new Error(`Invalid page. Must be one of: ${VALID_PAGES.join(', ')}`);
     }
 
-    const timeEntry = {
+    const timeEntry: TimeEntryInput = {
       userId,
       startTime: serverTimestamp(),
       page
