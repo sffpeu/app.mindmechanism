@@ -65,18 +65,18 @@ function initializeFirebaseApp() {
 const app = initializeFirebaseApp();
 export const auth = getAuth(app);
 
+// Initialize Firestore with modern persistence settings
+const firestoreSettings: FirestoreSettings = {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager()
+  })
+};
+
+export const db = initializeFirestore(app, firestoreSettings);
+
+// Enable offline persistence
 console.log('Initializing Firestore...');
 try {
-  // Initialize Firestore with modern persistence settings
-  const firestoreSettings: FirestoreSettings = {
-    localCache: persistentLocalCache({
-      tabManager: persistentMultipleTabManager()
-    })
-  };
-
-  export const db = initializeFirestore(app, firestoreSettings);
-
-  // Enable offline persistence
   enableIndexedDbPersistence(db).catch((err) => {
     if (err.code === 'failed-precondition') {
       console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
@@ -84,11 +84,10 @@ try {
       console.warn('The current browser does not support persistence.');
     }
   });
-
   console.log('Firestore initialized successfully');
 } catch (error) {
-  console.error('Error initializing Firestore:', error);
-  throw error;
+  console.error('Error enabling Firestore persistence:', error);
+  // Don't throw here, as persistence is optional
 }
 
 console.log('Firebase initialization complete');
