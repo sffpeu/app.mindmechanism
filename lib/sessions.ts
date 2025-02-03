@@ -102,6 +102,7 @@ export async function updateSession(
   data: Partial<SessionData> & { 
     status: 'completed' | 'aborted';
     actual_duration: number;
+    end_time?: string;
   }
 ): Promise<void> {
   try {
@@ -115,10 +116,12 @@ export async function updateSession(
       throw new Error('Session not found');
     }
 
-    await updateDoc(sessionRef, {
+    const updateData = {
       ...data,
-      end_time: Timestamp.now()
-    });
+      end_time: data.end_time ? Timestamp.fromDate(new Date(data.end_time)) : Timestamp.now()
+    };
+
+    await updateDoc(sessionRef, updateData);
   } catch (error) {
     console.error('Error in updateSession:', error);
     if (error instanceof FirestoreError) {

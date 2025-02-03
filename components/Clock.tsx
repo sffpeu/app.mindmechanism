@@ -9,6 +9,7 @@ import { ClockSettings } from '../types/ClockSettings';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { updateSession } from '@/lib/sessions'
+import { toast } from 'react-hot-toast';
 
 const dotColors = [
   'bg-[#fd290a]', // 1. Red
@@ -231,6 +232,7 @@ export default function Clock({
       });
     } catch (error) {
       console.error('Error completing session:', error);
+      toast.error('Failed to complete session');
     }
   };
 

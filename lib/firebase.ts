@@ -42,9 +42,11 @@ const validateFirebaseConfig = () => {
     'storageBucket',
     'messagingSenderId',
     'appId'
-  ];
+  ] as const;
 
-  const missingFields = requiredFields.filter(field => !firebaseConfig[field]);
+  const missingFields = requiredFields.filter(
+    (field) => !firebaseConfig[field as keyof typeof firebaseConfig]
+  );
   
   if (missingFields.length > 0) {
     console.error('Missing Firebase configuration fields:', missingFields);
