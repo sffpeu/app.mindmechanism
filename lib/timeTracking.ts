@@ -12,6 +12,7 @@ import {
   orderBy,
   DocumentData
 } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 
 interface TimeEntry {
   userId: string;
@@ -21,10 +22,34 @@ interface TimeEntry {
   page: string;
 }
 
+function isValidTimeEntry(entry: any): entry is TimeEntry {
+  return (
+    entry &&
+    typeof entry.userId === 'string' &&
+    entry.startTime instanceof Timestamp &&
+    (entry.endTime === undefined || entry.endTime instanceof Timestamp) &&
+    typeof entry.page === 'string'
+  );
+}
+
+function checkAuth() {
+  const auth = getAuth();
+  if (!auth.currentUser) {
+    throw new Error('User not authenticated');
+  }
+  return auth.currentUser;
+}
+
 export const startTimeTracking = async (userId: string, page: string) => {
   try {
-    if (!userId) {
-      throw new Error('User ID is required');
+    const currentUser = checkAuth();
+    
+    if (!userId || userId !== currentUser.uid) {
+      throw new Error('Invalid user ID');
+    }
+
+    if (!page) {
+      throw new Error('Page is required');
     }
 
     const timeEntry = {
@@ -43,15 +68,16 @@ export const startTimeTracking = async (userId: string, page: string) => {
 
 export const endTimeTracking = async (entryId: string) => {
   try {
+    const currentUser = checkAuth();
+
     if (!entryId) {
       throw new Error('Entry ID is required');
     }
 
-    const endTime = serverTimestamp();
     const entryRef = doc(db, 'timeTracking', entryId);
     
     await updateDoc(entryRef, {
-      endTime,
+      endTime: serverTimestamp(),
     });
   } catch (error) {
     console.error('Error ending time tracking:', error);
@@ -61,8 +87,10 @@ export const endTimeTracking = async (entryId: string) => {
 
 export const calculateUserTimeStats = async (userId: string) => {
   try {
-    if (!userId) {
-      throw new Error('User ID is required');
+    const currentUser = checkAuth();
+    
+    if (!userId || userId !== currentUser.uid) {
+      throw new Error('Invalid user ID');
     }
 
     const timeQuery = query(
@@ -78,11 +106,10 @@ export const calculateUserTimeStats = async (userId: string) => {
     let lastSignInTime: Date | null = null;
 
     snapshot.forEach((doc) => {
-      const data = doc.data() as DocumentData;
+      const data = doc.data();
       
-      // Skip invalid entries
-      if (!data || !data.startTime) {
-        console.warn('Invalid time entry found:', doc.id);
+      if (!isValidTimeEntry(data)) {
+        console.warn('Invalid time entry found:', doc.id, data);
         return;
       }
 
@@ -90,7 +117,7 @@ export const calculateUserTimeStats = async (userId: string) => {
         const startDate = data.startTime.toDate();
         let duration = 0;
 
-        if (data.endTime && data.endTime.toDate) {
+        if (data.endTime?.toDate) {
           duration = data.endTime.toDate().getTime() - startDate.getTime();
         } else {
           // For active sessions, calculate duration up to now
