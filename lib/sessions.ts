@@ -11,7 +11,8 @@ import {
   orderBy,
   getDoc,
   FirestoreError,
-  DocumentData
+  DocumentData,
+  deleteDoc
 } from 'firebase/firestore';
 
 export interface SessionData {
@@ -271,5 +272,36 @@ export async function getUserStats(userId: string): Promise<UserStats> {
         completionRate: 0
       }
     };
+  }
+}
+
+export async function deleteSession(sessionId: string): Promise<void> {
+  try {
+    if (!db) throw new Error('Firestore is not initialized');
+    if (!sessionId) throw new Error('Session ID is required');
+
+    const sessionRef = doc(db, 'sessions', sessionId);
+    const sessionDoc = await getDoc(sessionRef);
+
+    if (!sessionDoc.exists()) {
+      throw new Error('Session not found');
+    }
+
+    await deleteDoc(sessionRef);
+  } catch (error) {
+    console.error('Error in deleteSession:', error);
+    if (error instanceof FirestoreError) {
+      switch (error.code) {
+        case 'permission-denied':
+          throw new Error('You do not have permission to delete this session');
+        case 'not-found':
+          throw new Error('Session not found');
+        case 'unavailable':
+          throw new Error('Service is currently offline');
+        default:
+          throw new Error(`Failed to delete session: ${error.message}`);
+      }
+    }
+    throw error;
   }
 } 
