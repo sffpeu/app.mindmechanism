@@ -9,7 +9,8 @@ import {
   serverTimestamp,
   doc,
   updateDoc,
-  orderBy
+  orderBy,
+  DocumentData
 } from 'firebase/firestore';
 
 interface TimeEntry {
@@ -22,6 +23,10 @@ interface TimeEntry {
 
 export const startTimeTracking = async (userId: string, page: string) => {
   try {
+    if (!userId) {
+      throw new Error('User ID is required');
+    }
+
     const timeEntry = {
       userId,
       startTime: serverTimestamp(),
@@ -38,6 +43,10 @@ export const startTimeTracking = async (userId: string, page: string) => {
 
 export const endTimeTracking = async (entryId: string) => {
   try {
+    if (!entryId) {
+      throw new Error('Entry ID is required');
+    }
+
     const endTime = serverTimestamp();
     const entryRef = doc(db, 'timeTracking', entryId);
     
@@ -52,6 +61,10 @@ export const endTimeTracking = async (entryId: string) => {
 
 export const calculateUserTimeStats = async (userId: string) => {
   try {
+    if (!userId) {
+      throw new Error('User ID is required');
+    }
+
     const timeQuery = query(
       collection(db, 'timeTracking'),
       where('userId', '==', userId),
@@ -65,28 +78,41 @@ export const calculateUserTimeStats = async (userId: string) => {
     let lastSignInTime: Date | null = null;
 
     snapshot.forEach((doc) => {
-      const data = doc.data() as TimeEntry;
-      const startDate = data.startTime.toDate();
-      let duration;
-
-      if (data.endTime) {
-        duration = data.endTime.toDate().getTime() - startDate.getTime();
-      } else {
-        // For active sessions, calculate duration up to now
-        duration = now.getTime() - startDate.getTime();
+      const data = doc.data() as DocumentData;
+      
+      // Skip invalid entries
+      if (!data || !data.startTime) {
+        console.warn('Invalid time entry found:', doc.id);
+        return;
       }
 
-      totalTime += duration;
+      try {
+        const startDate = data.startTime.toDate();
+        let duration = 0;
 
-      // Update last sign in time
-      if (!lastSignInTime || startDate > lastSignInTime) {
-        lastSignInTime = startDate;
-      }
+        if (data.endTime && data.endTime.toDate) {
+          duration = data.endTime.toDate().getTime() - startDate.getTime();
+        } else {
+          // For active sessions, calculate duration up to now
+          duration = now.getTime() - startDate.getTime();
+        }
 
-      // Check if the entry is from the current month
-      if (startDate.getMonth() === now.getMonth() && 
-          startDate.getFullYear() === now.getFullYear()) {
-        monthlyTime += duration;
+        if (duration > 0) {
+          totalTime += duration;
+
+          // Update last sign in time
+          if (!lastSignInTime || startDate > lastSignInTime) {
+            lastSignInTime = startDate;
+          }
+
+          // Check if the entry is from the current month
+          if (startDate.getMonth() === now.getMonth() && 
+              startDate.getFullYear() === now.getFullYear()) {
+            monthlyTime += duration;
+          }
+        }
+      } catch (err) {
+        console.warn('Error processing time entry:', doc.id, err);
       }
     });
 
