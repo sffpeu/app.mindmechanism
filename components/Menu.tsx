@@ -120,6 +120,28 @@ export function Menu({
                 </Link>
               </nav>
             </div>
+
+            {/* Theme Toggle Section */}
+            <div className="p-2 border-t border-gray-200 dark:border-white/10">
+              <button
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                className="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-all"
+              >
+                <div className="flex items-center gap-3">
+                  {isDarkMode ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+                  <span className="font-medium">
+                    {isDarkMode ? 'Dark Mode' : 'Light Mode'}
+                  </span>
+                </div>
+                <Switch
+                  checked={isDarkMode}
+                  onCheckedChange={setIsDarkMode}
+                  className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-white data-[state=unchecked]:bg-black/20 dark:data-[state=unchecked]:bg-white/20"
+                />
+              </button>
+            </div>
+
+            {/* Sign Out Section */}
             {user && (
               <div className="p-2 border-t border-gray-200 dark:border-white/10">
                 <button
