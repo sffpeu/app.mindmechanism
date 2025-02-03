@@ -419,41 +419,6 @@ export default function DashboardPage() {
               <p className="text-5xl font-bold dark:text-white tracking-tight">
                 {formatTime(currentTime)}
               </p>
-              {userStats && (
-                <div className="mt-4 grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Total Time</p>
-                    <p className="text-lg font-semibold dark:text-white">{formatDuration(userStats.totalTime)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Sessions</p>
-                    <p className="text-lg font-semibold dark:text-white">{userStats.totalSessions}</p>
-                  </div>
-                </div>
-              )}
-              {/* Recent Sessions */}
-              {recentSessions.length > 0 && (
-                <div className="mt-4">
-                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Recent Sessions</h3>
-                  <div className="space-y-2">
-                    {recentSessions.slice(0, 3).map((session) => (
-                      <div key={session.id} className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full ${
-                            session.status === 'completed' ? 'bg-green-500' : 
-                            session.status === 'aborted' ? 'bg-red-500' : 
-                            'bg-yellow-500'
-                          }`} />
-                          <span className="dark:text-white">Clock {session.clock_id + 1}</span>
-                        </div>
-                        <span className="text-gray-500 dark:text-gray-400">
-                          {formatDuration(session.actual_duration)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </Card>
 
             {/* User Profile Card */}
@@ -563,43 +528,33 @@ export default function DashboardPage() {
 
         {/* Location and Recent Notes Section */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Location Card */}
+          {/* Location Card - Redesigned */}
           {weatherData && (
             <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-4">
                 <h2 className="text-base font-semibold dark:text-white">Location</h2>
                 <MapPin className="h-4 w-4 text-gray-500" />
               </div>
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="p-2 rounded-full bg-gray-100 dark:bg-white/20">
-                    <MapPin className="h-4 w-4 text-gray-600 dark:text-gray-200" />
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-gray-100/80 dark:bg-white/10">
+                    <MapPin className="h-5 w-5 text-gray-600 dark:text-gray-200" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium dark:text-white">{weatherData.location.name}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-base font-medium dark:text-white">{weatherData.location.name}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {weatherData.location.region && `${weatherData.location.region}, `}{weatherData.location.country}
                     </p>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-200">
-                      <Clock className="h-3.5 w-3.5" />
-                      <span className="text-xs">Local Time</span>
-                    </div>
-                    <p className="text-sm font-medium dark:text-white">{weatherData.location.localtime.split(' ')[1]}</p>
+                <div>
+                  <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-200">
+                    <Globe className="h-3.5 w-3.5" />
+                    <span className="text-sm">{weatherData.location.tz_id}</span>
                   </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-200">
-                      <Globe className="h-3.5 w-3.5" />
-                      <span className="text-xs">Time Zone</span>
-                    </div>
-                    <p className="text-sm font-medium dark:text-white">{weatherData.location.tz_id}</p>
-                  </div>
-                </div>
-                <div className="pt-2 text-xs text-gray-500 dark:text-gray-400">
-                  {weatherData.location.lat.toFixed(4)}°N, {weatherData.location.lon.toFixed(4)}°E
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    {weatherData.location.lat.toFixed(4)}°N, {weatherData.location.lon.toFixed(4)}°E
+                  </p>
                 </div>
               </div>
             </Card>
