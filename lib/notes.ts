@@ -16,7 +16,8 @@ import {
   enableNetwork,
   disableNetwork,
   DocumentData,
-  getDoc
+  getDoc,
+  Firestore
 } from 'firebase/firestore';
 
 // Enable debug logging in development
@@ -33,7 +34,7 @@ export interface Note {
 }
 
 // Validation functions
-const validateNoteData = (title: string, content: string) => {
+const validateNoteData = (title: string, content: string): void => {
   if (!title || typeof title !== 'string' || title.length === 0 || title.length > 100) {
     throw new Error('Title must be between 1 and 100 characters');
   }
@@ -42,10 +43,26 @@ const validateNoteData = (title: string, content: string) => {
   }
 };
 
+const handleFirestoreError = (error: FirestoreError, context: string): never => {
+  switch (error.code) {
+    case 'permission-denied':
+      throw new Error(`You do not have permission to ${context}`);
+    case 'not-found':
+      throw new Error('Note not found');
+    case 'unavailable':
+      throw new Error('Service is currently offline');
+    default:
+      throw new Error(`Failed to ${context}: ${error.message}`);
+  }
+};
+
 export const createNote = async (userId: string, title: string, content: string): Promise<string> => {
   console.log('Creating note:', { userId, title });
   
   try {
+    if (!db) throw new Error('Firestore is not initialized');
+    if (!userId) throw new Error('User ID is required');
+
     // Validate input data
     validateNoteData(title, content);
 
@@ -59,18 +76,10 @@ export const createNote = async (userId: string, title: string, content: string)
     const docRef = await addDoc(collection(db, `users/${userId}/notes`), noteData);
     console.log('Note created with ID:', docRef.id);
     return docRef.id;
-  } catch (error: unknown) {
+  } catch (error) {
     console.error('Error creating note:', error);
     if (error instanceof FirestoreError) {
-      switch (error.code) {
-        case 'permission-denied':
-          throw new Error('You do not have permission to create notes');
-        case 'unavailable':
-          console.log('Note will be created when back online');
-          throw new Error('Currently offline. Note will be saved when back online');
-        default:
-          throw new Error(`Failed to create note: ${error.message}`);
-      }
+      handleFirestoreError(error, 'create note');
     }
     throw error;
   }
@@ -80,6 +89,9 @@ export async function getUserNotes(userId: string): Promise<Note[]> {
   console.log('Fetching notes for user:', userId);
   
   try {
+    if (!db) throw new Error('Firestore is not initialized');
+    if (!userId) throw new Error('User ID is required');
+
     const notesQuery = query(
       collection(db, `users/${userId}/notes`),
       orderBy('updatedAt', 'desc')
@@ -105,22 +117,30 @@ export async function getUserNotes(userId: string): Promise<Note[]> {
   } catch (error) {
     console.error('Error fetching notes:', error);
     if (error instanceof FirestoreError) {
-      switch (error.code) {
-        case 'permission-denied':
-          throw new Error('You do not have permission to access these notes');
-        case 'unavailable':
-          throw new Error('Unable to fetch notes. Please check your connection');
-        default:
-          throw new Error(`Failed to fetch notes: ${error.message}`);
-      }
+      handleFirestoreError(error, 'fetch notes');
     }
     throw new Error('Failed to fetch notes: An unexpected error occurred');
   }
 }
 
-export const subscribeToUserNotes = (userId: string, callback: (notes: Note[]) => void) => {
+export const subscribeToUserNotes = (
+  userId: string, 
+  callback: (notes: Note[]) => void
+): (() => void) => {
   console.log('Setting up notes subscription for user:', userId);
   
+  if (!db) {
+    console.error('Firestore is not initialized');
+    callback([]);
+    return () => {};
+  }
+
+  if (!userId) {
+    console.error('User ID is required');
+    callback([]);
+    return () => {};
+  }
+
   const notesQuery = query(
     collection(db, `users/${userId}/notes`),
     orderBy('updatedAt', 'desc')
@@ -153,26 +173,24 @@ export const subscribeToUserNotes = (userId: string, callback: (notes: Note[]) =
     },
     (error: FirestoreError) => {
       console.error('Error in notes subscription:', error);
-      if (error.code === 'permission-denied') {
-        console.error('Permission denied to access notes');
-        callback([]);
-      } else if (error.code === 'unavailable') {
-        console.log('Operating in offline mode');
-        disableNetwork(db).catch(err => {
-          console.error('Error disabling network:', err);
-        });
-      } else {
-        console.error('Unexpected error in notes subscription:', error);
-        callback([]);
-      }
+      handleFirestoreError(error, 'subscribe to notes');
     }
   );
 };
 
-export const updateNote = async (userId: string, noteId: string, title: string, content: string): Promise<void> => {
+export const updateNote = async (
+  userId: string, 
+  noteId: string, 
+  title: string, 
+  content: string
+): Promise<void> => {
   console.log('Updating note:', { userId, noteId, title });
   
   try {
+    if (!db) throw new Error('Firestore is not initialized');
+    if (!userId) throw new Error('User ID is required');
+    if (!noteId) throw new Error('Note ID is required');
+
     // Validate input data
     validateNoteData(title, content);
 
@@ -189,20 +207,10 @@ export const updateNote = async (userId: string, noteId: string, title: string, 
       content: content.trim(),
       updatedAt: serverTimestamp(),
     });
-  } catch (error: unknown) {
+  } catch (error) {
     console.error('Error updating note:', error);
     if (error instanceof FirestoreError) {
-      switch (error.code) {
-        case 'permission-denied':
-          throw new Error('You do not have permission to update this note');
-        case 'not-found':
-          throw new Error('Note not found');
-        case 'unavailable':
-          console.log('Note will be updated when back online');
-          throw new Error('Currently offline. Changes will be saved when back online');
-        default:
-          throw new Error(`Failed to update note: ${error.message}`);
-      }
+      handleFirestoreError(error, 'update note');
     }
     throw error;
   }
@@ -210,6 +218,10 @@ export const updateNote = async (userId: string, noteId: string, title: string, 
 
 export const deleteNote = async (userId: string, noteId: string): Promise<void> => {
   try {
+    if (!db) throw new Error('Firestore is not initialized');
+    if (!userId) throw new Error('User ID is required');
+    if (!noteId) throw new Error('Note ID is required');
+
     // Verify the note exists and belongs to the user
     const noteRef = doc(db, `users/${userId}/notes`, noteId);
     const noteDoc = await getDoc(noteRef);
@@ -219,20 +231,10 @@ export const deleteNote = async (userId: string, noteId: string): Promise<void> 
     }
 
     await deleteDoc(noteRef);
-  } catch (error: unknown) {
+  } catch (error) {
     console.error('Error deleting note:', error);
     if (error instanceof FirestoreError) {
-      switch (error.code) {
-        case 'permission-denied':
-          throw new Error('You do not have permission to delete this note');
-        case 'not-found':
-          throw new Error('Note not found');
-        case 'unavailable':
-          console.log('Note will be deleted when back online');
-          throw new Error('Currently offline. Note will be deleted when back online');
-        default:
-          throw new Error(`Failed to delete note: ${error.message}`);
-      }
+      handleFirestoreError(error, 'delete note');
     }
     throw error;
   }
@@ -241,6 +243,8 @@ export const deleteNote = async (userId: string, noteId: string): Promise<void> 
 // Helper function to check online status and enable network
 export const checkOnlineStatus = async (): Promise<void> => {
   try {
+    if (!db) throw new Error('Firestore is not initialized');
+    
     await enableNetwork(db);
     console.log('Back online, syncing data...');
   } catch (error) {

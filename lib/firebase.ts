@@ -1,5 +1,5 @@
-import { initializeApp, getApps } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
+import { getAuth, type Auth } from 'firebase/auth';
 import { 
   getFirestore, 
   persistentLocalCache,
@@ -7,7 +7,8 @@ import {
   connectFirestoreEmulator,
   initializeFirestore,
   type FirestoreSettings,
-  enableIndexedDbPersistence
+  enableIndexedDbPersistence,
+  type Firestore
 } from 'firebase/firestore';
 
 // Check if we're in a browser environment
@@ -59,7 +60,7 @@ const validateFirebaseConfig = () => {
   return true;
 };
 
-function initializeFirebaseApp() {
+function initializeFirebaseApp(): FirebaseApp | null {
   try {
     console.log('Initializing Firebase...');
     if (!validateFirebaseConfig()) {
@@ -85,9 +86,9 @@ function initializeFirebaseApp() {
 }
 
 // Initialize Firebase only in browser environment
-const app = isBrowser ? initializeFirebaseApp() : null;
-const auth = app ? getAuth(app) : null;
-let db = null;
+const app: FirebaseApp | null = isBrowser ? initializeFirebaseApp() : null;
+const auth: Auth | null = app ? getAuth(app) : null;
+let db: Firestore | null = null;
 
 if (isBrowser && app) {
   try {
