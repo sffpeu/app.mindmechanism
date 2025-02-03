@@ -11,6 +11,14 @@ import { ClockSettings as ClockSettingsType } from '@/types/ClockSettings'
 import { useTheme } from '@/app/ThemeContext'
 import { useTimeTracking } from '@/lib/hooks/useTimeTracking'
 import { useAuth } from '@/lib/FirebaseAuthContext'
+import { Settings, Maximize2, Minimize2, Satellite, Info } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface WeatherResponse {
   location: {
@@ -66,6 +74,7 @@ export default function ClockPage() {
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(false)
   const [showInfoCards, setShowInfoCards] = useState(true)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
   const { isDarkMode } = useTheme()
   const [isSmallMultiView, setIsSmallMultiView] = useState(false)
@@ -156,6 +165,16 @@ export default function ClockPage() {
     setSyncTrigger(prev => prev + 1)
   }
 
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
   // Don't render clock until we have client-side time
   if (!currentTime) {
     return null;
@@ -163,6 +182,55 @@ export default function ClockPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95">
+      {/* Settings Dropdown */}
+      <div className="fixed top-4 right-4 z-50">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="p-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors">
+              <Settings className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuItem className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Satellite className="h-4 w-4" />
+                <span>Satellites</span>
+              </div>
+              <Switch
+                checked={showSatellites}
+                onCheckedChange={setShowSatellites}
+              />
+            </DropdownMenuItem>
+            <DropdownMenuItem className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Info className="h-4 w-4" />
+                <span>Info Cards</span>
+              </div>
+              <Switch
+                checked={showInfoCards}
+                onCheckedChange={setShowInfoCards}
+              />
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              className="flex items-center gap-2"
+              onClick={toggleFullscreen}
+            >
+              {isFullscreen ? (
+                <>
+                  <Minimize2 className="h-4 w-4" />
+                  <span>Exit Fullscreen</span>
+                </>
+              ) : (
+                <>
+                  <Maximize2 className="h-4 w-4" />
+                  <span>Enter Fullscreen</span>
+                </>
+              )}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
       {showElements && (
         <DotNavigation
           activeDot={id}
