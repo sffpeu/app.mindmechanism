@@ -1,4 +1,16 @@
-import { supabase } from '@/lib/supabase'
+import { db } from '@/lib/firebase';
+import { 
+  collection,
+  query,
+  where,
+  getDocs,
+  Timestamp,
+  addDoc,
+  updateDoc,
+  doc,
+  orderBy,
+  getDoc
+} from 'firebase/firestore';
 
 interface SessionData {
   user_id: string
@@ -23,114 +35,130 @@ interface SessionData {
   longitude: number
 }
 
+interface Session extends SessionData {
+  id: string;
+  status: 'completed' | 'in_progress' | 'aborted';
+  actual_duration: number;
+  start_time: Timestamp;
+  end_time?: Timestamp;
+}
+
 export async function createSession(data: SessionData) {
   try {
-    const { data: session, error } = await supabase
-      .from('sessions')
-      .insert([{
-        ...data,
-        start_time: new Date().toISOString(),
-        status: 'in_progress',
-        actual_duration: 0
-      }])
-      .select()
-      .single()
+    const docRef = await addDoc(collection(db, 'sessions'), {
+      ...data,
+      start_time: Timestamp.now(),
+      status: 'in_progress',
+      actual_duration: 0
+    });
 
-    if (error) {
-      console.error('Error creating session:', error)
-      throw error
-    }
-
-    return session
+    const docSnap = await getDoc(docRef);
+    return {
+      id: docRef.id,
+      ...docSnap.data()
+    };
   } catch (error) {
-    console.error('Error in createSession:', error)
-    throw error
+    console.error('Error in createSession:', error);
+    throw error;
   }
 }
 
 export async function updateSession(sessionId: string, data: Partial<SessionData> & { status: 'completed' | 'aborted', end_time: string, actual_duration: number }) {
   try {
-    const { data: session, error } = await supabase
-      .from('sessions')
-      .update(data)
-      .eq('id', sessionId)
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Error updating session:', error)
-      throw error
-    }
-
-    return session
+    const sessionRef = doc(db, 'sessions', sessionId);
+    await updateDoc(sessionRef, {
+      ...data,
+      end_time: Timestamp.now()
+    });
   } catch (error) {
-    console.error('Error in updateSession:', error)
-    throw error
+    console.error('Error in updateSession:', error);
+    throw error;
   }
 }
 
 export async function getUserSessions(userId: string) {
   try {
-    const { data: sessions, error } = await supabase
-      .from('sessions')
-      .select('*')
-      .eq('user_id', userId)
-      .order('start_time', { ascending: false })
+    const sessionsQuery = query(
+      collection(db, 'sessions'),
+      where('user_id', '==', userId),
+      orderBy('start_time', 'desc')
+    );
 
-    if (error) {
-      console.error('Error fetching user sessions:', error)
-      throw error
-    }
-
-    return sessions || []
+    const snapshot = await getDocs(sessionsQuery);
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      start_time: doc.data().start_time,
+      end_time: doc.data().end_time
+    })) as Session[];
   } catch (error) {
-    console.error('Error in getUserSessions:', error)
-    return []
+    console.error('Error in getUserSessions:', error);
+    return [];
   }
 }
 
 export async function getUserStats(userId: string) {
   try {
-    const { data: sessions, error } = await supabase
-      .from('sessions')
-      .select('*')
-      .eq('user_id', userId)
+    const sessionsQuery = query(
+      collection(db, 'sessions'),
+      where('user_id', '==', userId)
+    );
 
-    if (error) {
-      console.error('Error fetching user stats:', error)
-      throw error
-    }
+    const snapshot = await getDocs(sessionsQuery);
+    const sessions = snapshot.docs.map(doc => doc.data());
+    
+    // Count all sessions (including in_progress)
+    const totalSessions = sessions.length;
+    
+    // Calculate completion rate including in_progress sessions
+    const completedSessions = sessions.filter(s => s.status === 'completed');
+    const completionRate = totalSessions ? (completedSessions.length / totalSessions) * 100 : 0;
 
-    const completedSessions = sessions?.filter(s => s.status === 'completed') || []
-    const totalTime = completedSessions.reduce((acc, session) => acc + (session.actual_duration || 0), 0)
-    const totalSessions = completedSessions.length
-    const completionRate = sessions?.length ? 
-      (completedSessions.length / sessions.length) * 100 : 0
+    // Calculate total time from all sessions
+    const totalTime = sessions.reduce((acc, session) => {
+      if (session.status === 'completed') {
+        return acc + (session.actual_duration || 0);
+      } else if (session.status === 'in_progress') {
+        // For in-progress sessions, calculate time from start until now
+        const startTime = session.start_time.toDate();
+        const now = new Date();
+        return acc + (now.getTime() - startTime.getTime());
+      }
+      return acc;
+    }, 0);
 
     // Calculate monthly progress
-    const now = new Date()
-    const thisMonth = sessions?.filter(session => {
-      const sessionDate = new Date(session.start_time)
+    const now = new Date();
+    const thisMonth = sessions.filter(session => {
+      const sessionDate = session.start_time.toDate();
       return sessionDate.getMonth() === now.getMonth() && 
-             sessionDate.getFullYear() === now.getFullYear()
-    }) || []
+             sessionDate.getFullYear() === now.getFullYear();
+    });
 
-    const completedThisMonth = thisMonth.filter(s => s.status === 'completed')
     const monthlyProgress = {
-      totalSessions: completedThisMonth.length,
-      totalTime: completedThisMonth.reduce((acc, session) => acc + (session.actual_duration || 0), 0),
+      totalSessions: thisMonth.length,
+      totalTime: thisMonth.reduce((acc, session) => {
+        if (session.status === 'completed') {
+          return acc + (session.actual_duration || 0);
+        } else if (session.status === 'in_progress') {
+          const startTime = session.start_time.toDate();
+          const now = new Date();
+          return acc + (now.getTime() - startTime.getTime());
+        }
+        return acc;
+      }, 0),
       completionRate: thisMonth.length ? 
-        (completedThisMonth.length / thisMonth.length) * 100 : 0
-    }
+        (thisMonth.filter(s => s.status === 'completed').length / thisMonth.length) * 100 : 0
+    };
 
     return {
       totalTime,
       totalSessions,
       completionRate,
       monthlyProgress
-    }
+    };
   } catch (error) {
-    console.error('Error in getUserStats:', error)
+    console.error('Error in getUserStats:', error);
     return {
       totalTime: 0,
       totalSessions: 0,
@@ -140,6 +168,6 @@ export async function getUserStats(userId: string) {
         totalTime: 0,
         completionRate: 0
       }
-    }
+    };
   }
 } 

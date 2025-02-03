@@ -63,31 +63,31 @@ interface UserStats {
 }
 
 interface Session {
-  id: string
-  clock_id: number
-  status: 'completed' | 'in_progress' | 'aborted'
-  actual_duration: number
-  start_time: Timestamp
-  end_time?: Timestamp
-  user_id: string
-  duration: number
-  words: string[]
-  moon_phase: string
-  moon_illumination: number
-  moon_rise: string
-  moon_set: string
-  weather_condition: string
-  temperature: number
-  humidity: number
-  uv_index: number
-  pressure: number
-  wind_speed: number
-  city: string
-  country: string
-  elevation: number
-  sea_level: number
-  latitude: number
-  longitude: number
+  id: string;
+  clock_id: number;
+  status: 'completed' | 'in_progress' | 'aborted';
+  actual_duration: number;
+  start_time: Timestamp;
+  end_time?: Timestamp;
+  user_id: string;
+  duration: number;
+  words: string[];
+  moon_phase: string;
+  moon_illumination: number;
+  moon_rise: string;
+  moon_set: string;
+  weather_condition: string;
+  temperature: number;
+  humidity: number;
+  uv_index: number;
+  pressure: number;
+  wind_speed: number;
+  city: string;
+  country: string;
+  elevation: number;
+  sea_level: number;
+  latitude: number;
+  longitude: number;
 }
 
 interface FirebaseUser {
@@ -104,6 +104,7 @@ interface FirebaseUser {
 interface TimeStats {
   totalTime: number;
   monthlyTime: number;
+  lastSignInTime: Date | null;
 }
 
 export default function DashboardPage() {
@@ -136,7 +137,11 @@ export default function DashboardPage() {
     }
   })
   const [recentSessions, setRecentSessions] = useState<Session[]>([])
-  const [timeStats, setTimeStats] = useState<TimeStats>({ totalTime: 0, monthlyTime: 0 })
+  const [timeStats, setTimeStats] = useState<TimeStats>({ 
+    totalTime: 0, 
+    monthlyTime: 0, 
+    lastSignInTime: null 
+  })
   const [timeEntryId, setTimeEntryId] = useState<string | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -333,6 +338,41 @@ export default function DashboardPage() {
   // Get recent notes
   const recentNotes = notes?.slice(0, 3) || []
 
+  // Load time stats
+  const loadTimeStats = async () => {
+    if (!user?.uid) return;
+    
+    try {
+      const stats = await calculateUserTimeStats(user.uid);
+      setTimeStats(stats);
+    } catch (error) {
+      console.error('Error loading time stats:', error);
+    }
+  };
+
+  // Load all stats
+  const loadAllStats = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([
+        loadUserStats(),
+        loadTimeStats(),
+        loadRecentSessions()
+      ]);
+    } catch (error) {
+      console.error('Error refreshing stats:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Load stats on mount and when user changes
+  useEffect(() => {
+    if (user?.uid) {
+      loadAllStats();
+    }
+  }, [user?.uid]);
+
   // Start time tracking when the page loads
   useEffect(() => {
     let entryId: string | null = null;
@@ -352,40 +392,6 @@ export default function DashboardPage() {
         endTimeTracking(entryId);
       }
     };
-  }, [user?.uid]);
-
-  // Load time stats
-  const loadTimeStats = async () => {
-    if (!user?.uid) return;
-    
-    try {
-      const stats = await calculateUserTimeStats(user.uid);
-      setTimeStats(stats);
-    } catch (error) {
-      console.error('Error loading time stats:', error);
-    }
-  };
-
-  // Load all stats
-  const loadAllStats = async () => {
-    setIsRefreshing(true);
-    try {
-      await Promise.all([
-        loadUserStats(),
-        loadTimeStats()
-      ]);
-    } catch (error) {
-      console.error('Error refreshing stats:', error);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
-  // Load stats on mount and when user changes
-  useEffect(() => {
-    if (user?.uid) {
-      loadAllStats();
-    }
   }, [user?.uid]);
 
   if (!mounted) {
@@ -468,7 +474,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">
-                    <p>Last sign in: {user.metadata.lastSignInTime ? new Date(user.metadata.lastSignInTime).toLocaleString() : 'N/A'}</p>
+                    <p>Last sign in: {timeStats.lastSignInTime ? timeStats.lastSignInTime.toLocaleString() : 'N/A'}</p>
                     <p>Account created: {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleString() : 'N/A'}</p>
                   </div>
                 </div>
@@ -694,7 +700,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <div className="flex items-center justify-between text-sm mb-1">
-                <span className="text-gray-600 dark:text-gray-400">Time Spent</span>
+                <span className="text-gray-600 dark:text-gray-400">Monthly Time</span>
                 <span className="font-medium dark:text-white">
                   {!user ? "-" : formatDuration(timeStats.monthlyTime)}
                 </span>
@@ -702,21 +708,21 @@ export default function DashboardPage() {
               <div className="h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-green-500 rounded-full transition-all"
-                  style={{ width: `${(timeStats.monthlyTime / (30 * 24 * 60 * 60 * 1000)) * 100}%` }}
+                  style={{ width: `${Math.min((timeStats.monthlyTime / (30 * 24 * 60 * 60 * 1000)) * 100, 100)}%` }}
                 />
               </div>
             </div>
             <div>
               <div className="flex items-center justify-between text-sm mb-1">
-                <span className="text-gray-600 dark:text-gray-400">Completion Rate</span>
+                <span className="text-gray-600 dark:text-gray-400">Total Time</span>
                 <span className="font-medium dark:text-white">
-                  {!user ? "-" : `${userStats.monthlyProgress.completionRate.toFixed(1)}%`}
+                  {!user ? "-" : formatDuration(timeStats.totalTime)}
                 </span>
               </div>
               <div className="h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-purple-500 rounded-full transition-all"
-                  style={{ width: `${userStats.monthlyProgress.completionRate}%` }}
+                  style={{ width: `${Math.min((timeStats.totalTime / (30 * 24 * 60 * 60 * 1000)) * 100, 100)}%` }}
                 />
               </div>
             </div>
