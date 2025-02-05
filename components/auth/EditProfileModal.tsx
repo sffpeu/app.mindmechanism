@@ -11,10 +11,18 @@ import { db } from '@/lib/firebase'
 import { doc, getDoc, setDoc, collection, query, where, getDocs, Firestore, writeBatch } from 'firebase/firestore'
 import { toast } from 'sonner'
 import { Separator } from '@/components/ui/separator'
-import { User, Bell, Globe, Shield, Clock } from 'lucide-react'
+import { User, Bell, Globe, Shield, Clock, Mail, Link, MapPin, Calendar, Image as ImageIcon } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
+import Image from 'next/image'
 
 interface UserProfile {
   username: string;
+  displayName: string;
+  bio: string;
+  location: string;
+  website: string;
+  birthdate: string;
+  avatarUrl: string;
   preferences: {
     emailNotifications: boolean;
     publicProfile: boolean;
@@ -38,6 +46,12 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
   const [usernameError, setUsernameError] = useState('')
   const [profile, setProfile] = useState<UserProfile>({
     username: '',
+    displayName: '',
+    bio: '',
+    location: '',
+    website: '',
+    birthdate: '',
+    avatarUrl: '',
     preferences: {
       emailNotifications: true,
       publicProfile: false,
@@ -150,6 +164,12 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
 
       const updatedProfile = {
         username,
+        displayName: profile.displayName,
+        bio: profile.bio,
+        location: profile.location,
+        website: profile.website,
+        birthdate: profile.birthdate,
+        avatarUrl: profile.avatarUrl,
         preferences: {
           emailNotifications: profile.preferences.emailNotifications,
           publicProfile: profile.preferences.publicProfile,
@@ -212,10 +232,42 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
         </DialogHeader>
         
         <div className="space-y-6 py-4">
-          {/* Profile Section */}
+          {/* Profile Picture Section */}
+          <div className="flex flex-col items-center space-y-4">
+            <div className="relative">
+              <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800">
+                {profile.avatarUrl ? (
+                  <Image
+                    src={profile.avatarUrl}
+                    alt="Profile"
+                    width={96}
+                    height={96}
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <User className="w-12 h-12 text-gray-400" />
+                  </div>
+                )}
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="absolute bottom-0 right-0 rounded-full w-8 h-8 p-0"
+                onClick={() => {/* TODO: Implement image upload */}}
+              >
+                <ImageIcon className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Basic Info Section */}
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username" className="text-sm font-medium">Username</Label>
+              <Label htmlFor="username" className="text-sm font-medium flex items-center gap-2">
+                <User className="h-4 w-4" />
+                Username
+              </Label>
               <Input
                 id="username"
                 value={username}
@@ -226,6 +278,81 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
               {usernameError && (
                 <p className="text-sm text-red-500">{usernameError}</p>
               )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="displayName" className="text-sm font-medium">Display Name</Label>
+              <Input
+                id="displayName"
+                value={profile.displayName}
+                onChange={(e) => setProfile({ ...profile, displayName: e.target.value })}
+                placeholder="Enter display name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-medium flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                Email
+              </Label>
+              <Input
+                id="email"
+                value={user?.email || ''}
+                disabled
+                className="bg-gray-50 dark:bg-gray-800"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="bio" className="text-sm font-medium">Bio</Label>
+              <Textarea
+                id="bio"
+                value={profile.bio}
+                onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+                placeholder="Tell us about yourself"
+                className="h-20"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="location" className="text-sm font-medium flex items-center gap-2">
+                  <MapPin className="h-4 w-4" />
+                  Location
+                </Label>
+                <Input
+                  id="location"
+                  value={profile.location}
+                  onChange={(e) => setProfile({ ...profile, location: e.target.value })}
+                  placeholder="Your location"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="website" className="text-sm font-medium flex items-center gap-2">
+                  <Link className="h-4 w-4" />
+                  Website
+                </Label>
+                <Input
+                  id="website"
+                  value={profile.website}
+                  onChange={(e) => setProfile({ ...profile, website: e.target.value })}
+                  placeholder="Your website"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="birthdate" className="text-sm font-medium flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Birth Date
+              </Label>
+              <Input
+                id="birthdate"
+                type="date"
+                value={profile.birthdate}
+                onChange={(e) => setProfile({ ...profile, birthdate: e.target.value })}
+              />
             </div>
           </div>
 
