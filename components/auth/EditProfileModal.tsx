@@ -11,7 +11,7 @@ import { db } from '@/lib/firebase'
 import { doc, getDoc, setDoc, collection, query, where, getDocs, Firestore, writeBatch } from 'firebase/firestore'
 import { toast } from 'sonner'
 import { Separator } from '@/components/ui/separator'
-import { User, Bell, Globe, ChartBar, Shield, Clock } from 'lucide-react'
+import { User, Bell, Globe, Shield, Clock } from 'lucide-react'
 
 interface UserProfile {
   username: string;
