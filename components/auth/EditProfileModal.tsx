@@ -221,48 +221,48 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[425px] bg-white dark:bg-black/90 border border-gray-200 dark:border-white/10">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
             <User className="h-5 w-5" />
             Edit Profile
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-6 py-4">
+        <div className="space-y-4 py-3">
           {/* Profile Picture Section */}
-          <div className="flex flex-col items-center space-y-4">
+          <div className="flex justify-center">
             <div className="relative">
-              <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800">
+              <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800">
                 {profile.avatarUrl ? (
                   <Image
                     src={profile.avatarUrl}
                     alt="Profile"
-                    width={96}
-                    height={96}
+                    width={80}
+                    height={80}
                     className="object-cover"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <User className="w-12 h-12 text-gray-400" />
+                    <User className="w-10 h-10 text-gray-400" />
                   </div>
                 )}
               </div>
               <Button
                 size="sm"
                 variant="outline"
-                className="absolute bottom-0 right-0 rounded-full w-8 h-8 p-0"
+                className="absolute bottom-0 right-0 rounded-full w-7 h-7 p-0 bg-white dark:bg-gray-800"
                 onClick={() => {/* TODO: Implement image upload */}}
               >
-                <ImageIcon className="h-4 w-4" />
+                <ImageIcon className="h-3.5 w-3.5" />
               </Button>
             </div>
           </div>
 
           {/* Basic Info Section */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="space-y-2">
-              <Label htmlFor="username" className="text-sm font-medium flex items-center gap-2">
+              <Label htmlFor="username" className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
                 <User className="h-4 w-4" />
                 Username
               </Label>
@@ -271,25 +271,26 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                 value={username}
                 onChange={(e) => handleUsernameChange(e.target.value)}
                 placeholder="Enter username"
-                className={usernameError ? 'border-red-500' : ''}
+                className={`${usernameError ? 'border-red-500' : ''} bg-white dark:bg-gray-800/50`}
               />
               {usernameError && (
-                <p className="text-sm text-red-500">{usernameError}</p>
+                <p className="text-xs text-red-500">{usernameError}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="displayName" className="text-sm font-medium">Display Name</Label>
+              <Label htmlFor="displayName" className="text-sm font-medium text-gray-700 dark:text-gray-300">Display Name</Label>
               <Input
                 id="displayName"
                 value={profile.displayName}
                 onChange={(e) => setProfile({ ...profile, displayName: e.target.value })}
                 placeholder="Enter display name"
+                className="bg-white dark:bg-gray-800/50"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium flex items-center gap-2">
+              <Label htmlFor="email" className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
                 <Mail className="h-4 w-4" />
                 Email
               </Label>
@@ -297,24 +298,24 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                 id="email"
                 value={user?.email || ''}
                 disabled
-                className="bg-gray-50 dark:bg-gray-800"
+                className="bg-gray-50 dark:bg-gray-800/30 text-gray-500 dark:text-gray-400"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="bio" className="text-sm font-medium">Bio</Label>
+              <Label htmlFor="bio" className="text-sm font-medium text-gray-700 dark:text-gray-300">Bio</Label>
               <Textarea
                 id="bio"
                 value={profile.bio}
                 onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
                 placeholder="Tell us about yourself"
-                className="h-20"
+                className="h-16 resize-none bg-white dark:bg-gray-800/50"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="location" className="text-sm font-medium flex items-center gap-2">
+                <Label htmlFor="location" className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
                   <MapPin className="h-4 w-4" />
                   Location
                 </Label>
@@ -323,11 +324,12 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                   value={profile.location}
                   onChange={(e) => setProfile({ ...profile, location: e.target.value })}
                   placeholder="Your location"
+                  className="bg-white dark:bg-gray-800/50"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="website" className="text-sm font-medium flex items-center gap-2">
+                <Label htmlFor="website" className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
                   <Link className="h-4 w-4" />
                   Website
                 </Label>
@@ -336,12 +338,13 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                   value={profile.website}
                   onChange={(e) => setProfile({ ...profile, website: e.target.value })}
                   placeholder="Your website"
+                  className="bg-white dark:bg-gray-800/50"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="birthdate" className="text-sm font-medium flex items-center gap-2">
+              <Label htmlFor="birthdate" className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
                 <Calendar className="h-4 w-4" />
                 Birth Date
               </Label>
@@ -350,20 +353,21 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                 type="date"
                 value={profile.birthdate}
                 onChange={(e) => setProfile({ ...profile, birthdate: e.target.value })}
+                className="bg-white dark:bg-gray-800/50"
               />
             </div>
           </div>
 
-          <Separator />
+          <Separator className="bg-gray-200 dark:bg-gray-700" />
 
           {/* Preferences Section */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium flex items-center gap-2">
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
               <Bell className="h-4 w-4" />
               Notifications
             </h3>
             <div className="flex items-center justify-between">
-              <Label htmlFor="emailNotifications" className="text-sm">Email Notifications</Label>
+              <Label htmlFor="emailNotifications" className="text-sm text-gray-600 dark:text-gray-400">Email Notifications</Label>
               <Switch
                 id="emailNotifications"
                 checked={profile.preferences.emailNotifications}
@@ -375,13 +379,13 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
             </div>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium flex items-center gap-2">
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
               <Globe className="h-4 w-4" />
               Privacy
             </h3>
             <div className="flex items-center justify-between">
-              <Label htmlFor="publicProfile" className="text-sm">Public Profile</Label>
+              <Label htmlFor="publicProfile" className="text-sm text-gray-600 dark:text-gray-400">Public Profile</Label>
               <Switch
                 id="publicProfile"
                 checked={profile.preferences.publicProfile}
@@ -392,7 +396,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
               />
             </div>
             <div className="flex items-center justify-between">
-              <Label htmlFor="shareProgress" className="text-sm">Share Progress</Label>
+              <Label htmlFor="shareProgress" className="text-sm text-gray-600 dark:text-gray-400">Share Progress</Label>
               <Switch
                 id="shareProgress"
                 checked={profile.preferences.shareProgress}
@@ -404,16 +408,16 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
             </div>
           </div>
 
-          <Separator />
+          <Separator className="bg-gray-200 dark:bg-gray-700" />
 
           {/* Security Section */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium flex items-center gap-2">
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
               <Shield className="h-4 w-4" />
               Security
             </h3>
             <div className="flex items-center justify-between">
-              <Label htmlFor="twoFactorAuth" className="text-sm">Two-Factor Authentication</Label>
+              <Label htmlFor="twoFactorAuth" className="text-sm text-gray-600 dark:text-gray-400">Two-Factor Authentication</Label>
               <Switch
                 id="twoFactorAuth"
                 checked={profile.security.twoFactorAuth}
@@ -424,7 +428,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="sessionTimeout" className="text-sm flex items-center gap-2">
+              <Label htmlFor="sessionTimeout" className="text-sm flex items-center gap-2 text-gray-700 dark:text-gray-300">
                 <Clock className="h-4 w-4" />
                 Session Timeout (minutes)
               </Label>
@@ -438,16 +442,26 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                 })}
                 min="5"
                 max="120"
+                className="bg-white dark:bg-gray-800/50"
               />
             </div>
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 mt-6">
-          <Button variant="outline" onClick={onClose} disabled={loading}>
+        <div className="flex justify-end gap-2 mt-4">
+          <Button 
+            variant="outline" 
+            onClick={onClose} 
+            disabled={loading}
+            className="bg-white dark:bg-black text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+          >
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={loading || !!usernameError}>
+          <Button 
+            onClick={handleSave} 
+            disabled={loading || !!usernameError}
+            className="bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90"
+          >
             {loading ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
