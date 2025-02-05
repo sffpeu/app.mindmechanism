@@ -8,17 +8,16 @@ export function middleware(request: NextRequest) {
   // Define public paths that don't require authentication
   const isPublicPath = path === '/'
 
-  // Get the token from the cookies
-  const token = request.cookies.get('session')?.value
+  // Get the Firebase auth token from the cookies
+  const token = request.cookies.get('__firebase_auth_token')?.value
 
-  // Redirect logic
+  // If we're on a protected path and there's no token, redirect to home
   if (!isPublicPath && !token) {
-    // Redirect to home page if trying to access protected route without auth
     return NextResponse.redirect(new URL('/', request.url))
   }
 
+  // If we're on the home page and have a token, redirect to dashboard
   if (isPublicPath && token) {
-    // Redirect to dashboard if trying to access public route while authenticated
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
