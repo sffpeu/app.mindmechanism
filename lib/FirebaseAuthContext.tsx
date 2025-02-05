@@ -14,7 +14,7 @@ import {
 import { auth } from './firebase';
 import { setCookie, deleteCookie } from 'cookies-next';
 
-interface AuthContextType {
+export interface AuthContextType {
   user: User | null;
   loading: boolean;
   signOut: () => Promise<void>;
