@@ -1,124 +1,113 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { useAuth, type AuthContextType } from '@/lib/FirebaseAuthContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { FcGoogle } from 'react-icons/fc'
+import { auth } from '@/lib/firebase'
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 
 interface AuthModalProps {
   isOpen: boolean
   onClose: () => void
+  mode: 'signin' | 'signup'
 }
 
-export function AuthModal({ isOpen, onClose }: AuthModalProps) {
-  const [isSignIn, setIsSignIn] = useState(true)
+export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const { signIn, signUp, signInWithGoogle } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    
+
     try {
-      if (isSignIn) {
-        await signIn(email, password)
-      } else {
-        await signUp(email, password)
+      if (!auth) {
+        throw new Error('Firebase auth is not initialized')
       }
+
+      if (mode === 'signin') {
+        await signInWithEmailAndPassword(auth, email, password)
+      } else {
+        await createUserWithEmailAndPassword(auth, email, password)
+      }
+      
       onClose()
-    } catch (err) {
+      router.push('/dashboard')
+    } catch (error) {
+      console.error('Authentication error:', error)
       setError('Failed to authenticate. Please check your credentials.')
     }
   }
 
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithGoogle()
+      if (!auth) {
+        throw new Error('Firebase auth is not initialized')
+      }
+      const provider = new GoogleAuthProvider()
+      await signInWithPopup(auth, provider)
       onClose()
-    } catch (err) {
+      router.push('/dashboard')
+    } catch (error) {
+      console.error('Error signing in with Google:', error)
       setError('Failed to sign in with Google.')
     }
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
-        <div className="flex flex-col gap-4">
-          <h2 className="text-2xl font-bold text-center">
-            {isSignIn ? 'Sign In' : 'Sign Up'}
-          </h2>
-          
+      <DialogContent className="bg-white dark:bg-black/90 border border-gray-200 dark:border-white/10">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
           {error && (
-            <p className="text-sm text-red-500 text-center">{error}</p>
+            <p className="text-sm text-red-500">{error}</p>
           )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-
-            <Button type="submit" className="w-full">
-              {isSignIn ? 'Sign In' : 'Sign Up'}
-            </Button>
-          </form>
-
+          <Button type="submit" className="w-full">
+            {mode === 'signin' ? 'Sign In' : 'Sign Up'}
+          </Button>
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
+              <span className="w-full border-t border-gray-300 dark:border-gray-700" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
+              <span className="bg-white dark:bg-black/90 px-2 text-gray-500 dark:text-gray-400">
                 Or continue with
               </span>
             </div>
           </div>
-
           <Button
             type="button"
             variant="outline"
-            className="w-full"
             onClick={handleGoogleSignIn}
+            className="w-full"
           >
-            <FcGoogle className="mr-2 h-4 w-4" />
-            Google
+            Continue with Google
           </Button>
-
-          <p className="text-sm text-center">
-            {isSignIn ? "Don't have an account?" : "Already have an account?"}
-            <button
-              type="button"
-              onClick={() => setIsSignIn(!isSignIn)}
-              className="ml-1 text-primary hover:underline"
-            >
-              {isSignIn ? 'Sign Up' : 'Sign In'}
-            </button>
-          </p>
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   )
