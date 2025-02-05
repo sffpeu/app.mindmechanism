@@ -20,6 +20,7 @@ import { Timestamp } from 'firebase/firestore'
 import { startTimeTracking, endTimeTracking, calculateUserTimeStats } from '@/lib/timeTracking'
 import { DashboardRecentSessions } from '@/components/DashboardRecentSessions'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { EditProfileModal } from '@/components/auth/EditProfileModal'
 
 interface WeatherResponse {
   location: {
@@ -146,6 +147,7 @@ export default function DashboardPage() {
   })
   const [timeEntryId, setTimeEntryId] = useState<string | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
 
   // Handle mounting
   useEffect(() => {
@@ -429,7 +431,18 @@ export default function DashboardPage() {
                 <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
                   <div className="flex items-center justify-between mb-3">
                     <h2 className="text-base font-semibold dark:text-white">Profile</h2>
-                    <User className="h-4 w-4 text-gray-500" />
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsEditProfileOpen(true)}
+                        className="text-gray-600 dark:text-gray-300"
+                      >
+                        <Pencil className="h-4 w-4 mr-1" />
+                        Edit
+                      </Button>
+                      <User className="h-4 w-4 text-gray-500" />
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
@@ -648,6 +661,12 @@ export default function DashboardPage() {
             <DashboardRecentSessions sessions={recentSessions} />
           </Card>
         </div>
+
+        {/* Add EditProfileModal */}
+        <EditProfileModal
+          isOpen={isEditProfileOpen}
+          onClose={() => setIsEditProfileOpen(false)}
+        />
       </div>
     </ProtectedRoute>
   )
