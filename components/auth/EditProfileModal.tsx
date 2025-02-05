@@ -9,7 +9,7 @@ import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { db } from '@/lib/firebase'
-import { doc, getDoc, setDoc, collection, query, where, getDocs, Firestore } from 'firebase/firestore'
+import { doc, getDoc, setDoc, collection, query, where, getDocs, Firestore, writeBatch } from 'firebase/firestore'
 import { toast } from 'sonner'
 
 interface UserProfile {
@@ -177,7 +177,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
       )
       
       const sessionsSnapshot = await getDocs(sessionsQuery)
-      const batch = db.batch()
+      const batch = writeBatch(db as Firestore)
       
       sessionsSnapshot.forEach((doc) => {
         batch.update(doc.ref, {
