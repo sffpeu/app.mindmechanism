@@ -19,6 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
 interface WeatherResponse {
   location: {
@@ -190,91 +191,93 @@ export default function ClockPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black/95">
-      {/* Settings Dropdown */}
-      <div className="fixed top-4 right-4 z-50">
-        <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-          <DropdownMenuTrigger asChild>
-            <button className="p-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors">
-              <Settings className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
-              <div className="flex items-center gap-2">
-                <Satellite className="h-4 w-4" />
-                <span>Satellites</span>
-              </div>
-              <Switch
-                checked={showSatellites}
-                onCheckedChange={setShowSatellites}
-              />
-            </DropdownMenuItem>
-            <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
-              <div className="flex items-center gap-2">
-                <Info className="h-4 w-4" />
-                <span>Info Cards</span>
-              </div>
-              <Switch
-                checked={showInfoCards}
-                onCheckedChange={setShowInfoCards}
-              />
-            </DropdownMenuItem>
-            <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
-              <div className="flex items-center gap-2">
-                {isFullscreen ? (
-                  <Minimize2 className="h-4 w-4" />
-                ) : (
-                  <Maximize2 className="h-4 w-4" />
-                )}
-                <span>Fullscreen</span>
-              </div>
-              <Switch
-                checked={isFullscreen}
-                onCheckedChange={() => toggleFullscreen()}
-              />
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+    <ProtectedRoute>
+      <div className="min-h-screen bg-gray-50 dark:bg-black/95">
+        {/* Settings Dropdown */}
+        <div className="fixed top-4 right-4 z-50">
+          <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+            <DropdownMenuTrigger asChild>
+              <button className="p-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors">
+                <Settings className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
+                <div className="flex items-center gap-2">
+                  <Satellite className="h-4 w-4" />
+                  <span>Satellites</span>
+                </div>
+                <Switch
+                  checked={showSatellites}
+                  onCheckedChange={setShowSatellites}
+                />
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
+                <div className="flex items-center gap-2">
+                  <Info className="h-4 w-4" />
+                  <span>Info Cards</span>
+                </div>
+                <Switch
+                  checked={showInfoCards}
+                  onCheckedChange={setShowInfoCards}
+                />
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
+                <div className="flex items-center gap-2">
+                  {isFullscreen ? (
+                    <Minimize2 className="h-4 w-4" />
+                  ) : (
+                    <Maximize2 className="h-4 w-4" />
+                  )}
+                  <span>Fullscreen</span>
+                </div>
+                <Switch
+                  checked={isFullscreen}
+                  onCheckedChange={() => toggleFullscreen()}
+                />
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
-      {showElements && (
-        <DotNavigation
-          activeDot={id}
-          isSmallMultiView={isSmallMultiView}
-          onOutlinedDotClick={() => setIsSmallMultiView(!isSmallMultiView)}
+        {showElements && (
+          <DotNavigation
+            activeDot={id}
+            isSmallMultiView={isSmallMultiView}
+            onOutlinedDotClick={() => setIsSmallMultiView(!isSmallMultiView)}
+          />
+        )}
+        <Menu
+          showElements={showElements}
+          onToggleShow={() => setShowElements(!showElements)}
+          showSatellites={showSatellites}
+          onSatellitesChange={setShowSatellites}
+          showInfoCards={showInfoCards}
+          onInfoCardsChange={setShowInfoCards}
         />
-      )}
-      <Menu
-        showElements={showElements}
-        onToggleShow={() => setShowElements(!showElements)}
-        showSatellites={showSatellites}
-        onSatellitesChange={setShowSatellites}
-        showInfoCards={showInfoCards}
-        onInfoCardsChange={setShowInfoCards}
-      />
-      <Clock
-        {...localClockSettings}
-        id={id}
-        showElements={showElements}
-        onToggleShow={() => setShowElements(!showElements)}
-        currentTime={currentTime}
-        syncTrigger={syncTrigger}
-        hideControls={false}
-        showSatellites={showSatellites}
-        showInfo={showInfoCards && !isFullscreen}
-        isMultiView={false}
-        isMultiView2={false}
-        allClocks={clockSettings}
-        customWords={words}
-      />
-      {showSettings && (
-        <ClockSettings
-          settings={localClockSettings}
-          onSave={handleSettingsSave}
-          onCancel={() => setShowSettings(false)}
+        <Clock
+          {...localClockSettings}
+          id={id}
+          showElements={showElements}
+          onToggleShow={() => setShowElements(!showElements)}
+          currentTime={currentTime}
+          syncTrigger={syncTrigger}
+          hideControls={false}
+          showSatellites={showSatellites}
+          showInfo={showInfoCards && !isFullscreen}
+          isMultiView={false}
+          isMultiView2={false}
+          allClocks={clockSettings}
+          customWords={words}
         />
-      )}
-    </div>
+        {showSettings && (
+          <ClockSettings
+            settings={localClockSettings}
+            onSave={handleSettingsSave}
+            onCancel={() => setShowSettings(false)}
+          />
+        )}
+      </div>
+    </ProtectedRoute>
   )
 } 
