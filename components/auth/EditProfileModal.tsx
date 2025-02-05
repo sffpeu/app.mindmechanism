@@ -6,11 +6,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { db } from '@/lib/firebase'
 import { doc, getDoc, setDoc, collection, query, where, getDocs, Firestore, writeBatch } from 'firebase/firestore'
 import { toast } from 'sonner'
+import { Separator } from '@/components/ui/separator'
+import { User, Bell, Globe, ChartBar, Shield, Clock } from 'lucide-react'
 
 interface UserProfile {
   username: string;
@@ -202,132 +203,123 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] bg-white dark:bg-black/90 border border-gray-200 dark:border-white/10">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white">Edit Profile</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Edit Profile
+          </DialogTitle>
         </DialogHeader>
-
-        <Tabs defaultValue="profile" className="mt-4">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="preferences">Preferences</TabsTrigger>
-            <TabsTrigger value="security">Security</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="profile" className="space-y-4 mt-4">
+        
+        <div className="space-y-6 py-4">
+          {/* Profile Section */}
+          <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username" className="text-sm font-medium">Username</Label>
               <Input
                 id="username"
                 value={username}
                 onChange={(e) => handleUsernameChange(e.target.value)}
                 placeholder="Enter username"
+                className={usernameError ? 'border-red-500' : ''}
               />
               {usernameError && (
                 <p className="text-sm text-red-500">{usernameError}</p>
               )}
             </div>
-          </TabsContent>
+          </div>
 
-          <TabsContent value="preferences" className="space-y-4 mt-4">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Email Notifications</Label>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Receive email updates about your meditation progress
-                  </p>
-                </div>
-                <Switch
-                  checked={profile.preferences.emailNotifications}
-                  onCheckedChange={(checked) =>
-                    setProfile({
-                      ...profile,
-                      preferences: { ...profile.preferences, emailNotifications: checked }
-                    })
-                  }
-                />
-              </div>
+          <Separator />
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Public Profile</Label>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Make your profile visible to other users
-                  </p>
-                </div>
-                <Switch
-                  checked={profile.preferences.publicProfile}
-                  onCheckedChange={(checked) =>
-                    setProfile({
-                      ...profile,
-                      preferences: { ...profile.preferences, publicProfile: checked }
-                    })
-                  }
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Share Progress</Label>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Share your meditation progress with the community
-                  </p>
-                </div>
-                <Switch
-                  checked={profile.preferences.shareProgress}
-                  onCheckedChange={(checked) =>
-                    setProfile({
-                      ...profile,
-                      preferences: { ...profile.preferences, shareProgress: checked }
-                    })
-                  }
-                />
-              </div>
+          {/* Preferences Section */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium flex items-center gap-2">
+              <Bell className="h-4 w-4" />
+              Notifications
+            </h3>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="emailNotifications" className="text-sm">Email Notifications</Label>
+              <Switch
+                id="emailNotifications"
+                checked={profile.preferences.emailNotifications}
+                onCheckedChange={(checked) => setProfile({
+                  ...profile,
+                  preferences: { ...profile.preferences, emailNotifications: checked }
+                })}
+              />
             </div>
-          </TabsContent>
+          </div>
 
-          <TabsContent value="security" className="space-y-4 mt-4">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Two-Factor Authentication</Label>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Add an extra layer of security to your account
-                  </p>
-                </div>
-                <Switch
-                  checked={profile.security.twoFactorAuth}
-                  onCheckedChange={(checked) =>
-                    setProfile({
-                      ...profile,
-                      security: { ...profile.security, twoFactorAuth: checked }
-                    })
-                  }
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Session Timeout (minutes)</Label>
-                <Input
-                  type="number"
-                  min="5"
-                  max="120"
-                  value={profile.security.sessionTimeout}
-                  onChange={(e) =>
-                    setProfile({
-                      ...profile,
-                      security: { ...profile.security, sessionTimeout: parseInt(e.target.value) || 30 }
-                    })
-                  }
-                />
-              </div>
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium flex items-center gap-2">
+              <Globe className="h-4 w-4" />
+              Privacy
+            </h3>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="publicProfile" className="text-sm">Public Profile</Label>
+              <Switch
+                id="publicProfile"
+                checked={profile.preferences.publicProfile}
+                onCheckedChange={(checked) => setProfile({
+                  ...profile,
+                  preferences: { ...profile.preferences, publicProfile: checked }
+                })}
+              />
             </div>
-          </TabsContent>
-        </Tabs>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="shareProgress" className="text-sm">Share Progress</Label>
+              <Switch
+                id="shareProgress"
+                checked={profile.preferences.shareProgress}
+                onCheckedChange={(checked) => setProfile({
+                  ...profile,
+                  preferences: { ...profile.preferences, shareProgress: checked }
+                })}
+              />
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Security Section */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              Security
+            </h3>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="twoFactorAuth" className="text-sm">Two-Factor Authentication</Label>
+              <Switch
+                id="twoFactorAuth"
+                checked={profile.security.twoFactorAuth}
+                onCheckedChange={(checked) => setProfile({
+                  ...profile,
+                  security: { ...profile.security, twoFactorAuth: checked }
+                })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sessionTimeout" className="text-sm flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Session Timeout (minutes)
+              </Label>
+              <Input
+                id="sessionTimeout"
+                type="number"
+                value={profile.security.sessionTimeout}
+                onChange={(e) => setProfile({
+                  ...profile,
+                  security: { ...profile.security, sessionTimeout: parseInt(e.target.value) || 30 }
+                })}
+                min="5"
+                max="120"
+              />
+            </div>
+          </div>
+        </div>
 
         <div className="flex justify-end gap-3 mt-6">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} disabled={loading}>
             Cancel
           </Button>
           <Button onClick={handleSave} disabled={loading || !!usernameError}>
