@@ -221,234 +221,236 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-white dark:bg-black/90 border border-gray-200 dark:border-white/10">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[400px] max-h-[85vh] bg-white dark:bg-black/90 border border-gray-200 dark:border-white/10">
+        <DialogHeader className="px-4 py-2">
           <DialogTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
             <User className="h-5 w-5" />
             Edit Profile
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4 py-3">
-          {/* Profile Picture Section */}
-          <div className="flex justify-center">
-            <div className="relative">
-              <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800">
-                {profile.avatarUrl ? (
-                  <Image
-                    src={profile.avatarUrl}
-                    alt="Profile"
-                    width={80}
-                    height={80}
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <User className="w-10 h-10 text-gray-400" />
-                  </div>
+        <div className="overflow-y-auto px-4 py-2">
+          <div className="space-y-4">
+            {/* Profile Picture Section */}
+            <div className="flex justify-center">
+              <div className="relative">
+                <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800">
+                  {profile.avatarUrl ? (
+                    <Image
+                      src={profile.avatarUrl}
+                      alt="Profile"
+                      width={64}
+                      height={64}
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <User className="w-8 h-8 text-gray-400" />
+                    </div>
+                  )}
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="absolute bottom-0 right-0 rounded-full w-6 h-6 p-0 bg-white dark:bg-gray-800"
+                  onClick={() => {/* TODO: Implement image upload */}}
+                >
+                  <ImageIcon className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Basic Info Section */}
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="username" className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                  <User className="h-4 w-4" />
+                  Username
+                </Label>
+                <Input
+                  id="username"
+                  value={username}
+                  onChange={(e) => handleUsernameChange(e.target.value)}
+                  placeholder="Enter username"
+                  className={`${usernameError ? 'border-red-500' : ''} bg-white dark:bg-gray-800/50`}
+                />
+                {usernameError && (
+                  <p className="text-xs text-red-500">{usernameError}</p>
                 )}
               </div>
-              <Button
-                size="sm"
-                variant="outline"
-                className="absolute bottom-0 right-0 rounded-full w-7 h-7 p-0 bg-white dark:bg-gray-800"
-                onClick={() => {/* TODO: Implement image upload */}}
-              >
-                <ImageIcon className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-          </div>
 
-          {/* Basic Info Section */}
-          <div className="space-y-3">
-            <div className="space-y-2">
-              <Label htmlFor="username" className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                <User className="h-4 w-4" />
-                Username
-              </Label>
-              <Input
-                id="username"
-                value={username}
-                onChange={(e) => handleUsernameChange(e.target.value)}
-                placeholder="Enter username"
-                className={`${usernameError ? 'border-red-500' : ''} bg-white dark:bg-gray-800/50`}
-              />
-              {usernameError && (
-                <p className="text-xs text-red-500">{usernameError}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="displayName" className="text-sm font-medium text-gray-700 dark:text-gray-300">Display Name</Label>
-              <Input
-                id="displayName"
-                value={profile.displayName}
-                onChange={(e) => setProfile({ ...profile, displayName: e.target.value })}
-                placeholder="Enter display name"
-                className="bg-white dark:bg-gray-800/50"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                <Mail className="h-4 w-4" />
-                Email
-              </Label>
-              <Input
-                id="email"
-                value={user?.email || ''}
-                disabled
-                className="bg-gray-50 dark:bg-gray-800/30 text-gray-500 dark:text-gray-400"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="bio" className="text-sm font-medium text-gray-700 dark:text-gray-300">Bio</Label>
-              <Textarea
-                id="bio"
-                value={profile.bio}
-                onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                placeholder="Tell us about yourself"
-                className="h-16 resize-none bg-white dark:bg-gray-800/50"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="location" className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                  <MapPin className="h-4 w-4" />
-                  Location
-                </Label>
+                <Label htmlFor="displayName" className="text-sm font-medium text-gray-700 dark:text-gray-300">Display Name</Label>
                 <Input
-                  id="location"
-                  value={profile.location}
-                  onChange={(e) => setProfile({ ...profile, location: e.target.value })}
-                  placeholder="Your location"
+                  id="displayName"
+                  value={profile.displayName}
+                  onChange={(e) => setProfile({ ...profile, displayName: e.target.value })}
+                  placeholder="Enter display name"
                   className="bg-white dark:bg-gray-800/50"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="website" className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                  <Link className="h-4 w-4" />
-                  Website
+                <Label htmlFor="email" className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                  <Mail className="h-4 w-4" />
+                  Email
                 </Label>
                 <Input
-                  id="website"
-                  value={profile.website}
-                  onChange={(e) => setProfile({ ...profile, website: e.target.value })}
-                  placeholder="Your website"
+                  id="email"
+                  value={user?.email || ''}
+                  disabled
+                  className="bg-gray-50 dark:bg-gray-800/30 text-gray-500 dark:text-gray-400"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="bio" className="text-sm font-medium text-gray-700 dark:text-gray-300">Bio</Label>
+                <Textarea
+                  id="bio"
+                  value={profile.bio}
+                  onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+                  placeholder="Tell us about yourself"
+                  className="h-16 resize-none bg-white dark:bg-gray-800/50"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="location" className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                    <MapPin className="h-4 w-4" />
+                    Location
+                  </Label>
+                  <Input
+                    id="location"
+                    value={profile.location}
+                    onChange={(e) => setProfile({ ...profile, location: e.target.value })}
+                    placeholder="Your location"
+                    className="bg-white dark:bg-gray-800/50"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="website" className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                    <Link className="h-4 w-4" />
+                    Website
+                  </Label>
+                  <Input
+                    id="website"
+                    value={profile.website}
+                    onChange={(e) => setProfile({ ...profile, website: e.target.value })}
+                    placeholder="Your website"
+                    className="bg-white dark:bg-gray-800/50"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="birthdate" className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                  <Calendar className="h-4 w-4" />
+                  Birth Date
+                </Label>
+                <Input
+                  id="birthdate"
+                  type="date"
+                  value={profile.birthdate}
+                  onChange={(e) => setProfile({ ...profile, birthdate: e.target.value })}
                   className="bg-white dark:bg-gray-800/50"
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="birthdate" className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                <Calendar className="h-4 w-4" />
-                Birth Date
-              </Label>
-              <Input
-                id="birthdate"
-                type="date"
-                value={profile.birthdate}
-                onChange={(e) => setProfile({ ...profile, birthdate: e.target.value })}
-                className="bg-white dark:bg-gray-800/50"
-              />
-            </div>
-          </div>
+            <Separator className="bg-gray-200 dark:bg-gray-700" />
 
-          <Separator className="bg-gray-200 dark:bg-gray-700" />
-
-          {/* Preferences Section */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
-              <Bell className="h-4 w-4" />
-              Notifications
-            </h3>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="emailNotifications" className="text-sm text-gray-600 dark:text-gray-400">Email Notifications</Label>
-              <Switch
-                id="emailNotifications"
-                checked={profile.preferences.emailNotifications}
-                onCheckedChange={(checked) => setProfile({
-                  ...profile,
-                  preferences: { ...profile.preferences, emailNotifications: checked }
-                })}
-              />
+            {/* Preferences Section */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                <Bell className="h-4 w-4" />
+                Notifications
+              </h3>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="emailNotifications" className="text-sm text-gray-600 dark:text-gray-400">Email Notifications</Label>
+                <Switch
+                  id="emailNotifications"
+                  checked={profile.preferences.emailNotifications}
+                  onCheckedChange={(checked) => setProfile({
+                    ...profile,
+                    preferences: { ...profile.preferences, emailNotifications: checked }
+                  })}
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-3">
-            <h3 className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
-              <Globe className="h-4 w-4" />
-              Privacy
-            </h3>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="publicProfile" className="text-sm text-gray-600 dark:text-gray-400">Public Profile</Label>
-              <Switch
-                id="publicProfile"
-                checked={profile.preferences.publicProfile}
-                onCheckedChange={(checked) => setProfile({
-                  ...profile,
-                  preferences: { ...profile.preferences, publicProfile: checked }
-                })}
-              />
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                <Globe className="h-4 w-4" />
+                Privacy
+              </h3>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="publicProfile" className="text-sm text-gray-600 dark:text-gray-400">Public Profile</Label>
+                <Switch
+                  id="publicProfile"
+                  checked={profile.preferences.publicProfile}
+                  onCheckedChange={(checked) => setProfile({
+                    ...profile,
+                    preferences: { ...profile.preferences, publicProfile: checked }
+                  })}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="shareProgress" className="text-sm text-gray-600 dark:text-gray-400">Share Progress</Label>
+                <Switch
+                  id="shareProgress"
+                  checked={profile.preferences.shareProgress}
+                  onCheckedChange={(checked) => setProfile({
+                    ...profile,
+                    preferences: { ...profile.preferences, shareProgress: checked }
+                  })}
+                />
+              </div>
             </div>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="shareProgress" className="text-sm text-gray-600 dark:text-gray-400">Share Progress</Label>
-              <Switch
-                id="shareProgress"
-                checked={profile.preferences.shareProgress}
-                onCheckedChange={(checked) => setProfile({
-                  ...profile,
-                  preferences: { ...profile.preferences, shareProgress: checked }
-                })}
-              />
-            </div>
-          </div>
 
-          <Separator className="bg-gray-200 dark:bg-gray-700" />
+            <Separator className="bg-gray-200 dark:bg-gray-700" />
 
-          {/* Security Section */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
-              <Shield className="h-4 w-4" />
-              Security
-            </h3>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="twoFactorAuth" className="text-sm text-gray-600 dark:text-gray-400">Two-Factor Authentication</Label>
-              <Switch
-                id="twoFactorAuth"
-                checked={profile.security.twoFactorAuth}
-                onCheckedChange={(checked) => setProfile({
-                  ...profile,
-                  security: { ...profile.security, twoFactorAuth: checked }
-                })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="sessionTimeout" className="text-sm flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                <Clock className="h-4 w-4" />
-                Session Timeout (minutes)
-              </Label>
-              <Input
-                id="sessionTimeout"
-                type="number"
-                value={profile.security.sessionTimeout}
-                onChange={(e) => setProfile({
-                  ...profile,
-                  security: { ...profile.security, sessionTimeout: parseInt(e.target.value) || 30 }
-                })}
-                min="5"
-                max="120"
-                className="bg-white dark:bg-gray-800/50"
-              />
+            {/* Security Section */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                <Shield className="h-4 w-4" />
+                Security
+              </h3>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="twoFactorAuth" className="text-sm text-gray-600 dark:text-gray-400">Two-Factor Authentication</Label>
+                <Switch
+                  id="twoFactorAuth"
+                  checked={profile.security.twoFactorAuth}
+                  onCheckedChange={(checked) => setProfile({
+                    ...profile,
+                    security: { ...profile.security, twoFactorAuth: checked }
+                  })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="sessionTimeout" className="text-sm flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                  <Clock className="h-4 w-4" />
+                  Session Timeout (minutes)
+                </Label>
+                <Input
+                  id="sessionTimeout"
+                  type="number"
+                  value={profile.security.sessionTimeout}
+                  onChange={(e) => setProfile({
+                    ...profile,
+                    security: { ...profile.security, sessionTimeout: parseInt(e.target.value) || 30 }
+                  })}
+                  min="5"
+                  max="120"
+                  className="bg-white dark:bg-gray-800/50"
+                />
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 mt-4">
+        <div className="flex justify-end gap-2 mt-2 px-4 py-3 border-t border-gray-200 dark:border-gray-700">
           <Button 
             variant="outline" 
             onClick={onClose} 
