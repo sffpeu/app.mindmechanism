@@ -9,7 +9,7 @@ import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { db } from '@/lib/firebase'
-import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase/firestore'
+import { doc, getDoc, setDoc, collection, query, where, getDocs, Firestore } from 'firebase/firestore'
 import { toast } from 'sonner'
 
 interface UserProfile {
@@ -51,10 +51,13 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
   // Load existing profile data
   useEffect(() => {
     const loadProfile = async () => {
-      if (!user?.uid) return
+      if (!user?.uid || !db) {
+        console.error('User or Firestore not initialized')
+        return
+      }
 
       try {
-        const docRef = doc(db, 'user_profiles', user.uid)
+        const docRef = doc(db as Firestore, 'user_profiles', user.uid)
         const docSnap = await getDoc(docRef)
 
         if (docSnap.exists()) {
@@ -72,16 +75,15 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
   }, [user?.uid])
 
   const checkUsernameAvailability = async (username: string) => {
-    if (!username) return false
+    if (!username || !db) return false
 
     try {
       const q = query(
-        collection(db, 'user_profiles'),
+        collection(db as Firestore, 'user_profiles'),
         where('username', '==', username)
       )
       const querySnapshot = await getDocs(q)
       
-      // Username is available if no documents are found or if the only document is the current user's
       return querySnapshot.empty || (querySnapshot.size === 1 && querySnapshot.docs[0].id === user?.uid)
     } catch (error) {
       console.error('Error checking username:', error)
@@ -130,7 +132,10 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
   }
 
   const handleSave = async () => {
-    if (!user?.uid) return
+    if (!user?.uid || !db) {
+      toast.error('Unable to save: Firebase not initialized')
+      return
+    }
     if (usernameError) return
 
     setLoading(true)
@@ -143,17 +148,53 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
       }
 
       const updatedProfile = {
-        ...profile,
         username,
+        preferences: {
+          emailNotifications: profile.preferences.emailNotifications,
+          publicProfile: profile.preferences.publicProfile,
+          shareProgress: profile.preferences.shareProgress,
+        },
+        security: {
+          twoFactorAuth: profile.security.twoFactorAuth,
+          sessionTimeout: profile.security.sessionTimeout,
+        },
         updatedAt: new Date(),
+        userId: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        lastUpdated: new Date(),
       }
 
-      await setDoc(doc(db, 'user_profiles', user.uid), updatedProfile)
+      // Update the profile in Firestore
+      await setDoc(doc(db as Firestore, 'user_profiles', user.uid), updatedProfile, { merge: true })
+
+      // Update any references to this profile in active sessions
+      const sessionsQuery = query(
+        collection(db as Firestore, 'sessions'),
+        where('user_id', '==', user.uid),
+        where('status', '==', 'in_progress')
+      )
+      
+      const sessionsSnapshot = await getDocs(sessionsQuery)
+      const batch = db.batch()
+      
+      sessionsSnapshot.forEach((doc) => {
+        batch.update(doc.ref, {
+          user_profile: {
+            username: username,
+            preferences: updatedProfile.preferences
+          }
+        })
+      })
+      
+      await batch.commit()
+
       toast.success('Profile updated successfully')
       onClose()
     } catch (error) {
       console.error('Error saving profile:', error)
-      toast.error('Failed to save profile')
+      toast.error('Failed to save profile: ' + (error instanceof Error ? error.message : 'Unknown error'))
     } finally {
       setLoading(false)
     }
