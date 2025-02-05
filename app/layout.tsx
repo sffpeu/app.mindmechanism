@@ -1,6 +1,6 @@
 import './globals.css'
 import { ThemeProvider } from './ThemeContext'
-import { FirebaseAuthProvider } from '@/lib/FirebaseAuthContext'
+import { AuthProvider } from '@/lib/FirebaseAuthContext'
 import { Toaster } from '@/components/ui/toaster'
 import { NotesProvider } from '@/lib/NotesContext'
 
@@ -13,12 +13,12 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body>
         <ThemeProvider>
-          <FirebaseAuthProvider>
+          <AuthProvider>
             <NotesProvider>
               {children}
             </NotesProvider>
             <Toaster />
-          </FirebaseAuthProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

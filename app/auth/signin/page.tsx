@@ -3,17 +3,19 @@
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
+import { auth } from '@/lib/firebase'
 
 export default function SignIn() {
   const router = useRouter()
-  const { signInWithGoogle } = useAuth()
 
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithGoogle()
-      router.push('/')
+      const provider = new GoogleAuthProvider()
+      await signInWithPopup(auth, provider)
+      router.push('/dashboard')
     } catch (error) {
-      console.error('Error signing in:', error)
+      console.error('Error signing in with Google:', error)
     }
   }
 
