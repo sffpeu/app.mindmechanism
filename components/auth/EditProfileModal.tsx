@@ -164,12 +164,12 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
 
       const updatedProfile = {
         username,
-        displayName: profile.displayName,
+        displayName: profile.displayName || user?.displayName || '',
         bio: profile.bio,
         location: profile.location,
         website: profile.website,
         birthdate: profile.birthdate,
-        avatarUrl: profile.avatarUrl,
+        avatarUrl: profile.avatarUrl || user?.photoURL || '',
         preferences: {
           emailNotifications: profile.preferences.emailNotifications,
           publicProfile: profile.preferences.publicProfile,
@@ -182,8 +182,6 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
         updatedAt: new Date(),
         userId: user.uid,
         email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
         lastUpdated: new Date(),
       }
 
