@@ -13,6 +13,7 @@ import {
 } from 'firebase/auth';
 import { auth } from './firebase';
 import { setCookie, deleteCookie } from 'cookies-next';
+import { useRouter } from 'next/navigation';
 
 export interface AuthContextType {
   user: User | null;
@@ -29,6 +30,7 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     if (!auth) return;
@@ -64,6 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Remove the token cookie on sign out
       deleteCookie('__firebase_auth_token');
       setUser(null);
+      router.push('/');
     } catch (error) {
       console.error('Error signing out:', error);
     }
