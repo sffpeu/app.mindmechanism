@@ -36,7 +36,7 @@ interface EditProfileModalProps {
 }
 
 export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
-  const { user } = useAuth()
+  const { user, profile: contextProfile, refreshProfile } = useAuth()
   const [loading, setLoading] = useState(false)
   const [username, setUsername] = useState('')
   const [usernameError, setUsernameError] = useState('')
@@ -54,31 +54,13 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
     },
   })
 
-  // Load existing profile data
+  // Load profile data from context when modal opens
   useEffect(() => {
-    const loadProfile = async () => {
-      if (!user?.uid || !db) {
-        console.error('User or Firestore not initialized')
-        return
-      }
-
-      try {
-        const docRef = doc(db as Firestore, 'user_profiles', user.uid)
-        const docSnap = await getDoc(docRef)
-
-        if (docSnap.exists()) {
-          const data = docSnap.data() as UserProfile
-          setProfile(data)
-          setUsername(data.username)
-        }
-      } catch (error) {
-        console.error('Error loading profile:', error)
-        toast.error('Failed to load profile data')
-      }
+    if (contextProfile) {
+      setProfile(contextProfile)
+      setUsername(contextProfile.username)
     }
-
-    loadProfile()
-  }, [user?.uid])
+  }, [contextProfile])
 
   const checkUsernameAvailability = async (username: string) => {
     if (!username || !db) return false
@@ -229,6 +211,9 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
       })
       
       await batch.commit()
+
+      // Refresh the profile in the context
+      await refreshProfile()
 
       toast.success('Profile updated successfully')
       onClose()
