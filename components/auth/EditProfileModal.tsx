@@ -17,19 +17,13 @@ import Image from 'next/image'
 
 interface UserProfile {
   username: string;
-  displayName: string;
   bio: string;
-  location: string;
-  website: string;
   birthdate: string;
   avatarUrl: string;
   preferences: {
     emailNotifications: boolean;
-    publicProfile: boolean;
-    shareProgress: boolean;
   };
   security: {
-    twoFactorAuth: boolean;
     sessionTimeout: number;
   };
 }
@@ -46,19 +40,13 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
   const [usernameError, setUsernameError] = useState('')
   const [profile, setProfile] = useState<UserProfile>({
     username: '',
-    displayName: '',
     bio: '',
-    location: '',
-    website: '',
     birthdate: '',
     avatarUrl: '',
     preferences: {
       emailNotifications: true,
-      publicProfile: false,
-      shareProgress: true,
     },
     security: {
-      twoFactorAuth: false,
       sessionTimeout: 30,
     },
   })
@@ -164,19 +152,13 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
 
       const updatedProfile = {
         username,
-        displayName: profile.displayName || user?.displayName || '',
         bio: profile.bio,
-        location: profile.location,
-        website: profile.website,
         birthdate: profile.birthdate,
         avatarUrl: profile.avatarUrl || user?.photoURL || '',
         preferences: {
           emailNotifications: profile.preferences.emailNotifications,
-          publicProfile: profile.preferences.publicProfile,
-          shareProgress: profile.preferences.shareProgress,
         },
         security: {
-          twoFactorAuth: profile.security.twoFactorAuth,
           sessionTimeout: profile.security.sessionTimeout,
         },
         updatedAt: new Date(),
@@ -275,17 +257,6 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="displayName" className="text-sm font-medium text-gray-700 dark:text-gray-300">Display Name</Label>
-                  <Input
-                    id="displayName"
-                    value={profile.displayName}
-                    onChange={(e) => setProfile({ ...profile, displayName: e.target.value })}
-                    placeholder="Enter display name"
-                    className="bg-white dark:bg-gray-800/50"
-                  />
-                </div>
-
-                <div className="space-y-2">
                   <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">Email</Label>
                   <Input
                     id="email"
@@ -311,30 +282,6 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                     placeholder="Tell us about yourself"
                     className="h-20 resize-none bg-white dark:bg-gray-800/50"
                   />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="location" className="text-sm font-medium text-gray-700 dark:text-gray-300">Location</Label>
-                    <Input
-                      id="location"
-                      value={profile.location}
-                      onChange={(e) => setProfile({ ...profile, location: e.target.value })}
-                      placeholder="Your location"
-                      className="bg-white dark:bg-gray-800/50"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="website" className="text-sm font-medium text-gray-700 dark:text-gray-300">Website</Label>
-                    <Input
-                      id="website"
-                      value={profile.website}
-                      onChange={(e) => setProfile({ ...profile, website: e.target.value })}
-                      placeholder="Your website"
-                      className="bg-white dark:bg-gray-800/50"
-                    />
-                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -369,62 +316,21 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                 </div>
 
                 <div className="space-y-3">
-                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">Privacy</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="publicProfile" className="text-sm text-gray-600 dark:text-gray-400">Public Profile</Label>
-                      <Switch
-                        id="publicProfile"
-                        checked={profile.preferences.publicProfile}
-                        onCheckedChange={(checked) => setProfile({
-                          ...profile,
-                          preferences: { ...profile.preferences, publicProfile: checked }
-                        })}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="shareProgress" className="text-sm text-gray-600 dark:text-gray-400">Share Progress</Label>
-                      <Switch
-                        id="shareProgress"
-                        checked={profile.preferences.shareProgress}
-                        onCheckedChange={(checked) => setProfile({
-                          ...profile,
-                          preferences: { ...profile.preferences, shareProgress: checked }
-                        })}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
                   <h3 className="text-sm font-medium text-gray-900 dark:text-white">Security</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="twoFactorAuth" className="text-sm text-gray-600 dark:text-gray-400">Two-Factor Authentication</Label>
-                      <Switch
-                        id="twoFactorAuth"
-                        checked={profile.security.twoFactorAuth}
-                        onCheckedChange={(checked) => setProfile({
-                          ...profile,
-                          security: { ...profile.security, twoFactorAuth: checked }
-                        })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="sessionTimeout" className="text-sm text-gray-700 dark:text-gray-300">Session Timeout (minutes)</Label>
-                      <Input
-                        id="sessionTimeout"
-                        type="number"
-                        value={profile.security.sessionTimeout}
-                        onChange={(e) => setProfile({
-                          ...profile,
-                          security: { ...profile.security, sessionTimeout: parseInt(e.target.value) || 30 }
-                        })}
-                        min="5"
-                        max="120"
-                        className="bg-white dark:bg-gray-800/50"
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="sessionTimeout" className="text-sm text-gray-700 dark:text-gray-300">Session Timeout (minutes)</Label>
+                    <Input
+                      id="sessionTimeout"
+                      type="number"
+                      value={profile.security.sessionTimeout}
+                      onChange={(e) => setProfile({
+                        ...profile,
+                        security: { ...profile.security, sessionTimeout: parseInt(e.target.value) || 30 }
+                      })}
+                      min="5"
+                      max="120"
+                      className="bg-white dark:bg-gray-800/50"
+                    />
                   </div>
                 </div>
               </div>
