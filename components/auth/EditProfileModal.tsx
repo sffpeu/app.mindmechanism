@@ -14,6 +14,7 @@ import { Separator } from '@/components/ui/separator'
 import { User, Bell, Globe, Shield, Clock, Mail, Link, MapPin, Calendar, Image as ImageIcon } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import Image from 'next/image'
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 
 interface UserProfile {
   username: string;
@@ -22,6 +23,7 @@ interface UserProfile {
   avatarUrl: string;
   preferences: {
     emailNotifications: boolean;
+    allowLocationData: boolean;
   };
   security: {
     sessionTimeout: number;
@@ -45,6 +47,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
     avatarUrl: '',
     preferences: {
       emailNotifications: true,
+      allowLocationData: false,
     },
     security: {
       sessionTimeout: 30,
@@ -134,6 +137,41 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
     }
   }
 
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files || !event.target.files[0] || !user?.uid) return
+
+    const file = event.target.files[0]
+    const storage = getStorage()
+    const storageRef = ref(storage, `profile_pictures/${user.uid}`)
+
+    try {
+      setLoading(true)
+      await uploadBytes(storageRef, file)
+      const downloadURL = await getDownloadURL(storageRef)
+      
+      setProfile(prev => ({
+        ...prev,
+        avatarUrl: downloadURL
+      }))
+
+      // Update the profile in Firestore with new avatar URL
+      if (db) {
+        await setDoc(
+          doc(db as Firestore, 'user_profiles', user.uid),
+          { avatarUrl: downloadURL },
+          { merge: true }
+        )
+      }
+
+      toast.success('Profile picture updated successfully')
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      toast.error('Failed to upload profile picture')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleSave = async () => {
     if (!user?.uid || !db) {
       toast.error('Unable to save: Firebase not initialized')
@@ -143,7 +181,6 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
 
     setLoading(true)
     try {
-      // Final username availability check before saving
       const isAvailable = await checkUsernameAvailability(username)
       if (!isAvailable) {
         setUsernameError('Username is no longer available')
@@ -157,6 +194,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
         avatarUrl: profile.avatarUrl || user?.photoURL || '',
         preferences: {
           emailNotifications: profile.preferences.emailNotifications,
+          allowLocationData: profile.preferences.allowLocationData,
         },
         security: {
           sessionTimeout: profile.security.sessionTimeout,
@@ -184,7 +222,8 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
         batch.update(doc.ref, {
           user_profile: {
             username: username,
-            preferences: updatedProfile.preferences
+            preferences: updatedProfile.preferences,
+            avatarUrl: updatedProfile.avatarUrl,
           }
         })
       })
@@ -231,14 +270,19 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                     </div>
                   )}
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="absolute bottom-2 right-2 rounded-full w-8 h-8 p-0 bg-white dark:bg-gray-800 shadow-sm"
-                  onClick={() => {/* TODO: Implement image upload */}}
+                <label
+                  htmlFor="avatar-upload"
+                  className="absolute bottom-2 right-2 rounded-full w-8 h-8 flex items-center justify-center bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                 >
                   <ImageIcon className="h-4 w-4" />
-                </Button>
+                  <input
+                    type="file"
+                    id="avatar-upload"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                </label>
               </div>
 
               <div className="w-full space-y-4">
@@ -301,17 +345,36 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
               {/* Settings Section */}
               <div className="space-y-6">
                 <div className="space-y-3">
-                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">Notifications</h3>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="emailNotifications" className="text-sm text-gray-600 dark:text-gray-400">Email Notifications</Label>
-                    <Switch
-                      id="emailNotifications"
-                      checked={profile.preferences.emailNotifications}
-                      onCheckedChange={(checked) => setProfile({
-                        ...profile,
-                        preferences: { ...profile.preferences, emailNotifications: checked }
-                      })}
-                    />
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">Privacy & Permissions</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="locationData" className="text-sm text-gray-600 dark:text-gray-400">Location Access</Label>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Allow app to access your location for better experience</p>
+                      </div>
+                      <Switch
+                        id="locationData"
+                        checked={profile.preferences.allowLocationData}
+                        onCheckedChange={(checked) => setProfile({
+                          ...profile,
+                          preferences: { ...profile.preferences, allowLocationData: checked }
+                        })}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="emailNotifications" className="text-sm text-gray-600 dark:text-gray-400">Email Notifications</Label>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Receive email updates about your sessions</p>
+                      </div>
+                      <Switch
+                        id="emailNotifications"
+                        checked={profile.preferences.emailNotifications}
+                        onCheckedChange={(checked) => setProfile({
+                          ...profile,
+                          preferences: { ...profile.preferences, emailNotifications: checked }
+                        })}
+                      />
+                    </div>
                   </div>
                 </div>
 
