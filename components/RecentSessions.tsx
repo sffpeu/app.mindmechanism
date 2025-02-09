@@ -131,11 +131,11 @@ export function RecentSessions() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-white dark:bg-black/90 border border-gray-200 dark:border-white/10">
-                  <DropdownMenuItem onClick={() => handleRestartSession(session)}>
+                  <DropdownMenuItem onClick={() => handleRestartSession(session)} className="text-gray-700 dark:text-white">
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Restart
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem className="text-gray-700 dark:text-white">
                     <Tag className="h-4 w-4 mr-2" />
                     Tag
                   </DropdownMenuItem>
@@ -232,23 +232,6 @@ export function RecentSessions() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsListView(!isListView)}
-            className="h-8 w-8 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10"
-          >
-            {isListView ? (
-              <Grid className="h-4 w-4" />
-            ) : (
-              <List className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
-      </div>
-
       <div className={isListView ? "space-y-2" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"}>
         {displayedSessions.map((session) => (
           <SessionCard key={session.id} session={session} />
