@@ -131,6 +131,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       deleteCookie('__firebase_auth_token');
       setUser(null);
       setProfile(null);
+      // Add a small delay to ensure state is cleared before navigation
+      await new Promise(resolve => setTimeout(resolve, 100));
       router.push('/home');
     } catch (error) {
       console.error('Error signing out:', error);
