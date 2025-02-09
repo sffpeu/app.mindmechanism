@@ -131,7 +131,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       deleteCookie('__firebase_auth_token');
       setUser(null);
       setProfile(null);
-      router.push('/');
+      router.push('/home');
     } catch (error) {
       console.error('Error signing out:', error);
     }
