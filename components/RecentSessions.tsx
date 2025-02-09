@@ -102,8 +102,8 @@ export function RecentSessions() {
     const startTime = session.start_time.toDate();
     const progress = session.status === 'completed' ? 100 : 
       session.status === 'aborted' ? 
-        (session.actual_duration / session.duration) * 100 : 
-        ((Date.now() - startTime.getTime()) / session.duration) * 100;
+        Math.min((session.actual_duration / session.duration) * 100, 100) : 
+        Math.min(((Date.now() - startTime.getTime()) / session.duration) * 100, 100);
 
     return (
       <div className={`p-3.5 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 transition-all relative ${

@@ -66,8 +66,8 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
           const startTime = session.start_time.toDate();
           const progress = session.status === 'completed' ? 100 : 
             session.status === 'aborted' ? 
-              (session.actual_duration / session.duration) * 100 : 
-              ((Date.now() - startTime.getTime()) / session.duration) * 100;
+              Math.min((session.actual_duration / session.duration) * 100, 100) : 
+              Math.min(((Date.now() - startTime.getTime()) / session.duration) * 100, 100);
 
           const shadowColor = clockColor.includes('red') ? 'rgba(239,68,68,0.3)' :
             clockColor.includes('orange') ? 'rgba(249,115,22,0.3)' :
