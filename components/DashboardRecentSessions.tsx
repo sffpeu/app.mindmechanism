@@ -35,6 +35,13 @@ interface DashboardRecentSessionsProps {
   sessions: Session[];
 }
 
+// Add this helper function at the top level
+const formatRemainingTime = (ms: number): string => {
+  const minutes = Math.floor(ms / 60000);
+  const seconds = Math.floor((ms % 60000) / 1000);
+  return `${minutes}:${seconds.toString().padStart(2, '0')} min`;
+};
+
 export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsProps) {
   const [selectedWords, setSelectedWords] = useState<string[]>([]);
   const [isWordsDialogOpen, setIsWordsDialogOpen] = useState(false);
@@ -130,7 +137,7 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
                 {(session.status === 'in_progress' || session.status === 'aborted') && (
                   <div className="flex items-center gap-1">
                     <Clock className="h-3 w-3" />
-                    <span>{Math.ceil(remainingTime / 60000)}m left</span>
+                    <span>{formatRemainingTime(remainingTime)}</span>
                   </div>
                 )}
               </div>
