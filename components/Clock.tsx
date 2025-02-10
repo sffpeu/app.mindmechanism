@@ -678,10 +678,15 @@ export default function Clock({
 
   if (isMultiView || isMultiView2) {
     return (
-      <div className="relative w-[90vw] h-[90vw] max-w-[700px] max-h-[700px]">
+      <div className="relative w-[75vw] h-[75vw] max-w-[550px] max-h-[550px]">
         {/* Satellite grid pattern - only shown in multiview2 */}
         {isMultiView2 && (
-          <div className="absolute inset-[-17.5%] rounded-full overflow-hidden">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.2 }}
+            transition={{ duration: 1 }}
+            className="absolute inset-[-12%] rounded-full overflow-hidden"
+          >
             <div className="absolute inset-0 flex items-center justify-center">
               <Image
                 src="/satellite-grid.jpg"
@@ -692,21 +697,21 @@ export default function Clock({
                 priority
               />
             </div>
-          </div>
+          </motion.div>
         )}
 
-        {/* Individual SVGs positioned around the multi-view - only shown in multiview2 */}
+        {/* Individual clocks in multiview2 */}
         {isMultiView2 && allClocks?.map((clock, index) => {
-          if (index >= 9) return null; // Skip any clocks beyond the first 9
-          
-          // Calculate position based on index with inverted distribution
-          const baseAngle = (360 / 9) * index;
-          const adjustedAngle = baseAngle + 90; // Invert by adding 90 instead of subtracting
-          const radius = 65; // Fixed radius for even distribution
-          const x = 50 + radius * Math.cos((adjustedAngle * Math.PI) / 180);
-          const y = 50 + radius * Math.sin((adjustedAngle * Math.PI) / 180);
-          
-          // Calculate rotation based on clock settings
+          if (index >= 9) return null;
+
+          // Calculate position for each mini clock
+          const angle = (360 / 8) * index;
+          const radius = index === 8 ? 0 : 32; // Reduced radius for tighter arrangement
+          const radians = (angle * Math.PI) / 180;
+          const x = 50 + radius * Math.cos(radians);
+          const y = 50 + radius * Math.sin(radians);
+
+          // Calculate rotation
           const now = Date.now();
           const elapsedMilliseconds = now - clock.startDateTime.getTime();
           const calculatedRotation = (elapsedMilliseconds / clock.rotationTime) * 360;
@@ -714,35 +719,31 @@ export default function Clock({
             ? (clock.startingDegree + calculatedRotation) % 360
             : (clock.startingDegree - calculatedRotation + 360) % 360;
 
-          const clockColor = hexToRgb(dotColors[clock.id].replace('bg-[#', '').replace(']', ''));
-          const shadowStyle = clockColor ? {
-            '--shadow-color': `${clockColor.r}, ${clockColor.g}, ${clockColor.b}`,
-          } as React.CSSProperties : {};
-          
           return (
             <motion.div
               key={`mini-clock-${clock.id}`}
-              className="absolute w-[25%] aspect-square hover:scale-110 transition-transform duration-200 group"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              className="absolute w-[20%] aspect-square hover:scale-110 transition-transform duration-200 group"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
               transition={{
-                duration: 0.8,
+                duration: 0.5,
+                delay: index * 0.1,
                 ease: "easeOut"
               }}
               style={{
                 left: `${x}%`,
                 top: `${y}%`,
                 transform: 'translate(-50%, -50%)',
-                zIndex: 30,
+                zIndex: index === 8 ? 40 : 30,
               }}
             >
               <div className="relative w-full h-full">
                 {/* Tooltip */}
-                <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-black dark:text-white text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-                  {clockRotation.toFixed(4)}°
+                <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-black dark:text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                  {clockRotation.toFixed(1)}°
                 </div>
                 <div
-                  className="absolute inset-0"
+                  className="absolute inset-0 rounded-full overflow-hidden"
                   style={{
                     transform: `rotate(${clockRotation}deg)`,
                   }}
@@ -755,56 +756,15 @@ export default function Clock({
                       mixBlendMode: 'multiply',
                     }}
                   >
-                    {index < 8 ? (
-                      <motion.div 
-                        className="absolute inset-0"
-                        style={{ 
-                          willChange: 'transform',
-                          transformOrigin: 'center',
-                        }}
-                        animate={{ rotate: clockRotation }}
-                        transition={{
-                          duration: 0.016,
-                          ease: 'linear',
-                        }}
-                      >
-                        <Image 
-                          src={(() => {
-                            // Map index to correct svg based on position
-                            switch(index) {
-                              case 0: return '/1_small.svg';  // Position 1 (90°)
-                              case 1: return '/7_small.svg';  // Position 2 (130°)
-                              case 2: return '/5_small.svg';  // Position 3 (170°)
-                              case 3: return '/2_small.svg';  // Position 4 (210°)
-                              case 4: return '/8_small.svg';  // Position 5 (250°)
-                              case 5: return '/6_small.svg';  // Position 6 (290°)
-                              case 6: return '/4_small.svg';  // Position 7 (330°)
-                              case 7: return '/9_small.svg';  // Position 8 (370° / 10°)
-                              default: return '/3_small.svg'; // Position 9 (410° / 50°)
-                            }
-                          })()}
-                          alt={`Clock Face ${index + 1}`}
-                          layout="fill"
-                          objectFit="contain"
-                          className="rounded-full dark:invert [&_*]:stroke-[0.25]"
-                          priority
-                          onError={(e) => {
-                            console.error(`Error loading image for clock ${index + 1}`);
-                            handleImageError();
-                          }}
-                        />
-                      </motion.div>
-                    ) : (
-                      <Image
-                        src="/3_small.svg"
-                        alt={`Clock ${index + 1}`}
-                        layout="fill"
-                        objectFit="contain"
-                        className="rounded-full dark:invert [&_*]:stroke-[0.25]"
-                        priority
-                        onError={handleImageError}
-                      />
-                    )}
+                    <Image 
+                      src={clock.imageUrl}
+                      alt={`Clock Face ${index + 1}`}
+                      layout="fill"
+                      objectFit="cover"
+                      className="rounded-full [&_*]:stroke-[0.25]"
+                      priority
+                      loading="eager"
+                    />
                   </div>
                 </div>
               </div>
