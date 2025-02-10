@@ -621,7 +621,7 @@ export default function DashboardPage() {
             </Card>
           </div>
 
-          {/* Total Time Card */}
+          {/* Session Usage Card */}
           <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-base font-semibold dark:text-white">Session Usage</h2>
@@ -683,66 +683,18 @@ export default function DashboardPage() {
 
               {/* Recent Sessions */}
               <div className="space-y-3">
-                <h3 className="text-sm font-medium text-gray-900 dark:text-white">Recent Sessions</h3>
-                {recentSessions.slice(0, 5).map((session, index) => {
-                  const startTime = session.start_time.toDate();
-                  const lastActiveTime = session.last_active_time?.toDate() || startTime;
-                  const pausedDuration = session.paused_duration || 0;
-                  const actualDuration = session.status === 'completed' ? 
-                    session.actual_duration : 
-                    lastActiveTime.getTime() - startTime.getTime() - pausedDuration;
-                  const durationPercent = (actualDuration / session.duration) * 100;
-                  
-                  return (
-                    <div key={session.id} className="relative">
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full ${clockColors[session.clock_id]}`} />
-                          <span className="text-sm dark:text-white">
-                            {clockTitles[session.clock_id]}
-                          </span>
-                          {session.status === 'completed' && (
-                            <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
-                          )}
-                          {session.status === 'in_progress' && (
-                            <Pause className="h-3.5 w-3.5 text-yellow-500" />
-                          )}
-                          {session.status === 'aborted' && (
-                            <XCircle className="h-3.5 w-3.5 text-red-500" />
-                          )}
-                        </div>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">
-                          {formatDuration(actualDuration)}
-                        </span>
-                      </div>
-                      <div className="h-1.5 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full ${clockColors[session.clock_id]} opacity-80 rounded-full transition-all`}
-                          style={{ width: `${durationPercent}%` }}
-                        />
-                      </div>
-                      <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                        <span>{startTime.toLocaleDateString()}</span>
-                        <span>{Math.round(durationPercent)}% completed</span>
-                      </div>
-                    </div>
-                  );
-                })}
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">Recent Sessions</h3>
+                  <Link 
+                    href="/sessions" 
+                    className="text-xs text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                  >
+                    View All
+                  </Link>
+                </div>
+                <DashboardRecentSessions sessions={recentSessions} />
               </div>
             </div>
-          </Card>
-
-          {/* Recent Sessions Card */}
-          <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-semibold text-gray-900 dark:text-white">Recent Sessions</h2>
-              <div className="flex items-center gap-2">
-                <Link href="/sessions" className="text-xs text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
-                  View All
-                </Link>
-              </div>
-            </div>
-            <DashboardRecentSessions sessions={recentSessions} />
           </Card>
         </div>
 
