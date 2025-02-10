@@ -85,7 +85,10 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
               Math.min((session.actual_duration / session.duration) * 100, 100) : 
               Math.min(((lastActiveTime.getTime() - startTime.getTime() - pausedDuration) / session.duration) * 100, 100);
 
-          const remainingTime = session.duration - (lastActiveTime.getTime() - startTime.getTime() - pausedDuration);
+          const remainingTime = session.status === 'completed' ? 0 :
+            session.status === 'aborted' ? 
+              session.duration - session.actual_duration :
+              session.duration - (lastActiveTime.getTime() - startTime.getTime() - pausedDuration);
 
           return (
             <div 
