@@ -21,6 +21,8 @@ import { startTimeTracking, endTimeTracking, calculateUserTimeStats } from '@/li
 import { DashboardRecentSessions } from '@/components/DashboardRecentSessions'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { EditProfileModal } from '@/components/auth/EditProfileModal'
+import { Clock as ClockIcon } from 'lucide-react'
+import { Session } from '@/lib/sessions'
 
 interface WeatherResponse {
   location: {
@@ -65,34 +67,6 @@ interface UserStats {
   }
 }
 
-interface Session {
-  id: string;
-  clock_id: number;
-  status: 'completed' | 'in_progress' | 'aborted';
-  actual_duration: number;
-  start_time: Timestamp;
-  end_time?: Timestamp;
-  user_id: string;
-  duration: number;
-  words: string[];
-  moon_phase: string;
-  moon_illumination: number;
-  moon_rise: string;
-  moon_set: string;
-  weather_condition: string;
-  temperature: number;
-  humidity: number;
-  uv_index: number;
-  pressure: number;
-  wind_speed: number;
-  city: string;
-  country: string;
-  elevation: number;
-  sea_level: number;
-  latitude: number;
-  longitude: number;
-}
-
 interface FirebaseUser {
   uid: string
   photoURL: string | null
@@ -109,6 +83,30 @@ interface TimeStats {
   monthlyTime: number;
   lastSignInTime: Date | null;
 }
+
+const clockColors = [
+  'bg-[#fd290a]', // 1. Red
+  'bg-[#fba63b]', // 2. Orange
+  'bg-[#f7da5f]', // 3. Yellow
+  'bg-[#6dc037]', // 4. Green
+  'bg-[#156fde]', // 5. Blue
+  'bg-[#941952]', // 6. Dark Pink
+  'bg-[#541b96]', // 7. Purple
+  'bg-[#ee5fa7]', // 8. Pink
+  'bg-[#56c1ff]', // 9. Light Blue
+];
+
+const clockTitles = [
+  "Galileo's First Observation",
+  "Neptune's Discovery",
+  "Galileo's Spring Observation",
+  "Jupiter's Moons",
+  "Uranus Discovery",
+  "Saturn's Rings",
+  "Ancient Star Charts",
+  "Winter Solstice Study",
+  "Medieval Observations"
+];
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false)
@@ -419,7 +417,7 @@ export default function DashboardPage() {
               <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="text-base font-semibold dark:text-white">Time</h2>
-                  <Clock className="h-4 w-4 text-gray-500" />
+                  <ClockIcon className="h-4 w-4 text-gray-500" />
                 </div>
                 <p className="text-5xl font-bold dark:text-white tracking-tight">
                   {formatTime(currentTime)}
@@ -637,15 +635,64 @@ export default function DashboardPage() {
                 >
                   <RefreshCw className="h-4 w-4" />
                 </Button>
-                <Clock className="h-4 w-4 text-gray-500" />
+                <ClockIcon className="h-4 w-4 text-gray-500" />
               </div>
             </div>
-            <div className="text-2xl font-bold dark:text-white">
-              {!user ? "-" : formatDuration(timeStats.totalTime)}
+            <div className="space-y-4">
+              <div>
+                <div className="text-3xl font-bold dark:text-white mb-1">
+                  {!user ? "-" : formatDuration(timeStats.totalTime)}
+                </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {!user ? "-" : `${userStats.totalSessions} sessions completed`}
+                </p>
+              </div>
+              
+              {/* Recent Sessions Timeline */}
+              {recentSessions.length > 0 && (
+                <div className="space-y-2">
+                  <div className="h-[1px] bg-gray-200 dark:bg-gray-700 my-3" />
+                  <h3 className="text-sm font-medium dark:text-white mb-2">Recent Sessions</h3>
+                  <div className="space-y-2">
+                    {recentSessions.slice(0, 5).map((session, index) => {
+                      const startTime = session.start_time.toDate();
+                      const lastActiveTime = session.end_time?.toDate() || startTime;
+                      const pausedDuration = session.paused_duration || 0;
+                      const actualDuration = session.status === 'completed' ? 
+                        session.actual_duration : 
+                        lastActiveTime.getTime() - startTime.getTime() - pausedDuration;
+                      const durationPercent = (actualDuration / timeStats.totalTime) * 100;
+                      
+                      return (
+                        <div key={session.id} className="relative">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                              <div className={`w-2 h-2 rounded-full ${clockColors[session.clock_id]}`} />
+                              <span className="text-sm dark:text-white">
+                                {clockTitles[session.clock_id]}
+                              </span>
+                            </div>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                              {formatDuration(actualDuration)}
+                            </span>
+                          </div>
+                          <div className="h-1.5 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full ${clockColors[session.clock_id]} opacity-80 rounded-full transition-all`}
+                              style={{ width: `${durationPercent}%` }}
+                            />
+                          </div>
+                          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                            <span>{startTime.toLocaleDateString()}</span>
+                            <span>{Math.round(durationPercent)}% of total</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              {!user ? "-" : `${userStats.totalSessions} sessions completed`}
-            </p>
           </Card>
 
           {/* Recent Sessions Card */}
