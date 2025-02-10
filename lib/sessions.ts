@@ -44,6 +44,8 @@ export interface Session extends SessionData {
   actual_duration: number;
   start_time: Timestamp;
   end_time?: Timestamp;
+  last_active_time?: Timestamp;
+  paused_duration?: number;
 }
 
 function validateSession(data: Partial<SessionData>): void {
@@ -101,9 +103,11 @@ export async function createSession(data: SessionData): Promise<Session> {
 export async function updateSession(
   sessionId: string, 
   data: Partial<SessionData> & { 
-    status: 'completed' | 'aborted';
+    status: 'completed' | 'in_progress' | 'aborted';
     actual_duration: number;
     end_time?: string;
+    last_active_time?: string;
+    paused_duration?: number;
   }
 ): Promise<void> {
   try {
@@ -117,26 +121,26 @@ export async function updateSession(
       throw new Error('Session not found');
     }
 
+    const sessionData = sessionDoc.data() as Session;
+    const now = new Date();
+    let actualDuration = data.actual_duration;
+
+    if (sessionData.status === 'in_progress' && (data.status === 'completed' || data.status === 'aborted')) {
+      const lastActiveTime = sessionData.last_active_time?.toDate() || sessionData.start_time.toDate();
+      const pausedDuration = sessionData.paused_duration || 0;
+      actualDuration = now.getTime() - sessionData.start_time.toDate().getTime() - pausedDuration;
+    }
+
     const updateData = {
       ...data,
-      end_time: data.end_time ? Timestamp.fromDate(new Date(data.end_time)) : Timestamp.now()
+      actual_duration: actualDuration,
+      end_time: data.end_time ? Timestamp.fromDate(new Date(data.end_time)) : Timestamp.now(),
+      last_active_time: data.last_active_time ? Timestamp.fromDate(new Date(data.last_active_time)) : Timestamp.now()
     };
 
     await updateDoc(sessionRef, updateData);
   } catch (error) {
     console.error('Error in updateSession:', error);
-    if (error instanceof FirestoreError) {
-      switch (error.code) {
-        case 'permission-denied':
-          throw new Error('You do not have permission to update this session');
-        case 'not-found':
-          throw new Error('Session not found');
-        case 'unavailable':
-          throw new Error('Service is currently offline');
-        default:
-          throw new Error(`Failed to update session: ${error.message}`);
-      }
-    }
     throw error;
   }
 }
@@ -209,18 +213,21 @@ export async function getUserStats(userId: string): Promise<UserStats> {
     const completedSessions = sessions.filter(s => s.status === 'completed');
     const completionRate = totalSessions ? (completedSessions.length / totalSessions) * 100 : 0;
 
+    const now = new Date();
     const totalTime = sessions.reduce((acc, session) => {
       if (session.status === 'completed') {
         return acc + (session.actual_duration || 0);
       } else if (session.status === 'in_progress' && session.start_time) {
         const startTime = session.start_time.toDate();
-        const now = new Date();
-        return acc + (now.getTime() - startTime.getTime());
+        const lastActiveTime = session.last_active_time?.toDate() || startTime;
+        const pausedDuration = session.paused_duration || 0;
+        
+        const activeTime = lastActiveTime.getTime() - startTime.getTime() - pausedDuration;
+        return acc + activeTime;
       }
       return acc;
     }, 0);
 
-    const now = new Date();
     const thisMonth = sessions.filter(session => {
       if (!session.start_time) return false;
       const sessionDate = session.start_time.toDate();
@@ -230,16 +237,7 @@ export async function getUserStats(userId: string): Promise<UserStats> {
 
     const monthlyProgress = {
       totalSessions: thisMonth.length,
-      totalTime: thisMonth.reduce((acc, session) => {
-        if (session.status === 'completed') {
-          return acc + (session.actual_duration || 0);
-        } else if (session.status === 'in_progress' && session.start_time) {
-          const startTime = session.start_time.toDate();
-          const now = new Date();
-          return acc + (now.getTime() - startTime.getTime());
-        }
-        return acc;
-      }, 0),
+      totalTime: calculateMonthlyTime(thisMonth),
       completionRate: thisMonth.length ? 
         (thisMonth.filter(s => s.status === 'completed').length / thisMonth.length) * 100 : 0
     };
@@ -252,16 +250,6 @@ export async function getUserStats(userId: string): Promise<UserStats> {
     };
   } catch (error) {
     console.error('Error in getUserStats:', error);
-    if (error instanceof FirestoreError) {
-      switch (error.code) {
-        case 'permission-denied':
-          throw new Error('You do not have permission to access these statistics');
-        case 'unavailable':
-          throw new Error('Service is currently offline');
-        default:
-          throw new Error(`Failed to fetch statistics: ${error.message}`);
-      }
-    }
     return {
       totalTime: 0,
       totalSessions: 0,
@@ -273,6 +261,23 @@ export async function getUserStats(userId: string): Promise<UserStats> {
       }
     };
   }
+}
+
+function calculateMonthlyTime(sessions: Session[]): number {
+  const now = new Date();
+  return sessions.reduce((acc, session) => {
+    if (session.status === 'completed') {
+      return acc + (session.actual_duration || 0);
+    } else if (session.status === 'in_progress' && session.start_time) {
+      const startTime = session.start_time.toDate();
+      const lastActiveTime = session.last_active_time?.toDate() || startTime;
+      const pausedDuration = session.paused_duration || 0;
+      
+      const activeTime = lastActiveTime.getTime() - startTime.getTime() - pausedDuration;
+      return acc + activeTime;
+    }
+    return acc;
+  }, 0);
 }
 
 export async function deleteSession(sessionId: string): Promise<void> {
@@ -302,6 +307,46 @@ export async function deleteSession(sessionId: string): Promise<void> {
           throw new Error(`Failed to delete session: ${error.message}`);
       }
     }
+    throw error;
+  }
+}
+
+export async function updateSessionActivity(sessionId: string): Promise<void> {
+  try {
+    if (!db) throw new Error('Firestore is not initialized');
+    
+    const sessionRef = doc(db, 'sessions', sessionId);
+    await updateDoc(sessionRef, {
+      last_active_time: Timestamp.now()
+    });
+  } catch (error) {
+    console.error('Error updating session activity:', error);
+    throw error;
+  }
+}
+
+export async function pauseSession(sessionId: string): Promise<void> {
+  try {
+    if (!db) throw new Error('Firestore is not initialized');
+    
+    const sessionRef = doc(db, 'sessions', sessionId);
+    const sessionDoc = await getDoc(sessionRef);
+
+    if (!sessionDoc.exists()) {
+      throw new Error('Session not found');
+    }
+
+    const sessionData = sessionDoc.data() as Session;
+    const lastActiveTime = sessionData.last_active_time?.toDate() || sessionData.start_time.toDate();
+    const now = new Date();
+    const pausedDuration = (sessionData.paused_duration || 0) + (now.getTime() - lastActiveTime.getTime());
+
+    await updateDoc(sessionRef, {
+      paused_duration: pausedDuration,
+      last_active_time: Timestamp.now()
+    });
+  } catch (error) {
+    console.error('Error pausing session:', error);
     throw error;
   }
 } 

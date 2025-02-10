@@ -100,10 +100,14 @@ export function RecentSessions() {
     const clockType = clockTitles[session.clock_id] || 'Unknown Clock';
     const clockColor = clockColors[session.clock_id]?.split(' ')[0] || 'text-gray-500';
     const startTime = session.start_time.toDate();
+    const lastActiveTime = session.last_active_time?.toDate() || startTime;
+    const pausedDuration = session.paused_duration || 0;
+    
+    // Calculate progress based on session status and active time
     const progress = session.status === 'completed' ? 100 : 
       session.status === 'aborted' ? 
         Math.min((session.actual_duration / session.duration) * 100, 100) : 
-        Math.min(((Date.now() - startTime.getTime()) / session.duration) * 100, 100);
+        Math.min(((lastActiveTime.getTime() - startTime.getTime() - pausedDuration) / session.duration) * 100, 100);
 
     return (
       <div className={`p-3.5 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 transition-all relative ${

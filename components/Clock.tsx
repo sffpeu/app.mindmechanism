@@ -8,7 +8,7 @@ import { ClockIcon, Calendar, RotateCw, Timer, Compass, ChevronUp, ChevronDown, 
 import { ClockSettings } from '../types/ClockSettings';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/lib/FirebaseAuthContext'
-import { updateSession } from '@/lib/sessions'
+import { updateSession, updateSessionActivity, pauseSession } from '@/lib/sessions'
 import { toast } from 'react-hot-toast';
 
 const dotColors = [
@@ -229,7 +229,8 @@ export default function Clock({
       await updateSession(sessionId, {
         status: 'completed',
         end_time: new Date().toISOString(),
-        actual_duration: initialDuration || 0
+        actual_duration: initialDuration || 0,
+        last_active_time: new Date().toISOString()
       });
     } catch (error) {
       console.error('Error completing session:', error);
@@ -237,38 +238,100 @@ export default function Clock({
     }
   };
 
-  const handlePauseResume = () => {
-    if (isPaused) {
-      // Resuming - adjust start time based on remaining time
-      const now = new Date().getTime();
-      const newStartTime = now - (initialDuration! - (remainingTime || 0));
-      setSessionStartTime(newStartTime);
-    } else {
-      // Pausing - no need to adjust anything as the remaining time is already correct
+  const handlePauseResume = async () => {
+    if (!sessionId) return;
+
+    try {
+      if (isPaused) {
+        // Resuming - update last active time
+        await updateSessionActivity(sessionId);
+        // Adjust start time based on remaining time
+        const now = new Date().getTime();
+        const newStartTime = now - (initialDuration! - (remainingTime || 0));
+        setSessionStartTime(newStartTime);
+      } else {
+        // Pausing - update paused duration
+        await pauseSession(sessionId);
+      }
+      setIsPaused(!isPaused);
+    } catch (error) {
+      console.error('Error updating session pause state:', error);
+      toast.error('Failed to update session state');
     }
-    setIsPaused(!isPaused);
   };
 
   const handleReset = async () => {
-    if (initialDuration) {
-      setRemainingTime(initialDuration);
-      setSessionStartTime(new Date().getTime());
-      setIsPaused(false);
+    if (!initialDuration || !sessionId || !user?.uid) return;
 
-      // Mark the session as aborted if it exists
-      if (sessionId && user?.uid) {
-        try {
-          await updateSession(sessionId, {
-            status: 'aborted',
-            end_time: new Date().toISOString(),
-            actual_duration: initialDuration - (remainingTime || 0)
-          });
-        } catch (error) {
-          console.error('Error aborting session:', error);
-        }
-      }
+    try {
+      const now = new Date();
+      await updateSession(sessionId, {
+        status: 'aborted',
+        end_time: now.toISOString(),
+        actual_duration: initialDuration - (remainingTime || 0),
+        last_active_time: now.toISOString()
+      });
+
+      setRemainingTime(initialDuration);
+      setSessionStartTime(now.getTime());
+      setIsPaused(false);
+    } catch (error) {
+      console.error('Error aborting session:', error);
+      toast.error('Failed to abort session');
     }
   };
+
+  // Update activity periodically while session is active
+  useEffect(() => {
+    if (!sessionId || isPaused || !remainingTime || remainingTime <= 0) return;
+
+    const activityInterval = setInterval(async () => {
+      try {
+        await updateSessionActivity(sessionId);
+      } catch (error) {
+        console.error('Error updating session activity:', error);
+      }
+    }, 30000); // Update every 30 seconds
+
+    return () => clearInterval(activityInterval);
+  }, [sessionId, isPaused, remainingTime]);
+
+  // Handle page visibility changes
+  useEffect(() => {
+    if (!sessionId) return;
+
+    const handleVisibilityChange = async () => {
+      if (document.hidden && !isPaused) {
+        try {
+          await pauseSession(sessionId);
+          setIsPaused(true);
+        } catch (error) {
+          console.error('Error handling visibility change:', error);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [sessionId, isPaused]);
+
+  // Handle beforeunload event
+  useEffect(() => {
+    if (!sessionId) return;
+
+    const handleBeforeUnload = async () => {
+      if (!isPaused) {
+        try {
+          await pauseSession(sessionId);
+        } catch (error) {
+          console.error('Error handling page unload:', error);
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [sessionId, isPaused]);
 
   // Handle image error
   const handleImageError = () => {
@@ -1030,14 +1093,14 @@ function getElapsedTime(currentDate: Date, startDateTime: Date): string {
     const remainingDays = days % 365;
     const hours = Math.floor((elapsed % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
     const minutes = Math.floor((elapsed % (60 * 60 * 1000)) / (60 * 1000));
-    const seconds = Math.floor((elapsed % (60 * 1000)) / 1000);
+    const seconds = Math.floor((elapsed % (60 * 1000)) / 1000));
     return `${years}y ${remainingDays}d ${hours}h ${minutes}m ${seconds}s`;
   }
   
   // Otherwise show days as before
   const hours = Math.floor((elapsed % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
   const minutes = Math.floor((elapsed % (60 * 60 * 1000)) / (60 * 1000));
-  const seconds = Math.floor((elapsed % (60 * 1000)) / 1000);
+  const seconds = Math.floor((elapsed % (60 * 1000)) / 1000));
   return `${days}d ${hours}h ${minutes}m ${seconds}s`;
 }
 
