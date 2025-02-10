@@ -1,5 +1,5 @@
 import { Session } from '@/lib/sessions';
-import { Clock, CheckCircle2, Timer, Calendar, Play, ChevronRight } from 'lucide-react';
+import { Clock, Play, ChevronRight, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -35,11 +35,10 @@ interface DashboardRecentSessionsProps {
   sessions: Session[];
 }
 
-// Add this helper function at the top level
 const formatRemainingTime = (ms: number): string => {
   const minutes = Math.floor(ms / 60000);
   const seconds = Math.floor((ms % 60000) / 1000);
-  return `${minutes}:${seconds.toString().padStart(2, '0')} min`;
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} min left`;
 };
 
 export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsProps) {
@@ -86,36 +85,24 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
               Math.min((session.actual_duration / session.duration) * 100, 100) : 
               Math.min(((lastActiveTime.getTime() - startTime.getTime() - pausedDuration) / session.duration) * 100, 100);
 
-          const remainingTime = session.duration - (session.actual_duration || 0);
-
-          const shadowColor = clockColor.includes('red') ? 'rgba(239,68,68,0.3)' :
-            clockColor.includes('orange') ? 'rgba(249,115,22,0.3)' :
-            clockColor.includes('yellow') ? 'rgba(234,179,8,0.3)' :
-            clockColor.includes('green') ? 'rgba(34,197,94,0.3)' :
-            clockColor.includes('blue') ? 'rgba(59,130,246,0.3)' :
-            clockColor.includes('pink') ? 'rgba(236,72,153,0.3)' :
-            clockColor.includes('purple') ? 'rgba(147,51,234,0.3)' :
-            clockColor.includes('indigo') ? 'rgba(99,102,241,0.3)' :
-            'rgba(6,182,212,0.3)';
+          const remainingTime = session.duration - (lastActiveTime.getTime() - startTime.getTime() - pausedDuration);
 
           return (
             <div 
               key={session.id}
-              className={`p-3 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 transition-all hover:shadow-[0_0_15px_${shadowColor}] hover:border-${clockColor.split('-')[1]}-500/50`}
+              className={`p-3 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 transition-all`}
             >
-              <div className="flex items-start justify-between mb-1.5">
+              <div className="flex items-start justify-between mb-2">
                 <div>
                   <h3 className={`text-sm font-medium ${clockColor}`}>
                     {clockType}
                   </h3>
                   <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                     <Calendar className="h-3 w-3" />
-                    {startTime.toLocaleDateString()}
+                    {startTime.toLocaleDateString()} {startTime.toLocaleTimeString()}
                   </div>
                 </div>
-                {session.status === 'completed' ? (
-                  <CheckCircle2 className={`h-4 w-4 ${clockColor}`} />
-                ) : (session.status === 'in_progress' || session.status === 'aborted') && (
+                {(session.status === 'in_progress' || session.status === 'aborted') && (
                   <button
                     onClick={() => handleContinueSession(session)}
                     className={`p-1 rounded-full border ${clockColor} border-current hover:bg-${clockColor.split('-')[1]}-50 dark:hover:bg-${clockColor.split('-')[1]}-500/10 transition-colors`}
@@ -125,16 +112,16 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
                 )}
               </div>
 
-              <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-1.5">
+              <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-2">
                 <div className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
-                  <span>{session.duration / 60000}m</span>
+                  <span>Session: {session.duration / 60000}m</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Timer className="h-3 w-3" />
+                  <Clock className="h-3 w-3" />
                   <span>{Math.round(progress)}%</span>
                 </div>
-                {(session.status === 'in_progress' || session.status === 'aborted') && (
+                {(session.status === 'in_progress' || session.status === 'aborted') && progress < 100 && (
                   <div className="flex items-center gap-1">
                     <Clock className="h-3 w-3" />
                     <span>{formatRemainingTime(remainingTime)}</span>
