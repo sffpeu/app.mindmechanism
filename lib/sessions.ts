@@ -217,6 +217,8 @@ export async function getUserStats(userId: string): Promise<UserStats> {
     const totalTime = sessions.reduce((acc, session) => {
       if (session.status === 'completed') {
         return acc + (session.actual_duration || 0);
+      } else if (session.status === 'aborted') {
+        return acc + (session.actual_duration || 0);
       } else if (session.status === 'in_progress' && session.start_time) {
         const startTime = session.start_time.toDate();
         const lastActiveTime = session.last_active_time?.toDate() || startTime;
@@ -264,9 +266,10 @@ export async function getUserStats(userId: string): Promise<UserStats> {
 }
 
 function calculateMonthlyTime(sessions: Session[]): number {
-  const now = new Date();
   return sessions.reduce((acc, session) => {
     if (session.status === 'completed') {
+      return acc + (session.actual_duration || 0);
+    } else if (session.status === 'aborted') {
       return acc + (session.actual_duration || 0);
     } else if (session.status === 'in_progress' && session.start_time) {
       const startTime = session.start_time.toDate();

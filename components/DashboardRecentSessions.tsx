@@ -49,11 +49,18 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
   }
 
   const handleContinueSession = (session: Session) => {
-    if (session.status === 'in_progress') {
-      const timeElapsed = Date.now() - session.start_time.toDate().getTime();
-      const remainingTime = session.duration - timeElapsed;
-      const encodedWords = encodeURIComponent(JSON.stringify(session.words));
-      router.push(`/clock/${session.clock_id}?duration=${remainingTime}&words=${encodedWords}&sessionId=${session.id}`);
+    if (session.status === 'in_progress' || session.status === 'aborted') {
+      const now = new Date().getTime();
+      const startTime = session.start_time.toDate().getTime();
+      const lastActiveTime = session.last_active_time?.toDate()?.getTime() || startTime;
+      const pausedDuration = session.paused_duration || 0;
+      const timeSpent = lastActiveTime - startTime - pausedDuration;
+      const remainingTime = session.duration - timeSpent;
+      
+      if (remainingTime > 0) {
+        const encodedWords = encodeURIComponent(JSON.stringify(session.words));
+        router.push(`/clock/${session.clock_id}?duration=${remainingTime}&words=${encodedWords}&sessionId=${session.id}`);
+      }
     }
   };
 
@@ -71,6 +78,8 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
             session.status === 'aborted' ? 
               Math.min((session.actual_duration / session.duration) * 100, 100) : 
               Math.min(((lastActiveTime.getTime() - startTime.getTime() - pausedDuration) / session.duration) * 100, 100);
+
+          const remainingTime = session.duration - (session.actual_duration || 0);
 
           const shadowColor = clockColor.includes('red') ? 'rgba(239,68,68,0.3)' :
             clockColor.includes('orange') ? 'rgba(249,115,22,0.3)' :
@@ -99,7 +108,7 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
                 </div>
                 {session.status === 'completed' ? (
                   <CheckCircle2 className={`h-4 w-4 ${clockColor}`} />
-                ) : session.status === 'in_progress' && (
+                ) : (session.status === 'in_progress' || session.status === 'aborted') && (
                   <button
                     onClick={() => handleContinueSession(session)}
                     className={`p-1 rounded-full border ${clockColor} border-current hover:bg-${clockColor.split('-')[1]}-50 dark:hover:bg-${clockColor.split('-')[1]}-500/10 transition-colors`}
@@ -118,6 +127,12 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
                   <Timer className="h-3 w-3" />
                   <span>{Math.round(progress)}%</span>
                 </div>
+                {(session.status === 'in_progress' || session.status === 'aborted') && (
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    <span>{Math.ceil(remainingTime / 60000)}m left</span>
+                  </div>
+                )}
               </div>
 
               {session.words && session.words.length > 0 && (

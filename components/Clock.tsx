@@ -243,17 +243,32 @@ export default function Clock({
 
     try {
       if (isPaused) {
-        // Resuming - update last active time
+        // Resuming - update last active time and adjust start time
         await updateSessionActivity(sessionId);
-        // Adjust start time based on remaining time
         const now = new Date().getTime();
         const newStartTime = now - (initialDuration! - (remainingTime || 0));
         setSessionStartTime(newStartTime);
+        setIsPaused(false);
       } else {
-        // Pausing - update paused duration
+        // Pausing - update paused duration and session status
         await pauseSession(sessionId);
+        setIsPaused(true);
+        
+        // Update session status to aborted if user navigates away
+        const handleVisibilityChange = async () => {
+          if (document.hidden) {
+            await updateSession(sessionId, {
+              status: 'aborted',
+              actual_duration: initialDuration! - (remainingTime || 0),
+              end_time: new Date().toISOString(),
+              last_active_time: new Date().toISOString()
+            });
+          }
+        };
+        
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
       }
-      setIsPaused(!isPaused);
     } catch (error) {
       console.error('Error updating session pause state:', error);
       toast.error('Failed to update session state');
@@ -272,6 +287,7 @@ export default function Clock({
         last_active_time: now.toISOString()
       });
 
+      // Reset the timer but keep the session ID
       setRemainingTime(initialDuration);
       setSessionStartTime(now.getTime());
       setIsPaused(false);
