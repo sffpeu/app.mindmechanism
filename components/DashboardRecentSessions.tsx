@@ -128,12 +128,10 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
                   <Clock className="h-3 w-3" />
                   <span>{Math.round(progress)}%</span>
                 </div>
-                {(session.status === 'in_progress' || session.status === 'aborted') && remainingTime > 0 && (
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    <span>{formatRemainingTime(remainingTime)}</span>
-                  </div>
-                )}
+                <div className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  <span>{session.status === 'completed' ? 'Completed' : 'In Progress'}</span>
+                </div>
               </div>
 
               {session.words && session.words.length > 0 && (

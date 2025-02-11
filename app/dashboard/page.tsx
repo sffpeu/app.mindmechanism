@@ -643,11 +643,6 @@ export default function DashboardPage() {
                 <div className="text-3xl font-bold dark:text-white mb-1">
                   {!user ? "-" : formatDuration(timeStats.totalTime)}
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                  <span>{!user ? "-" : `${userStats.totalSessions} total sessions`}</span>
-                  <span>·</span>
-                  <span>{Math.round(userStats.completionRate)}% completion rate</span>
-                </div>
               </div>
 
               {/* Session Type Breakdown */}
