@@ -15,7 +15,8 @@ import {
   QuerySnapshot,
   FieldValue,
   Firestore,
-  writeBatch
+  writeBatch,
+  getDoc
 } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
@@ -118,18 +119,27 @@ export const startTimeTracking = async (userId: string, page: string) => {
     
     // End any existing active sessions
     const batch = writeBatch(firestore);
+    const now = Timestamp.now();
+    
     activeSessions.forEach(doc => {
+      const data = doc.data();
+      const startTime = data.startTime?.toDate?.() || new Date();
+      const duration = now.toDate().getTime() - startTime.getTime();
+      
       batch.update(doc.ref, {
-        endTime: serverTimestamp()
+        endTime: now,
+        duration: duration > 0 ? duration : 0
       });
     });
+    
     await batch.commit();
 
     // Create new time entry
     const timeEntry: TimeEntryInput = {
       userId,
       startTime: serverTimestamp(),
-      page
+      page,
+      duration: 0
     };
 
     validateTimeEntry(timeEntry);
@@ -152,9 +162,20 @@ export const endTimeTracking = async (entryId: string) => {
     }
 
     const entryRef = doc(firestore, 'timeTracking', entryId);
+    const entrySnap = await getDoc(entryRef);
+    
+    if (!entrySnap.exists()) {
+      throw new Error('Time entry not found');
+    }
+
+    const data = entrySnap.data();
+    const startTime = data.startTime?.toDate?.() || new Date();
+    const now = new Date();
+    const duration = now.getTime() - startTime.getTime();
     
     await updateDoc(entryRef, {
-      endTime: serverTimestamp(),
+      endTime: Timestamp.now(),
+      duration: duration > 0 ? duration : 0
     });
   } catch (error) {
     console.error('Error ending time tracking:', error);
@@ -376,5 +397,41 @@ export const subscribeToTimeTracking = (
     }
     // Return a no-op unsubscribe function
     return () => {};
+  }
+};
+
+// Add new function to clean up orphaned entries
+export const cleanupOrphanedTimeEntries = async (userId: string) => {
+  try {
+    const firestore = checkDb();
+    
+    // Find all entries without endTime
+    const orphanedQuery = query(
+      collection(firestore, 'timeTracking'),
+      where('userId', '==', userId),
+      where('endTime', '==', null)
+    );
+
+    const orphanedEntries = await getDocs(orphanedQuery);
+    
+    if (orphanedEntries.empty) return;
+
+    const batch = writeBatch(firestore);
+    const now = Timestamp.now();
+
+    orphanedEntries.forEach(doc => {
+      const data = doc.data();
+      const startTime = data.startTime?.toDate?.() || new Date();
+      const duration = now.toDate().getTime() - startTime.getTime();
+      
+      batch.update(doc.ref, {
+        endTime: now,
+        duration: duration > 0 ? duration : 0
+      });
+    });
+
+    await batch.commit();
+  } catch (error) {
+    console.error('Error cleaning up orphaned time entries:', error);
   }
 }; 
