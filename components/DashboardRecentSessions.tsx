@@ -141,4 +141,47 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
                   {session.words.slice(0, 3).map((word, index) => (
                     <span 
                       key={index}
-                      className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium border ${clockColor} border-current bg-transparent hover:bg-${clockColor.split('-')[1]}-50 dark:hover:bg-${clockColor.split('-')[1]}-500/10 transition-colors`
+                      className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium border ${clockColor} border-current bg-transparent hover:bg-${clockColor.split('-')[1]}-50 dark:hover:bg-${clockColor.split('-')[1]}-500/10 transition-colors`}
+                    >
+                      {word}
+                    </span>
+                  ))}
+                  {session.words.length > 3 && (
+                    <button
+                      onClick={() => {
+                        setSelectedWords(session.words);
+                        setIsWordsDialogOpen(true);
+                      }}
+                      className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                    >
+                      +{session.words.length - 3} more
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <Dialog open={isWordsDialogOpen} onOpenChange={setIsWordsDialogOpen}>
+        <DialogContent className="bg-white dark:bg-black/90 border border-gray-200 dark:border-white/10">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900 dark:text-white">Assigned Words</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-wrap gap-2 p-4">
+            {selectedWords.map((word, index) => (
+              <div key={index} className="w-full">
+                <h4 className="text-sm font-medium text-gray-900 dark:text-white">{word}</h4>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  {/* Add glossary definition here */}
+                  Definition placeholder for {word}
+                </p>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
