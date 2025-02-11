@@ -56,12 +56,15 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
 
   const handleContinueSession = (session: Session) => {
     if (session.status === 'in_progress' || session.status === 'aborted') {
-      const now = new Date().getTime();
-      const startTime = session.start_time.toDate().getTime();
-      const lastActiveTime = session.last_active_time?.toDate()?.getTime() || startTime;
-      const pausedDuration = session.paused_duration || 0;
-      const timeSpent = lastActiveTime - startTime - pausedDuration;
-      const remainingTime = session.duration - timeSpent;
+      // For aborted sessions, use actual_duration
+      // For in_progress sessions, calculate from timestamps
+      const timeSpent = session.status === 'aborted' ?
+        session.actual_duration || 0 :
+        (session.last_active_time?.toDate()?.getTime() || session.start_time.toDate().getTime()) - 
+        session.start_time.toDate().getTime() - 
+        (session.paused_duration || 0);
+
+      const remainingTime = Math.max(0, session.duration - timeSpent);
       
       if (remainingTime > 0) {
         const encodedWords = encodeURIComponent(JSON.stringify(session.words));
@@ -80,13 +83,13 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
           const lastActiveTime = session.last_active_time?.toDate() || startTime;
           const pausedDuration = session.paused_duration || 0;
           
-          const progress = session.status === 'completed' ? 100 : 
-            session.status === 'aborted' || session.status === 'in_progress' ? 
-              Math.min((session.actual_duration || 0) / session.duration * 100, 100) : 0;
+          // Calculate time spent and remaining time
+          const timeSpent = session.status === 'completed' ? session.duration :
+            session.status === 'aborted' ? session.actual_duration || 0 :
+            lastActiveTime.getTime() - startTime.getTime() - pausedDuration;
 
-          // Calculate remaining time based on actual duration
-          const remainingTime = session.status === 'completed' ? 0 :
-            session.duration - (session.actual_duration || 0);
+          const remainingTime = Math.max(0, session.duration - timeSpent);
+          const progress = Math.min((timeSpent / session.duration) * 100, 100);
 
           // Format session duration in minutes
           const sessionDuration = Math.ceil(session.duration / 60000);
@@ -138,55 +141,4 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
                   {session.words.slice(0, 3).map((word, index) => (
                     <span 
                       key={index}
-                      className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium border ${clockColor} border-current bg-transparent hover:bg-${clockColor.split('-')[1]}-50 dark:hover:bg-${clockColor.split('-')[1]}-500/10 transition-colors`}
-                    >
-                      {word}
-                    </span>
-                  ))}
-                  {session.words.length > 3 && (
-                    <button
-                      onClick={() => {
-                        setSelectedWords(session.words);
-                        setIsWordsDialogOpen(true);
-                      }}
-                      className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white flex items-center gap-0.5"
-                    >
-                      +{session.words.length - 3} more
-                      <ChevronRight className="h-3 w-3" />
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
-        {sessions.length > 3 && (
-          <Link 
-            href="/sessions"
-            className="text-center block py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-          >
-            View all sessions →
-          </Link>
-        )}
-      </div>
-
-      <Dialog open={isWordsDialogOpen} onOpenChange={setIsWordsDialogOpen}>
-        <DialogContent className="bg-white dark:bg-black/90 border border-gray-200 dark:border-white/10">
-          <DialogHeader>
-            <DialogTitle className="text-gray-900 dark:text-white">Assigned Words</DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-wrap gap-2 p-4">
-            {selectedWords.map((word, index) => (
-              <span 
-                key={index}
-                className="inline-flex items-center px-2 py-1 rounded-full text-sm font-medium border text-gray-700 dark:text-gray-300 border-current bg-transparent hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-              >
-                {word}
-              </span>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
-} 
+                      className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium border ${clockColor} border-current bg-transparent hover:bg-${clockColor.split('-')[1]}-50 dark:hover:bg-${clockColor.split('-')[1]}-500/10 transition-colors`
