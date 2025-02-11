@@ -81,14 +81,15 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
           const pausedDuration = session.paused_duration || 0;
           
           const progress = session.status === 'completed' ? 100 : 
-            session.status === 'aborted' ? 
-              Math.min((session.actual_duration / session.duration) * 100, 100) : 
-              Math.min(((lastActiveTime.getTime() - startTime.getTime() - pausedDuration) / session.duration) * 100, 100);
+            session.status === 'aborted' || session.status === 'in_progress' ? 
+              Math.min((session.actual_duration || 0) / session.duration * 100, 100) : 0;
 
+          // Calculate remaining time based on actual duration
           const remainingTime = session.status === 'completed' ? 0 :
-            session.status === 'aborted' ? 
-              session.duration - session.actual_duration :
-              session.duration - (lastActiveTime.getTime() - startTime.getTime() - pausedDuration);
+            session.duration - (session.actual_duration || 0);
+
+          // Format session duration in minutes
+          const sessionDuration = Math.ceil(session.duration / 60000);
 
           return (
             <div 
@@ -105,7 +106,7 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
                     {startTime.toLocaleDateString()} {startTime.toLocaleTimeString()}
                   </div>
                 </div>
-                {(session.status === 'in_progress' || session.status === 'aborted') && (
+                {(session.status === 'in_progress' || session.status === 'aborted') && remainingTime > 0 && (
                   <button
                     onClick={() => handleContinueSession(session)}
                     className={`p-1 rounded-full border ${clockColor} border-current hover:bg-${clockColor.split('-')[1]}-50 dark:hover:bg-${clockColor.split('-')[1]}-500/10 transition-colors`}
@@ -118,13 +119,13 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
               <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-2">
                 <div className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
-                  <span>Session: {session.duration / 60000}m</span>
+                  <span>Session: {sessionDuration}m</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
                   <span>{Math.round(progress)}%</span>
                 </div>
-                {(session.status === 'in_progress' || session.status === 'aborted') && progress < 100 && (
+                {(session.status === 'in_progress' || session.status === 'aborted') && remainingTime > 0 && (
                   <div className="flex items-center gap-1">
                     <Clock className="h-3 w-3" />
                     <span>{formatRemainingTime(remainingTime)}</span>
