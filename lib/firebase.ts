@@ -101,19 +101,13 @@ if (isBrowser && app) {
       })
     };
 
-    db = initializeFirestore(app, firestoreSettings);
+    // Initialize Firestore only once
+    if (!db) {
+      db = initializeFirestore(app, firestoreSettings);
+      console.log('Firestore initialized successfully');
+    }
 
-    // Enable offline persistence
-    console.log('Initializing Firestore...');
-    enableIndexedDbPersistence(db).catch((err) => {
-      if (err.code === 'failed-precondition') {
-        console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
-      } else if (err.code === 'unimplemented') {
-        console.warn('The current browser does not support persistence.');
-      }
-    });
-
-    console.log('Firestore initialized successfully');
+    // No need to explicitly enable persistence as it's handled by the settings above
   } catch (error) {
     console.error('Error in Firebase initialization:', error);
     // Don't throw here to prevent app from crashing

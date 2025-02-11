@@ -7,21 +7,34 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Allow read access to all authenticated users
-    match /{document=**} {
+    function isUserAuthenticated(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // User profiles
+    match /users/{userId} {
       allow read: if isAuthenticated();
+      allow write: if isUserAuthenticated(userId);
     }
 
+    // Notes
     match /users/{userId}/notes/{noteId} {
-      allow write: if isAuthenticated() && request.auth.uid == userId;
+      allow write: if isUserAuthenticated(userId);
     }
 
+    // Time tracking
     match /timeTracking/{entryId} {
       allow write: if isAuthenticated();
     }
 
+    // Sessions
     match /sessions/{sessionId} {
       allow write: if isAuthenticated();
+    }
+
+    // Default rule - require authentication for all other reads
+    match /{document=**} {
+      allow read: if isAuthenticated();
     }
   }
 } 
