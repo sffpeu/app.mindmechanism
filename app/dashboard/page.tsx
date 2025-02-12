@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { Card } from '@/components/ui/card'
-import { Calendar, Clock, Cloud, Droplets, Gauge, Wind, Moon, ClipboardList, BookOpen, Sun, MapPin, Mountain, Waves, User, BarChart2, Pencil, Trash2, Globe, RefreshCw, CheckCircle2, Pause, XCircle, Users, Share2, Cpu, Wifi, Battery } from 'lucide-react'
+import { Calendar, Clock, Cloud, Droplets, Gauge, Wind, Moon, ClipboardList, BookOpen, Sun, MapPin, Mountain, Waves, User, BarChart2, Pencil, Trash2, Globe, RefreshCw, CheckCircle2, Pause, XCircle, Users, Share2, Cpu, Wifi, Battery, Timer } from 'lucide-react'
 import { useTheme } from '@/app/ThemeContext'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/FirebaseAuthContext'
@@ -607,9 +607,102 @@ export default function DashboardPage() {
                         View All
                       </Link>
                     </div>
-                    <div className="space-y-2">
-                      <DashboardRecentSessions sessions={recentSessions} />
+                    <div className="grid grid-cols-2 gap-3">
+                      {recentSessions.slice(0, 4).map((session) => {
+                        const clockType = clockTitles[session.clock_id] || 'Unknown Clock';
+                        const clockColor = clockColors[session.clock_id]?.split(' ')[0] || 'text-gray-500';
+                        const startTime = session.start_time.toDate();
+                        const lastActiveTime = session.last_active_time?.toDate() || startTime;
+                        const pausedDuration = session.paused_duration || 0;
+                        
+                        const timeSpent = session.status === 'completed' ? session.duration :
+                          session.status === 'aborted' ? session.actual_duration || 0 :
+                          lastActiveTime.getTime() - startTime.getTime() - pausedDuration;
+
+                        const remainingTime = Math.max(0, session.duration - timeSpent);
+                        const progress = Math.min((timeSpent / session.duration) * 100, 100);
+                        const sessionDuration = Math.ceil(session.duration / 60000);
+
+                        return (
+                          <div
+                            key={session.id}
+                            className="p-3 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full ${
+                                  session.status === 'completed' ? 'bg-green-500' :
+                                  session.status === 'in_progress' ? 'bg-blue-500' :
+                                  'bg-red-500'
+                                }`} />
+                                <span className={`text-sm font-medium ${clockColor}`}>
+                                  {clockType}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-3 gap-1.5 my-2">
+                              <div className="p-1 rounded-lg bg-gray-50 dark:bg-white/5">
+                                <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  Duration
+                                </span>
+                                <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
+                                  {sessionDuration}m
+                                </span>
+                              </div>
+                              <div className="p-1 rounded-lg bg-gray-50 dark:bg-white/5">
+                                <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+                                  <Timer className="h-3 w-3" />
+                                  Progress
+                                </span>
+                                <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
+                                  {Math.round(progress)}%
+                                </span>
+                              </div>
+                              <div className="p-1 rounded-lg bg-gray-50 dark:bg-white/5">
+                                <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+                                  Status
+                                </span>
+                                <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
+                                  {session.status}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+                              <Calendar className="h-3 w-3" />
+                              {startTime.toLocaleString()}
+                            </div>
+                            {session.words && session.words.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {session.words.slice(0, 2).map((word, index) => (
+                                  <span 
+                                    key={index}
+                                    className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${clockColor} bg-gray-50 dark:bg-white/5`}
+                                  >
+                                    {word}
+                                  </span>
+                                ))}
+                                {session.words.length > 2 && (
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                    +{session.words.length - 2} more
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
+                    {recentSessions.length > 4 && (
+                      <div className="text-center">
+                        <Link
+                          href="/sessions"
+                          className="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                        >
+                          Show More ({recentSessions.length - 4} more)
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 </div>
               </Card>
