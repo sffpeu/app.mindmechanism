@@ -20,15 +20,15 @@ const clockTitles = [
 
 // Clock colors mapping
 const clockColors = [
-  'text-red-500 bg-red-500',
-  'text-orange-500 bg-orange-500',
-  'text-yellow-500 bg-yellow-500',
-  'text-green-500 bg-green-500',
-  'text-blue-500 bg-blue-500',
-  'text-pink-500 bg-pink-500',
-  'text-purple-500 bg-purple-500',
-  'text-indigo-500 bg-indigo-500',
-  'text-cyan-500 bg-cyan-500'
+  'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-white/10',
+  'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-white/10',
+  'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-white/10',
+  'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-white/10',
+  'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-white/10',
+  'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-white/10',
+  'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-white/10',
+  'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-white/10',
+  'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-white/10'
 ];
 
 interface DashboardRecentSessionsProps {
@@ -101,7 +101,7 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
             >
               <div className="flex items-start justify-between mb-1">
                 <div>
-                  <h3 className={`text-xs font-medium ${clockColor}`}>
+                  <h3 className={`text-xs font-medium text-gray-900 dark:text-white`}>
                     {clockType}
                   </h3>
                   <div className="flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
@@ -112,9 +112,9 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
                 {(session.status === 'in_progress' || session.status === 'aborted') && remainingTime > 0 && (
                   <button
                     onClick={() => handleContinueSession(session)}
-                    className={`p-1 rounded-full border ${clockColor} border-current hover:bg-${clockColor.split('-')[1]}-50 dark:hover:bg-${clockColor.split('-')[1]}-500/10 transition-colors`}
+                    className="p-1 rounded-full border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
                   >
-                    <Play className={`h-2.5 w-2.5 ${clockColor}`} />
+                    <Play className="h-2.5 w-2.5 text-gray-600 dark:text-gray-300" />
                   </button>
                 )}
               </div>
@@ -139,7 +139,7 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
                   {session.words.slice(0, 2).map((word, index) => (
                     <span 
                       key={index}
-                      className={`inline-flex items-center px-1 py-0.5 rounded-full text-[10px] font-medium border ${clockColor} border-current bg-transparent hover:bg-${clockColor.split('-')[1]}-50 dark:hover:bg-${clockColor.split('-')[1]}-500/10 transition-colors`}
+                      className="inline-flex items-center px-1 py-0.5 rounded-full text-[10px] font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-white/10"
                     >
                       {word}
                     </span>

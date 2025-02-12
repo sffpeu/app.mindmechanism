@@ -494,8 +494,8 @@ export default function DashboardPage() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
-                        <Share2 className="h-4 w-4 text-white" />
+                      <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
+                        <Share2 className="h-4 w-4 text-gray-600 dark:text-gray-300" />
                       </div>
                       <div>
                         <p className="text-sm font-medium dark:text-white">Share Session</p>
@@ -509,11 +509,11 @@ export default function DashboardPage() {
                   <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
                     <div className="flex items-center gap-2">
                       <div className="flex -space-x-2">
-                        <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                          <span className="text-[10px] text-white font-medium">JD</span>
+                        <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center ring-2 ring-white dark:ring-black">
+                          <span className="text-[10px] text-gray-600 dark:text-gray-300 font-medium">JD</span>
                         </div>
-                        <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
-                          <span className="text-[10px] text-white font-medium">AS</span>
+                        <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center ring-2 ring-white dark:ring-black">
+                          <span className="text-[10px] text-gray-600 dark:text-gray-300 font-medium">AS</span>
                         </div>
                       </div>
                       <p className="text-xs text-gray-500 dark:text-gray-400">2 users connected</p>
@@ -531,8 +531,8 @@ export default function DashboardPage() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
-                        <Wifi className="h-4 w-4 text-white" />
+                      <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
+                        <Wifi className="h-4 w-4 text-gray-600 dark:text-gray-300" />
                       </div>
                       <div>
                         <p className="text-sm font-medium dark:text-white">Mindmechanism</p>
@@ -705,7 +705,7 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-3 gap-1.5">
                   <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
                     <div className="flex items-center gap-1 mb-0.5">
-                      <CheckCircle2 className="h-3 w-3 text-green-500" />
+                      <CheckCircle2 className="h-3 w-3 text-gray-600 dark:text-gray-300" />
                       <span className="text-xs text-gray-500 dark:text-gray-400">Completed</span>
                     </div>
                     <span className="text-xs font-medium text-gray-900 dark:text-white">
@@ -714,7 +714,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
                     <div className="flex items-center gap-1 mb-0.5">
-                      <Pause className="h-3 w-3 text-yellow-500" />
+                      <Pause className="h-3 w-3 text-gray-600 dark:text-gray-300" />
                       <span className="text-xs text-gray-500 dark:text-gray-400">In Progress</span>
                     </div>
                     <span className="text-xs font-medium text-gray-900 dark:text-white">
@@ -723,7 +723,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
                     <div className="flex items-center gap-1 mb-0.5">
-                      <XCircle className="h-3 w-3 text-red-500" />
+                      <XCircle className="h-3 w-3 text-gray-600 dark:text-gray-300" />
                       <span className="text-xs text-gray-500 dark:text-gray-400">Aborted</span>
                     </div>
                     <span className="text-xs font-medium text-gray-900 dark:text-white">
