@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { Card } from '@/components/ui/card'
-import { Calendar, Clock, Cloud, Droplets, Gauge, Wind, Moon, ClipboardList, BookOpen, Sun, MapPin, Mountain, Waves, User, BarChart2, Pencil, Trash2, Globe, RefreshCw, CheckCircle2, Pause, XCircle } from 'lucide-react'
+import { Calendar, Clock, Cloud, Droplets, Gauge, Wind, Moon, ClipboardList, BookOpen, Sun, MapPin, Mountain, Waves, User, BarChart2, Pencil, Trash2, Globe, RefreshCw, CheckCircle2, Pause, XCircle, Users, Share2, Cpu, Wifi, Battery } from 'lucide-react'
 import { useTheme } from '@/app/ThemeContext'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/FirebaseAuthContext'
@@ -412,7 +412,7 @@ export default function DashboardPage() {
         <div className="max-w-6xl mx-auto space-y-4 p-4">
           {/* Time and User Profile Section */}
           {showInfoCards && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Time Card */}
               <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
                 <div className="flex items-center justify-between mb-2">
@@ -423,26 +423,6 @@ export default function DashboardPage() {
                   {formatTime(currentTime)}
                 </p>
               </Card>
-
-              {/* Location Card */}
-              {weatherData && (
-                <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-                  <div className="flex items-center justify-between mb-2">
-                    <h2 className="text-base font-semibold dark:text-white">Location</h2>
-                    <MapPin className="h-4 w-4 text-gray-500" />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div>
-                        <p className="text-base font-medium dark:text-white">{weatherData.location.name}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {weatherData.location.region && `${weatherData.location.region}, `}{weatherData.location.country}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              )}
 
               {/* User Profile Card */}
               {user && (
@@ -479,6 +459,101 @@ export default function DashboardPage() {
                   </div>
                 </Card>
               )}
+            </div>
+          )}
+
+          {/* Location, Connect, and Device Section */}
+          {showInfoCards && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Location Card */}
+              {weatherData && (
+                <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+                  <div className="flex items-center justify-between mb-2">
+                    <h2 className="text-base font-semibold dark:text-white">Location</h2>
+                    <MapPin className="h-4 w-4 text-gray-500" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div>
+                        <p className="text-base font-medium dark:text-white">{weatherData.location.name}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {weatherData.location.region && `${weatherData.location.region}, `}{weatherData.location.country}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              )}
+
+              {/* Connect Card */}
+              <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-base font-semibold dark:text-white">Connect</h2>
+                  <Users className="h-4 w-4 text-gray-500" />
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+                        <Share2 className="h-4 w-4 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium dark:text-white">Share Session</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Create & share with others</p>
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm" className="text-xs">
+                      Create
+                    </Button>
+                  </div>
+                  <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                    <div className="flex items-center gap-2">
+                      <div className="flex -space-x-2">
+                        <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                          <span className="text-[10px] text-white font-medium">JD</span>
+                        </div>
+                        <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                          <span className="text-[10px] text-white font-medium">AS</span>
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">2 users connected</p>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Device Card */}
+              <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-base font-semibold dark:text-white">Device</h2>
+                  <Cpu className="h-4 w-4 text-gray-500" />
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
+                        <Wifi className="h-4 w-4 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium dark:text-white">Mindmechanism</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">No device connected</p>
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm" className="text-xs">
+                      Connect
+                    </Button>
+                  </div>
+                  <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Battery className="h-3.5 w-3.5 text-gray-500" />
+                        <span className="text-xs text-gray-500 dark:text-gray-400">Battery</span>
+                      </div>
+                      <span className="text-xs font-medium text-gray-900 dark:text-white">N/A</span>
+                    </div>
+                  </div>
+                </div>
+              </Card>
             </div>
           )}
 
