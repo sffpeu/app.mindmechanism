@@ -639,12 +639,6 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="space-y-4">
-              <div>
-                <div className="text-3xl font-bold dark:text-white mb-1">
-                  {!user ? "-" : formatDuration(timeStats.totalTime)}
-                </div>
-              </div>
-
               {/* Session Type Breakdown */}
               <div className="grid grid-cols-3 gap-2">
                 <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
