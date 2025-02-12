@@ -466,80 +466,152 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Weather and Moon Section */}
+          {/* Weather, Moon, and Sessions Section */}
           {showInfoCards && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {weatherData && (
-                <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h2 className="text-lg font-semibold dark:text-white mb-1">Current Weather</h2>
-                        <p className="text-base text-gray-500 dark:text-gray-400">{weatherData.current.condition.text}</p>
+              {/* Left Column: Weather and Moon */}
+              <div className="space-y-4">
+                {/* Weather Card */}
+                {weatherData && (
+                  <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h2 className="text-lg font-semibold dark:text-white mb-1">Current Weather</h2>
+                          <p className="text-base text-gray-500 dark:text-gray-400">{weatherData.current.condition.text}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-3xl font-bold dark:text-white">{weatherData.current.temp_c}°C</p>
+                          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                            <Droplets className="h-3.5 w-3.5" />
+                            <span>{weatherData.current.humidity}%</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-3xl font-bold dark:text-white">{weatherData.current.temp_c}°C</p>
-                        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                          <Droplets className="h-3.5 w-3.5" />
-                          <span>{weatherData.current.humidity}%</span>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
+                          <div className="flex items-center gap-2">
+                            <Sun className="h-4 w-4 text-gray-600 dark:text-gray-200" />
+                            <span className="text-sm text-gray-600 dark:text-gray-200">UV Index</span>
+                          </div>
+                          <p className="text-lg font-semibold mt-1 dark:text-white">{weatherData.current.uv}</p>
+                        </div>
+                        <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
+                          <div className="flex items-center gap-2">
+                            <Gauge className="h-4 w-4 text-gray-600 dark:text-gray-200" />
+                            <span className="text-sm text-gray-600 dark:text-gray-200">Pressure</span>
+                          </div>
+                          <p className="text-lg font-semibold mt-1 dark:text-white">{weatherData.current.pressure_mb} mb</p>
+                        </div>
+                        <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
+                          <div className="flex items-center gap-2">
+                            <Wind className="h-4 w-4 text-gray-600 dark:text-gray-200" />
+                            <span className="text-sm text-gray-600 dark:text-gray-200">Wind</span>
+                          </div>
+                          <p className="text-lg font-semibold mt-1 dark:text-white">{weatherData.current.wind_kph} km/h</p>
                         </div>
                       </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
-                        <div className="flex items-center gap-2">
-                          <Sun className="h-4 w-4 text-gray-600 dark:text-gray-200" />
-                          <span className="text-sm text-gray-600 dark:text-gray-200">UV Index</span>
-                        </div>
-                        <p className="text-lg font-semibold mt-1 dark:text-white">{weatherData.current.uv}</p>
-                      </div>
-                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
-                        <div className="flex items-center gap-2">
-                          <Gauge className="h-4 w-4 text-gray-600 dark:text-gray-200" />
-                          <span className="text-sm text-gray-600 dark:text-gray-200">Pressure</span>
-                        </div>
-                        <p className="text-lg font-semibold mt-1 dark:text-white">{weatherData.current.pressure_mb} mb</p>
-                      </div>
-                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
-                        <div className="flex items-center gap-2">
-                          <Wind className="h-4 w-4 text-gray-600 dark:text-gray-200" />
-                          <span className="text-sm text-gray-600 dark:text-gray-200">Wind</span>
-                        </div>
-                        <p className="text-lg font-semibold mt-1 dark:text-white">{weatherData.current.wind_kph} km/h</p>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              )}
-
-              <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-lg font-semibold dark:text-white">Moon Phase</h2>
-                  <Moon className="h-4 w-4 text-gray-500" />
-                </div>
-                {moon && (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-full border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all flex items-center justify-center">
-                        <Moon className="w-10 h-10 text-gray-600 dark:text-gray-200" />
-                      </div>
-                      <div>
-                        <p className="text-base font-semibold dark:text-white">{moon.moon_phase}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{moon.moon_illumination}% illuminated</p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Moonrise</p>
-                        <p className="text-base font-semibold dark:text-white">{moon.moonrise}</p>
-                      </div>
-                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Moonset</p>
-                        <p className="text-base font-semibold dark:text-white">{moon.moonset}</p>
-                      </div>
-                    </div>
-                  </div>
+                  </Card>
                 )}
+
+                {/* Moon Card */}
+                <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-lg font-semibold dark:text-white">Moon Phase</h2>
+                    <Moon className="h-4 w-4 text-gray-500" />
+                  </div>
+                  {moon && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 rounded-full border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all flex items-center justify-center">
+                          <Moon className="w-10 h-10 text-gray-600 dark:text-gray-200" />
+                        </div>
+                        <div>
+                          <p className="text-base font-semibold dark:text-white">{moon.moon_phase}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">{moon.moon_illumination}% illuminated</p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Moonrise</p>
+                          <p className="text-base font-semibold dark:text-white">{moon.moonrise}</p>
+                        </div>
+                        <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Moonset</p>
+                          <p className="text-base font-semibold dark:text-white">{moon.moonset}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </Card>
+              </div>
+
+              {/* Right Column: Sessions Card (spans full height) */}
+              <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all h-full">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold dark:text-white">Sessions</h2>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={loadAllStats}
+                      disabled={isRefreshing}
+                      className={`h-6 w-6 ${isRefreshing ? 'animate-spin' : ''}`}
+                    >
+                      <RefreshCw className="h-3.5 w-3.5" />
+                    </Button>
+                    <ClockIcon className="h-3.5 w-3.5 text-gray-500" />
+                  </div>
+                </div>
+                <div className="space-y-6">
+                  {/* Session Type Breakdown */}
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5">
+                      <div className="flex items-center gap-2 mb-1">
+                        <CheckCircle2 className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                        <span className="text-sm text-gray-500 dark:text-gray-400">Completed</span>
+                      </div>
+                      <span className="text-lg font-medium text-gray-900 dark:text-white">
+                        {recentSessions.filter(s => s.status === 'completed').length}
+                      </span>
+                    </div>
+                    <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Pause className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                        <span className="text-sm text-gray-500 dark:text-gray-400">In Progress</span>
+                      </div>
+                      <span className="text-lg font-medium text-gray-900 dark:text-white">
+                        {recentSessions.filter(s => s.status === 'in_progress').length}
+                      </span>
+                    </div>
+                    <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5">
+                      <div className="flex items-center gap-2 mb-1">
+                        <XCircle className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                        <span className="text-sm text-gray-500 dark:text-gray-400">Aborted</span>
+                      </div>
+                      <span className="text-lg font-medium text-gray-900 dark:text-white">
+                        {recentSessions.filter(s => s.status === 'aborted').length}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Recent Sessions */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-base font-medium text-gray-900 dark:text-white">Recent Sessions</h3>
+                      <Link 
+                        href="/sessions" 
+                        className="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                      >
+                        View All
+                      </Link>
+                    </div>
+                    <div className="space-y-2">
+                      <DashboardRecentSessions sessions={recentSessions} />
+                    </div>
+                  </div>
+                </div>
               </Card>
             </div>
           )}
