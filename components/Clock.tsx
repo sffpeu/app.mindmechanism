@@ -215,6 +215,7 @@ export default function Clock({
       // Auto-save every 5 seconds
       if (now - lastAutoSave >= 5000 && sessionId) {
         updateSession(sessionId, {
+          status: 'in_progress',
           actual_duration: initialDuration - remaining,
           last_active_time: new Date().toISOString()
         });
