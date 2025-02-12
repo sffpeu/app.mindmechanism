@@ -97,16 +97,16 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
           return (
             <div 
               key={session.id}
-              className={`p-3 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 transition-all`}
+              className={`p-2 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 transition-all`}
             >
-              <div className="flex items-start justify-between mb-2">
+              <div className="flex items-start justify-between mb-1">
                 <div>
-                  <h3 className={`text-sm font-medium ${clockColor}`}>
+                  <h3 className={`text-xs font-medium ${clockColor}`}>
                     {clockType}
                   </h3>
-                  <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  <div className="flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
                     <Calendar className="h-3 w-3" />
-                    {startTime.toLocaleDateString()} {startTime.toLocaleTimeString()}
+                    {startTime.toLocaleDateString()}
                   </div>
                 </div>
                 {(session.status === 'in_progress' || session.status === 'aborted') && remainingTime > 0 && (
@@ -114,45 +114,45 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
                     onClick={() => handleContinueSession(session)}
                     className={`p-1 rounded-full border ${clockColor} border-current hover:bg-${clockColor.split('-')[1]}-50 dark:hover:bg-${clockColor.split('-')[1]}-500/10 transition-colors`}
                   >
-                    <Play className={`h-3 w-3 ${clockColor}`} />
+                    <Play className={`h-2.5 w-2.5 ${clockColor}`} />
                   </button>
                 )}
               </div>
 
-              <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-2">
+              <div className="flex items-center justify-between text-[10px] text-gray-600 dark:text-gray-400">
                 <div className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  <span>Session: {sessionDuration}m</span>
+                  <Clock className="h-2.5 w-2.5" />
+                  <span>{sessionDuration}m</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
+                  <Clock className="h-2.5 w-2.5" />
                   <span>{Math.round(progress)}%</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
+                  <Clock className="h-2.5 w-2.5" />
                   <span>{session.status === 'completed' ? 'Completed' : 'In Progress'}</span>
                 </div>
               </div>
 
               {session.words && session.words.length > 0 && (
-                <div className="flex flex-wrap items-center gap-1">
-                  {session.words.slice(0, 3).map((word, index) => (
+                <div className="flex flex-wrap items-center gap-1 mt-1">
+                  {session.words.slice(0, 2).map((word, index) => (
                     <span 
                       key={index}
-                      className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium border ${clockColor} border-current bg-transparent hover:bg-${clockColor.split('-')[1]}-50 dark:hover:bg-${clockColor.split('-')[1]}-500/10 transition-colors`}
+                      className={`inline-flex items-center px-1 py-0.5 rounded-full text-[10px] font-medium border ${clockColor} border-current bg-transparent hover:bg-${clockColor.split('-')[1]}-50 dark:hover:bg-${clockColor.split('-')[1]}-500/10 transition-colors`}
                     >
                       {word}
                     </span>
                   ))}
-                  {session.words.length > 3 && (
+                  {session.words.length > 2 && (
                     <button
                       onClick={() => {
                         setSelectedWords(session.words);
                         setIsWordsDialogOpen(true);
                       }}
-                      className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                      className="text-[10px] text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                     >
-                      +{session.words.length - 3} more
+                      +{session.words.length - 2} more
                     </button>
                   )}
                 </div>
