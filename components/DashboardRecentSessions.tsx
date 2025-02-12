@@ -20,15 +20,15 @@ const clockTitles = [
 
 // Clock colors mapping
 const clockColors = [
-  'text-red-500 bg-red-500',
-  'text-orange-500 bg-orange-500',
-  'text-yellow-500 bg-yellow-500',
-  'text-green-500 bg-green-500',
-  'text-blue-500 bg-blue-500',
-  'text-pink-500 bg-pink-500',
-  'text-purple-500 bg-purple-500',
-  'text-indigo-500 bg-indigo-500',
-  'text-cyan-500 bg-cyan-500'
+  'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-white/10',
+  'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-white/10',
+  'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-white/10',
+  'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-white/10',
+  'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-white/10',
+  'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-white/10',
+  'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-white/10',
+  'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-white/10',
+  'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-white/10'
 ];
 
 interface DashboardRecentSessionsProps {
@@ -76,105 +76,83 @@ export function DashboardRecentSessions({ sessions }: DashboardRecentSessionsPro
   return (
     <>
       <div className="grid grid-cols-1 gap-3">
-        {sessions.slice(0, 4).map((session) => {
+        {sessions.slice(0, 3).map((session) => {
           const clockType = clockTitles[session.clock_id] || 'Unknown Clock';
           const clockColor = clockColors[session.clock_id]?.split(' ')[0] || 'text-gray-500';
           const startTime = session.start_time.toDate();
           const lastActiveTime = session.last_active_time?.toDate() || startTime;
           const pausedDuration = session.paused_duration || 0;
           
-          // Calculate progress based on session status and active time
-          const progress = session.status === 'completed' ? 100 : 
-            session.status === 'aborted' ? 
-              Math.min((session.actual_duration / session.duration) * 100, 100) : 
-              Math.min(((lastActiveTime.getTime() - startTime.getTime() - pausedDuration) / session.duration) * 100, 100);
+          // Calculate time spent and remaining time
+          const timeSpent = session.status === 'completed' ? session.duration :
+            session.status === 'aborted' ? session.actual_duration || 0 :
+            lastActiveTime.getTime() - startTime.getTime() - pausedDuration;
+
+          const remainingTime = Math.max(0, session.duration - timeSpent);
+          const progress = Math.min((timeSpent / session.duration) * 100, 100);
+
+          // Format session duration in minutes
+          const sessionDuration = Math.ceil(session.duration / 60000);
 
           return (
             <div 
               key={session.id}
-              className={`p-3.5 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 transition-all ${
-                clockColors[session.clock_id].includes('red') ? 'hover:border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.3)]' :
-                clockColors[session.clock_id].includes('orange') ? 'hover:border-orange-500/50 hover:shadow-[0_0_15px_rgba(249,115,22,0.3)]' :
-                clockColors[session.clock_id].includes('yellow') ? 'hover:border-yellow-500/50 hover:shadow-[0_0_15px_rgba(234,179,8,0.3)]' :
-                clockColors[session.clock_id].includes('green') ? 'hover:border-green-500/50 hover:shadow-[0_0_15px_rgba(34,197,94,0.3)]' :
-                clockColors[session.clock_id].includes('blue') ? 'hover:border-blue-500/50 hover:shadow-[0_0_15px_rgba(59,130,246,0.3)]' :
-                clockColors[session.clock_id].includes('pink') ? 'hover:border-pink-500/50 hover:shadow-[0_0_15px_rgba(236,72,153,0.3)]' :
-                clockColors[session.clock_id].includes('purple') ? 'hover:border-purple-500/50 hover:shadow-[0_0_15px_rgba(147,51,234,0.3)]' :
-                clockColors[session.clock_id].includes('indigo') ? 'hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.3)]' :
-                'hover:border-cyan-500/50 hover:shadow-[0_0_15px_rgba(6,182,212,0.3)]'
-              }`}
+              className={`p-2 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 transition-all`}
             >
-              <div className="flex items-start justify-between mb-2">
+              <div className="flex items-start justify-between mb-1">
                 <div>
-                  <h3 className={`text-sm font-medium ${clockColor}`}>
+                  <h3 className={`text-xs font-medium text-gray-900 dark:text-white`}>
                     {clockType}
                   </h3>
-                  <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  <div className="flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
                     <Calendar className="h-3 w-3" />
                     {startTime.toLocaleDateString()}
                   </div>
                 </div>
-                {(session.status === 'in_progress' || session.status === 'aborted') && (
+                {(session.status === 'in_progress' || session.status === 'aborted') && remainingTime > 0 && (
                   <button
                     onClick={() => handleContinueSession(session)}
-                    className="p-1.5 rounded-full bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                    className="p-1 rounded-full border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
                   >
-                    <Play className="h-3.5 w-3.5 text-gray-600 dark:text-gray-300" />
+                    <Play className="h-2.5 w-2.5 text-gray-600 dark:text-gray-300" />
                   </button>
                 )}
               </div>
 
-              <div className="grid grid-cols-3 gap-1.5 my-2">
-                <div className="p-1 rounded-lg bg-gray-50 dark:bg-white/5">
-                  <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    Duration
-                  </span>
-                  <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                    {session.duration / 60000}m
-                  </span>
+              <div className="flex items-center justify-between text-[10px] text-gray-600 dark:text-gray-400">
+                <div className="flex items-center gap-1">
+                  <Clock className="h-2.5 w-2.5" />
+                  <span>{sessionDuration}m</span>
                 </div>
-                <div className="p-1 rounded-lg bg-gray-50 dark:bg-white/5">
-                  <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                    Progress
-                  </span>
-                  <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                    {Math.round(progress)}%
-                  </span>
+                <div className="flex items-center gap-1">
+                  <Clock className="h-2.5 w-2.5" />
+                  <span>{Math.round(progress)}%</span>
                 </div>
-                <div className="p-1 rounded-lg bg-gray-50 dark:bg-white/5">
-                  <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                    Status
-                  </span>
-                  <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                    {session.status}
-                  </span>
+                <div className="flex items-center gap-1">
+                  <Clock className="h-2.5 w-2.5" />
+                  <span>{session.status === 'completed' ? 'Completed' : 'In Progress'}</span>
                 </div>
               </div>
 
               {session.words && session.words.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {session.words.slice(0, 4).map((word, index) => (
+                <div className="flex flex-wrap items-center gap-1 mt-1">
+                  {session.words.slice(0, 2).map((word, index) => (
                     <span 
                       key={index}
-                      className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:${clockColor} hover:border-current transition-colors cursor-pointer`}
-                      onClick={() => {
-                        setSelectedWords(session.words);
-                        setIsWordsDialogOpen(true);
-                      }}
+                      className="inline-flex items-center px-1 py-0.5 rounded-full text-[10px] font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-white/10"
                     >
                       {word}
                     </span>
                   ))}
-                  {session.words.length > 4 && (
+                  {session.words.length > 2 && (
                     <button
                       onClick={() => {
                         setSelectedWords(session.words);
                         setIsWordsDialogOpen(true);
                       }}
-                      className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                      className="text-[10px] text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                     >
-                      +{session.words.length - 4} more
+                      +{session.words.length - 2} more
                     </button>
                   )}
                 </div>
