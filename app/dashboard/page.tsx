@@ -410,76 +410,177 @@ export default function DashboardPage() {
           onSatellitesChange={setShowSatellites}
         />
         <div className="max-w-6xl mx-auto space-y-4 p-4">
-          {/* Time and User Profile Section */}
+          {/* Profile and Progress Section */}
           {showInfoCards && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Time Card */}
-              <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-base font-semibold dark:text-white">Time</h2>
-                  <ClockIcon className="h-4 w-4 text-gray-500" />
+              <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-lg font-semibold dark:text-white">Time</h2>
+                  <Clock className="h-4 w-4 text-gray-500" />
                 </div>
-                <p className="text-3xl font-bold dark:text-white tracking-tight">
+                <p className="text-5xl font-bold dark:text-white tracking-tight">
                   {formatTime(currentTime)}
+                </p>
+                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                  {currentTime?.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                  })} ({new Intl.DateTimeFormat('en-US', { timeZoneName: 'short' }).formatToParts(new Date()).find(part => part.type === 'timeZoneName')?.value})
+                </p>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  {Intl.DateTimeFormat().resolvedOptions().timeZone}
                 </p>
               </Card>
 
-              {/* User Profile Card */}
-              {user && (
-                <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-                  <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-base font-semibold dark:text-white">Profile</h2>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setIsEditProfileOpen(true)}
-                        className="text-gray-600 dark:text-gray-300"
-                      >
-                        <Pencil className="h-4 w-4 mr-1" />
-                        Edit
-                      </Button>
-                      <User className="h-4 w-4 text-gray-500" />
-                    </div>
+              {/* Profile Card */}
+              <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-white/20 flex items-center justify-center">
+                    <span className="text-xl font-semibold dark:text-white">
+                      {user?.displayName?.[0] || 'U'}
+                    </span>
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      {user.photoURL && (
-                        <img src={user.photoURL} alt="Profile" className="w-12 h-12 rounded-full" />
-                      )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-2">
+                      <h2 className="text-lg font-semibold dark:text-white truncate">
+                        {user?.displayName || 'User'}
+                      </h2>
+                      <button 
+                        onClick={() => setIsEditProfileOpen(true)}
+                        className="px-3 py-1.5 text-sm bg-white dark:bg-white/20 rounded-md dark:text-white shadow-sm hover:shadow-md transition-shadow">
+                        Edit
+                      </button>
+                    </div>
+                    <p className="text-base text-gray-600 dark:text-gray-200 truncate">
+                      {user?.email || 'user@example.com'}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Member since March 2024
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {/* Weather and Moon Section */}
+          {showInfoCards && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {weatherData && (
+                <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium dark:text-white">{user.displayName || 'User'}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
+                        <h2 className="text-lg font-semibold dark:text-white mb-1">Current Weather</h2>
+                        <p className="text-base text-gray-500 dark:text-gray-400">{weatherData.current.condition.text}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-3xl font-bold dark:text-white">{weatherData.current.temp_c}°C</p>
+                        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                          <Droplets className="h-3.5 w-3.5" />
+                          <span>{weatherData.current.humidity}%</span>
+                        </div>
                       </div>
                     </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      <p>Last sign in: {timeStats.lastSignInTime ? timeStats.lastSignInTime.toLocaleString() : 'N/A'}</p>
-                      <p>Member since {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('en-US', { month: '2-digit', year: 'numeric' }) : 'N/A'}</p>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
+                        <div className="flex items-center gap-2">
+                          <Sun className="h-4 w-4 text-gray-600 dark:text-gray-200" />
+                          <span className="text-sm text-gray-600 dark:text-gray-200">UV Index</span>
+                        </div>
+                        <p className="text-lg font-semibold mt-1 dark:text-white">{weatherData.current.uv}</p>
+                      </div>
+                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
+                        <div className="flex items-center gap-2">
+                          <Gauge className="h-4 w-4 text-gray-600 dark:text-gray-200" />
+                          <span className="text-sm text-gray-600 dark:text-gray-200">Pressure</span>
+                        </div>
+                        <p className="text-lg font-semibold mt-1 dark:text-white">{weatherData.current.pressure_mb} mb</p>
+                      </div>
+                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
+                        <div className="flex items-center gap-2">
+                          <Wind className="h-4 w-4 text-gray-600 dark:text-gray-200" />
+                          <span className="text-sm text-gray-600 dark:text-gray-200">Wind</span>
+                        </div>
+                        <p className="text-lg font-semibold mt-1 dark:text-white">{weatherData.current.wind_kph} km/h</p>
+                      </div>
                     </div>
                   </div>
                 </Card>
               )}
+
+              <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-lg font-semibold dark:text-white">Moon Phase</h2>
+                  <Moon className="h-4 w-4 text-gray-500" />
+                </div>
+                {moon && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-full border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all flex items-center justify-center">
+                        <Moon className="w-10 h-10 text-gray-600 dark:text-gray-200" />
+                      </div>
+                      <div>
+                        <p className="text-base font-semibold dark:text-white">{moon.moon_phase}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{moon.moon_illumination}% illuminated</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Moonrise</p>
+                        <p className="text-base font-semibold dark:text-white">{moon.moonrise}</p>
+                      </div>
+                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Moonset</p>
+                        <p className="text-base font-semibold dark:text-white">{moon.moonset}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </Card>
             </div>
           )}
 
           {/* Location, Connect, and Device Section */}
           {showInfoCards && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Location Card */}
               {weatherData && (
-                <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-                  <div className="flex items-center justify-between mb-2">
-                    <h2 className="text-base font-semibold dark:text-white">Location</h2>
+                <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-lg font-semibold dark:text-white">Location</h2>
                     <MapPin className="h-4 w-4 text-gray-500" />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-full bg-gray-100 dark:bg-white/20">
+                        <MapPin className="h-4 w-4 text-gray-600 dark:text-gray-200" />
+                      </div>
                       <div>
                         <p className="text-base font-medium dark:text-white">{weatherData.location.name}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {weatherData.location.region && `${weatherData.location.region}, `}{weatherData.location.country}
-                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{weatherData.location.country}</p>
                       </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-200">
+                          <Mountain className="h-3.5 w-3.5" />
+                          <span className="text-sm">Elevation</span>
+                        </div>
+                        <p className="text-base font-medium dark:text-white">1,234 m</p>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-200">
+                          <Waves className="h-3.5 w-3.5" />
+                          <span className="text-sm">Sea Level</span>
+                        </div>
+                        <p className="text-base font-medium dark:text-white">+45 m</p>
+                      </div>
+                    </div>
+                    <div className="pt-2 text-sm text-gray-500 dark:text-gray-400">
+                      {weatherData.location.lat.toFixed(4)}°N, {weatherData.location.lon.toFixed(4)}°E
                     </div>
                   </div>
                 </Card>
@@ -553,84 +654,6 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 </div>
-              </Card>
-            </div>
-          )}
-
-          {/* Weather and Moon Section */}
-          {showInfoCards && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {weatherData && (
-                <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h2 className="text-base font-semibold dark:text-white mb-1">Current Weather</h2>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{weatherData.current.condition.text}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-3xl font-bold dark:text-white">{weatherData.current.temp_c}°C</p>
-                        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                          <Droplets className="h-3.5 w-3.5" />
-                          <span>{weatherData.current.humidity}%</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
-                        <div className="flex items-center gap-2">
-                          <Sun className="h-4 w-4 text-gray-600 dark:text-gray-200" />
-                          <span className="text-sm text-gray-600 dark:text-gray-200">UV Index</span>
-                        </div>
-                        <p className="text-lg font-semibold mt-1 dark:text-white">{weatherData.current.uv}</p>
-                      </div>
-                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
-                        <div className="flex items-center gap-2">
-                          <Gauge className="h-4 w-4 text-gray-600 dark:text-gray-200" />
-                          <span className="text-sm text-gray-600 dark:text-gray-200">Pressure</span>
-                        </div>
-                        <p className="text-lg font-semibold mt-1 dark:text-white">{weatherData.current.pressure_mb} mb</p>
-                      </div>
-                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
-                        <div className="flex items-center gap-2">
-                          <Wind className="h-4 w-4 text-gray-600 dark:text-gray-200" />
-                          <span className="text-sm text-gray-600 dark:text-gray-200">Wind</span>
-                        </div>
-                        <p className="text-lg font-semibold mt-1 dark:text-white">{weatherData.current.wind_kph} km/h</p>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              )}
-
-              <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-base font-semibold dark:text-white">Moon Phase</h2>
-                  <Moon className="h-4 w-4 text-gray-500" />
-                </div>
-                {moon && (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-full border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all flex items-center justify-center">
-                        <Moon className="w-10 h-10 text-gray-600 dark:text-gray-200" />
-                      </div>
-                      <div>
-                        <p className="text-base font-semibold dark:text-white">{moon.moon_phase}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{moon.moon_illumination}% illuminated</p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Moonrise</p>
-                        <p className="text-sm font-semibold dark:text-white">{moon.moonrise}</p>
-                      </div>
-                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Moonset</p>
-                        <p className="text-sm font-semibold dark:text-white">{moon.moonset}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </Card>
             </div>
           )}
