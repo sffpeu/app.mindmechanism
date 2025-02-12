@@ -190,6 +190,9 @@ export default function Clock({
   const duration = searchParams.get('duration');
   const sessionId = searchParams.get('sessionId');
 
+  // Add new state for auto-save
+  const [lastAutoSave, setLastAutoSave] = useState<number>(Date.now());
+
   // Initialize session
   useEffect(() => {
     if (duration) {
@@ -200,7 +203,7 @@ export default function Clock({
     }
   }, [duration]);
 
-  // Timer effect
+  // Timer effect with auto-save
   useEffect(() => {
     if (!initialDuration || isPaused) return;
 
@@ -208,6 +211,15 @@ export default function Clock({
       const now = new Date().getTime();
       const elapsed = now - (sessionStartTime || now);
       const remaining = initialDuration - elapsed;
+      
+      // Auto-save every 5 seconds
+      if (now - lastAutoSave >= 5000 && sessionId) {
+        updateSession(sessionId, {
+          actual_duration: initialDuration - remaining,
+          last_active_time: new Date().toISOString()
+        });
+        setLastAutoSave(now);
+      }
       
       if (remaining <= 0) {
         setRemainingTime(0);
@@ -220,7 +232,7 @@ export default function Clock({
     }, 1000);
     
     return () => clearInterval(timer);
-  }, [initialDuration, isPaused, sessionStartTime]);
+  }, [initialDuration, isPaused, sessionStartTime, lastAutoSave, sessionId]);
 
   const handleSessionComplete = async () => {
     if (!sessionId || !user?.uid) return;
@@ -238,36 +250,37 @@ export default function Clock({
     }
   };
 
+  // Enhanced handlePauseResume with better state persistence
   const handlePauseResume = async () => {
     if (!sessionId) return;
 
     try {
       if (isPaused) {
         // Resuming - update last active time and adjust start time
-        await updateSessionActivity(sessionId);
         const now = new Date().getTime();
         const newStartTime = now - (initialDuration! - (remainingTime || 0));
+        
+        await updateSession(sessionId, {
+          status: 'in_progress',
+          last_active_time: new Date().toISOString(),
+          actual_duration: initialDuration! - (remainingTime || 0)
+        });
+        
         setSessionStartTime(newStartTime);
         setIsPaused(false);
+        setLastAutoSave(now);
       } else {
-        // Pausing - update paused duration and session status
-        await pauseSession(sessionId);
+        // Pausing - save current state
+        const now = new Date();
+        await updateSession(sessionId, {
+          status: 'in_progress',
+          actual_duration: initialDuration! - (remainingTime || 0),
+          last_active_time: now.toISOString(),
+          paused_duration: (pausedTimeRemaining || 0) + (now.getTime() - (sessionStartTime || now.getTime()))
+        });
+        
         setIsPaused(true);
-        
-        // Update session status to aborted if user navigates away
-        const handleVisibilityChange = async () => {
-          if (document.hidden) {
-            await updateSession(sessionId, {
-              status: 'aborted',
-              actual_duration: initialDuration! - (remainingTime || 0),
-              end_time: new Date().toISOString(),
-              last_active_time: new Date().toISOString()
-            });
-          }
-        };
-        
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+        setPausedTimeRemaining(remainingTime);
       }
     } catch (error) {
       console.error('Error updating session pause state:', error);
@@ -312,15 +325,31 @@ export default function Clock({
     return () => clearInterval(activityInterval);
   }, [sessionId, isPaused, remainingTime]);
 
-  // Handle page visibility changes
+  // Enhanced page visibility handler
   useEffect(() => {
     if (!sessionId) return;
 
     const handleVisibilityChange = async () => {
       if (document.hidden && !isPaused) {
         try {
-          await pauseSession(sessionId);
+          const now = new Date();
+          await updateSession(sessionId, {
+            status: 'in_progress',
+            actual_duration: initialDuration! - (remainingTime || 0),
+            last_active_time: now.toISOString(),
+            paused_duration: (pausedTimeRemaining || 0) + (now.getTime() - (sessionStartTime || now.getTime()))
+          });
+          
           setIsPaused(true);
+          setPausedTimeRemaining(remainingTime);
+          
+          // Save to localStorage as fallback
+          localStorage.setItem('pendingSession', JSON.stringify({
+            sessionId,
+            remaining: remainingTime,
+            original: initialDuration,
+            timestamp: now.getTime()
+          }));
         } catch (error) {
           console.error('Error handling visibility change:', error);
         }
@@ -329,25 +358,29 @@ export default function Clock({
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [sessionId, isPaused]);
+  }, [sessionId, isPaused, remainingTime, initialDuration, sessionStartTime, pausedTimeRemaining]);
 
-  // Handle beforeunload event
+  // Add session recovery on mount
   useEffect(() => {
-    if (!sessionId) return;
-
-    const handleBeforeUnload = async () => {
-      if (!isPaused) {
-        try {
-          await pauseSession(sessionId);
-        } catch (error) {
-          console.error('Error handling page unload:', error);
+    const savedSession = localStorage.getItem('pendingSession');
+    if (savedSession) {
+      try {
+        const { sessionId: savedId, remaining, timestamp } = JSON.parse(savedSession);
+        
+        // Only recover if session is less than 24h old
+        if (Date.now() - timestamp < 24 * 60 * 60 * 1000) {
+          setRemainingTime(remaining);
+          setPausedTimeRemaining(remaining);
+          setIsPaused(true);
+        } else {
+          localStorage.removeItem('pendingSession');
         }
+      } catch (error) {
+        console.error('Error recovering session:', error);
+        localStorage.removeItem('pendingSession');
       }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [sessionId, isPaused]);
+    }
+  }, []);
 
   // Handle image error
   const handleImageError = () => {

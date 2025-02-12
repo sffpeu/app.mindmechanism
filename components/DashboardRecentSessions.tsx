@@ -104,17 +104,29 @@ export function DashboardRecentSessions({ sessions: propSessions }: DashboardRec
 
   const handleContinueSession = (session: Session) => {
     if (session.status === 'in_progress' || session.status === 'aborted') {
+      const now = new Date().getTime();
+      const startTime = session.start_time.toDate().getTime();
+      const lastActiveTime = session.last_active_time?.toDate()?.getTime() || startTime;
+      const pausedDuration = session.paused_duration || 0;
+      
+      // Calculate actual time spent excluding paused duration
       const timeSpent = session.status === 'aborted' ?
         session.actual_duration || 0 :
-        (session.last_active_time?.toDate()?.getTime() || session.start_time.toDate().getTime()) - 
-        session.start_time.toDate().getTime() - 
-        (session.paused_duration || 0);
+        lastActiveTime - startTime - pausedDuration;
 
+      // Calculate remaining time and check session expiry
       const remainingTime = Math.max(0, session.duration - timeSpent);
+      const sessionAge = now - lastActiveTime;
       
-      if (remainingTime > 0) {
+      if (remainingTime > 0 && sessionAge < 24 * 60 * 60 * 1000) { // 24h expiry
         const encodedWords = encodeURIComponent(JSON.stringify(session.words));
         router.push(`/clock/${session.clock_id}?duration=${remainingTime}&words=${encodedWords}&sessionId=${session.id}`);
+        
+        // Clean up any existing pending session
+        localStorage.removeItem('pendingSession');
+      } else {
+        // Session expired - create a new one
+        router.push(`/clock/${session.clock_id}?duration=${session.duration}&words=${encodeURIComponent(JSON.stringify(session.words))}`);
       }
     }
   };
