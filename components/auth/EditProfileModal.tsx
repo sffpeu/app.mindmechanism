@@ -251,18 +251,18 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <User className="w-16 h-16 text-gray-400" />
+                      <User className="w-16 h-16 text-gray-400 dark:text-gray-600" />
                     </div>
                   )}
                 </div>
                 <label
                   htmlFor="avatar-upload"
-                  className="absolute bottom-2 right-2 rounded-full w-8 h-8 flex items-center justify-center bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                  className="absolute bottom-0 right-0 p-1.5 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
-                  <ImageIcon className="h-4 w-4" />
+                  <ImageIcon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                   <input
-                    type="file"
                     id="avatar-upload"
+                    type="file"
                     accept="image/*"
                     onChange={handleImageUpload}
                     className="hidden"
@@ -271,138 +271,124 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
               </div>
 
               <div className="w-full space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="username" className="text-sm font-medium text-gray-700 dark:text-gray-300">Username</Label>
+                <div>
+                  <Label htmlFor="username" className="text-gray-900 dark:text-gray-100">Username</Label>
                   <Input
                     id="username"
                     value={username}
                     onChange={(e) => handleUsernameChange(e.target.value)}
-                    placeholder="Enter username"
-                    className={`${usernameError ? 'border-red-500' : ''} bg-white dark:bg-gray-800/50`}
+                    className="bg-white dark:bg-black/60 border-gray-200 dark:border-white/10 text-gray-900 dark:text-gray-100"
                   />
                   {usernameError && (
-                    <p className="text-xs text-red-500">{usernameError}</p>
+                    <p className="mt-1 text-sm text-red-500 dark:text-red-400">{usernameError}</p>
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">Email</Label>
-                  <Input
-                    id="email"
-                    value={user?.email || ''}
-                    disabled
-                    className="bg-gray-50 dark:bg-gray-800/30 text-gray-500 dark:text-gray-400"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Panel - Additional Info and Settings */}
-          <div className="overflow-y-auto">
-            <div className="p-6 space-y-6">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="bio" className="text-sm font-medium text-gray-700 dark:text-gray-300">Bio</Label>
+                <div>
+                  <Label htmlFor="bio" className="text-gray-900 dark:text-gray-100">Bio</Label>
                   <Textarea
                     id="bio"
                     value={profile.bio}
-                    onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                    placeholder="Tell us about yourself"
-                    className="h-20 resize-none bg-white dark:bg-gray-800/50"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="birthdate" className="text-sm font-medium text-gray-700 dark:text-gray-300">Birth Date</Label>
-                  <Input
-                    id="birthdate"
-                    type="date"
-                    value={profile.birthdate}
-                    onChange={(e) => setProfile({ ...profile, birthdate: e.target.value })}
-                    className="bg-white dark:bg-gray-800/50"
+                    onChange={(e) => setProfile(prev => ({ ...prev, bio: e.target.value }))}
+                    className="h-20 bg-white dark:bg-black/60 border-gray-200 dark:border-white/10 text-gray-900 dark:text-gray-100"
                   />
                 </div>
               </div>
-
-              <Separator className="bg-gray-200 dark:bg-gray-700" />
-
-              {/* Settings Section */}
-              <div className="space-y-6">
-                <div className="space-y-3">
-                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">Privacy & Permissions</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="locationData" className="text-sm text-gray-600 dark:text-gray-400">Location Access</Label>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Allow app to access your location for better experience</p>
-                      </div>
-                      <Switch
-                        id="locationData"
-                        checked={profile.preferences.allowLocationData}
-                        onCheckedChange={(checked) => setProfile({
-                          ...profile,
-                          preferences: { ...profile.preferences, allowLocationData: checked }
-                        })}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="emailNotifications" className="text-sm text-gray-600 dark:text-gray-400">Email Notifications</Label>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Receive email updates about your sessions</p>
-                      </div>
-                      <Switch
-                        id="emailNotifications"
-                        checked={profile.preferences.emailNotifications}
-                        onCheckedChange={(checked) => setProfile({
-                          ...profile,
-                          preferences: { ...profile.preferences, emailNotifications: checked }
-                        })}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">Security</h3>
-                  <div className="space-y-2">
-                    <Label htmlFor="sessionTimeout" className="text-sm text-gray-700 dark:text-gray-300">Session Timeout (minutes)</Label>
-                    <Input
-                      id="sessionTimeout"
-                      type="number"
-                      value={profile.security.sessionTimeout}
-                      onChange={(e) => setProfile({
-                        ...profile,
-                        security: { ...profile.security, sessionTimeout: parseInt(e.target.value) || 30 }
-                      })}
-                      min="5"
-                      max="120"
-                      className="bg-white dark:bg-gray-800/50"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="sticky bottom-0 flex justify-end gap-2 px-6 py-4 border-t border-gray-200 dark:border-white/10 bg-white dark:bg-black">
-              <Button 
-                variant="outline" 
-                onClick={onClose} 
-                disabled={loading}
-                className="bg-white dark:bg-black text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50"
-              >
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleSave} 
-                disabled={loading || !!usernameError}
-                className="bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90"
-              >
-                {loading ? 'Saving...' : 'Save Changes'}
-              </Button>
             </div>
           </div>
+
+          {/* Right Panel - Settings */}
+          <div className="p-6 space-y-6 overflow-y-auto">
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                Notifications
+              </h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-gray-900 dark:text-gray-100">Email Notifications</Label>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Receive email updates about your activity</p>
+                  </div>
+                  <Switch
+                    checked={profile.preferences.emailNotifications}
+                    onCheckedChange={(checked) => setProfile(prev => ({
+                      ...prev,
+                      preferences: { ...prev.preferences, emailNotifications: checked }
+                    }))}
+                    className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-white"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <Separator className="border-gray-200 dark:border-white/10" />
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                <Globe className="h-5 w-5" />
+                Location
+              </h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-gray-900 dark:text-gray-100">Location Data</Label>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Allow access to your location data</p>
+                  </div>
+                  <Switch
+                    checked={profile.preferences.allowLocationData}
+                    onCheckedChange={(checked) => setProfile(prev => ({
+                      ...prev,
+                      preferences: { ...prev.preferences, allowLocationData: checked }
+                    }))}
+                    className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-white"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <Separator className="border-gray-200 dark:border-white/10" />
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Security
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="session-timeout" className="text-gray-900 dark:text-gray-100">Session Timeout (minutes)</Label>
+                  <Input
+                    id="session-timeout"
+                    type="number"
+                    value={profile.security.sessionTimeout}
+                    onChange={(e) => setProfile(prev => ({
+                      ...prev,
+                      security: { ...prev.security, sessionTimeout: parseInt(e.target.value) || 30 }
+                    }))}
+                    min="1"
+                    className="bg-white dark:bg-black/60 border-gray-200 dark:border-white/10 text-gray-900 dark:text-gray-100"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-4 p-6 border-t border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-black/40">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/5 text-gray-900 dark:text-gray-100"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={loading || !!usernameError}
+            className="bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-100"
+          >
+            {loading ? 'Saving...' : 'Save Changes'}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

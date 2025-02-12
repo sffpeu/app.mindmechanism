@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Menu as MenuIcon, X, Settings, Sun, Moon, Eye, Home, LayoutGrid, Play, BookOpen, ClipboardList, LogOut, Info, LayoutDashboard } from 'lucide-react'
+import { Menu as MenuIcon, X, Settings, Sun, Moon, Eye, Home, LayoutGrid, Play, BookOpen, ClipboardList, LogOut, Info, LayoutDashboard, Clock } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -55,72 +55,44 @@ export function Menu({
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="absolute left-0 mt-2 w-72 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 shadow-lg"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.1 }}
+            className="absolute top-12 left-0 w-64 p-2 rounded-lg bg-white dark:bg-black/90 backdrop-blur-lg border border-black/5 dark:border-white/10 shadow-lg"
           >
             <div className="p-2">
-              <nav className="space-y-1">
-                <Link
-                  href="/"
-                  className="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    <Home className="h-5 w-5" />
-                    <span className="font-medium">Home</span>
-                  </div>
-                </Link>
-                <Link
-                  href="/dashboard"
-                  className="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    <LayoutDashboard className="h-5 w-5" />
-                    <span className="font-medium">Dashboard</span>
-                  </div>
-                </Link>
-                <Link
-                  href="/sessions"
-                  className="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    <Play className="h-5 w-5" />
-                    <span className="font-medium">Sessions</span>
-                  </div>
-                </Link>
-                <Link
-                  href="/glossary"
-                  className="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    <BookOpen className="h-5 w-5" />
-                    <span className="font-medium">Glossary</span>
-                  </div>
-                </Link>
-                <Link
-                  href="/notes"
-                  className="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    <ClipboardList className="h-5 w-5" />
-                    <span className="font-medium">Notes</span>
-                  </div>
-                </Link>
-                <Link
-                  href="/settings"
-                  className="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    <Settings className="h-5 w-5" />
-                    <span className="font-medium">Settings</span>
-                  </div>
-                </Link>
-              </nav>
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-all"
+              >
+                <LayoutDashboard className="h-5 w-5" />
+                <span className="font-medium">Dashboard</span>
+              </Link>
+              <Link
+                href="/sessions"
+                className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-all"
+              >
+                <Clock className="h-5 w-5" />
+                <span className="font-medium">Sessions</span>
+              </Link>
+              <Link
+                href="/notes"
+                className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-all"
+              >
+                <ClipboardList className="h-5 w-5" />
+                <span className="font-medium">Notes</span>
+              </Link>
+              <Link
+                href="/glossary"
+                className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-all"
+              >
+                <BookOpen className="h-5 w-5" />
+                <span className="font-medium">Glossary</span>
+              </Link>
             </div>
 
-            {/* Theme Toggle Section */}
+            {/* Settings Section */}
             <div className="p-2 border-t border-gray-200 dark:border-white/10">
               <button
                 onClick={() => setIsDarkMode(!isDarkMode)}

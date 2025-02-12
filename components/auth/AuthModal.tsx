@@ -64,29 +64,31 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
       <DialogContent className="bg-white dark:bg-black/90 border border-gray-200 dark:border-white/10">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-gray-900 dark:text-gray-100">Email</Label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              className="bg-white dark:bg-black/60 border-gray-200 dark:border-white/10 text-gray-900 dark:text-gray-100"
             />
           </div>
           <div>
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-gray-900 dark:text-gray-100">Password</Label>
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              className="bg-white dark:bg-black/60 border-gray-200 dark:border-white/10 text-gray-900 dark:text-gray-100"
             />
           </div>
           {error && (
-            <p className="text-sm text-red-500">{error}</p>
+            <p className="text-sm text-red-500 dark:text-red-400">{error}</p>
           )}
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-100">
             {mode === 'signin' ? 'Sign In' : 'Sign Up'}
           </Button>
           <div className="relative">
@@ -103,7 +105,7 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
             type="button"
             variant="outline"
             onClick={handleGoogleSignIn}
-            className="w-full"
+            className="w-full border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/5 text-gray-900 dark:text-gray-100"
           >
             Continue with Google
           </Button>
