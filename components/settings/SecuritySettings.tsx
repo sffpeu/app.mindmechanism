@@ -1,39 +1,32 @@
+'use client'
+
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Shield, Mail } from 'lucide-react'
-import { getAuth } from 'firebase/auth'
 
 export function SecuritySettings() {
   const { user } = useAuth()
-  const auth = getAuth()
 
   const handleManageAccount = () => {
-    // This will open Firebase's account management page
-    if (auth.currentUser) {
-      window.open(`https://console.firebase.google.com/project/_/authentication/users/${auth.currentUser.uid}`, '_blank')
-    }
+    window.open('https://myaccount.google.com/security', '_blank')
   }
 
   return (
-    <Card className="p-6">
-      <h2 className="text-2xl font-semibold mb-4">Login & Security</h2>
-      <div className="space-y-4">
-        <div className="flex flex-col space-y-2">
-          <p className="text-sm text-muted-foreground">Sign-in Provider</p>
-          <div className="flex items-center gap-2">
-            <Mail className="h-4 w-4" />
-            <p className="font-medium">Google Account</p>
-          </div>
+    <Card className="p-4 bg-white/50 dark:bg-black/50">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Mail className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+          <p className="font-medium text-gray-900 dark:text-white">Google Account</p>
         </div>
-        
         <Button 
           variant="outline" 
-          className="w-full flex items-center justify-center gap-2"
+          size="sm"
           onClick={handleManageAccount}
+          className="flex items-center gap-1.5"
         >
           <Shield className="h-4 w-4" />
-          Manage Account Security
+          Manage Security
         </Button>
       </div>
     </Card>
