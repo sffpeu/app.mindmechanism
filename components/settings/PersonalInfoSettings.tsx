@@ -59,9 +59,9 @@ export function PersonalInfoSettings() {
   }
 
   return (
-    <Card className="p-6">
-      <h2 className="text-2xl font-semibold mb-4">Personal Information</h2>
-      <div className="space-y-6">
+    <Card className="p-4 bg-white/50 dark:bg-black/50">
+      <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Personal Information</h2>
+      <div className="space-y-4">
         {/* Profile Image */}
         <div className="flex items-center gap-4">
           <div className="relative">
@@ -69,16 +69,16 @@ export function PersonalInfoSettings() {
               <img 
                 src={user.photoURL} 
                 alt="Profile" 
-                className="w-16 h-16 rounded-full object-cover"
+                className="w-16 h-16 rounded-full object-cover ring-2 ring-white/10 dark:ring-black/10"
               />
             ) : (
-              <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                <User className="h-8 w-8 text-gray-500 dark:text-gray-400" />
+              <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center ring-2 ring-white/10 dark:ring-black/10">
+                <User className="h-8 w-8 text-gray-400 dark:text-gray-500" />
               </div>
             )}
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="absolute bottom-0 right-0 p-1.5 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              className="absolute bottom-0 right-0 p-1.5 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               <Camera className="h-4 w-4 text-gray-600 dark:text-gray-300" />
             </button>
@@ -91,8 +91,8 @@ export function PersonalInfoSettings() {
             />
           </div>
           <div>
-            <p className="text-sm font-medium">Profile Image</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm font-medium text-gray-900 dark:text-white">Profile Image</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Click the camera icon to change your profile image
             </p>
           </div>
@@ -100,28 +100,29 @@ export function PersonalInfoSettings() {
 
         {/* Display Name */}
         <div className="space-y-2">
-          <Label htmlFor="displayName">Display Name</Label>
+          <Label htmlFor="displayName" className="text-gray-700 dark:text-gray-300">Display Name</Label>
           <Input
             id="displayName"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
             placeholder="Enter your display name"
+            className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
           />
         </div>
 
         {/* Email */}
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email" className="text-gray-700 dark:text-gray-300">Email</Label>
           <div className="flex items-center gap-2">
             <Input
               id="email"
               value={user?.email || ''}
               disabled
-              className="bg-gray-50 dark:bg-gray-800"
+              className="bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
             />
             <div className="relative group">
-              <AlertCircle className="h-5 w-5 text-gray-400" />
-              <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-1 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+              <AlertCircle className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-1 bg-gray-900 dark:bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                 Email cannot be changed when using Google Sign-in
               </div>
             </div>
@@ -129,12 +130,13 @@ export function PersonalInfoSettings() {
         </div>
 
         {error && (
-          <p className="text-sm text-red-500">{error}</p>
+          <p className="text-sm text-red-500 dark:text-red-400">{error}</p>
         )}
 
         <Button 
           onClick={handleUpdateProfile}
           disabled={isUpdating || !displayName.trim() || displayName === user?.displayName}
+          className="w-full"
         >
           {isUpdating ? 'Updating...' : 'Save Changes'}
         </Button>
