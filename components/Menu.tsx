@@ -90,13 +90,6 @@ export function Menu({
                 <BookOpen className="h-5 w-5" />
                 <span className="font-medium">Glossary</span>
               </Link>
-              <Link
-                href="/settings"
-                className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-all"
-              >
-                <Settings className="h-5 w-5" />
-                <span className="font-medium">Settings</span>
-              </Link>
             </div>
 
             {/* Settings Section */}

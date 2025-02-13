@@ -422,6 +422,30 @@ export default function DashboardPage() {
                   {formatTime(currentTime)}
                 </p>
               </Card>
+
+              {/* User Profile Card */}
+              {user && (
+                <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-base font-semibold dark:text-white">Profile</h2>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                      {user.photoURL && (
+                        <img src={user.photoURL} alt="Profile" className="w-12 h-12 rounded-full" />
+                      )}
+                      <div>
+                        <p className="font-medium dark:text-white">{user.displayName || 'User'}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
+                      </div>
+                    </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      <p>Last sign in: {timeStats.lastSignInTime ? timeStats.lastSignInTime.toLocaleString() : 'N/A'}</p>
+                      <p>Member since {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('en-US', { month: '2-digit', year: 'numeric' }) : 'N/A'}</p>
+                    </div>
+                  </div>
+                </Card>
+              )}
             </div>
           )}
 
