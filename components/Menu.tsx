@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { useTheme } from '@/app/ThemeContext'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import Image from 'next/image'
+import { SettingsDialog } from './settings/SettingsDialog'
 
 interface MenuProps {
   showElements?: boolean
@@ -110,6 +111,14 @@ export function Menu({
                   className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-white data-[state=unchecked]:bg-black/20 dark:data-[state=unchecked]:bg-white/20"
                 />
               </button>
+
+              <button
+                onClick={() => setIsSettingsOpen(true)}
+                className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-all"
+              >
+                <Settings className="h-5 w-5" />
+                <span className="font-medium">Settings</span>
+              </button>
             </div>
 
             {/* Sign Out Section */}
@@ -129,6 +138,11 @@ export function Menu({
           </motion.div>
         )}
       </AnimatePresence>
+
+      <SettingsDialog 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+      />
     </div>
   )
 } 
