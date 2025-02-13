@@ -6,22 +6,42 @@ interface ThemeContextType {
   isDarkMode: boolean
   setIsDarkMode: (value: boolean) => void
   theme: 'light' | 'dark'
+  themePreference: 'light' | 'dark' | 'system'
+  setThemePreference: (value: 'light' | 'dark' | 'system') => void
 }
 
 export const ThemeContext = createContext<ThemeContextType>({
   isDarkMode: false,
   setIsDarkMode: () => {},
-  theme: 'light'
+  theme: 'light',
+  themePreference: 'system',
+  setThemePreference: () => {}
 })
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [isDarkMode, setIsDarkMode] = useState(false)
+  const [themePreference, setThemePreference] = useState<'light' | 'dark' | 'system'>('system')
 
   useEffect(() => {
-    // Check system preference
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    setIsDarkMode(prefersDark)
+    // Load saved preference from localStorage
+    const savedPreference = localStorage.getItem('themePreference') as 'light' | 'dark' | 'system' | null
+    if (savedPreference) {
+      setThemePreference(savedPreference)
+    }
   }, [])
+
+  useEffect(() => {
+    // Save preference to localStorage
+    localStorage.setItem('themePreference', themePreference)
+
+    // Apply theme based on preference
+    if (themePreference === 'system') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      setIsDarkMode(prefersDark)
+    } else {
+      setIsDarkMode(themePreference === 'dark')
+    }
+  }, [themePreference])
 
   useEffect(() => {
     // Update document class when dark mode changes
@@ -37,7 +57,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       value={{ 
         isDarkMode, 
         setIsDarkMode,
-        theme: isDarkMode ? 'dark' : 'light'
+        theme: isDarkMode ? 'dark' : 'light',
+        themePreference,
+        setThemePreference
       }}
     >
       {children}
