@@ -1,7 +1,7 @@
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Shield, Google } from 'lucide-react'
+import { Shield, Mail } from 'lucide-react'
 import { getAuth } from 'firebase/auth'
 
 export function SecuritySettings() {
@@ -22,7 +22,7 @@ export function SecuritySettings() {
         <div className="flex flex-col space-y-2">
           <p className="text-sm text-muted-foreground">Sign-in Provider</p>
           <div className="flex items-center gap-2">
-            <Google className="h-4 w-4" />
+            <Mail className="h-4 w-4" />
             <p className="font-medium">Google Account</p>
           </div>
         </div>
