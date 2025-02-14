@@ -81,7 +81,10 @@ export const defaultSatelliteConfigs: Record<number, Array<{ rotationTime: numbe
 
 // Function to get the correct image path
 const getImagePath = (index: number) => {
-  return `/clock_${index + 1}.svg`;
+  console.log(`Getting image path for index ${index}`);
+  const path = `/${index + 1}_clock.svg`;
+  console.log(`Returning path: ${path}`);
+  return path;
 };
 
 interface ClockProps extends Partial<ClockSettings> {
@@ -882,7 +885,7 @@ export default function Clock({
                     }}
                   >
                     <Image 
-                      src={getImagePath(index)}
+                      src={clock.imageUrl}
                       alt={`Clock Face ${index + 1}`}
                       layout="fill"
                       objectFit="cover"
@@ -976,7 +979,7 @@ export default function Clock({
                         }}
                       >
                         <Image 
-                          src={getImagePath(index)}
+                          src={clock.imageUrl}
                           alt={`Clock Face ${index + 1}`}
                           layout="fill"
                           objectFit="cover"
