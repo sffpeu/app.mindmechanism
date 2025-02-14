@@ -123,6 +123,13 @@ const formatTime = (ms: number) => {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
+  const hours = Math.floor(minutes / 60);
+  
+  if (hours > 0) {
+    const remainingMinutes = minutes % 60;
+    return `${hours}:${remainingMinutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }
+  
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 };
 
@@ -194,58 +201,25 @@ export default function Clock({
     if (duration) {
       const durationMs = parseInt(duration);
       if (!isNaN(durationMs)) {
-        console.log('Timer initialization:', {
-          rawDuration: duration,
-          parsedDurationMs: durationMs,
-          formattedTime: formatTime(durationMs),
-          now: new Date().toISOString()
-        });
         const now = Date.now();
         setInitialDuration(durationMs);
         setRemainingTime(durationMs);
         setSessionStartTime(now);
         setIsPaused(false);
         setLastAutoSave(now);
-      } else {
-        console.error('Invalid duration parameter:', {
-          rawDuration: duration,
-          parsedValue: durationMs,
-          isNaN: isNaN(durationMs)
-        });
       }
     }
-  }, [duration]); // Add duration to dependency array to ensure it updates when duration changes
+  }, [duration]);
 
   // Timer effect with auto-save
   useEffect(() => {
-    if (!initialDuration || isPaused) {
-      console.log('Timer not started:', {
-        initialDuration,
-        isPaused,
-        remainingTime: formatTime(remainingTime || 0)
-      });
-      return;
-    }
-
-    console.log('Starting timer with:', {
-      initialDuration: formatTime(initialDuration),
-      sessionStartTime: new Date(sessionStartTime || Date.now()).toISOString(),
-      isPaused,
-      remainingTime: formatTime(remainingTime || 0)
-    });
+    if (!initialDuration || isPaused) return;
 
     const timer = setInterval(() => {
       const now = Date.now();
       const startTime = sessionStartTime || now;
       const elapsed = now - startTime;
       const remaining = Math.max(0, initialDuration - elapsed);
-      
-      console.log('Timer update:', {
-        elapsed: formatTime(elapsed),
-        remaining: formatTime(remaining),
-        initialDuration: formatTime(initialDuration),
-        formattedTime: formatTime(remaining)
-      });
       
       setRemainingTime(remaining);
       
@@ -293,9 +267,9 @@ export default function Clock({
     if (!sessionId) return;
 
     try {
+      const now = Date.now();
       if (isPaused) {
         // Resuming - adjust start time to account for paused duration
-        const now = Date.now();
         const elapsedBeforePause = initialDuration! - (pausedTimeRemaining || 0);
         const newStartTime = now - elapsedBeforePause;
         
@@ -311,20 +285,17 @@ export default function Clock({
         setLastAutoSave(now);
       } else {
         // Pausing - save current state
-        const now = Date.now();
         const elapsed = now - (sessionStartTime || now);
-        const remaining = Math.max(0, initialDuration! - elapsed);
-        const progress = Math.round(((initialDuration! - remaining) / initialDuration!) * 100);
         
         await updateSession(sessionId, {
           status: 'in_progress',
-          actual_duration: initialDuration! - remaining,
+          actual_duration: initialDuration! - elapsed,
           last_active_time: new Date(now).toISOString(),
-          progress
+          progress: Math.round(((initialDuration! - elapsed) / initialDuration!) * 100)
         });
         
         setIsPaused(true);
-        setPausedTimeRemaining(remaining);
+        setPausedTimeRemaining(elapsed);
       }
     } catch (error) {
       console.error('Error updating session pause state:', error);
@@ -332,22 +303,23 @@ export default function Clock({
     }
   };
 
+  // Simplified handleReset
   const handleReset = async () => {
     if (!initialDuration || !sessionId || !user?.uid) return;
 
     try {
-      const now = new Date();
+      const now = Date.now();
       await updateSession(sessionId, {
         status: 'aborted',
-        end_time: now.toISOString(),
+        end_time: new Date(now).toISOString(),
         actual_duration: initialDuration - (remainingTime || 0),
-        last_active_time: now.toISOString()
+        last_active_time: new Date(now).toISOString()
       });
 
-      // Reset the timer but keep the session ID
       setRemainingTime(initialDuration);
-      setSessionStartTime(now.getTime());
+      setSessionStartTime(now);
       setIsPaused(false);
+      setLastAutoSave(now);
     } catch (error) {
       console.error('Error aborting session:', error);
       toast.error('Failed to abort session');
@@ -1090,27 +1062,26 @@ export default function Clock({
       {/* Timer Controls */}
       {remainingTime !== null && (
         <div className="fixed bottom-8 left-8 z-50 flex items-center gap-2">
-          <div className="px-4 py-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10">
-            <span className="text-2xl font-bold text-gray-900 dark:text-white">
+          <div className="flex items-center gap-2 p-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10">
+            <span className="text-lg font-medium text-gray-900 dark:text-white px-2">
               {formatTime(remainingTime)}
             </span>
-          </div>
-          <div className="flex gap-2">
+            <div className="h-4 w-[1px] bg-gray-200 dark:bg-gray-700" />
             <button
               onClick={handlePauseResume}
-              className="p-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors"
+              className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
             >
               {isPaused ? (
-                <Play className="h-5 w-5 text-gray-900 dark:text-white" />
+                <Play className="h-4 w-4 text-gray-600 dark:text-gray-300" />
               ) : (
-                <Pause className="h-5 w-5 text-gray-900 dark:text-white" />
+                <Pause className="h-4 w-4 text-gray-600 dark:text-gray-300" />
               )}
             </button>
             <button
               onClick={handleReset}
-              className="p-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors"
+              className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
             >
-              <RotateCw className="h-5 w-5 text-gray-900 dark:text-white" />
+              <RotateCw className="h-4 w-4 text-gray-600 dark:text-gray-300" />
             </button>
           </div>
         </div>
