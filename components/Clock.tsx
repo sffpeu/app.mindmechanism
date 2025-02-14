@@ -194,16 +194,22 @@ export default function Clock({
     if (duration) {
       const durationMs = parseInt(duration);
       if (!isNaN(durationMs)) {
+        console.log('Initializing timer with duration:', {
+          rawDuration: duration,
+          parsedDurationMs: durationMs,
+          formattedTime: formatTime(durationMs)
+        });
         const now = Date.now();
-        console.log('Setting duration:', durationMs, 'ms');
         setInitialDuration(durationMs);
         setRemainingTime(durationMs);
         setSessionStartTime(now);
         setIsPaused(false);
         setLastAutoSave(now);
+      } else {
+        console.error('Invalid duration:', duration);
       }
     }
-  }, [duration]);
+  }, []); // Empty dependency array to run only once on mount
 
   // Timer effect with auto-save
   useEffect(() => {
@@ -219,7 +225,9 @@ export default function Clock({
         elapsed,
         remaining,
         initialDuration,
-        formattedTime: formatTime(remaining)
+        formattedTime: formatTime(remaining),
+        sessionStartTime,
+        now
       });
       
       setRemainingTime(remaining);
