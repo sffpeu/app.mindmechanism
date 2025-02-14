@@ -1059,34 +1059,6 @@ export default function Clock({
         {renderSingleClock()}
       </div>
 
-      {/* Timer Controls */}
-      {remainingTime !== null && (
-        <div className="fixed bottom-8 left-8 z-50 flex items-center gap-2">
-          <div className="flex items-center gap-2 p-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10">
-            <span className="text-lg font-medium text-gray-900 dark:text-white px-2">
-              {formatTime(remainingTime)}
-            </span>
-            <div className="h-4 w-[1px] bg-gray-200 dark:bg-gray-700" />
-            <button
-              onClick={handlePauseResume}
-              className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
-            >
-              {isPaused ? (
-                <Play className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-              ) : (
-                <Pause className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-              )}
-            </button>
-            <button
-              onClick={handleReset}
-              className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
-            >
-              <RotateCw className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-            </button>
-          </div>
-        </div>
-      )}
-
       <div className="w-full max-w-[1000px] mx-auto mb-2 px-3 relative">
         {showElements && (
           <>
