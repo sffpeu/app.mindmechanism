@@ -1,6 +1,5 @@
 import React from 'react';
-import { Card } from "@/components/ui/card";
-import { Timer as TimerIcon, Pause, Play } from 'lucide-react';
+import { Pause, Play } from 'lucide-react';
 
 interface TimerProps {
   remainingTime: number | null;
@@ -27,29 +26,21 @@ const formatTime = (ms: number) => {
 
 export default function Timer({ remainingTime, isPaused, onPauseResume, className = '' }: TimerProps) {
   return (
-    <Card className={`p-4 flex items-center justify-between bg-white/80 dark:bg-black/80 backdrop-blur-sm ${className}`}>
-      <div className="flex items-center gap-3">
-        <div className="p-2 rounded-full bg-gray-100 dark:bg-gray-900">
-          <TimerIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-        </div>
-        <div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">Time Remaining</div>
-          <div className="text-2xl font-medium text-gray-900 dark:text-white">
-            {formatTime(remainingTime || 0)}
-          </div>
-        </div>
-      </div>
+    <div className={`flex items-center gap-2 bg-white/10 dark:bg-black/20 backdrop-blur-sm rounded-lg px-3 py-1.5 ${className}`}>
+      <span className="font-medium text-black/70 dark:text-white/70">
+        {formatTime(remainingTime || 0)}
+      </span>
       <button
         onClick={onPauseResume}
-        className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
+        className="p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
         aria-label={isPaused ? "Resume session" : "Pause session"}
       >
         {isPaused ? (
-          <Play className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+          <Play className="w-3.5 h-3.5 text-black/50 dark:text-white/50" />
         ) : (
-          <Pause className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+          <Pause className="w-3.5 h-3.5 text-black/50 dark:text-white/50" />
         )}
       </button>
-    </Card>
+    </div>
   );
 } 

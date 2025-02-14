@@ -179,7 +179,19 @@ export default function ClockPage() {
     const duration = searchParams.get('duration');
     const sessionIdParam = searchParams.get('sessionId');
     if (duration) {
-      setRemainingTime(parseInt(duration));
+      const durationMs = parseInt(duration);
+      setRemainingTime(durationMs);
+      // Start countdown immediately
+      const timer = setInterval(() => {
+        setRemainingTime(prev => {
+          if (!prev || prev <= 0) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1000;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
     }
     if (sessionIdParam) {
       setSessionId(sessionIdParam);
@@ -221,8 +233,8 @@ export default function ClockPage() {
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50 dark:bg-black/95">
-        {/* Timer Component */}
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 w-[400px]">
+        {/* Timer Component - Moved to bottom left */}
+        <div className="fixed bottom-4 left-4 z-50">
           <Timer
             remainingTime={remainingTime}
             isPaused={isPaused}
