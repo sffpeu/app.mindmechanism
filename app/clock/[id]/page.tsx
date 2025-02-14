@@ -20,6 +20,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import Timer from '@/components/Timer'
+import { pauseSession, updateSessionActivity } from '@/lib/sessions'
 
 interface WeatherResponse {
   location: {
@@ -88,6 +90,9 @@ export default function ClockPage() {
   const [locationError, setLocationError] = useState<string | null>(null)
   const { user } = useAuth()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [remainingTime, setRemainingTime] = useState<number | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   // Add time tracking
   useTimeTracking(user?.uid, `clock-${params.id}`)
@@ -170,6 +175,17 @@ export default function ClockPage() {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
   }, [])
 
+  useEffect(() => {
+    const duration = searchParams.get('duration');
+    const sessionIdParam = searchParams.get('sessionId');
+    if (duration) {
+      setRemainingTime(parseInt(duration));
+    }
+    if (sessionIdParam) {
+      setSessionId(sessionIdParam);
+    }
+  }, [searchParams]);
+
   const handleSettingsSave = (newSettings: Partial<ClockSettingsType>) => {
     setLocalClockSettings({ ...localClockSettings, ...newSettings })
     setShowSettings(false)
@@ -185,6 +201,18 @@ export default function ClockPage() {
     }
   }
 
+  const handlePauseResume = async () => {
+    if (!sessionId) return;
+    setIsPaused(!isPaused);
+    if (!isPaused) {
+      // Pausing
+      await pauseSession(sessionId);
+    } else {
+      // Resuming
+      await updateSessionActivity(sessionId);
+    }
+  };
+
   // Don't render clock until we have client-side time
   if (!currentTime) {
     return null
@@ -193,6 +221,15 @@ export default function ClockPage() {
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50 dark:bg-black/95">
+        {/* Timer Component */}
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 w-[400px]">
+          <Timer
+            remainingTime={remainingTime}
+            isPaused={isPaused}
+            onPauseResume={handlePauseResume}
+          />
+        </div>
+        
         {/* Settings Dropdown */}
         <div className="fixed top-4 right-4 z-50">
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
