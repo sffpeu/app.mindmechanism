@@ -194,10 +194,11 @@ export default function Clock({
     if (duration) {
       const durationMs = parseInt(duration);
       if (!isNaN(durationMs)) {
+        console.log('Setting duration:', durationMs);
         setInitialDuration(durationMs);
         setRemainingTime(durationMs);
-        setSessionStartTime(new Date().getTime());
-        setIsPaused(false); // Ensure timer starts running
+        setSessionStartTime(Date.now());
+        setIsPaused(false);
       }
     }
   }, [duration]);
@@ -207,9 +208,11 @@ export default function Clock({
     if (!initialDuration || isPaused) return;
 
     const timer = setInterval(() => {
-      const now = new Date().getTime();
+      const now = Date.now();
       const elapsed = now - (sessionStartTime || now);
       const remaining = Math.max(0, initialDuration - elapsed);
+      
+      setRemainingTime(remaining);
       
       // Auto-save every 5 seconds
       if (now - lastAutoSave >= 5000 && sessionId) {
@@ -224,13 +227,9 @@ export default function Clock({
       }
       
       if (remaining <= 0) {
-        setRemainingTime(0);
         clearInterval(timer);
         handleSessionComplete();
-        return;
       }
-      
-      setRemainingTime(remaining);
     }, 1000);
     
     return () => clearInterval(timer);
@@ -1150,14 +1149,14 @@ function getElapsedTime(currentDate: Date, startDateTime: Date): string {
     const remainingDays = days % 365;
     const hours = Math.floor((elapsed % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
     const minutes = Math.floor((elapsed % (60 * 60 * 1000)) / (60 * 1000));
-    const seconds = Math.floor((elapsed % (60 * 1000)) / 1000);
+    const seconds = Math.floor((elapsed % (60 * 1000)) / 1000));
     return `${years}y ${remainingDays}d ${hours}h ${minutes}m ${seconds}s`;
   }
   
   // Otherwise show days as before
   const hours = Math.floor((elapsed % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
   const minutes = Math.floor((elapsed % (60 * 60 * 1000)) / (60 * 1000));
-  const seconds = Math.floor((elapsed % (60 * 1000)) / 1000);
+  const seconds = Math.floor((elapsed % (60 * 1000)) / 1000));
   return `${days}d ${hours}h ${minutes}m ${seconds}s`;
 }
 
