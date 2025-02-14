@@ -82,7 +82,7 @@ export const defaultSatelliteConfigs: Record<number, Array<{ rotationTime: numbe
 // Function to get the correct image path
 const getImagePath = (index: number) => {
   console.log(`Getting image path for index ${index}`);
-  const path = `/${index + 1}_clock.svg`;
+  const path = `/clock_${index + 1}.svg`;
   console.log(`Returning path: ${path}`);
   return path;
 };
@@ -590,7 +590,7 @@ export default function Clock({
                 alt={`Clock Face ${index + 1}`}
                 layout="fill"
                 objectFit="cover"
-                className="rounded-full [&_path]:fill-current [&_circle]:fill-current [&_rect]:fill-current [&_polygon]:fill-current"
+                className="rounded-full [&_*]:fill-current [&_*]:stroke-none"
                 priority
                 loading="eager"
               />
@@ -723,7 +723,7 @@ export default function Clock({
                 alt={`Clock Face ${id}`}
                 layout="fill"
                 objectFit="cover"
-                className="rounded-full dark:invert [&_path]:fill-current [&_circle]:fill-current [&_rect]:fill-current [&_polygon]:fill-current"
+                className="rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none"
                 priority
                 loading="eager"
               />
@@ -889,7 +889,7 @@ export default function Clock({
                       alt={`Clock Face ${index + 1}`}
                       layout="fill"
                       objectFit="cover"
-                      className="rounded-full [&_path]:fill-current [&_circle]:fill-current [&_rect]:fill-current [&_polygon]:fill-current"
+                      className="rounded-full [&_*]:fill-current [&_*]:stroke-none"
                       priority
                       loading="eager"
                     />
@@ -983,7 +983,7 @@ export default function Clock({
                           alt={`Clock Face ${index + 1}`}
                           layout="fill"
                           objectFit="cover"
-                          className="rounded-full [&_path]:fill-current [&_circle]:fill-current [&_rect]:fill-current [&_polygon]:fill-current"
+                          className="rounded-full [&_*]:fill-current [&_*]:stroke-none"
                           priority
                           loading="eager"
                         />

@@ -50,7 +50,7 @@ const ClockPreview: React.FC<ClockPreviewProps> = ({
               alt="Clock Face Preview"
               layout="fill"
               objectFit="cover"
-              className="[&_path]:fill-current [&_circle]:fill-current [&_rect]:fill-current [&_polygon]:fill-current"
+              className="[&_*]:fill-current [&_*]:stroke-none"
             />
           </div>
         </div>
