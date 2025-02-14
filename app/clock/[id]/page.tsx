@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import Timer from '@/components/Timer'
-import { pauseSession, updateSessionActivity } from '@/lib/sessions'
+import { pauseSession, updateSessionActivity, updateSession } from '@/lib/sessions'
 
 interface WeatherResponse {
   location: {
@@ -186,17 +186,72 @@ export default function ClockPage() {
         setRemainingTime(prev => {
           if (!prev || prev <= 0) {
             clearInterval(timer);
+            if (sessionIdParam) {
+              // Update session as completed when timer ends
+              updateSession(sessionIdParam, {
+                status: 'completed',
+                actual_duration: durationMs,
+                progress: 100,
+                end_time: new Date().toISOString()
+              });
+            }
             return 0;
+          }
+          // Calculate and update progress
+          if (sessionIdParam) {
+            const progress = ((durationMs - (prev - 1000)) / durationMs) * 100;
+            updateSession(sessionIdParam, {
+              status: 'in_progress',
+              actual_duration: durationMs - prev,
+              progress: Math.round(progress),
+              last_active_time: new Date().toISOString()
+            });
           }
           return prev - 1000;
         });
       }, 1000);
-      return () => clearInterval(timer);
+      return () => {
+        clearInterval(timer);
+        // Update session when leaving the page
+        if (sessionIdParam && remainingTime && remainingTime > 0) {
+          const progress = ((durationMs - remainingTime) / durationMs) * 100;
+          updateSession(sessionIdParam, {
+            status: 'in_progress',
+            actual_duration: durationMs - remainingTime,
+            progress: Math.round(progress),
+            last_active_time: new Date().toISOString()
+          });
+        }
+      };
     }
     if (sessionIdParam) {
       setSessionId(sessionIdParam);
     }
   }, [searchParams]);
+
+  // Add cleanup effect when user leaves the page
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (sessionId && remainingTime && remainingTime > 0) {
+        const duration = searchParams.get('duration');
+        if (duration) {
+          const durationMs = parseInt(duration);
+          const progress = ((durationMs - remainingTime) / durationMs) * 100;
+          updateSession(sessionId, {
+            status: 'in_progress',
+            actual_duration: durationMs - remainingTime,
+            progress: Math.round(progress),
+            last_active_time: new Date().toISOString()
+          });
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [sessionId, remainingTime, searchParams]);
 
   const handleSettingsSave = (newSettings: Partial<ClockSettingsType>) => {
     setLocalClockSettings({ ...localClockSettings, ...newSettings })

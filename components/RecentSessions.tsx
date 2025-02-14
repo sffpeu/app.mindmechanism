@@ -38,6 +38,14 @@ const clockColors = [
   'text-cyan-500 bg-cyan-500'
 ];
 
+// Helper function to format time in MM:SS
+const formatTime = (ms: number) => {
+  const totalSeconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+};
+
 export function RecentSessions() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
@@ -94,6 +102,17 @@ export function RecentSessions() {
     window.location.href = `/session/${session.clock_id}?duration=${session.duration}`;
   };
 
+  const handleContinueSession = (session: Session) => {
+    const remainingTime = session.duration - (session.actual_duration || 0);
+    if (remainingTime <= 0) {
+      toast.error('Session already completed');
+      return;
+    }
+    
+    // Navigate to clock page with remaining time
+    window.location.href = `/clock/${session.clock_id}?duration=${remainingTime}&sessionId=${session.id}&words=${encodeURIComponent(JSON.stringify(session.words || []))}`;
+  };
+
   const displayedSessions = showAllSessions ? sessions : sessions.slice(0, 3);
 
   const SessionCard = ({ session }: { session: Session }) => {
@@ -103,11 +122,13 @@ export function RecentSessions() {
     const lastActiveTime = session.last_active_time?.toDate() || startTime;
     const pausedDuration = session.paused_duration || 0;
     
-    // Calculate progress based on session status and active time
+    // Calculate progress and remaining time
     const progress = session.status === 'completed' ? 100 : 
       session.status === 'aborted' ? 
         Math.min((session.actual_duration / session.duration) * 100, 100) : 
         Math.min(((lastActiveTime.getTime() - startTime.getTime() - pausedDuration) / session.duration) * 100, 100);
+    
+    const remainingTime = session.duration - (session.actual_duration || 0);
 
     return (
       <div className={`p-3.5 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 transition-all relative ${
@@ -163,24 +184,24 @@ export function RecentSessions() {
                   Duration
                 </span>
                 <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                  {session.duration / 60000}m
+                  {formatTime(session.duration)}
                 </span>
               </div>
               <div className="p-1 rounded-lg bg-gray-50 dark:bg-white/5">
                 <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
                   <Timer className="h-3 w-3" />
-                  Progress
+                  Remaining
                 </span>
                 <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                  {Math.round(progress)}%
+                  {formatTime(remainingTime)}
                 </span>
               </div>
               <div className="p-1 rounded-lg bg-gray-50 dark:bg-white/5">
                 <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                  Status
+                  Progress
                 </span>
                 <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                  {session.status}
+                  {Math.round(progress)}%
                 </span>
               </div>
             </div>
@@ -220,15 +241,24 @@ export function RecentSessions() {
         {isListView && (
           <div className="flex items-center gap-4 ml-4">
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              {session.duration / 60000}m
+              {formatTime(session.duration)}
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              {formatTime(remainingTime)}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">
               {Math.round(progress)}%
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              {session.status}
-            </div>
           </div>
+        )}
+
+        {session.status === 'in_progress' && remainingTime > 0 && (
+          <button
+            onClick={() => handleContinueSession(session)}
+            className={`mt-2 w-full py-1.5 rounded-lg ${clockColor} bg-opacity-10 dark:bg-opacity-20 hover:bg-opacity-20 dark:hover:bg-opacity-30 transition-all text-sm font-medium`}
+          >
+            Continue Session
+          </button>
         )}
       </div>
     );
