@@ -222,7 +222,7 @@ export default function Clock({
         updateSession(sessionId, {
           status: 'in_progress',
           actual_duration: initialDuration - remaining,
-          last_active_time: new Date().toISOString(),
+          last_active_time: new Date(now).toISOString(),
           progress: Math.round(progress)
         });
         setLastAutoSave(now);
@@ -268,7 +268,7 @@ export default function Clock({
         
         await updateSession(sessionId, {
           status: 'in_progress',
-          last_active_time: new Date().toISOString(),
+          last_active_time: new Date(now).toISOString(),
           actual_duration: elapsedBeforePause,
           progress: Math.round((elapsedBeforePause / initialDuration!) * 100)
         });
@@ -286,7 +286,7 @@ export default function Clock({
         await updateSession(sessionId, {
           status: 'in_progress',
           actual_duration: initialDuration! - remaining,
-          last_active_time: now.toISOString(),
+          last_active_time: new Date(now).toISOString(),
           progress
         });
         
@@ -347,7 +347,7 @@ export default function Clock({
           await updateSession(sessionId, {
             status: 'in_progress',
             actual_duration: initialDuration! - (remainingTime || 0),
-            last_active_time: now.toISOString(),
+            last_active_time: new Date(now).toISOString(),
             paused_duration: (pausedTimeRemaining || 0) + (now.getTime() - (sessionStartTime || now.getTime()))
           });
           
