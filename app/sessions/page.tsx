@@ -64,8 +64,8 @@ const clockDescriptions = [
 ]
 
 // Function to get the clock image path
-const getClockImagePath = (clockId: number) => {
-  return `/clock_${clockId + 1}.svg`;
+const getImagePath = (index: number) => {
+  return `/clock_${index + 1}.svg`;
 };
 
 export default function SessionsPage() {
@@ -288,7 +288,7 @@ export default function SessionsPage() {
                     <div className={isCreateListView ? 'flex items-center gap-4 flex-1' : ''}>
                       <div className="relative aspect-square w-full max-w-[120px] mx-auto mb-3">
                         <Image
-                          src={getClockImagePath(index)}
+                          src={getImagePath(index)}
                           alt={clock.title}
                           width={120}
                           height={120}

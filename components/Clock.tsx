@@ -882,7 +882,7 @@ export default function Clock({
                     }}
                   >
                     <Image 
-                      src={clock.imageUrl}
+                      src={getImagePath(index)}
                       alt={`Clock Face ${index + 1}`}
                       layout="fill"
                       objectFit="cover"
@@ -976,7 +976,7 @@ export default function Clock({
                         }}
                       >
                         <Image 
-                          src={clock.imageUrl}
+                          src={getImagePath(index)}
                           alt={`Clock Face ${index + 1}`}
                           layout="fill"
                           objectFit="cover"
