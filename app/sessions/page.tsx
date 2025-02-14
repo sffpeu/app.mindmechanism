@@ -166,8 +166,10 @@ export default function SessionsPage() {
   const handleDurationSelected = async (duration: number | null, words: string[]) => {
     if (selectedClockId !== null && duration !== null && user?.uid) {
       try {
+        // Convert minutes to milliseconds
+        const durationMs = duration * 60 * 1000;
+        
         // Create a new session
-        const durationMs = duration * 60 * 1000; // Convert minutes to milliseconds
         const session = await createSession({
           user_id: user.uid,
           clock_id: selectedClockId,
@@ -188,22 +190,23 @@ export default function SessionsPage() {
           elevation: 0,
           sea_level: 0,
           latitude: 0,
-          longitude: 0
+          longitude: 0,
+          progress: 0 // Initialize progress at 0
         });
 
         // Navigate to the clock page with the session ID
-        const encodedWords = encodeURIComponent(JSON.stringify(words))
-        router.push(`/clock/${selectedClockId}?duration=${durationMs}&words=${encodedWords}&sessionId=${session.id}`)
+        const encodedWords = encodeURIComponent(JSON.stringify(words));
+        router.push(`/clock/${selectedClockId}?duration=${durationMs}&words=${encodedWords}&sessionId=${session.id}`);
       } catch (error) {
         console.error('Error creating session:', error);
         // Still navigate to clock page even if session creation fails
-        const durationMs = duration * 60 * 1000; // Convert minutes to milliseconds
-        const encodedWords = encodeURIComponent(JSON.stringify(words))
-        router.push(`/clock/${selectedClockId}?duration=${durationMs}&words=${encodedWords}`)
+        const durationMs = duration * 60 * 1000;
+        const encodedWords = encodeURIComponent(JSON.stringify(words));
+        router.push(`/clock/${selectedClockId}?duration=${durationMs}&words=${encodedWords}`);
       }
     }
-    setIsDurationDialogOpen(false)
-  }
+    setIsDurationDialogOpen(false);
+  };
 
   return (
     <ProtectedRoute>

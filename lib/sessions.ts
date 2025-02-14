@@ -36,6 +36,7 @@ export interface SessionData {
   sea_level: number;
   latitude: number;
   longitude: number;
+  progress: number;
 }
 
 export interface Session extends SessionData {

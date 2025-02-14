@@ -119,6 +119,7 @@ const shadowKeyframes = {
 
 // Helper function to format time
 const formatTime = (ms: number) => {
+  if (!ms) return "0:00";
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
@@ -196,6 +197,7 @@ export default function Clock({
         setInitialDuration(durationMs);
         setRemainingTime(durationMs);
         setSessionStartTime(new Date().getTime());
+        setIsPaused(false); // Ensure timer starts running
       }
     }
   }, [duration]);
@@ -211,10 +213,12 @@ export default function Clock({
       
       // Auto-save every 5 seconds
       if (now - lastAutoSave >= 5000 && sessionId) {
+        const progress = Math.min(100, ((initialDuration - remaining) / initialDuration) * 100);
         updateSession(sessionId, {
           status: 'in_progress',
           actual_duration: initialDuration - remaining,
-          last_active_time: new Date().toISOString()
+          last_active_time: new Date().toISOString(),
+          progress: Math.round(progress)
         });
         setLastAutoSave(now);
       }
@@ -240,8 +244,10 @@ export default function Clock({
         status: 'completed',
         end_time: new Date().toISOString(),
         actual_duration: initialDuration || 0,
-        last_active_time: new Date().toISOString()
+        last_active_time: new Date().toISOString(),
+        progress: 100
       });
+      toast.success('Session completed!');
     } catch (error) {
       console.error('Error completing session:', error);
       toast.error('Failed to complete session');
@@ -261,7 +267,8 @@ export default function Clock({
         await updateSession(sessionId, {
           status: 'in_progress',
           last_active_time: new Date().toISOString(),
-          actual_duration: initialDuration! - (remainingTime || 0)
+          actual_duration: initialDuration! - (remainingTime || 0),
+          progress: Math.round(((initialDuration! - (remainingTime || 0)) / initialDuration!) * 100)
         });
         
         setSessionStartTime(newStartTime);
@@ -270,11 +277,14 @@ export default function Clock({
       } else {
         // Pausing - save current state
         const now = new Date();
+        const progress = Math.round(((initialDuration! - (remainingTime || 0)) / initialDuration!) * 100);
+        
         await updateSession(sessionId, {
           status: 'in_progress',
           actual_duration: initialDuration! - (remainingTime || 0),
           last_active_time: now.toISOString(),
-          paused_duration: (pausedTimeRemaining || 0) + (now.getTime() - (sessionStartTime || now.getTime()))
+          paused_duration: (pausedTimeRemaining || 0) + (now.getTime() - (sessionStartTime || now.getTime())),
+          progress
         });
         
         setIsPaused(true);
