@@ -120,13 +120,8 @@ const shadowKeyframes = {
 // Helper function to format time
 const formatTime = (ms: number) => {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
-  
-  if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  }
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 };
 
@@ -197,9 +192,11 @@ export default function Clock({
   useEffect(() => {
     if (duration) {
       const durationMs = parseInt(duration);
-      setInitialDuration(durationMs);
-      setRemainingTime(durationMs);
-      setSessionStartTime(new Date().getTime());
+      if (!isNaN(durationMs)) {
+        setInitialDuration(durationMs);
+        setRemainingTime(durationMs);
+        setSessionStartTime(new Date().getTime());
+      }
     }
   }, [duration]);
 
@@ -210,7 +207,7 @@ export default function Clock({
     const timer = setInterval(() => {
       const now = new Date().getTime();
       const elapsed = now - (sessionStartTime || now);
-      const remaining = initialDuration - elapsed;
+      const remaining = Math.max(0, initialDuration - elapsed);
       
       // Auto-save every 5 seconds
       if (now - lastAutoSave >= 5000 && sessionId) {

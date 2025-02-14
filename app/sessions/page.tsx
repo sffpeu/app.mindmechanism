@@ -167,10 +167,11 @@ export default function SessionsPage() {
     if (selectedClockId !== null && duration !== null && user?.uid) {
       try {
         // Create a new session
+        const durationMs = duration * 60 * 1000; // Convert minutes to milliseconds
         const session = await createSession({
           user_id: user.uid,
           clock_id: selectedClockId,
-          duration: duration * 60000, // Convert minutes to milliseconds
+          duration: durationMs,
           words: words,
           moon_phase: '',
           moon_illumination: 0,
@@ -191,13 +192,12 @@ export default function SessionsPage() {
         });
 
         // Navigate to the clock page with the session ID
-        const durationMs = duration * 60000 // Convert minutes to milliseconds
         const encodedWords = encodeURIComponent(JSON.stringify(words))
         router.push(`/clock/${selectedClockId}?duration=${durationMs}&words=${encodedWords}&sessionId=${session.id}`)
       } catch (error) {
         console.error('Error creating session:', error);
         // Still navigate to clock page even if session creation fails
-        const durationMs = duration * 60000
+        const durationMs = duration * 60 * 1000; // Convert minutes to milliseconds
         const encodedWords = encodeURIComponent(JSON.stringify(words))
         router.push(`/clock/${selectedClockId}?duration=${durationMs}&words=${encodedWords}`)
       }
