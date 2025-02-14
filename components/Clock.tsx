@@ -194,10 +194,11 @@ export default function Clock({
     if (duration) {
       const durationMs = parseInt(duration);
       if (!isNaN(durationMs)) {
-        console.log('Initializing timer with duration:', {
+        console.log('Timer initialization:', {
           rawDuration: duration,
           parsedDurationMs: durationMs,
-          formattedTime: formatTime(durationMs)
+          formattedTime: formatTime(durationMs),
+          now: new Date().toISOString()
         });
         const now = Date.now();
         setInitialDuration(durationMs);
@@ -206,14 +207,32 @@ export default function Clock({
         setIsPaused(false);
         setLastAutoSave(now);
       } else {
-        console.error('Invalid duration:', duration);
+        console.error('Invalid duration parameter:', {
+          rawDuration: duration,
+          parsedValue: durationMs,
+          isNaN: isNaN(durationMs)
+        });
       }
     }
-  }, []); // Empty dependency array to run only once on mount
+  }, [duration]); // Add duration to dependency array to ensure it updates when duration changes
 
   // Timer effect with auto-save
   useEffect(() => {
-    if (!initialDuration || isPaused) return;
+    if (!initialDuration || isPaused) {
+      console.log('Timer not started:', {
+        initialDuration,
+        isPaused,
+        remainingTime: formatTime(remainingTime || 0)
+      });
+      return;
+    }
+
+    console.log('Starting timer with:', {
+      initialDuration: formatTime(initialDuration),
+      sessionStartTime: new Date(sessionStartTime || Date.now()).toISOString(),
+      isPaused,
+      remainingTime: formatTime(remainingTime || 0)
+    });
 
     const timer = setInterval(() => {
       const now = Date.now();
@@ -222,12 +241,10 @@ export default function Clock({
       const remaining = Math.max(0, initialDuration - elapsed);
       
       console.log('Timer update:', {
-        elapsed,
-        remaining,
-        initialDuration,
-        formattedTime: formatTime(remaining),
-        sessionStartTime,
-        now
+        elapsed: formatTime(elapsed),
+        remaining: formatTime(remaining),
+        initialDuration: formatTime(initialDuration),
+        formattedTime: formatTime(remaining)
       });
       
       setRemainingTime(remaining);
