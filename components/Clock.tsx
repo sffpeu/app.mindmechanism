@@ -194,11 +194,12 @@ export default function Clock({
     if (duration) {
       const durationMs = parseInt(duration);
       if (!isNaN(durationMs)) {
-        console.log('Setting duration:', durationMs);
+        const now = Date.now();
         setInitialDuration(durationMs);
         setRemainingTime(durationMs);
-        setSessionStartTime(Date.now());
+        setSessionStartTime(now);
         setIsPaused(false);
+        setLastAutoSave(now);
       }
     }
   }, [duration]);
@@ -209,7 +210,8 @@ export default function Clock({
 
     const timer = setInterval(() => {
       const now = Date.now();
-      const elapsed = now - (sessionStartTime || now);
+      const startTime = sessionStartTime || now;
+      const elapsed = now - startTime;
       const remaining = Math.max(0, initialDuration - elapsed);
       
       setRemainingTime(remaining);
@@ -259,15 +261,16 @@ export default function Clock({
 
     try {
       if (isPaused) {
-        // Resuming - update last active time and adjust start time
-        const now = new Date().getTime();
-        const newStartTime = now - (initialDuration! - (remainingTime || 0));
+        // Resuming - adjust start time to account for paused duration
+        const now = Date.now();
+        const elapsedBeforePause = initialDuration! - (pausedTimeRemaining || 0);
+        const newStartTime = now - elapsedBeforePause;
         
         await updateSession(sessionId, {
           status: 'in_progress',
           last_active_time: new Date().toISOString(),
-          actual_duration: initialDuration! - (remainingTime || 0),
-          progress: Math.round(((initialDuration! - (remainingTime || 0)) / initialDuration!) * 100)
+          actual_duration: elapsedBeforePause,
+          progress: Math.round((elapsedBeforePause / initialDuration!) * 100)
         });
         
         setSessionStartTime(newStartTime);
@@ -275,19 +278,20 @@ export default function Clock({
         setLastAutoSave(now);
       } else {
         // Pausing - save current state
-        const now = new Date();
-        const progress = Math.round(((initialDuration! - (remainingTime || 0)) / initialDuration!) * 100);
+        const now = Date.now();
+        const elapsed = now - (sessionStartTime || now);
+        const remaining = Math.max(0, initialDuration! - elapsed);
+        const progress = Math.round(((initialDuration! - remaining) / initialDuration!) * 100);
         
         await updateSession(sessionId, {
           status: 'in_progress',
-          actual_duration: initialDuration! - (remainingTime || 0),
+          actual_duration: initialDuration! - remaining,
           last_active_time: now.toISOString(),
-          paused_duration: (pausedTimeRemaining || 0) + (now.getTime() - (sessionStartTime || now.getTime())),
           progress
         });
         
         setIsPaused(true);
-        setPausedTimeRemaining(remainingTime);
+        setPausedTimeRemaining(remaining);
       }
     } catch (error) {
       console.error('Error updating session pause state:', error);
