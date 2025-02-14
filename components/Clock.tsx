@@ -590,7 +590,7 @@ export default function Clock({
                 alt={`Clock Face ${index + 1}`}
                 layout="fill"
                 objectFit="cover"
-                className="rounded-full [&_*]:stroke-[0.25]"
+                className="rounded-full [&_path]:fill-current [&_circle]:fill-current [&_rect]:fill-current [&_polygon]:fill-current"
                 priority
                 loading="eager"
               />
@@ -723,7 +723,7 @@ export default function Clock({
                 alt={`Clock Face ${id}`}
                 layout="fill"
                 objectFit="cover"
-                className="rounded-full dark:invert [&_*]:stroke-[0.25]"
+                className="rounded-full dark:invert [&_path]:fill-current [&_circle]:fill-current [&_rect]:fill-current [&_polygon]:fill-current"
                 priority
                 loading="eager"
               />
@@ -889,7 +889,7 @@ export default function Clock({
                       alt={`Clock Face ${index + 1}`}
                       layout="fill"
                       objectFit="cover"
-                      className="rounded-full [&_*]:stroke-[0.25]"
+                      className="rounded-full [&_path]:fill-current [&_circle]:fill-current [&_rect]:fill-current [&_polygon]:fill-current"
                       priority
                       loading="eager"
                     />
@@ -983,7 +983,7 @@ export default function Clock({
                           alt={`Clock Face ${index + 1}`}
                           layout="fill"
                           objectFit="cover"
-                          className="rounded-full [&_*]:stroke-[0.25]"
+                          className="rounded-full [&_path]:fill-current [&_circle]:fill-current [&_rect]:fill-current [&_polygon]:fill-current"
                           priority
                           loading="eager"
                         />
