@@ -195,6 +195,7 @@ export default function Clock({
       const durationMs = parseInt(duration);
       if (!isNaN(durationMs)) {
         const now = Date.now();
+        console.log('Setting duration:', durationMs, 'ms');
         setInitialDuration(durationMs);
         setRemainingTime(durationMs);
         setSessionStartTime(now);
@@ -213,6 +214,13 @@ export default function Clock({
       const startTime = sessionStartTime || now;
       const elapsed = now - startTime;
       const remaining = Math.max(0, initialDuration - elapsed);
+      
+      console.log('Timer update:', {
+        elapsed,
+        remaining,
+        initialDuration,
+        formattedTime: formatTime(remaining)
+      });
       
       setRemainingTime(remaining);
       
@@ -1153,14 +1161,14 @@ function getElapsedTime(currentDate: Date, startDateTime: Date): string {
     const remainingDays = days % 365;
     const hours = Math.floor((elapsed % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
     const minutes = Math.floor((elapsed % (60 * 60 * 1000)) / (60 * 1000));
-    const seconds = Math.floor((elapsed % (60 * 1000)) / 1000);
+    const seconds = Math.floor((elapsed % (60 * 1000)) / 1000));
     return `${years}y ${remainingDays}d ${hours}h ${minutes}m ${seconds}s`;
   }
   
   // Otherwise show days as before
   const hours = Math.floor((elapsed % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
   const minutes = Math.floor((elapsed % (60 * 60 * 1000)) / (60 * 1000));
-  const seconds = Math.floor((elapsed % (60 * 1000)) / 1000);
+  const seconds = Math.floor((elapsed % (60 * 1000)) / 1000));
   return `${days}d ${hours}h ${minutes}m ${seconds}s`;
 }
 
