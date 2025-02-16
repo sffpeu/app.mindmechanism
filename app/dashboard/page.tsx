@@ -195,9 +195,47 @@ export default function DashboardPage() {
     return () => clearInterval(timer)
   }, [mounted])
 
+  // Fetch weather and moon data with precise location
+  useEffect(() => {
+    if (!mounted) return;
+
+    const fetchData = async () => {
+      try {
+        const weatherRes = await fetch(
+          `https://api.weatherapi.com/v1/current.json?key=6cb652a81cb64a19a84103447252001&q=${
+            location ? `${location.lat},${location.lon}` : 'auto:ip'
+          }&aqi=no`
+        );
+        if (!weatherRes.ok) {
+          throw new Error('Weather API request failed');
+        }
+        const weatherData = await weatherRes.json();
+        setWeatherData(weatherData);
+
+        const astronomyRes = await fetch(
+          `https://api.weatherapi.com/v1/astronomy.json?key=6cb652a81cb64a19a84103447252001&q=${
+            location ? `${location.lat},${location.lon}` : 'auto:ip'
+          }`
+        );
+        if (!astronomyRes.ok) {
+          throw new Error('Astronomy API request failed');
+        }
+        const astronomyData = await astronomyRes.json();
+        setMoon(astronomyData.astronomy.astro);
+      } catch (error) {
+        console.error('Error fetching weather data:', error);
+        setWeatherError(error instanceof Error ? error.message : 'Failed to load weather data');
+      }
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 5 * 60 * 1000); // Update every 5 minutes
+    return () => clearInterval(interval);
+  }, [mounted, location]);
+
   // Request location permission and get coordinates
   useEffect(() => {
-    if (!mounted) return
+    if (!mounted) return;
 
     const getLocation = () => {
       if ('geolocation' in navigator) {
@@ -206,90 +244,26 @@ export default function DashboardPage() {
             setLocation({
               lat: position.coords.latitude,
               lon: position.coords.longitude,
-            })
-            setLocationError(null)
+            });
+            setLocationError(null);
           },
           (error) => {
-            console.error('Error getting location:', error)
-            setLocationError('Unable to get your location. Using IP-based location instead.')
+            console.error('Error getting location:', error);
+            setLocationError('Unable to get your location. Using IP-based location instead.');
           },
           {
             enableHighAccuracy: true,
             timeout: 5000,
             maximumAge: 0
           }
-        )
+        );
       } else {
-        setLocationError('Geolocation is not supported by your browser. Using IP-based location instead.')
-      }
-    }
-
-    getLocation()
-  }, [mounted])
-
-  // Fetch weather and moon data with precise location
-  useEffect(() => {
-    let isMounted = true;
-    let intervalId: NodeJS.Timeout | null = null;
-
-    const fetchWeatherData = async () => {
-      if (!WEATHER_API_KEY) {
-        console.error('Weather API key is not configured');
-        setWeatherError('Weather service is not configured');
-        return;
-      }
-
-      try {
-        setIsWeatherLoading(true);
-        setWeatherError(null);
-
-        const locationQuery = location ? `${location.lat},${location.lon}` : 'auto:ip';
-        
-        const [weatherRes, astronomyRes] = await Promise.all([
-          fetch(`https://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q=${locationQuery}&aqi=no`),
-          fetch(`https://api.weatherapi.com/v1/astronomy.json?key=${WEATHER_API_KEY}&q=${locationQuery}`)
-        ]);
-
-        if (!weatherRes.ok || !astronomyRes.ok) {
-          throw new Error('Failed to fetch weather data');
-        }
-
-        const [weatherData, astronomyData] = await Promise.all([
-          weatherRes.json(),
-          astronomyRes.json()
-        ]);
-
-        if (isMounted) {
-          setWeatherData(weatherData);
-          setMoon(astronomyData.astronomy.astro);
-          setWeatherError(null);
-        }
-      } catch (error) {
-        console.error('Error fetching weather data:', error);
-        if (isMounted) {
-          setWeatherError('Unable to load weather information');
-        }
-      } finally {
-        if (isMounted) {
-          setIsWeatherLoading(false);
-        }
+        setLocationError('Geolocation is not supported by your browser. Using IP-based location instead.');
       }
     };
 
-    // Initial fetch
-    fetchWeatherData();
-
-    // Set up interval for periodic updates
-    intervalId = setInterval(fetchWeatherData, 5 * 60 * 1000); // Update every 5 minutes
-
-    // Cleanup function
-    return () => {
-      isMounted = false;
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-    };
-  }, [location]); // Remove mounted from dependencies
+    getLocation();
+  }, [mounted]);
 
   // Handle authentication and initialization
   useEffect(() => {
