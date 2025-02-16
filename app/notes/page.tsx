@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { Card } from '@/components/ui/card'
-import { RotateCcw, PenLine, Files, Clock, ArrowUpDown, Save, Edit, X } from 'lucide-react'
+import { RotateCcw, PenLine, Files, Clock, ArrowUpDown, Save, Edit, X, Cloud } from 'lucide-react'
 import { useTheme } from '@/app/ThemeContext'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -11,6 +11,7 @@ import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useNotes } from '@/lib/NotesContext'
 import { Note } from '@/lib/notes'
 import { toast } from '@/components/ui/use-toast'
+import { WeatherSnapshotPopover } from '@/components/WeatherSnapshotPopover'
 
 export default function NotesPage() {
   const { user } = useAuth()
@@ -175,7 +176,21 @@ export default function NotesPage() {
                         selectedNote?.id === note.id ? 'bg-black/5 dark:bg-white/10' : ''
                       }`}
                     >
-                      <h3 className="font-medium text-black dark:text-white">{note.title}</h3>
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium text-black dark:text-white">{note.title}</h3>
+                        <div className="flex items-center gap-1">
+                          {note.weatherSnapshot && (
+                            <WeatherSnapshotPopover weatherSnapshot={note.weatherSnapshot}>
+                              <button 
+                                className="p-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-white/10"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Cloud className="h-3.5 w-3.5 text-gray-500" />
+                              </button>
+                            </WeatherSnapshotPopover>
+                          )}
+                        </div>
+                      </div>
                       <div className="flex items-center gap-2 mt-1">
                         <Clock className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
                         <p className="text-sm text-black/50 dark:text-white/50">{formatDate(note.updatedAt)}</p>
