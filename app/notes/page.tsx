@@ -1,17 +1,49 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Menu } from '@/components/Menu'
 import { Card } from '@/components/ui/card'
-import { RotateCcw, PenLine, Files, Clock, ArrowUpDown, Save, Edit, X, Cloud } from 'lucide-react'
+import { RotateCcw, PenLine, Files, Clock, ArrowUpDown, Save, Edit, X, Cloud, Thermometer, Droplets, Sun, Gauge, Wind, Moon, MapPin } from 'lucide-react'
 import { useTheme } from '@/app/ThemeContext'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useNotes } from '@/lib/NotesContext'
-import { Note } from '@/lib/notes'
+import { Note, WeatherSnapshot } from '@/lib/notes'
 import { toast } from '@/components/ui/use-toast'
 import { WeatherSnapshotPopover } from '@/components/WeatherSnapshotPopover'
+import { Timestamp } from 'firebase/firestore'
+
+interface WeatherResponse {
+  location: {
+    name: string
+    region: string
+    country: string
+    lat: number
+    lon: number
+    tz_id: string
+    localtime: string
+  }
+  current: {
+    temp_c: number
+    condition: {
+      text: string
+      icon: string
+    }
+    humidity: number
+    uv: number
+    pressure_mb: number
+    wind_kph: number
+    wind_dir: string
+  }
+}
+
+interface MoonData {
+  moon_phase: string
+  moon_illumination: string
+  moonrise: string
+  moonset: string
+}
 
 export default function NotesPage() {
   const { user } = useAuth()
@@ -25,12 +57,102 @@ export default function NotesPage() {
   const [selectedNote, setSelectedNote] = useState<Note | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const { isDarkMode } = useTheme()
+  const [weatherData, setWeatherData] = useState<WeatherResponse | null>(null)
+  const [moon, setMoon] = useState<MoonData | null>(null)
+  const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null)
+  const [locationError, setLocationError] = useState<string | null>(null)
 
   // Example sessions - replace with actual data
   const sessions = [
     { title: "Galileo's First Observation", date: '20/01/2025' },
     { title: "Galileo's First Observation", date: '20/01/2025' },
   ]
+
+  // Request location permission and get coordinates
+  useEffect(() => {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocation({
+            lat: position.coords.latitude,
+            lon: position.coords.longitude,
+          });
+          setLocationError(null);
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          setLocationError('Unable to get your location. Using IP-based location instead.');
+        }
+      );
+    } else {
+      setLocationError('Geolocation is not supported by your browser. Using IP-based location instead.');
+    }
+  }, []);
+
+  // Fetch weather and moon data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const weatherRes = await fetch(
+          `https://api.weatherapi.com/v1/current.json?key=6cb652a81cb64a19a84103447252001&q=${
+            location ? `${location.lat},${location.lon}` : 'auto:ip'
+          }&aqi=no`
+        );
+        if (!weatherRes.ok) {
+          throw new Error('Weather API request failed');
+        }
+        const weatherData = await weatherRes.json();
+        setWeatherData(weatherData);
+
+        const astronomyRes = await fetch(
+          `https://api.weatherapi.com/v1/astronomy.json?key=6cb652a81cb64a19a84103447252001&q=${
+            location ? `${location.lat},${location.lon}` : 'auto:ip'
+          }`
+        );
+        if (!astronomyRes.ok) {
+          throw new Error('Astronomy API request failed');
+        }
+        const astronomyData = await astronomyRes.json();
+        setMoon(astronomyData.astronomy.astro);
+      } catch (error) {
+        console.error('Error fetching weather data:', error);
+      }
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 5 * 60 * 1000); // Update every 5 minutes
+    return () => clearInterval(interval);
+  }, [location]);
+
+  const createWeatherSnapshot = (): WeatherSnapshot | undefined => {
+    if (!weatherData || !moon) return undefined;
+
+    return {
+      temperature: weatherData.current.temp_c,
+      humidity: weatherData.current.humidity,
+      uvIndex: weatherData.current.uv,
+      airPressure: weatherData.current.pressure_mb,
+      wind: {
+        speed: weatherData.current.wind_kph,
+        direction: weatherData.current.wind_dir,
+      },
+      moon: {
+        phase: moon.moon_phase,
+        illumination: parseInt(moon.moon_illumination),
+        moonrise: moon.moonrise,
+        moonset: moon.moonset,
+      },
+      location: {
+        name: weatherData.location.name,
+        country: weatherData.location.country,
+        coordinates: {
+          lat: weatherData.location.lat,
+          lon: weatherData.location.lon,
+        },
+      },
+      timestamp: Timestamp.now(),
+    };
+  };
 
   const handleSaveNote = async () => {
     if (!noteTitle.trim() || !noteContent.trim()) {
@@ -42,6 +164,7 @@ export default function NotesPage() {
     }
 
     try {
+      const weatherSnapshot = createWeatherSnapshot();
       if (selectedNote && isEditing) {
         await editNote(selectedNote.id, noteTitle, noteContent)
       } else {
@@ -51,6 +174,10 @@ export default function NotesPage() {
         }
       }
       clearForm()
+      toast({
+        title: "Success",
+        description: selectedNote ? "Note updated successfully" : "Note created successfully"
+      })
     } catch (error) {
       console.error('Error saving note:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to save note'
