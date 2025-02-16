@@ -22,6 +22,12 @@ service cloud.firestore {
       allow write: if isUserAuthenticated(userId);
     }
 
+    // Diary entries
+    match /users/{userId}/diary/{entryId} {
+      allow read: if isUserAuthenticated(userId);
+      allow write: if isUserAuthenticated(userId);
+    }
+
     // Time tracking
     match /timeTracking/{entryId} {
       allow write: if isAuthenticated();

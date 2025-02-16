@@ -3,6 +3,7 @@ import { ThemeProvider } from './ThemeContext'
 import { AuthProvider } from '@/lib/FirebaseAuthContext'
 import { Toaster } from '@/components/ui/toaster'
 import { NotesProvider } from '@/lib/NotesContext'
+import { DiaryProvider } from '@/lib/DiaryContext'
 
 export default function RootLayout({
   children,
@@ -14,9 +15,11 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <AuthProvider>
-            <NotesProvider>
-              {children}
-            </NotesProvider>
+            <DiaryProvider>
+              <NotesProvider>
+                {children}
+              </NotesProvider>
+            </DiaryProvider>
             <Toaster />
           </AuthProvider>
         </ThemeProvider>
