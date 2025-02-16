@@ -254,114 +254,80 @@ export default function DashboardPage() {
     return () => clearInterval(interval)
   }, [mounted, location])
 
-  // Load user stats and sessions
+  // Handle authentication and initialization
   useEffect(() => {
-    if (user?.uid) {
-      loadUserStats()
-      loadRecentSessions()
-    }
-  }, [user?.uid])
-
-  const loadUserStats = async () => {
-    if (!user?.uid) return
+    let mounted = true;
     
-    try {
-      const stats = await getUserStats(user.uid)
-      setUserStats(stats)
-    } catch (error) {
-      console.error('Error loading user stats:', error)
-    }
-  }
+    const initializeDashboard = async () => {
+      try {
+        if (!mounted) return;
+        setIsInitializing(true);
+        setAuthError(null);
 
-  const loadRecentSessions = async () => {
-    if (!user?.uid) return
-    
-    try {
-      const sessions = await getUserSessions(user.uid)
-      setRecentSessions(sessions)
-    } catch (error) {
-      console.error('Error loading recent sessions:', error)
-    }
-  }
+        // Wait for auth to be ready
+        if (authLoading) return;
 
-  const formatDuration = (ms: number) => {
-    const hours = Math.floor(ms / (1000 * 60 * 60))
-    const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60))
-    return `${hours}h ${minutes}m`
-  }
+        // Redirect if not authenticated
+        if (!user) {
+          console.log('User not authenticated, redirecting to login');
+          router.push('/login');
+          return;
+        }
 
-  const handleAddNote = async () => {
-    if (!noteTitle.trim() || !noteContent.trim()) return
+        console.log('Starting dashboard initialization...');
+        
+        // Load all necessary data in a single Promise.all
+        const [stats, sessions, timeStatsData] = await Promise.all([
+          getUserStats(user.uid),
+          getUserSessions(user.uid),
+          calculateUserTimeStats(user.uid)
+        ]);
 
-    try {
-      await addNote(noteTitle.trim(), noteContent.trim())
-      setNoteTitle('')
-      setNoteContent('')
-      setIsAddNoteOpen(false)
-    } catch (error) {
-      console.error('Error adding note:', error)
-    }
-  }
+        if (!mounted) return;
 
-  const handleEditNote = async () => {
-    if (!selectedNote || !noteTitle.trim() || !noteContent.trim()) return
+        // Update all state at once to prevent multiple re-renders
+        setUserStats(stats);
+        setRecentSessions(sessions);
+        setTimeStats(timeStatsData);
+        
+        console.log('Dashboard initialization complete');
+        setIsInitializing(false);
+      } catch (error) {
+        console.error('Dashboard initialization failed:', error);
+        if (!mounted) return;
+        setAuthError(error instanceof Error ? error.message : 'Failed to load dashboard');
+        setIsInitializing(false);
+      }
+    };
 
-    try {
-      await editNote(selectedNote.id, noteTitle.trim(), noteContent.trim())
-      setSelectedNote(null)
-      setNoteTitle('')
-      setNoteContent('')
-      setIsEditNoteOpen(false)
-    } catch (error) {
-      console.error('Error editing note:', error)
-    }
-  }
+    initializeDashboard();
 
-  const handleDeleteNote = async (noteId: string) => {
-    if (!confirm('Are you sure you want to delete this note?')) return
+    // Cleanup function
+    return () => {
+      mounted = false;
+    };
+  }, [user?.uid, authLoading]); // Only depend on user.uid and authLoading
 
-    try {
-      await removeNote(noteId)
-    } catch (error) {
-      console.error('Error deleting note:', error)
-    }
-  }
+  // Remove the separate useEffects for loadUserStats and loadRecentSessions
+  // since they're now handled in the initialization effect
 
-  const openEditNote = (note: Note) => {
-    setSelectedNote(note)
-    setNoteTitle(note.title)
-    setNoteContent(note.content)
-    setIsEditNoteOpen(true)
-  }
-
-  // Update the event handlers with proper types
-  const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => setNoteTitle(e.target.value)
-  const handleContentChange = (e: ChangeEvent<HTMLTextAreaElement>) => setNoteContent(e.target.value)
-
-  // Get recent notes
-  const recentNotes = notes?.slice(0, 3) || []
-
-  // Load time stats
-  const loadTimeStats = async () => {
+  // Keep the refresh function for manual updates
+  const loadAllStats = async () => {
     if (!user?.uid) return;
     
-    try {
-      const stats = await calculateUserTimeStats(user.uid);
-      setTimeStats(stats);
-    } catch (error) {
-      console.error('Error loading time stats:', error);
-    }
-  };
-
-  // Load all stats
-  const loadAllStats = async () => {
     setIsRefreshing(true);
     try {
-      await Promise.all([
-        loadUserStats(),
-        loadTimeStats(),
-        loadRecentSessions()
+      console.log('Manually refreshing dashboard stats...');
+      const [stats, sessions, timeStatsData] = await Promise.all([
+        getUserStats(user.uid),
+        getUserSessions(user.uid),
+        calculateUserTimeStats(user.uid)
       ]);
+
+      setUserStats(stats);
+      setRecentSessions(sessions);
+      setTimeStats(timeStatsData);
+      console.log('Manual refresh complete');
     } catch (error) {
       console.error('Error refreshing stats:', error);
     } finally {
@@ -369,68 +335,32 @@ export default function DashboardPage() {
     }
   };
 
-  // Load stats on mount and when user changes
-  useEffect(() => {
-    if (user?.uid) {
-      loadAllStats();
-    }
-  }, [user?.uid]);
-
   // Start time tracking when the page loads
   useEffect(() => {
     let entryId: string | null = null;
+    let mounted = true;
     
     const startTracking = async () => {
-      if (user?.uid) {
+      if (user?.uid && mounted) {
+        console.log('Starting time tracking...');
         entryId = await startTimeTracking(user.uid, 'dashboard');
-        setTimeEntryId(entryId);
+        if (mounted) {
+          setTimeEntryId(entryId);
+        }
       }
     };
 
     startTracking();
 
-    // End time tracking when the user leaves the page
+    // Cleanup function
     return () => {
+      mounted = false;
       if (entryId) {
+        console.log('Ending time tracking...');
         endTimeTracking(entryId);
       }
     };
-  }, [user?.uid]);
-
-  // Handle authentication and initialization
-  useEffect(() => {
-    const initializeDashboard = async () => {
-      try {
-        setIsInitializing(true)
-        setAuthError(null)
-
-        // Wait for auth to be ready
-        if (authLoading) return
-
-        // Redirect if not authenticated
-        if (!user) {
-          console.log('User not authenticated, redirecting to login')
-          router.push('/login')
-          return
-        }
-
-        // Load all necessary data
-        await Promise.all([
-          loadUserStats(),
-          loadRecentSessions(),
-          loadTimeStats()
-        ])
-
-        setIsInitializing(false)
-      } catch (error) {
-        console.error('Dashboard initialization failed:', error)
-        setAuthError(error instanceof Error ? error.message : 'Failed to load dashboard')
-        setIsInitializing(false)
-      }
-    }
-
-    initializeDashboard()
-  }, [user, authLoading])
+  }, [user?.uid]); // Only depend on user.uid
 
   // Show loading state
   if (isInitializing || authLoading) {
@@ -705,7 +635,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="space-y-1.5">
-                {recentNotes.map((note) => (
+                {notes?.slice(0, 3).map((note) => (
                   <div
                     key={note.id}
                     className="p-2 rounded-lg bg-gray-50 dark:bg-black/20 border border-black/5 dark:border-white/10"
@@ -714,13 +644,16 @@ export default function DashboardPage() {
                       <h3 className="text-sm font-medium dark:text-white truncate max-w-[80%]">{note.title}</h3>
                       <div className="flex items-center gap-1">
                         <button
-                          onClick={() => openEditNote(note)}
+                          onClick={() => {
+                            setSelectedNote(note);
+                            setIsEditNoteOpen(true);
+                          }}
                           className="p-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-white/10"
                         >
                           <Pencil className="h-3.5 w-3.5 text-gray-500" />
                         </button>
                         <button
-                          onClick={() => handleDeleteNote(note.id)}
+                          onClick={() => removeNote(note.id)}
                           className="p-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-white/10"
                         >
                           <Trash2 className="h-3.5 w-3.5 text-gray-500" />
@@ -733,7 +666,7 @@ export default function DashboardPage() {
                     </p>
                   </div>
                 ))}
-                {recentNotes.length === 0 && (
+                {notes?.length === 0 && (
                   <p className="text-xs text-gray-500 dark:text-gray-400">No notes yet</p>
                 )}
               </div>
