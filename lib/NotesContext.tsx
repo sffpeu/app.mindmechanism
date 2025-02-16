@@ -2,15 +2,15 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { useAuth } from '@/lib/FirebaseAuthContext'
-import { Note, createNote, updateNote, deleteNote, subscribeToUserNotes } from '@/lib/notes'
+import { Note, WeatherSnapshot, createNote, updateNote, deleteNote, subscribeToUserNotes } from '@/lib/notes'
 import { toast } from '@/components/ui/use-toast'
 
 interface NotesContextType {
   notes: Note[]
   isLoading: boolean
   error: string | null
-  addNote: (title: string, content: string) => Promise<string | undefined>
-  editNote: (noteId: string, title: string, content: string) => Promise<void>
+  addNote: (title: string, content: string, weatherSnapshot?: WeatherSnapshot) => Promise<string | undefined>
+  editNote: (noteId: string, title: string, content: string, weatherSnapshot?: WeatherSnapshot) => Promise<void>
   removeNote: (noteId: string) => Promise<void>
 }
 
@@ -51,7 +51,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     }
   }, [user])
 
-  const addNote = async (title: string, content: string): Promise<string | undefined> => {
+  const addNote = async (title: string, content: string, weatherSnapshot?: WeatherSnapshot): Promise<string | undefined> => {
     if (!user) {
       toast({
         title: "Authentication Error",
@@ -62,7 +62,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
     try {
       setError(null)
-      const noteId = await createNote(user.uid, title, content)
+      const noteId = await createNote(user.uid, title, content, weatherSnapshot)
       toast({
         title: "Success",
         description: "Note created successfully"
@@ -79,7 +79,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const editNote = async (noteId: string, title: string, content: string) => {
+  const editNote = async (noteId: string, title: string, content: string, weatherSnapshot?: WeatherSnapshot) => {
     if (!user) {
       toast({
         title: "Authentication Error",
@@ -90,7 +90,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
     try {
       setError(null)
-      await updateNote(user.uid, noteId, title, content)
+      await updateNote(user.uid, noteId, title, content, weatherSnapshot)
       toast({
         title: "Success",
         description: "Note updated successfully"

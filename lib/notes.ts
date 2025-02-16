@@ -103,7 +103,7 @@ export const createNote = async (
       content: content.trim(),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-      ...(weatherSnapshot && { weatherSnapshot }),
+      weatherSnapshot,
     };
     
     const docRef = await addDoc(collection(db, `users/${userId}/notes`), noteData);
@@ -242,11 +242,8 @@ export const updateNote = async (
       title: title.trim(),
       content: content.trim(),
       updatedAt: serverTimestamp(),
+      weatherSnapshot,
     };
-
-    if (weatherSnapshot) {
-      Object.assign(updateData, { weatherSnapshot });
-    }
 
     await updateDoc(noteRef, updateData);
   } catch (error) {

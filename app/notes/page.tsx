@@ -166,9 +166,9 @@ export default function NotesPage() {
     try {
       const weatherSnapshot = createWeatherSnapshot();
       if (selectedNote && isEditing) {
-        await editNote(selectedNote.id, noteTitle, noteContent)
+        await editNote(selectedNote.id, noteTitle, noteContent, weatherSnapshot)
       } else {
-        const noteId = await addNote(noteTitle, noteContent)
+        const noteId = await addNote(noteTitle, noteContent, weatherSnapshot)
         if (noteId) {
           console.log('Created note with ID:', noteId)
         }
