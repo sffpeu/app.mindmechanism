@@ -46,6 +46,7 @@ interface WeatherResponse {
     uv: number
     pressure_mb: number
     wind_kph: number
+    wind_dir: string
   }
 }
 
@@ -454,9 +455,9 @@ export default function DashboardPage() {
     try {
       const weatherSnapshot = createWeatherSnapshot();
       if (selectedNote && isEditNoteOpen) {
-        await editNote(selectedNote.id, noteTitle, noteContent, weatherSnapshot);
+        await editNote(selectedNote.id, noteTitle, noteContent);
       } else {
-        await addNote(noteTitle, noteContent, weatherSnapshot);
+        await addNote(noteTitle, noteContent);
       }
       setNoteTitle('');
       setNoteContent('');
