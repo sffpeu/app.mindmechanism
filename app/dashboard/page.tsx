@@ -119,7 +119,7 @@ export default function DashboardPage() {
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null)
   const [locationError, setLocationError] = useState<string | null>(null)
   const router = useRouter()
-  const { user } = useAuth() as { user: FirebaseUser | null }
+  const { user, loading: authLoading } = useAuth()
   const { notes, isLoading: notesLoading, addNote, editNote, removeNote } = useNotes()
   const [isAddNoteOpen, setIsAddNoteOpen] = useState(false)
   const [isEditNoteOpen, setIsEditNoteOpen] = useState(false)
@@ -145,6 +145,8 @@ export default function DashboardPage() {
   const [timeEntryId, setTimeEntryId] = useState<string | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [showRecentSessions, setShowRecentSessions] = useState(true)
+  const [isInitializing, setIsInitializing] = useState(true)
+  const [authError, setAuthError] = useState<string | null>(null)
 
   // Handle mounting
   useEffect(() => {
@@ -394,6 +396,73 @@ export default function DashboardPage() {
       }
     };
   }, [user?.uid]);
+
+  // Handle authentication and initialization
+  useEffect(() => {
+    const initializeDashboard = async () => {
+      try {
+        setIsInitializing(true)
+        setAuthError(null)
+
+        // Wait for auth to be ready
+        if (authLoading) return
+
+        // Redirect if not authenticated
+        if (!user) {
+          console.log('User not authenticated, redirecting to login')
+          router.push('/login')
+          return
+        }
+
+        // Load all necessary data
+        await Promise.all([
+          loadUserStats(),
+          loadRecentSessions(),
+          loadTimeStats()
+        ])
+
+        setIsInitializing(false)
+      } catch (error) {
+        console.error('Dashboard initialization failed:', error)
+        setAuthError(error instanceof Error ? error.message : 'Failed to load dashboard')
+        setIsInitializing(false)
+      }
+    }
+
+    initializeDashboard()
+  }, [user, authLoading])
+
+  // Show loading state
+  if (isInitializing || authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading your dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show error state
+  if (authError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-red-500 mb-4">
+            <XCircle className="h-12 w-12 mx-auto" />
+          </div>
+          <p className="text-gray-600 dark:text-gray-300">{authError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   if (!mounted) {
     return null

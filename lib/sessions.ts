@@ -146,41 +146,72 @@ export async function updateSession(
   }
 }
 
-export async function getUserSessions(userId: string): Promise<Session[]> {
-  try {
-    if (!db) throw new Error('Firestore is not initialized');
-    if (!userId) throw new Error('User ID is required');
+export async function getUserSessions(userId: string, retryCount = 3): Promise<Session[]> {
+  let lastError: Error | null = null;
+  
+  for (let attempt = 0; attempt < retryCount; attempt++) {
+    try {
+      if (!db) throw new Error('Firestore is not initialized');
+      if (!userId) throw new Error('User ID is required');
 
-    const sessionsQuery = query(
-      collection(db, 'sessions'),
-      where('user_id', '==', userId),
-      orderBy('start_time', 'desc')
-    );
+      console.log(`Fetching sessions for user ${userId} (attempt ${attempt + 1}/${retryCount})`);
 
-    const snapshot = await getDocs(sessionsQuery);
-    return snapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        ...data,
-        start_time: data.start_time,
-        end_time: data.end_time
-      } as Session;
-    });
-  } catch (error) {
-    console.error('Error in getUserSessions:', error);
-    if (error instanceof FirestoreError) {
-      switch (error.code) {
-        case 'permission-denied':
-          throw new Error('You do not have permission to access these sessions');
-        case 'unavailable':
-          throw new Error('Service is currently offline');
-        default:
-          throw new Error(`Failed to fetch sessions: ${error.message}`);
+      const sessionsQuery = query(
+        collection(db, 'sessions'),
+        where('user_id', '==', userId),
+        orderBy('start_time', 'desc')
+      );
+
+      const snapshot = await getDocs(sessionsQuery);
+      const sessions = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          start_time: data.start_time,
+          end_time: data.end_time,
+          last_active_time: data.last_active_time
+        } as Session;
+      });
+
+      console.log(`Successfully loaded ${sessions.length} sessions`);
+      return sessions;
+
+    } catch (error) {
+      console.error(`Error in getUserSessions (attempt ${attempt + 1}):`, error);
+      lastError = error instanceof Error ? error : new Error(String(error));
+
+      if (error instanceof FirestoreError) {
+        switch (error.code) {
+          case 'permission-denied':
+            throw new Error('You do not have permission to access these sessions');
+          case 'unavailable':
+            // Only retry on unavailable error
+            if (attempt < retryCount - 1) {
+              console.log('Service unavailable, retrying...');
+              await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+              continue;
+            }
+            throw new Error('Service is currently offline');
+          default:
+            throw new Error(`Failed to fetch sessions: ${error.message}`);
+        }
+      }
+
+      // If we're not on the last attempt, continue to retry
+      if (attempt < retryCount - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+        continue;
       }
     }
-    return [];
   }
+
+  // If we've exhausted all retries, throw the last error
+  if (lastError) {
+    throw lastError;
+  }
+
+  return [];
 }
 
 interface UserStats {
@@ -194,76 +225,112 @@ interface UserStats {
   };
 }
 
-export async function getUserStats(userId: string): Promise<UserStats> {
-  try {
-    if (!db) throw new Error('Firestore is not initialized');
-    if (!userId) throw new Error('User ID is required');
+export async function getUserStats(userId: string, retryCount = 3): Promise<UserStats> {
+  let lastError: Error | null = null;
 
-    const sessionsQuery = query(
-      collection(db, 'sessions'),
-      where('user_id', '==', userId)
-    );
+  for (let attempt = 0; attempt < retryCount; attempt++) {
+    try {
+      if (!db) throw new Error('Firestore is not initialized');
+      if (!userId) throw new Error('User ID is required');
 
-    const snapshot = await getDocs(sessionsQuery);
-    const sessions = snapshot.docs.map(doc => ({
-      ...doc.data(),
-      id: doc.id
-    })) as Session[];
-    
-    const totalSessions = sessions.length;
-    const completedSessions = sessions.filter(s => s.status === 'completed');
-    const completionRate = totalSessions ? (completedSessions.length / totalSessions) * 100 : 0;
+      console.log(`Fetching stats for user ${userId} (attempt ${attempt + 1}/${retryCount})`);
 
-    const now = new Date();
-    const totalTime = sessions.reduce((acc, session) => {
-      if (session.status === 'completed') {
-        return acc + (session.actual_duration || 0);
-      } else if (session.status === 'aborted') {
-        return acc + (session.actual_duration || 0);
-      } else if (session.status === 'in_progress' && session.start_time) {
-        const startTime = session.start_time.toDate();
-        const lastActiveTime = session.last_active_time?.toDate() || startTime;
-        const pausedDuration = session.paused_duration || 0;
+      const sessionsQuery = query(
+        collection(db, 'sessions'),
+        where('user_id', '==', userId)
+      );
+
+      const snapshot = await getDocs(sessionsQuery);
+      const sessions = snapshot.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id
+      })) as Session[];
+
+      const totalSessions = sessions.length;
+      const completedSessions = sessions.filter(s => s.status === 'completed');
+      const completionRate = totalSessions ? (completedSessions.length / totalSessions) * 100 : 0;
+
+      const now = new Date();
+      const totalTime = sessions.reduce((acc, session) => {
+        if (!session.start_time) return acc;
         
-        const activeTime = lastActiveTime.getTime() - startTime.getTime() - pausedDuration;
-        return acc + activeTime;
+        if (session.status === 'completed') {
+          return acc + (session.actual_duration || 0);
+        } else if (session.status === 'aborted') {
+          return acc + (session.actual_duration || 0);
+        } else if (session.status === 'in_progress') {
+          const startTime = session.start_time.toDate();
+          const lastActiveTime = session.last_active_time?.toDate() || startTime;
+          const pausedDuration = session.paused_duration || 0;
+          
+          const activeTime = lastActiveTime.getTime() - startTime.getTime() - pausedDuration;
+          return acc + activeTime;
+        }
+        return acc;
+      }, 0);
+
+      console.log(`Successfully calculated stats for ${totalSessions} sessions`);
+
+      const thisMonth = sessions.filter(session => {
+        if (!session.start_time) return false;
+        const sessionDate = session.start_time.toDate();
+        return sessionDate.getMonth() === now.getMonth() && 
+               sessionDate.getFullYear() === now.getFullYear();
+      });
+
+      return {
+        totalTime,
+        totalSessions,
+        completionRate,
+        monthlyProgress: {
+          totalSessions: thisMonth.length,
+          totalTime: calculateMonthlyTime(thisMonth),
+          completionRate: thisMonth.length ? 
+            (thisMonth.filter(s => s.status === 'completed').length / thisMonth.length) * 100 : 0
+        }
+      };
+
+    } catch (error) {
+      console.error(`Error in getUserStats (attempt ${attempt + 1}):`, error);
+      lastError = error instanceof Error ? error : new Error(String(error));
+
+      if (error instanceof FirestoreError) {
+        switch (error.code) {
+          case 'permission-denied':
+            throw new Error('You do not have permission to access these stats');
+          case 'unavailable':
+            if (attempt < retryCount - 1) {
+              console.log('Service unavailable, retrying...');
+              await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+              continue;
+            }
+            throw new Error('Service is currently offline');
+          default:
+            throw new Error(`Failed to fetch stats: ${error.message}`);
+        }
       }
-      return acc;
-    }, 0);
 
-    const thisMonth = sessions.filter(session => {
-      if (!session.start_time) return false;
-      const sessionDate = session.start_time.toDate();
-      return sessionDate.getMonth() === now.getMonth() && 
-             sessionDate.getFullYear() === now.getFullYear();
-    });
-
-    const monthlyProgress = {
-      totalSessions: thisMonth.length,
-      totalTime: calculateMonthlyTime(thisMonth),
-      completionRate: thisMonth.length ? 
-        (thisMonth.filter(s => s.status === 'completed').length / thisMonth.length) * 100 : 0
-    };
-
-    return {
-      totalTime,
-      totalSessions,
-      completionRate,
-      monthlyProgress
-    };
-  } catch (error) {
-    console.error('Error in getUserStats:', error);
-    return {
-      totalTime: 0,
-      totalSessions: 0,
-      completionRate: 0,
-      monthlyProgress: {
-        totalSessions: 0,
-        totalTime: 0,
-        completionRate: 0
+      if (attempt < retryCount - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+        continue;
       }
-    };
+    }
   }
+
+  if (lastError) {
+    throw lastError;
+  }
+
+  return {
+    totalTime: 0,
+    totalSessions: 0,
+    completionRate: 0,
+    monthlyProgress: {
+      totalSessions: 0,
+      totalTime: 0,
+      completionRate: 0
+    }
+  };
 }
 
 function calculateMonthlyTime(sessions: Session[]): number {

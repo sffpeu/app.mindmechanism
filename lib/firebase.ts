@@ -64,22 +64,27 @@ const validateFirebaseConfig = () => {
 
 function initializeFirebaseApp(): FirebaseApp | null {
   try {
-    console.log('Initializing Firebase...');
+    console.log('Initializing Firebase with config:', {
+      authDomain: firebaseConfig.authDomain,
+      projectId: firebaseConfig.projectId,
+      // Log non-sensitive config for debugging
+    });
+
     if (!validateFirebaseConfig()) {
-      console.warn('Skipping Firebase initialization due to incomplete config');
+      console.error('Firebase initialization skipped: Invalid config');
       return null;
     }
 
     if (getApps().length === 0) {
       const app = initializeApp(firebaseConfig);
-      console.log('Firebase app initialized successfully');
+      console.log('Firebase app initialized with project:', app.options.projectId);
       return app;
     } else {
-      console.log('Firebase app already initialized');
+      console.log('Using existing Firebase app instance');
       return getApps()[0];
     }
   } catch (error) {
-    console.error('Error initializing Firebase:', error);
+    console.error('Firebase initialization failed:', error);
     if (isBrowser) {
       throw error;
     }
@@ -94,23 +99,27 @@ let db: Firestore | null = null;
 
 if (isBrowser && app) {
   try {
-    // Initialize Firestore with modern persistence settings
     const firestoreSettings: FirestoreSettings = {
       localCache: persistentLocalCache({
         tabManager: persistentMultipleTabManager()
       })
     };
 
-    // Initialize Firestore only once
     if (!db) {
+      console.log('Initializing Firestore...');
       db = initializeFirestore(app, firestoreSettings);
-      console.log('Firestore initialized successfully');
+      console.log('Firestore initialized with persistence enabled');
     }
-
-    // No need to explicitly enable persistence as it's handled by the settings above
   } catch (error) {
-    console.error('Error in Firebase initialization:', error);
-    // Don't throw here to prevent app from crashing
+    console.error('Firestore initialization failed:', error);
+    // Add more detailed error information
+    if (error instanceof Error) {
+      console.error('Error details:', {
+        message: error.message,
+        name: error.name,
+        stack: error.stack
+      });
+    }
   }
 }
 
