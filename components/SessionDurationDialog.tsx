@@ -683,10 +683,10 @@ export function SessionDurationDialog({
                               ) : (
                                 <>
                                   <span className={cn("text-4xl font-light", textColorClass)}>
-                                    {rotationDegrees.toFixed(0)}°
+                                    {isEndless ? '∞' : `${rotationDegrees.toFixed(0)}°`}
                                   </span>
                                   <span className="text-sm text-gray-400 dark:text-gray-300 mt-1">
-                                    {isCustom ? customDuration : (selectedPreset || hoveredPreset || 0)}min
+                                    {isEndless ? 'Endless' : (isCustom ? customDuration : (selectedPreset || hoveredPreset || 0)) + 'min'}
                                   </span>
                                 </>
                               )}

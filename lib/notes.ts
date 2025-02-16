@@ -25,12 +25,39 @@ if (process.env.NODE_ENV === 'development') {
   setLogLevel('debug');
 }
 
+export interface WeatherSnapshot {
+  temperature: number;
+  humidity: number;
+  uvIndex: number;
+  airPressure: number;
+  wind: {
+    speed: number;
+    direction: string;
+  };
+  moon: {
+    phase: string;
+    illumination: number;
+    moonrise: string;
+    moonset: string;
+  };
+  location: {
+    name: string;
+    country: string;
+    coordinates: {
+      lat: number;
+      lon: number;
+    };
+  };
+  timestamp: Timestamp;
+}
+
 export interface Note {
   id: string;
   title: string;
   content: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
+  weatherSnapshot?: WeatherSnapshot;
 }
 
 // Validation functions
@@ -56,7 +83,12 @@ const handleFirestoreError = (error: FirestoreError, context: string): never => 
   }
 };
 
-export const createNote = async (userId: string, title: string, content: string): Promise<string> => {
+export const createNote = async (
+  userId: string, 
+  title: string, 
+  content: string,
+  weatherSnapshot?: WeatherSnapshot
+): Promise<string> => {
   console.log('Creating note:', { userId, title });
   
   try {
@@ -71,6 +103,7 @@ export const createNote = async (userId: string, title: string, content: string)
       content: content.trim(),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
+      ...(weatherSnapshot && { weatherSnapshot }),
     };
     
     const docRef = await addDoc(collection(db, `users/${userId}/notes`), noteData);
@@ -111,7 +144,8 @@ export async function getUserNotes(userId: string): Promise<Note[]> {
         title: data.title || '',
         content: data.content || '',
         createdAt,
-        updatedAt
+        updatedAt,
+        weatherSnapshot: data.weatherSnapshot,
       };
     });
   } catch (error) {
@@ -161,7 +195,8 @@ export const subscribeToUserNotes = (
             title: data.title || '',
             content: data.content || '',
             createdAt,
-            updatedAt
+            updatedAt,
+            weatherSnapshot: data.weatherSnapshot,
           } as Note;
         });
         console.log('Received notes update, count:', notes.length);
@@ -182,7 +217,8 @@ export const updateNote = async (
   userId: string, 
   noteId: string, 
   title: string, 
-  content: string
+  content: string,
+  weatherSnapshot?: WeatherSnapshot
 ): Promise<void> => {
   console.log('Updating note:', { userId, noteId, title });
   
@@ -202,11 +238,17 @@ export const updateNote = async (
       throw new Error('Note not found');
     }
 
-    await updateDoc(noteRef, {
+    const updateData = {
       title: title.trim(),
       content: content.trim(),
       updatedAt: serverTimestamp(),
-    });
+    };
+
+    if (weatherSnapshot) {
+      Object.assign(updateData, { weatherSnapshot });
+    }
+
+    await updateDoc(noteRef, updateData);
   } catch (error) {
     console.error('Error updating note:', error);
     if (error instanceof FirestoreError) {

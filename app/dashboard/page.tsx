@@ -22,6 +22,9 @@ import { DashboardRecentSessions } from '@/components/DashboardRecentSessions'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Clock as ClockIcon } from 'lucide-react'
 import { Session } from '@/lib/sessions'
+import { WeatherSnapshot } from '@/lib/notes'
+import { WeatherSnapshotPopover } from '@/components/WeatherSnapshotPopover'
+import { toast } from '@/components/ui/use-toast'
 
 interface WeatherResponse {
   location: {
@@ -409,6 +412,66 @@ export default function DashboardPage() {
     return null
   }
 
+  const createWeatherSnapshot = (): WeatherSnapshot | undefined => {
+    if (!weatherData || !moon) return undefined;
+
+    return {
+      temperature: weatherData.current.temp_c,
+      humidity: weatherData.current.humidity,
+      uvIndex: weatherData.current.uv,
+      airPressure: weatherData.current.pressure_mb,
+      wind: {
+        speed: weatherData.current.wind_kph,
+        direction: weatherData.current.wind_dir,
+      },
+      moon: {
+        phase: moon.moon_phase,
+        illumination: parseInt(moon.moon_illumination),
+        moonrise: moon.moonrise,
+        moonset: moon.moonset,
+      },
+      location: {
+        name: weatherData.location.name,
+        country: weatherData.location.country,
+        coordinates: {
+          lat: weatherData.location.lat,
+          lon: weatherData.location.lon,
+        },
+      },
+      timestamp: Timestamp.now(),
+    };
+  };
+
+  const handleSaveNote = async () => {
+    if (!noteTitle.trim() || !noteContent.trim()) {
+      toast({
+        title: "Error",
+        description: "Title and content are required"
+      });
+      return;
+    }
+
+    try {
+      const weatherSnapshot = createWeatherSnapshot();
+      if (selectedNote && isEditNoteOpen) {
+        await editNote(selectedNote.id, noteTitle, noteContent, weatherSnapshot);
+      } else {
+        await addNote(noteTitle, noteContent, weatherSnapshot);
+      }
+      setNoteTitle('');
+      setNoteContent('');
+      setSelectedNote(null);
+      setIsAddNoteOpen(false);
+      setIsEditNoteOpen(false);
+    } catch (error) {
+      console.error('Error saving note:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : 'Failed to save note'
+      });
+    }
+  };
+
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50 dark:bg-black/95">
@@ -664,6 +727,13 @@ export default function DashboardPage() {
                     <div className="flex items-center justify-between">
                       <h3 className="text-sm font-medium dark:text-white truncate max-w-[80%]">{note.title}</h3>
                       <div className="flex items-center gap-1">
+                        {note.weatherSnapshot && (
+                          <WeatherSnapshotPopover weatherSnapshot={note.weatherSnapshot}>
+                            <button className="p-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-white/10">
+                              <Cloud className="h-3.5 w-3.5 text-gray-500" />
+                            </button>
+                          </WeatherSnapshotPopover>
+                        )}
                         <button
                           onClick={() => {
                             setSelectedNote(note);
