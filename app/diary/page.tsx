@@ -48,12 +48,14 @@ export default function DiaryPage() {
         }
 
         // Get weather and location data
-        const { weather: weatherData, location: locationData } = await getWeatherAndLocation(locationCoords)
+        const { weather: weatherData, location: locationData } = await getWeatherAndLocation(
+          locationCoords || undefined
+        )
         setWeather(weatherData)
         setLocation(locationData)
 
         // Get moon data
-        const moonData = await getMoonData(locationCoords)
+        const moonData = await getMoonData(locationCoords || undefined)
         setMoon(moonData)
 
         setIsLoadingData(false)
