@@ -840,10 +840,13 @@ export default function Clock({
 
           // Calculate position for each mini clock
           const angle = (360 / 8) * index;
-          const radius = index === 8 ? 0 : 32; // Reduced radius for tighter arrangement
+          const radius = index === 8 ? 0 : 35; // Increased radius for more spacing
           const radians = (angle * Math.PI) / 180;
           const x = 50 + radius * Math.cos(radians);
           const y = 50 + radius * Math.sin(radians);
+
+          // Adjust size based on position
+          const clockSize = index === 8 ? '30%' : '22%'; // Center clock is larger, outer clocks slightly smaller
 
           // Calculate rotation
           const now = Date.now();
@@ -856,15 +859,9 @@ export default function Clock({
           return (
             <motion.div
               key={`mini-clock-${clock.id}`}
-              className="absolute w-[20%] aspect-square hover:scale-110 transition-transform duration-200 group"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{
-                duration: 0.5,
-                delay: index * 0.1,
-                ease: "easeOut"
-              }}
+              className={`absolute aspect-square hover:scale-110 transition-transform duration-200 group`}
               style={{
+                width: clockSize,
                 left: `${x}%`,
                 top: `${y}%`,
                 transform: 'translate(-50%, -50%)',
