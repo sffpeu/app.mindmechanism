@@ -107,6 +107,8 @@ const clockTitles = [
   "Medieval Observations"
 ];
 
+const WEATHER_API_KEY = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
+
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false)
   const [showElements, setShowElements] = useState(true)
@@ -147,6 +149,8 @@ export default function DashboardPage() {
   const [showRecentSessions, setShowRecentSessions] = useState(true)
   const [isInitializing, setIsInitializing] = useState(true)
   const [authError, setAuthError] = useState<string | null>(null)
+  const [weatherError, setWeatherError] = useState<string | null>(null)
+  const [isWeatherLoading, setIsWeatherLoading] = useState(false)
 
   // Handle mounting
   useEffect(() => {
@@ -225,34 +229,67 @@ export default function DashboardPage() {
 
   // Fetch weather and moon data with precise location
   useEffect(() => {
-    if (!mounted) return
+    let isMounted = true;
+    let intervalId: NodeJS.Timeout | null = null;
 
-    const fetchData = async () => {
-      try {
-        const weatherRes = await fetch(
-          `https://api.weatherapi.com/v1/current.json?key=6cb652a81cb64a19a84103447252001&q=${
-            location ? `${location.lat},${location.lon}` : 'auto:ip'
-          }&aqi=no`
-        )
-        const weatherData = await weatherRes.json()
-        setWeatherData(weatherData)
-
-        const astronomyRes = await fetch(
-          `https://api.weatherapi.com/v1/astronomy.json?key=6cb652a81cb64a19a84103447252001&q=${
-            location ? `${location.lat},${location.lon}` : 'auto:ip'
-          }`
-        )
-        const astronomyData = await astronomyRes.json()
-        setMoon(astronomyData.astronomy.astro)
-      } catch (error) {
-        console.error('Error fetching data:', error)
+    const fetchWeatherData = async () => {
+      if (!WEATHER_API_KEY) {
+        console.error('Weather API key is not configured');
+        setWeatherError('Weather service is not configured');
+        return;
       }
-    }
 
-    fetchData()
-    const interval = setInterval(fetchData, 5 * 60 * 1000)
-    return () => clearInterval(interval)
-  }, [mounted, location])
+      try {
+        setIsWeatherLoading(true);
+        setWeatherError(null);
+
+        const locationQuery = location ? `${location.lat},${location.lon}` : 'auto:ip';
+        
+        const [weatherRes, astronomyRes] = await Promise.all([
+          fetch(`https://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q=${locationQuery}&aqi=no`),
+          fetch(`https://api.weatherapi.com/v1/astronomy.json?key=${WEATHER_API_KEY}&q=${locationQuery}`)
+        ]);
+
+        if (!weatherRes.ok || !astronomyRes.ok) {
+          throw new Error('Failed to fetch weather data');
+        }
+
+        const [weatherData, astronomyData] = await Promise.all([
+          weatherRes.json(),
+          astronomyRes.json()
+        ]);
+
+        if (isMounted) {
+          setWeatherData(weatherData);
+          setMoon(astronomyData.astronomy.astro);
+          setWeatherError(null);
+        }
+      } catch (error) {
+        console.error('Error fetching weather data:', error);
+        if (isMounted) {
+          setWeatherError('Unable to load weather information');
+        }
+      } finally {
+        if (isMounted) {
+          setIsWeatherLoading(false);
+        }
+      }
+    };
+
+    // Initial fetch
+    fetchWeatherData();
+
+    // Set up interval for periodic updates
+    intervalId = setInterval(fetchWeatherData, 5 * 60 * 1000); // Update every 5 minutes
+
+    // Cleanup function
+    return () => {
+      isMounted = false;
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [location]); // Remove mounted from dependencies
 
   // Handle authentication and initialization
   useEffect(() => {
@@ -552,39 +589,49 @@ export default function DashboardPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <h2 className="text-base font-semibold dark:text-white mb-1">Current Weather</h2>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{weatherData.current.condition.text}</p>
+                        {isWeatherLoading ? (
+                          <p className="text-sm text-gray-500 dark:text-gray-400">Loading...</p>
+                        ) : weatherError ? (
+                          <p className="text-sm text-red-500">{weatherError}</p>
+                        ) : (
+                          <p className="text-sm text-gray-500 dark:text-gray-400">{weatherData.current.condition.text}</p>
+                        )}
                       </div>
-                      <div className="text-right">
-                        <p className="text-3xl font-bold dark:text-white">{weatherData.current.temp_c}°C</p>
-                        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                          <Droplets className="h-3.5 w-3.5" />
-                          <span>{weatherData.current.humidity}%</span>
+                      {!weatherError && (
+                        <div className="text-right">
+                          <p className="text-3xl font-bold dark:text-white">{weatherData.current.temp_c}°C</p>
+                          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                            <Droplets className="h-3.5 w-3.5" />
+                            <span>{weatherData.current.humidity}%</span>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
-                        <div className="flex items-center gap-2">
-                          <Sun className="h-4 w-4 text-gray-600 dark:text-gray-200" />
-                          <span className="text-sm text-gray-600 dark:text-gray-200">UV Index</span>
+                    {!weatherError && (
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
+                          <div className="flex items-center gap-2">
+                            <Sun className="h-4 w-4 text-gray-600 dark:text-gray-200" />
+                            <span className="text-sm text-gray-600 dark:text-gray-200">UV Index</span>
+                          </div>
+                          <p className="text-lg font-semibold mt-1 dark:text-white">{weatherData.current.uv}</p>
                         </div>
-                        <p className="text-lg font-semibold mt-1 dark:text-white">{weatherData.current.uv}</p>
-                      </div>
-                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
-                        <div className="flex items-center gap-2">
-                          <Gauge className="h-4 w-4 text-gray-600 dark:text-gray-200" />
-                          <span className="text-sm text-gray-600 dark:text-gray-200">Pressure</span>
+                        <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
+                          <div className="flex items-center gap-2">
+                            <Gauge className="h-4 w-4 text-gray-600 dark:text-gray-200" />
+                            <span className="text-sm text-gray-600 dark:text-gray-200">Pressure</span>
+                          </div>
+                          <p className="text-lg font-semibold mt-1 dark:text-white">{weatherData.current.pressure_mb} mb</p>
                         </div>
-                        <p className="text-lg font-semibold mt-1 dark:text-white">{weatherData.current.pressure_mb} mb</p>
-                      </div>
-                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
-                        <div className="flex items-center gap-2">
-                          <Wind className="h-4 w-4 text-gray-600 dark:text-gray-200" />
-                          <span className="text-sm text-gray-600 dark:text-gray-200">Wind</span>
+                        <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
+                          <div className="flex items-center gap-2">
+                            <Wind className="h-4 w-4 text-gray-600 dark:text-gray-200" />
+                            <span className="text-sm text-gray-600 dark:text-gray-200">Wind</span>
+                          </div>
+                          <p className="text-lg font-semibold mt-1 dark:text-white">{weatherData.current.wind_kph} km/h</p>
                         </div>
-                        <p className="text-lg font-semibold mt-1 dark:text-white">{weatherData.current.wind_kph} km/h</p>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </Card>
               )}
