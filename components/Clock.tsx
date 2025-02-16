@@ -56,12 +56,18 @@ export const defaultSatelliteConfigs: Record<number, Array<{ rotationTime: numbe
     { rotationTime: 600 * 1000, rotationDirection: 'counterclockwise' },
     { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' }
   ],
+  3: [ // Clock 4
+    { rotationTime: 60 * 1000, rotationDirection: 'clockwise' }
+  ],
   4: [ // Clock 5
     { rotationTime: 720 * 1000, rotationDirection: 'clockwise' },
     { rotationTime: 1140 * 1000, rotationDirection: 'counterclockwise' },
     { rotationTime: 1710 * 1000, rotationDirection: 'clockwise' },
     { rotationTime: 1710 * 1000, rotationDirection: 'counterclockwise' },
     { rotationTime: 900 * 1000, rotationDirection: 'clockwise' }
+  ],
+  5: [ // Clock 6
+    { rotationTime: 60 * 1000, rotationDirection: 'clockwise' }
   ],
   6: [ // Clock 7
     { rotationTime: 900 * 1000, rotationDirection: 'clockwise' },
@@ -163,7 +169,7 @@ export default function Clock({
   syncTrigger, 
   onToggleShow, 
   hideControls = false,
-  showSatellites = false,
+  showSatellites = true,
   showInfo = true,
   customWords = []
 }: ClockProps) {

@@ -23,9 +23,9 @@ const clockSatellites: Record<number, number> = {
   0: 8, // Clock 1
   1: 2, // Clock 2
   2: 2, // Clock 3
-  3: 0, // Clock 4
+  3: 1, // Clock 4 (added 1 satellite)
   4: 5, // Clock 5
-  5: 0, // Clock 6
+  5: 1, // Clock 6 (added 1 satellite)
   6: 5, // Clock 7
   7: 5, // Clock 8
   8: 1, // Clock 9
