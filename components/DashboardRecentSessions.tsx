@@ -202,7 +202,7 @@ export function DashboardRecentSessions({ sessions: propSessions }: DashboardRec
               Duration
             </span>
             <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-              {session.duration / 60000}m
+              {session.duration === 0 ? '∞' : `${session.duration / 60000}m`}
             </span>
           </div>
           <div className="p-1 rounded-lg bg-gray-50 dark:bg-white/5">

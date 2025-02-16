@@ -40,6 +40,7 @@ const clockColors = [
 
 // Helper function to format time in MM:SS
 const formatTime = (ms: number) => {
+  if (ms === 0) return '∞';
   const totalSeconds = Math.floor(ms / 1000);
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;

@@ -415,7 +415,7 @@ export default function SessionsPage() {
                         </Button>
                         <Link
                           href={`/clock/${clock.id}`}
-                          className={`h-[60px] w-[60px] flex items-center justify-center rounded-full transition-all bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:bg-white dark:hover:bg-white/10 ${
+                          className={`h-[45px] w-[45px] flex items-center justify-center rounded-full transition-all bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:bg-white dark:hover:bg-white/10 ${
                             clock.color.includes('red') ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]' :
                             clock.color.includes('orange') ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]' :
                             clock.color.includes('yellow') ? 'hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]' :
@@ -427,7 +427,7 @@ export default function SessionsPage() {
                             'hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
                           }`}
                         >
-                          <Eye className={`h-5 w-5 ${clock.color.split(' ')[0]}`} />
+                          <Play className={`h-4 w-4 ${clock.color.split(' ')[0]}`} />
                         </Link>
                       </div>
                     </div>
