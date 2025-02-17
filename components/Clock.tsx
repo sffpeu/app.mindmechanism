@@ -773,12 +773,19 @@ export default function Clock({
                       boxShadow: isSelected ? '0 0 12px rgba(0, 0, 0, 0.5)' : '0 0 8px rgba(0, 0, 0, 0.3)',
                       pointerEvents: 'auto',
                       zIndex: 300,
+                      transition: 'background-color 0.2s ease-in-out',
                     }}
                     whileHover={{ 
                       scale: 1.5,
-                      backgroundColor: dotColors[id % dotColors.length].replace('bg-[', '').replace(']', '')
+                      backgroundColor: dotColors[id % dotColors.length].replace('bg-[', '').replace(']', ''),
+                      transition: { duration: 0.2 }
                     }}
-                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    transition={{ 
+                      type: "spring", 
+                      stiffness: 400, 
+                      damping: 25,
+                      backgroundColor: { duration: 0.2 }
+                    }}
                     onClick={() => handleNodeClick(index)}
                   />
                 );

@@ -23,20 +23,22 @@ const ClockPreview: React.FC<ClockPreviewProps> = ({
       return (
         <div
           key={index}
-          className="absolute w-2 h-2 rounded-full transition-all hover:scale-110"
+          className="absolute w-2 h-2 rounded-full transition-all duration-200 ease-in-out hover:scale-110"
           style={{
             left: `${x}%`,
             top: `${y}%`,
             transform: 'translate(-50%, -50%)',
             backgroundColor: 'transparent',
             border: '2px solid #ef4444',
-            transition: 'all 0.3s ease-in-out',
+            transition: 'all 0.2s ease-in-out',
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = '#ef4444';
+            e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1.1)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = 'transparent';
+            e.currentTarget.style.transform = 'translate(-50%, -50%)';
           }}
         />
       );
