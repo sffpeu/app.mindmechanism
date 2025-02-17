@@ -25,6 +25,11 @@ import { Session } from '@/lib/sessions'
 import { WeatherSnapshot } from '@/lib/notes'
 import { WeatherSnapshotPopover } from '@/components/WeatherSnapshotPopover'
 import { toast } from '@/components/ui/use-toast'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 interface WeatherResponse {
   location: {
@@ -115,6 +120,22 @@ const clockTitles = [
 ];
 
 const WEATHER_API_KEY = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
+
+const getWeatherInfo = (metric: string) => {
+  const info = {
+    temperature: "Temperature is a measure of how hot or cold the air is. It affects everything from human comfort to plant growth and is measured in degrees Celsius (°C).",
+    humidity: "Humidity shows the amount of water vapor in the air. High humidity can make it feel warmer than it is and affect comfort and health.",
+    uvIndex: "The UV Index indicates the intensity of ultraviolet radiation from the sun. Higher values (>3) mean greater risk of sun damage to skin and eyes.",
+    pressure: "Air pressure, measured in hectopascals (hPa), indicates the weight of air above us. Changes in pressure often signal incoming weather changes.",
+    wind: "Wind speed and direction affect weather patterns, temperature feel, and can indicate incoming weather changes. Direction shows where the wind is coming from.",
+    airQuality: "Air Quality Index (AQI) measures the cleanliness of the air we breathe. It considers multiple pollutants and their impact on human health.",
+    moonPhase: "The moon's phase shows how much of its surface appears illuminated from Earth. It affects tides, nocturnal animal behavior, and has cultural significance.",
+    moonrise: "Moonrise time marks when the moon appears above the horizon. This timing varies daily and affects nighttime visibility.",
+    moonset: "Moonset time indicates when the moon disappears below the horizon. Understanding moonset helps plan nighttime activities and observations.",
+    illumination: "Moon illumination percentage shows how much of the moon's surface appears lit from Earth. This affects nighttime brightness and visibility."
+  };
+  return info[metric as keyof typeof info] || "No information available";
+};
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false)
@@ -669,38 +690,69 @@ export default function DashboardPage() {
                     </div>
                     {!weatherError && (
                       <div className="grid grid-cols-4 gap-3">
-                        <div className="p-2 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
-                          <div className="flex items-center gap-1.5">
-                            <Sun className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
-                            <span className="text-xs text-gray-600 dark:text-gray-200">UV Index</span>
-                          </div>
-                          <p className="text-base font-semibold mt-1 dark:text-white">{weatherData.current.uv}</p>
-                        </div>
-                        <div className="p-2 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
-                          <div className="flex items-center gap-1.5">
-                            <Wind className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
-                            <span className="text-xs text-gray-600 dark:text-gray-200">Air Quality</span>
-                          </div>
-                          <p className="text-base font-semibold mt-1 dark:text-white">
-                            {weatherData.current.air_quality && weatherData.current.air_quality['us-epa-index'] 
-                              ? getAQIDescription(weatherData.current.air_quality['us-epa-index'])
-                              : 'N/A'}
-                          </p>
-                        </div>
-                        <div className="p-2 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
-                          <div className="flex items-center gap-1.5">
-                            <Gauge className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
-                            <span className="text-xs text-gray-600 dark:text-gray-200">Pressure</span>
-                          </div>
-                          <p className="text-base font-semibold mt-1 dark:text-white">{weatherData.current.pressure_mb} hPa</p>
-                        </div>
-                        <div className="p-2 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
-                          <div className="flex items-center gap-1.5">
-                            <Wind className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
-                            <span className="text-xs text-gray-600 dark:text-gray-200">Wind</span>
-                          </div>
-                          <p className="text-base font-semibold mt-1 dark:text-white">{weatherData.current.wind_kph} km/h</p>
-                        </div>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <div className="p-2 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all cursor-help">
+                              <div className="flex items-center gap-1.5">
+                                <Sun className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
+                                <span className="text-xs text-gray-600 dark:text-gray-200">UV Index</span>
+                              </div>
+                              <p className="text-base font-semibold mt-1 dark:text-white">{weatherData.current.uv}</p>
+                            </div>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-72">
+                            <p className="text-sm">{getWeatherInfo('uvIndex')}</p>
+                          </PopoverContent>
+                        </Popover>
+
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <div className="p-2 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all cursor-help">
+                              <div className="flex items-center gap-1.5">
+                                <Wind className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
+                                <span className="text-xs text-gray-600 dark:text-gray-200">Air Quality</span>
+                              </div>
+                              <p className="text-base font-semibold mt-1 dark:text-white">
+                                {weatherData.current.air_quality && weatherData.current.air_quality['us-epa-index'] 
+                                  ? getAQIDescription(weatherData.current.air_quality['us-epa-index'])
+                                  : 'N/A'}
+                              </p>
+                            </div>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-72">
+                            <p className="text-sm">{getWeatherInfo('airQuality')}</p>
+                          </PopoverContent>
+                        </Popover>
+
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <div className="p-2 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all cursor-help">
+                              <div className="flex items-center gap-1.5">
+                                <Gauge className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
+                                <span className="text-xs text-gray-600 dark:text-gray-200">Pressure</span>
+                              </div>
+                              <p className="text-base font-semibold mt-1 dark:text-white">{weatherData.current.pressure_mb} hPa</p>
+                            </div>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-72">
+                            <p className="text-sm">{getWeatherInfo('pressure')}</p>
+                          </PopoverContent>
+                        </Popover>
+
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <div className="p-2 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all cursor-help">
+                              <div className="flex items-center gap-1.5">
+                                <Wind className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
+                                <span className="text-xs text-gray-600 dark:text-gray-200">Wind</span>
+                              </div>
+                              <p className="text-base font-semibold mt-1 dark:text-white">{weatherData.current.wind_kph} km/h</p>
+                            </div>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-72">
+                            <p className="text-sm">{getWeatherInfo('wind')}</p>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     )}
                   </div>
@@ -714,24 +766,50 @@ export default function DashboardPage() {
                 </div>
                 {moon && (
                   <div className="space-y-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-full border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all flex items-center justify-center">
-                        <Moon className="w-10 h-10 text-gray-600 dark:text-gray-200" />
-                      </div>
-                      <div>
-                        <p className="text-base font-semibold dark:text-white">{moon.moon_phase}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{moon.moon_illumination}% illuminated</p>
-                      </div>
-                    </div>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <div className="flex items-center gap-4 cursor-help">
+                          <div className="w-16 h-16 rounded-full border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all flex items-center justify-center">
+                            <Moon className="w-10 h-10 text-gray-600 dark:text-gray-200" />
+                          </div>
+                          <div>
+                            <p className="text-base font-semibold dark:text-white">{moon.moon_phase}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{moon.moon_illumination}% illuminated</p>
+                          </div>
+                        </div>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-72">
+                        <div className="space-y-2">
+                          <p className="text-sm">{getWeatherInfo('moonPhase')}</p>
+                          <p className="text-sm">{getWeatherInfo('illumination')}</p>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Moonrise</p>
-                        <p className="text-sm font-semibold dark:text-white">{moon.moonrise}</p>
-                      </div>
-                      <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Moonset</p>
-                        <p className="text-sm font-semibold dark:text-white">{moon.moonset}</p>
-                      </div>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all cursor-help">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Moonrise</p>
+                            <p className="text-sm font-semibold dark:text-white">{moon.moonrise}</p>
+                          </div>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-72">
+                          <p className="text-sm">{getWeatherInfo('moonrise')}</p>
+                        </PopoverContent>
+                      </Popover>
+
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all cursor-help">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Moonset</p>
+                            <p className="text-sm font-semibold dark:text-white">{moon.moonset}</p>
+                          </div>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-72">
+                          <p className="text-sm">{getWeatherInfo('moonset')}</p>
+                        </PopoverContent>
+                      </Popover>
                     </div>
                   </div>
                 )}
