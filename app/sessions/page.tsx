@@ -308,11 +308,13 @@ export default function SessionsPage() {
                             return (
                               <div
                                 key={index}
-                                className={`absolute w-2 h-2 rounded-full ${clock.color.split(' ')[1]} shadow-sm outline outline-1 outline-offset-1 outline-black/10 dark:outline-white/20`}
+                                className={`absolute w-2 h-2 rounded-full shadow-sm outline outline-1 outline-offset-1 outline-black/10 dark:outline-white/20`}
                                 style={{
                                   left: `${x}%`,
                                   top: `${y}%`,
-                                  transform: 'translate(-50%, -50%)'
+                                  transform: 'translate(-50%, -50%)',
+                                  backgroundColor: 'transparent',
+                                  border: `2px solid ${clock.color.split(' ')[1].replace('bg-', '')}`
                                 }}
                               />
                             )

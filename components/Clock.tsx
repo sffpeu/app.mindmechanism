@@ -512,7 +512,8 @@ export default function Clock({
                 left: `${x}%`,
                 top: `${y}%`,
                 transform: 'translate(-50%, -50%)',
-                backgroundColor: dotColors[clockId % dotColors.length].replace('bg-[', '').replace(']', ''),
+                backgroundColor: 'transparent',
+                border: `2px solid ${dotColors[clockId % dotColors.length].replace('bg-[', '').replace(']', '')}`,
                 boxShadow: isSelected ? '0 0 12px rgba(0, 0, 0, 0.5)' : '0 0 8px rgba(0, 0, 0, 0.3)',
               }}
               whileHover={{ scale: 1.5 }}
@@ -767,7 +768,8 @@ export default function Clock({
                       left: `${x}%`,
                       top: `${y}%`,
                       transform: 'translate(-50%, -50%)',
-                      backgroundColor: dotColors[id % dotColors.length].replace('bg-[', '').replace(']', ''),
+                      backgroundColor: 'transparent',
+                      border: `2px solid ${dotColors[id % dotColors.length].replace('bg-[', '').replace(']', '')}`,
                       boxShadow: isSelected ? '0 0 12px rgba(0, 0, 0, 0.5)' : '0 0 8px rgba(0, 0, 0, 0.3)',
                       pointerEvents: 'auto',
                       zIndex: 300,

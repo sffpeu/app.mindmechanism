@@ -23,11 +23,13 @@ const ClockPreview: React.FC<ClockPreviewProps> = ({
       return (
         <div
           key={index}
-          className="absolute w-2 h-2 bg-red-500 rounded-full"
+          className="absolute w-2 h-2 rounded-full"
           style={{
             left: `${x}%`,
             top: `${y}%`,
             transform: 'translate(-50%, -50%)',
+            backgroundColor: 'transparent',
+            border: '2px solid #ef4444'
           }}
         />
       );

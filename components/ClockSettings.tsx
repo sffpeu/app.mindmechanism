@@ -367,7 +367,8 @@ export function ClockSettings({ settings, onSave, onCancel }: ClockSettingsProps
                                 left: `${x}%`,
                                 top: `${y}%`,
                                 transform: 'translate(-50%, -50%)',
-                                backgroundColor: dotColors[settings.id % dotColors.length].replace('bg-[', '').replace(']', ''),
+                                backgroundColor: 'transparent',
+                                border: `2px solid ${dotColors[settings.id % dotColors.length].replace('bg-[', '').replace(']', '')}`,
                                 transition: 'all 0.3s ease-in-out',
                               }}
                             />
