@@ -21,7 +21,6 @@ import { startTimeTracking, endTimeTracking, calculateUserTimeStats } from '@/li
 import { DashboardRecentSessions } from '@/components/DashboardRecentSessions'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Clock as ClockIcon } from 'lucide-react'
-import { Session } from '@/lib/sessions'
 import { WeatherSnapshot } from '@/lib/notes'
 import { WeatherSnapshotPopover } from '@/components/WeatherSnapshotPopover'
 import { toast } from '@/components/ui/use-toast'
@@ -30,6 +29,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { Session as BaseSession } from '@/lib/sessions'
 
 interface WeatherResponse {
   location: {
@@ -95,6 +95,10 @@ interface TimeStats {
   lastSignInTime: Date | null;
 }
 
+interface Session extends BaseSession {
+  elapsed_time: number
+}
+
 const clockColors = [
   'bg-[#fd290a]', // 1. Red
   'bg-[#fba63b]', // 2. Orange
@@ -132,10 +136,20 @@ const getWeatherInfo = (metric: string) => {
     moonPhase: "The moon's phase shows how much of its surface appears illuminated from Earth. It affects tides, nocturnal animal behavior, and has cultural significance.",
     moonrise: "Moonrise time marks when the moon appears above the horizon. This timing varies daily and affects nighttime visibility.",
     moonset: "Moonset time indicates when the moon disappears below the horizon. Understanding moonset helps plan nighttime activities and observations.",
-    illumination: "Moon illumination percentage shows how much of the moon's surface appears lit from Earth. This affects nighttime brightness and visibility."
+    illumination: "Moon illumination percentage shows how much of the moon's surface appears lit from Earth. This affects nighttime brightness and visibility.",
+    sessionProgress: "Track your progress through each session. This shows how much of your planned observation time has been completed.",
+    sessionDuration: "The total time allocated for this astronomical observation session. Longer sessions allow for more detailed observations.",
+    sessionType: "Different types of astronomical observations require varying approaches and equipment. Each session type is optimized for specific celestial objects.",
+    completionRate: "Your overall completion rate for observation sessions. Higher rates indicate consistent dedication to astronomical studies."
   };
   return info[metric as keyof typeof info] || "No information available";
 };
+
+const formatDuration = (ms: number) => {
+  const hours = Math.floor(ms / (1000 * 60 * 60))
+  const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60))
+  return `${hours}h ${minutes}m`
+}
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false)
@@ -322,10 +336,7 @@ export default function DashboardPage() {
         setIsInitializing(true);
         setAuthError(null);
 
-        // Wait for auth to be ready
         if (authLoading) return;
-
-        // Redirect if not authenticated
         if (!user) {
           console.log('User not authenticated, redirecting to login');
           router.push('/login');
@@ -334,8 +345,7 @@ export default function DashboardPage() {
 
         console.log('Starting dashboard initialization...');
         
-        // Load all necessary data in a single Promise.all
-        const [stats, sessions, timeStatsData] = await Promise.all([
+        const [stats, baseSessions, timeStatsData] = await Promise.all([
           getUserStats(user.uid),
           getUserSessions(user.uid),
           calculateUserTimeStats(user.uid)
@@ -343,7 +353,14 @@ export default function DashboardPage() {
 
         if (!mounted) return;
 
-        // Update all state at once to prevent multiple re-renders
+        // Add elapsed_time to sessions
+        const sessions = baseSessions.map(session => ({
+          ...session,
+          elapsed_time: session.end_time 
+            ? session.end_time.toDate().getTime() - session.start_time.toDate().getTime()
+            : Date.now() - session.start_time.toDate().getTime()
+        }));
+
         setUserStats(stats);
         setRecentSessions(sessions);
         setTimeStats(timeStatsData);
@@ -360,11 +377,10 @@ export default function DashboardPage() {
 
     initializeDashboard();
 
-    // Cleanup function
     return () => {
       mounted = false;
     };
-  }, [user?.uid, authLoading]); // Only depend on user.uid and authLoading
+  }, [user?.uid, authLoading]);
 
   // Remove the separate useEffects for loadUserStats and loadRecentSessions
   // since they're now handled in the initialization effect
@@ -376,11 +392,19 @@ export default function DashboardPage() {
     setIsRefreshing(true);
     try {
       console.log('Manually refreshing dashboard stats...');
-      const [stats, sessions, timeStatsData] = await Promise.all([
+      const [stats, baseSessions, timeStatsData] = await Promise.all([
         getUserStats(user.uid),
         getUserSessions(user.uid),
         calculateUserTimeStats(user.uid)
       ]);
+
+      // Add elapsed_time to sessions
+      const sessions = baseSessions.map(session => ({
+        ...session,
+        elapsed_time: session.end_time 
+          ? session.end_time.toDate().getTime() - session.start_time.toDate().getTime()
+          : Date.now() - session.start_time.toDate().getTime()
+      }));
 
       setUserStats(stats);
       setRecentSessions(sessions);
@@ -675,18 +699,27 @@ export default function DashboardPage() {
                         ) : weatherError ? (
                           <p className="text-sm text-red-500">{weatherError}</p>
                         ) : (
-                          <p className="text-sm text-gray-500 dark:text-gray-400">{weatherData.current.condition.text}</p>
+                          <div className="text-right">
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <div className="text-right cursor-help">
+                                  <p className="text-3xl font-bold dark:text-white">{weatherData.current.temp_c}°C</p>
+                                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                                    <Droplets className="h-3.5 w-3.5" />
+                                    <span>{weatherData.current.humidity}%</span>
+                                  </div>
+                                </div>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-72">
+                                <div className="space-y-2">
+                                  <p className="text-sm">{getWeatherInfo('temperature')}</p>
+                                  <p className="text-sm">{getWeatherInfo('humidity')}</p>
+                                </div>
+                              </PopoverContent>
+                            </Popover>
+                          </div>
                         )}
                       </div>
-                      {!weatherError && (
-                        <div className="text-right">
-                          <p className="text-3xl font-bold dark:text-white">{weatherData.current.temp_c}°C</p>
-                          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                            <Droplets className="h-3.5 w-3.5" />
-                            <span>{weatherData.current.humidity}%</span>
-                          </div>
-                        </div>
-                      )}
                     </div>
                     {!weatherError && (
                       <div className="grid grid-cols-4 gap-3">
@@ -895,39 +928,94 @@ export default function DashboardPage() {
               <div className="space-y-3">
                 {/* Session Type Breakdown */}
                 <div className="grid grid-cols-3 gap-1.5">
-                  <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
-                    <div className="flex items-center gap-1 mb-0.5">
-                      <CheckCircle2 className="h-3 w-3 text-gray-600 dark:text-gray-300" />
-                      <span className="text-xs text-gray-500 dark:text-gray-400">Completed</span>
-                    </div>
-                    <span className="text-xs font-medium text-gray-900 dark:text-white">
-                      {recentSessions.filter(s => s.status === 'completed').length}
-                    </span>
-                  </div>
-                  <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
-                    <div className="flex items-center gap-1 mb-0.5">
-                      <Pause className="h-3 w-3 text-gray-600 dark:text-gray-300" />
-                      <span className="text-xs text-gray-500 dark:text-gray-400">In Progress</span>
-                    </div>
-                    <span className="text-xs font-medium text-gray-900 dark:text-white">
-                      {recentSessions.filter(s => s.status === 'in_progress').length}
-                    </span>
-                  </div>
-                  <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
-                    <div className="flex items-center gap-1 mb-0.5">
-                      <XCircle className="h-3 w-3 text-gray-600 dark:text-gray-300" />
-                      <span className="text-xs text-gray-500 dark:text-gray-400">Aborted</span>
-                    </div>
-                    <span className="text-xs font-medium text-gray-900 dark:text-white">
-                      {recentSessions.filter(s => s.status === 'aborted').length}
-                    </span>
-                  </div>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5 cursor-help">
+                        <div className="flex items-center gap-1 mb-0.5">
+                          <CheckCircle2 className="h-3 w-3 text-gray-600 dark:text-gray-300" />
+                          <span className="text-xs text-gray-500 dark:text-gray-400">Completed</span>
+                        </div>
+                        <span className="text-xs font-medium text-gray-900 dark:text-white">
+                          {recentSessions.filter(s => s.status === 'completed').length}
+                        </span>
+                      </div>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-72">
+                      <p className="text-sm">Successfully completed observation sessions. These sessions were carried out for their full planned duration.</p>
+                    </PopoverContent>
+                  </Popover>
+
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5 cursor-help">
+                        <div className="flex items-center gap-1 mb-0.5">
+                          <Pause className="h-3 w-3 text-gray-600 dark:text-gray-300" />
+                          <span className="text-xs text-gray-500 dark:text-gray-400">In Progress</span>
+                        </div>
+                        <span className="text-xs font-medium text-gray-900 dark:text-white">
+                          {recentSessions.filter(s => s.status === 'in_progress').length}
+                        </span>
+                      </div>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-72">
+                      <p className="text-sm">Currently active observation sessions. These sessions are still ongoing and collecting data.</p>
+                    </PopoverContent>
+                  </Popover>
+
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5 cursor-help">
+                        <div className="flex items-center gap-1 mb-0.5">
+                          <XCircle className="h-3 w-3 text-gray-600 dark:text-gray-300" />
+                          <span className="text-xs text-gray-500 dark:text-gray-400">Aborted</span>
+                        </div>
+                        <span className="text-xs font-medium text-gray-900 dark:text-white">
+                          {recentSessions.filter(s => s.status === 'aborted').length}
+                        </span>
+                      </div>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-72">
+                      <p className="text-sm">Sessions that were ended before completion. This could be due to weather conditions, technical issues, or other interruptions.</p>
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
-                {/* Recent Sessions */}
+                {/* Monthly Progress */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5 cursor-help">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium text-gray-900 dark:text-white">Monthly Progress</span>
+                        <span className="text-xs text-gray-500">{userStats.monthlyProgress.completionRate}%</span>
+                      </div>
+                      <div className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full">
+                        <div 
+                          className="h-full bg-blue-500 rounded-full" 
+                          style={{ width: `${userStats.monthlyProgress.completionRate}%` }}
+                        />
+                      </div>
+                      <div className="flex justify-between mt-1 text-xs text-gray-500">
+                        <span>Sessions: {userStats.monthlyProgress.totalSessions}</span>
+                        <span>Time: {formatDuration(userStats.monthlyProgress.totalTime)}</span>
+                      </div>
+                    </div>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-72">
+                    <div className="space-y-2">
+                      <p className="text-sm">Your monthly observation progress shows:</p>
+                      <ul className="text-sm list-disc pl-4 space-y-1">
+                        <li>Total observation time this month</li>
+                        <li>Number of completed sessions</li>
+                        <li>Success rate of planned observations</li>
+                      </ul>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+
+                {/* Recent Sessions List */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-medium text-gray-900 dark:text-white">Recent</h3>
+                    <h3 className="text-xs font-medium text-gray-900 dark:text-white">Recent Sessions</h3>
                     <Link 
                       href="/sessions" 
                       className="text-xs text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
@@ -935,7 +1023,45 @@ export default function DashboardPage() {
                       View All
                     </Link>
                   </div>
-                  <DashboardRecentSessions sessions={recentSessions} />
+                  {recentSessions.slice(0, 3).map((session) => (
+                    <Popover key={session.id}>
+                      <PopoverTrigger asChild>
+                        <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5 cursor-help">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className={`w-2 h-2 rounded-full ${
+                                session.status === 'completed' ? 'bg-green-500' :
+                                session.status === 'in_progress' ? 'bg-blue-500' : 'bg-red-500'
+                              }`} />
+                              <span className="text-sm font-medium dark:text-white">
+                                {clockTitles[session.clock_id]}
+                              </span>
+                            </div>
+                            <span className="text-xs text-gray-500">
+                              {formatDuration(session.duration)}
+                            </span>
+                          </div>
+                          <div className="mt-1">
+                            <div className="h-1 bg-gray-200 dark:bg-gray-700 rounded-full">
+                              <div 
+                                className="h-full bg-blue-500 rounded-full" 
+                                style={{ width: `${(session.elapsed_time / session.duration) * 100}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-72">
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium">{clockTitles[session.clock_id]}</p>
+                          <p className="text-sm">Started: {new Date(session.start_time.toDate()).toLocaleString()}</p>
+                          <p className="text-sm">Duration: {formatDuration(session.duration)}</p>
+                          <p className="text-sm">Progress: {((session.elapsed_time / session.duration) * 100).toFixed(1)}%</p>
+                          <p className="text-sm">Status: {session.status}</p>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  ))}
                 </div>
               </div>
             </Card>
