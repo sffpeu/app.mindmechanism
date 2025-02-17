@@ -442,6 +442,12 @@ export default function NotesPage() {
                           {weatherData.current.temp_c}°C, {weatherData.current.humidity}%
                         </p>
                       </div>
+                      <div className="flex items-center gap-2">
+                        <Gauge className="h-4 w-4 text-gray-500" />
+                        <p className="text-sm font-medium dark:text-white">
+                          {weatherData.current.pressure_mb} hPa
+                        </p>
+                      </div>
                     </div>
                     <div className="space-y-1">
                       <p className="text-xs text-gray-500 dark:text-gray-400">Moon Phase</p>
