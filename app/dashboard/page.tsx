@@ -668,31 +668,38 @@ export default function DashboardPage() {
                       )}
                     </div>
                     {!weatherError && (
-                      <div className="grid grid-cols-3 gap-4">
-                        <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
-                          <div className="flex items-center gap-2">
-                            <Sun className="h-4 w-4 text-gray-600 dark:text-gray-200" />
-                            <span className="text-sm text-gray-600 dark:text-gray-200">UV Index</span>
+                      <div className="grid grid-cols-4 gap-3">
+                        <div className="p-2 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
+                          <div className="flex items-center gap-1.5">
+                            <Sun className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
+                            <span className="text-xs text-gray-600 dark:text-gray-200">UV Index</span>
                           </div>
-                          <p className="text-lg font-semibold mt-1 dark:text-white">{weatherData.current.uv}</p>
+                          <p className="text-base font-semibold mt-1 dark:text-white">{weatherData.current.uv}</p>
                         </div>
-                        <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
-                          <div className="flex items-center gap-2">
-                            <Wind className="h-4 w-4 text-gray-600 dark:text-gray-200" />
-                            <span className="text-sm text-gray-600 dark:text-gray-200">Air Quality</span>
+                        <div className="p-2 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
+                          <div className="flex items-center gap-1.5">
+                            <Wind className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
+                            <span className="text-xs text-gray-600 dark:text-gray-200">Air Quality</span>
                           </div>
-                          <p className="text-lg font-semibold mt-1 dark:text-white">
+                          <p className="text-base font-semibold mt-1 dark:text-white">
                             {weatherData.current.air_quality && weatherData.current.air_quality['us-epa-index'] 
                               ? getAQIDescription(weatherData.current.air_quality['us-epa-index'])
                               : 'N/A'}
                           </p>
                         </div>
-                        <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
-                          <div className="flex items-center gap-2">
-                            <Wind className="h-4 w-4 text-gray-600 dark:text-gray-200" />
-                            <span className="text-sm text-gray-600 dark:text-gray-200">Wind</span>
+                        <div className="p-2 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
+                          <div className="flex items-center gap-1.5">
+                            <Gauge className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
+                            <span className="text-xs text-gray-600 dark:text-gray-200">Pressure</span>
                           </div>
-                          <p className="text-lg font-semibold mt-1 dark:text-white">{weatherData.current.wind_kph} km/h</p>
+                          <p className="text-base font-semibold mt-1 dark:text-white">{weatherData.current.pressure_mb} hPa</p>
+                        </div>
+                        <div className="p-2 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
+                          <div className="flex items-center gap-1.5">
+                            <Wind className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
+                            <span className="text-xs text-gray-600 dark:text-gray-200">Wind</span>
+                          </div>
+                          <p className="text-base font-semibold mt-1 dark:text-white">{weatherData.current.wind_kph} km/h</p>
                         </div>
                       </div>
                     )}
