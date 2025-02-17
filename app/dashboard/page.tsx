@@ -980,38 +980,6 @@ export default function DashboardPage() {
                   </Popover>
                 </div>
 
-                {/* Monthly Progress */}
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5 cursor-help">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-medium text-gray-900 dark:text-white">Monthly Progress</span>
-                        <span className="text-xs text-gray-500">{userStats.monthlyProgress.completionRate}%</span>
-                      </div>
-                      <div className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full">
-                        <div 
-                          className="h-full bg-blue-500 rounded-full" 
-                          style={{ width: `${userStats.monthlyProgress.completionRate}%` }}
-                        />
-                      </div>
-                      <div className="flex justify-between mt-1 text-xs text-gray-500">
-                        <span>Sessions: {userStats.monthlyProgress.totalSessions}</span>
-                        <span>Time: {formatDuration(userStats.monthlyProgress.totalTime)}</span>
-                      </div>
-                    </div>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-72">
-                    <div className="space-y-2">
-                      <p className="text-sm">Your monthly observation progress shows:</p>
-                      <ul className="text-sm list-disc pl-4 space-y-1">
-                        <li>Total observation time this month</li>
-                        <li>Number of completed sessions</li>
-                        <li>Success rate of planned observations</li>
-                      </ul>
-                    </div>
-                  </PopoverContent>
-                </Popover>
-
                 {/* Recent Sessions List */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">

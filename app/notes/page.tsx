@@ -352,8 +352,10 @@ export default function NotesPage() {
                     <div
                       key={note.id}
                       onClick={() => handleNoteClick(note)}
-                      className={`p-3 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer ${
-                        selectedNote?.id === note.id ? 'bg-black/5 dark:bg-white/10' : ''
+                      className={`p-3 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer border-2 ${
+                        selectedNote?.id === note.id 
+                          ? 'border-blue-500 dark:border-blue-400 bg-black/5 dark:bg-white/10' 
+                          : 'border-transparent hover:border-blue-500/50 dark:hover:border-blue-400/50'
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -362,10 +364,10 @@ export default function NotesPage() {
                           {note.weatherSnapshot && (
                             <WeatherSnapshotPopover weatherSnapshot={note.weatherSnapshot}>
                               <button 
-                                className="p-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-white/10"
+                                className="p-1 rounded-md hover:bg-blue-100 dark:hover:bg-blue-500/20 group transition-colors"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <Cloud className="h-3.5 w-3.5 text-gray-500" />
+                                <Cloud className="h-5 w-5 text-gray-500 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors" />
                               </button>
                             </WeatherSnapshotPopover>
                           )}
