@@ -481,6 +481,28 @@ export default function Clock({
     };
   }, [startDateTime, rotationTime, startingDegree, rotationDirection, isTransitioning]);
 
+  const [hoveredNodeIndex, setHoveredNodeIndex] = useState<number | null>(null);
+
+  const getFocusNodeStyle = (index: number, isMultiView: boolean) => {
+    const isHovered = hoveredNodeIndex === index;
+    const isSelected = selectedNodeIndex === index;
+    const color = dotColors[id % dotColors.length].replace('bg-[', '').replace(']', '');
+    
+    return {
+      backgroundColor: isSelected || isHovered ? color : 'transparent',
+      border: `2px solid ${color}`,
+      boxShadow: isSelected 
+        ? `0 0 12px ${color}80` 
+        : isHovered 
+          ? `0 0 16px ${color}60`
+          : `0 0 8px rgba(0, 0, 0, 0.2)`,
+      opacity: isSelected ? 1 : isHovered ? 0.95 : 0.9,
+      transform: `translate(-50%, -50%) scale(${isSelected ? 1.3 : isHovered ? 1.5 : 1})`,
+      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+      zIndex: isSelected ? 400 : isHovered ? 300 : 200,
+    };
+  };
+
   const handleNodeClick = (index: number) => {
     if (selectedNodeIndex === index) {
       setSelectedNodeIndex(null);
@@ -490,6 +512,7 @@ export default function Clock({
       setInfoCardsHiddenByNode(true);
       setShowInfoCards(false);
     }
+    setHoveredNodeIndex(null); // Reset hover state on click
   };
 
   const renderFocusNodes = (clockRotation: number, clockFocusNodes: number, clockStartingDegree: number, clockId: number) => {
@@ -502,8 +525,6 @@ export default function Clock({
           const x = 50 + radius * Math.cos(radians);
           const y = 50 + radius * Math.sin(radians);
 
-          const isSelected = selectedNodeIndex === index;
-
           return (
             <motion.div
               key={`${clockId}-${index}`}
@@ -511,14 +532,12 @@ export default function Clock({
               style={{
                 left: `${x}%`,
                 top: `${y}%`,
-                transform: 'translate(-50%, -50%)',
-                backgroundColor: 'transparent',
-                border: `2px solid ${dotColors[clockId % dotColors.length].replace('bg-[', '').replace(']', '')}`,
-                boxShadow: isSelected ? '0 0 12px rgba(0, 0, 0, 0.5)' : '0 0 8px rgba(0, 0, 0, 0.3)',
+                ...getFocusNodeStyle(index, isMultiView),
               }}
-              whileHover={{ scale: 1.5 }}
-              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+              onHoverStart={() => setHoveredNodeIndex(index)}
+              onHoverEnd={() => setHoveredNodeIndex(null)}
               onClick={() => handleNodeClick(index)}
+              initial={false}
             />
           );
         })}
@@ -677,7 +696,7 @@ export default function Clock({
   // Update renderSingleClock to make background transparent
   const renderSingleClock = () => {
     const transitionConfig = getTransitionConfig();
-    const clockColor = id === 9 ? null : hexToRgb(dotColors[id].replace('bg-[#', '').replace(']', ''));
+    const clockColor = id === 9 ? null : hexToRgb(dotColors[id].replace('bg-[', '').replace(']', ''));
     const shadowStyle = clockColor ? {
       '--shadow-color': `${clockColor.r}, ${clockColor.g}, ${clockColor.b}`,
     } as React.CSSProperties : {};

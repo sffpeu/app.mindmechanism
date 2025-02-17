@@ -362,22 +362,31 @@ export function ClockSettings({ settings, onSave, onCancel }: ClockSettingsProps
                           return (
                             <div
                               key={index}
-                              className="absolute w-2 h-2 rounded-full transition-all duration-200 ease-in-out hover:scale-110"
+                              className="absolute w-2 h-2 rounded-full cursor-pointer"
                               style={{
                                 left: `${x}%`,
                                 top: `${y}%`,
                                 transform: 'translate(-50%, -50%)',
                                 backgroundColor: 'transparent',
                                 border: `2px solid ${dotColors[settings.id % dotColors.length].replace('bg-[', '').replace(']', '')}`,
-                                transition: 'all 0.2s ease-in-out',
+                                boxShadow: '0 0 8px rgba(0, 0, 0, 0.2)',
+                                opacity: 0.9,
+                                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                               }}
                               onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = dotColors[settings.id % dotColors.length].replace('bg-[', '').replace(']', '');
-                                e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1.1)';
+                                const color = dotColors[settings.id % dotColors.length].replace('bg-[', '').replace(']', '');
+                                e.currentTarget.style.backgroundColor = color;
+                                e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1.5)';
+                                e.currentTarget.style.opacity = '0.95';
+                                e.currentTarget.style.boxShadow = `0 0 16px ${color}60`;
+                                e.currentTarget.style.zIndex = '300';
                               }}
                               onMouseLeave={(e) => {
                                 e.currentTarget.style.backgroundColor = 'transparent';
                                 e.currentTarget.style.transform = 'translate(-50%, -50%)';
+                                e.currentTarget.style.opacity = '0.9';
+                                e.currentTarget.style.boxShadow = '0 0 8px rgba(0, 0, 0, 0.2)';
+                                e.currentTarget.style.zIndex = '200';
                               }}
                             />
                           );
