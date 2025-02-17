@@ -1044,8 +1044,10 @@ export default function DashboardPage() {
                           <div className="mt-1">
                             <div className="h-1 bg-gray-200 dark:bg-gray-700 rounded-full">
                               <div 
-                                className="h-full bg-blue-500 rounded-full" 
-                                style={{ width: `${(session.elapsed_time / session.duration) * 100}%` }}
+                                className="h-full bg-blue-500 rounded-full transition-all duration-300"
+                                style={{ 
+                                  width: `${Math.min(((session.elapsed_time / session.duration) * 100), 100)}%`
+                                }}
                               />
                             </div>
                           </div>
@@ -1056,7 +1058,7 @@ export default function DashboardPage() {
                           <p className="text-sm font-medium">{clockTitles[session.clock_id]}</p>
                           <p className="text-sm">Started: {new Date(session.start_time.toDate()).toLocaleString()}</p>
                           <p className="text-sm">Duration: {formatDuration(session.duration)}</p>
-                          <p className="text-sm">Progress: {((session.elapsed_time / session.duration) * 100).toFixed(1)}%</p>
+                          <p className="text-sm">Progress: {Math.min(((session.elapsed_time / session.duration) * 100), 100).toFixed(1)}%</p>
                           <p className="text-sm">Status: {session.status}</p>
                         </div>
                       </PopoverContent>
