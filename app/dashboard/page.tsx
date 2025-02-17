@@ -47,6 +47,9 @@ interface WeatherResponse {
     pressure_mb: number
     wind_kph: number
     wind_dir: string
+    air_quality: {
+      'us-epa-index': number
+    }
   }
 }
 
@@ -155,6 +158,18 @@ export default function DashboardPage() {
   const [authError, setAuthError] = useState<string | null>(null)
   const [weatherError, setWeatherError] = useState<string | null>(null)
   const [isWeatherLoading, setIsWeatherLoading] = useState(false)
+
+  const getAQIDescription = (index: number) => {
+    const descriptions = {
+      1: 'Good',
+      2: 'Moderate',
+      3: 'Unhealthy for sensitive groups',
+      4: 'Unhealthy',
+      5: 'Very Unhealthy',
+      6: 'Hazardous'
+    };
+    return descriptions[index as keyof typeof descriptions] || 'Unknown';
+  };
 
   // Handle mounting
   useEffect(() => {
@@ -656,10 +671,12 @@ export default function DashboardPage() {
                         </div>
                         <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
                           <div className="flex items-center gap-2">
-                            <Gauge className="h-4 w-4 text-gray-600 dark:text-gray-200" />
-                            <span className="text-sm text-gray-600 dark:text-gray-200">Pressure</span>
+                            <Wind className="h-4 w-4 text-gray-600 dark:text-gray-200" />
+                            <span className="text-sm text-gray-600 dark:text-gray-200">Air Quality</span>
                           </div>
-                          <p className="text-lg font-semibold mt-1 dark:text-white">{weatherData.current.pressure_mb} mb</p>
+                          <p className="text-lg font-semibold mt-1 dark:text-white">
+                            {getAQIDescription(weatherData.current.air_quality['us-epa-index'])}
+                          </p>
                         </div>
                         <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
                           <div className="flex items-center gap-2">
