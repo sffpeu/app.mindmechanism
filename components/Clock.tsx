@@ -492,10 +492,10 @@ export default function Clock({
       backgroundColor: isSelected || isHovered ? color : 'transparent',
       border: `2px solid ${color}`,
       boxShadow: isSelected 
-        ? `0 0 12px ${color}80` 
+        ? `0 0 16px ${color}80` 
         : isHovered 
-          ? `0 0 16px ${color}60`
-          : `0 0 8px rgba(0, 0, 0, 0.2)`,
+          ? `0 0 20px ${color}60`
+          : '0 0 8px rgba(0, 0, 0, 0.2)',
       opacity: isSelected ? 1 : isHovered ? 0.95 : 0.9,
       transform: `translate(-50%, -50%) scale(${isSelected ? 1.3 : isHovered ? 1.5 : 1})`,
       transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -528,7 +528,7 @@ export default function Clock({
           return (
             <motion.div
               key={`${clockId}-${index}`}
-              className={`absolute ${isMultiView ? 'w-2 h-2' : 'w-3 h-3'} rounded-full cursor-pointer`}
+              className={`absolute ${isMultiView ? 'w-8 h-8' : 'w-12 h-12'} rounded-full cursor-pointer`}
               style={{
                 left: `${x}%`,
                 top: `${y}%`,
@@ -537,7 +537,8 @@ export default function Clock({
               onHoverStart={() => setHoveredNodeIndex(index)}
               onHoverEnd={() => setHoveredNodeIndex(null)}
               onClick={() => handleNodeClick(index)}
-              initial={false}
+              whileHover={{ scale: 1.5 }}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
             />
           );
         })}
