@@ -44,6 +44,16 @@ interface WeatherResponse {
     pressure_mb: number
     wind_kph: number
     wind_dir: string
+    air_quality: {
+      "co": number
+      "no2": number
+      "o3": number
+      "so2": number
+      "pm2_5": number
+      "pm10": number
+      "us-epa-index": 1 | 2 | 3 | 4 | 5 | 6
+      "gb-defra-index": number
+    }
   }
 }
 
@@ -113,7 +123,7 @@ export default function NotesPage() {
         const weatherRes = await fetch(
           `https://api.weatherapi.com/v1/current.json?key=6cb652a81cb64a19a84103447252001&q=${
             location ? `${location.lat},${location.lon}` : 'auto:ip'
-          }&aqi=no`
+          }&aqi=yes`
         );
         if (!weatherRes.ok) {
           throw new Error('Weather API request failed');
@@ -267,6 +277,18 @@ export default function NotesPage() {
     const dateB = b.updatedAt.toDate().getTime()
     return sortOrder === 'newest' ? dateB - dateA : dateA - dateB
   })
+
+  const getAQIDescription = (index: 1 | 2 | 3 | 4 | 5 | 6) => {
+    const descriptions = {
+      1: 'Good',
+      2: 'Moderate',
+      3: 'Unhealthy for sensitive groups',
+      4: 'Unhealthy',
+      5: 'Very Unhealthy',
+      6: 'Hazardous'
+    };
+    return descriptions[index] || 'Unknown';
+  };
 
   if (!user) {
     return (
@@ -443,9 +465,9 @@ export default function NotesPage() {
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Gauge className="h-4 w-4 text-gray-500" />
+                        <Wind className="h-4 w-4 text-gray-500" />
                         <p className="text-sm font-medium dark:text-white">
-                          {weatherData.current.pressure_mb} hPa
+                          AQI: {getAQIDescription(weatherData.current.air_quality['us-epa-index'])}
                         </p>
                       </div>
                     </div>
