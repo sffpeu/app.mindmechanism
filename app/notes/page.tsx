@@ -73,10 +73,16 @@ export default function NotesPage() {
   const [recentSessions, setRecentSessions] = useState<Session[]>([])
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null)
 
-  // Example sessions - replace with actual data
-  const sessions = [
-    { title: "Galileo's First Observation", date: '20/01/2025' },
-    { title: "Galileo's First Observation", date: '20/01/2025' },
+  const clockTitles = [
+    "Galileo's First Observation",
+    "Neptune's Discovery",
+    "Galileo's Spring Observation",
+    "Jupiter's Moons",
+    "Uranus Discovery",
+    "Saturn's Rings",
+    "Ancient Star Charts",
+    "Winter Solstice Study",
+    "Medieval Observations"
   ]
 
   // Request location permission and get coordinates
@@ -361,12 +367,12 @@ export default function NotesPage() {
                 <RotateCcw className="h-5 w-5 text-black/50 dark:text-white/50" />
               </div>
               <div className="space-y-3">
-                {sessions.map((session, index) => (
+                {recentSessions.map((session) => (
                   <button
-                    key={index}
-                    onClick={() => setSelectedSession(session.title)}
+                    key={session.id}
+                    onClick={() => setSelectedSessionId(session.id)}
                     className={`w-full text-left p-3 rounded-lg transition-all ${
-                      selectedSession === session.title
+                      selectedSessionId === session.id
                         ? 'bg-black/5 dark:bg-white/10'
                         : 'hover:bg-black/5 dark:hover:bg-white/5'
                     }`}
@@ -470,9 +476,9 @@ export default function NotesPage() {
                       <SelectItem key={session.id} value={session.id}>
                         <div className="flex items-center gap-2">
                           <Clock className="h-4 w-4 text-gray-500" />
-                          <span>{session.title || 'Untitled Session'}</span>
+                          <span>{clockTitles[session.clock_id] || 'Untitled Session'}</span>
                           <span className="text-xs text-gray-500">
-                            ({new Date(session.start_time).toLocaleDateString()})
+                            ({new Date(session.start_time.toDate()).toLocaleDateString()})
                           </span>
                         </div>
                       </SelectItem>
