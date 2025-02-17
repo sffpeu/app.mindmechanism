@@ -214,44 +214,6 @@ export default function DashboardPage() {
     return () => clearInterval(timer)
   }, [mounted])
 
-  // Fetch weather and moon data with precise location
-  useEffect(() => {
-    if (!mounted) return;
-
-    const fetchData = async () => {
-      try {
-        const weatherRes = await fetch(
-          `https://api.weatherapi.com/v1/current.json?key=6cb652a81cb64a19a84103447252001&q=${
-            location ? `${location.lat},${location.lon}` : 'auto:ip'
-          }&aqi=no`
-        );
-        if (!weatherRes.ok) {
-          throw new Error('Weather API request failed');
-        }
-        const weatherData = await weatherRes.json();
-        setWeatherData(weatherData);
-
-        const astronomyRes = await fetch(
-          `https://api.weatherapi.com/v1/astronomy.json?key=6cb652a81cb64a19a84103447252001&q=${
-            location ? `${location.lat},${location.lon}` : 'auto:ip'
-          }`
-        );
-        if (!astronomyRes.ok) {
-          throw new Error('Astronomy API request failed');
-        }
-        const astronomyData = await astronomyRes.json();
-        setMoon(astronomyData.astronomy.astro);
-      } catch (error) {
-        console.error('Error fetching weather data:', error);
-        setWeatherError(error instanceof Error ? error.message : 'Failed to load weather data');
-      }
-    };
-
-    fetchData();
-    const interval = setInterval(fetchData, 5 * 60 * 1000); // Update every 5 minutes
-    return () => clearInterval(interval);
-  }, [mounted, location]);
-
   // Request location permission and get coordinates
   useEffect(() => {
     if (!mounted) return;
@@ -268,7 +230,9 @@ export default function DashboardPage() {
           },
           (error) => {
             console.error('Error getting location:', error);
-            setLocationError('Unable to get your location. Using IP-based location instead.');
+            // Don't show error to user, just fall back to IP-based location
+            setLocation(null);
+            setLocationError(null);
           },
           {
             enableHighAccuracy: true,
@@ -277,12 +241,55 @@ export default function DashboardPage() {
           }
         );
       } else {
-        setLocationError('Geolocation is not supported by your browser. Using IP-based location instead.');
+        setLocation(null);
+        setLocationError(null);
       }
     };
 
     getLocation();
   }, [mounted]);
+
+  // Fetch weather and moon data
+  useEffect(() => {
+    if (!mounted) return;
+
+    const fetchData = async () => {
+      setIsWeatherLoading(true);
+      try {
+        const weatherRes = await fetch(
+          `https://api.weatherapi.com/v1/current.json?key=6cb652a81cb64a19a84103447252001&q=${
+            location ? `${location.lat},${location.lon}` : 'auto:ip'
+          }&aqi=yes`
+        );
+        if (!weatherRes.ok) {
+          throw new Error('Weather API request failed');
+        }
+        const weatherData = await weatherRes.json();
+        setWeatherData(weatherData);
+        setWeatherError(null);
+
+        const astronomyRes = await fetch(
+          `https://api.weatherapi.com/v1/astronomy.json?key=6cb652a81cb64a19a84103447252001&q=${
+            location ? `${location.lat},${location.lon}` : 'auto:ip'
+          }`
+        );
+        if (!astronomyRes.ok) {
+          throw new Error('Astronomy API request failed');
+        }
+        const astronomyData = await astronomyRes.json();
+        setMoon(astronomyData.astronomy.astro);
+      } catch (error) {
+        console.error('Error fetching weather data:', error);
+        setWeatherError(error instanceof Error ? error.message : 'Failed to load weather data');
+      } finally {
+        setIsWeatherLoading(false);
+      }
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 5 * 60 * 1000); // Update every 5 minutes
+    return () => clearInterval(interval);
+  }, [mounted, location]);
 
   // Handle authentication and initialization
   useEffect(() => {
@@ -675,7 +682,9 @@ export default function DashboardPage() {
                             <span className="text-sm text-gray-600 dark:text-gray-200">Air Quality</span>
                           </div>
                           <p className="text-lg font-semibold mt-1 dark:text-white">
-                            {getAQIDescription(weatherData.current.air_quality['us-epa-index'])}
+                            {weatherData.current.air_quality && weatherData.current.air_quality['us-epa-index'] 
+                              ? getAQIDescription(weatherData.current.air_quality['us-epa-index'])
+                              : 'N/A'}
                           </p>
                         </div>
                         <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all">
