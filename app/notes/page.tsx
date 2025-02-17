@@ -320,7 +320,7 @@ export default function NotesPage() {
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-          {/* Left Column: Saved Notes and Select Session */}
+          {/* Left Column: Saved Notes */}
           <div className="space-y-4">
             {/* Saved Notes Card */}
             <Card className="p-4 bg-white/90 dark:bg-black/90 backdrop-blur-lg border-black/10 dark:border-white/20">
@@ -381,34 +381,6 @@ export default function NotesPage() {
                 )}
               </div>
             </Card>
-
-            {/* Select Session Card */}
-            <Card className="p-4 bg-white/90 dark:bg-black/90 backdrop-blur-lg border-black/10 dark:border-white/20">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-medium text-black dark:text-white">Select Session</h2>
-                <RotateCcw className="h-5 w-5 text-black/50 dark:text-white/50" />
-              </div>
-              <div className="space-y-3">
-                {recentSessions.map((session) => (
-                  <button
-                    key={session.id}
-                    onClick={() => setSelectedSessionId(session.id)}
-                    className={`w-full text-left p-3 rounded-lg transition-all ${
-                      selectedSessionId === session.id
-                        ? 'bg-black/5 dark:bg-white/10'
-                        : 'hover:bg-black/5 dark:hover:bg-white/5'
-                    }`}
-                  >
-                    <h3 className="text-red-500 dark:text-red-400 font-medium">
-                      {clockTitles[session.clock_id] || 'Untitled Session'}
-                    </h3>
-                    <p className="text-sm text-black/50 dark:text-white/50">
-                      {new Date(session.start_time.toDate()).toLocaleDateString()}
-                    </p>
-                  </button>
-                ))}
-              </div>
-            </Card>
           </div>
 
           {/* Right Column: Write/View Note */}
@@ -444,7 +416,7 @@ export default function NotesPage() {
               </div>
 
               {/* Current Information Display */}
-              {weatherData && moon && (
+              {(weatherData && moon && !selectedNote) || (selectedNote?.weatherSnapshot && (
                 <div className="mb-4 p-3 rounded-lg bg-black/5 dark:bg-white/5">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="space-y-1">
@@ -452,7 +424,9 @@ export default function NotesPage() {
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-gray-500" />
                         <p className="text-sm font-medium dark:text-white">
-                          {new Date().toLocaleString()}
+                          {selectedNote 
+                            ? formatDate(selectedNote.updatedAt)
+                            : new Date().toLocaleString()}
                         </p>
                       </div>
                     </div>
@@ -461,13 +435,17 @@ export default function NotesPage() {
                       <div className="flex items-center gap-2">
                         <Cloud className="h-4 w-4 text-gray-500" />
                         <p className="text-sm font-medium dark:text-white">
-                          {weatherData.current.temp_c}°C, {weatherData.current.humidity}%
+                          {selectedNote?.weatherSnapshot 
+                            ? `${selectedNote.weatherSnapshot.temperature}°C, ${selectedNote.weatherSnapshot.humidity}%`
+                            : `${weatherData.current.temp_c}°C, ${weatherData.current.humidity}%`}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
                         <Wind className="h-4 w-4 text-gray-500" />
                         <p className="text-sm font-medium dark:text-white">
-                          AQI: {getAQIDescription(weatherData.current.air_quality['us-epa-index'])}
+                          {selectedNote?.weatherSnapshot 
+                            ? `Wind: ${selectedNote.weatherSnapshot.wind.speed} km/h ${selectedNote.weatherSnapshot.wind.direction}`
+                            : `AQI: ${getAQIDescription(weatherData.current.air_quality['us-epa-index'])}`}
                         </p>
                       </div>
                     </div>
@@ -476,7 +454,16 @@ export default function NotesPage() {
                       <div className="flex items-center gap-2">
                         <Moon className="h-4 w-4 text-gray-500" />
                         <p className="text-sm font-medium dark:text-white">
-                          {moon.moon_phase}
+                          {selectedNote?.weatherSnapshot 
+                            ? selectedNote.weatherSnapshot.moon.phase
+                            : moon.moon_phase}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs text-gray-500">
+                          {selectedNote?.weatherSnapshot 
+                            ? `${selectedNote.weatherSnapshot.moon.illumination}% illuminated`
+                            : `${moon.moon_illumination}% illuminated`}
                         </p>
                       </div>
                     </div>
@@ -485,39 +472,22 @@ export default function NotesPage() {
                       <div className="flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-gray-500" />
                         <p className="text-sm font-medium dark:text-white">
-                          {weatherData.location.name}
+                          {selectedNote?.weatherSnapshot 
+                            ? selectedNote.weatherSnapshot.location.name
+                            : weatherData.location.name}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs text-gray-500">
+                          {selectedNote?.weatherSnapshot 
+                            ? `${selectedNote.weatherSnapshot.location.coordinates.lat.toFixed(2)}, ${selectedNote.weatherSnapshot.location.coordinates.lon.toFixed(2)}`
+                            : `${weatherData.location.lat.toFixed(2)}, ${weatherData.location.lon.toFixed(2)}`}
                         </p>
                       </div>
                     </div>
                   </div>
                 </div>
-              )}
-
-              {/* Session Reference */}
-              <div className="mb-4">
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Reference Session</p>
-                <Select
-                  value={selectedSessionId || ''}
-                  onValueChange={(value) => setSelectedSessionId(value)}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a session" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {recentSessions.map((session) => (
-                      <SelectItem key={session.id} value={session.id}>
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4 text-gray-500" />
-                          <span>{clockTitles[session.clock_id] || 'Untitled Session'}</span>
-                          <span className="text-xs text-gray-500">
-                            ({new Date(session.start_time.toDate()).toLocaleDateString()})
-                          </span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              ))}
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between bg-black/5 dark:bg-white/5 rounded-lg p-3">
