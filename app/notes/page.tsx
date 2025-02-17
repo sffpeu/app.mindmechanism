@@ -13,6 +13,15 @@ import { Note, WeatherSnapshot } from '@/lib/notes'
 import { toast } from '@/components/ui/use-toast'
 import { WeatherSnapshotPopover } from '@/components/WeatherSnapshotPopover'
 import { Timestamp } from 'firebase/firestore'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { getUserSessions } from '@/lib/sessions'
+import { Session } from '@/lib/sessions'
 
 interface WeatherResponse {
   location: {
@@ -61,6 +70,8 @@ export default function NotesPage() {
   const [moon, setMoon] = useState<MoonData | null>(null)
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null)
   const [locationError, setLocationError] = useState<string | null>(null)
+  const [recentSessions, setRecentSessions] = useState<Session[]>([])
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null)
 
   // Example sessions - replace with actual data
   const sessions = [
@@ -123,6 +134,20 @@ export default function NotesPage() {
     const interval = setInterval(fetchData, 5 * 60 * 1000); // Update every 5 minutes
     return () => clearInterval(interval);
   }, [location]);
+
+  // Load recent sessions
+  useEffect(() => {
+    const loadSessions = async () => {
+      if (!user) return;
+      try {
+        const sessions = await getUserSessions(user.uid);
+        setRecentSessions(sessions);
+      } catch (error) {
+        console.error('Error loading sessions:', error);
+      }
+    };
+    loadSessions();
+  }, [user]);
 
   const createWeatherSnapshot = (): WeatherSnapshot | undefined => {
     if (!weatherData || !moon) return undefined;
@@ -385,6 +410,77 @@ export default function NotesPage() {
                   <PenLine className="h-5 w-5 text-black/50 dark:text-white/50" />
                 </div>
               </div>
+
+              {/* Current Information Display */}
+              {weatherData && moon && (
+                <div className="mb-4 p-3 rounded-lg bg-black/5 dark:bg-white/5">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Date & Time</p>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-gray-500" />
+                        <p className="text-sm font-medium dark:text-white">
+                          {new Date().toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Weather</p>
+                      <div className="flex items-center gap-2">
+                        <Cloud className="h-4 w-4 text-gray-500" />
+                        <p className="text-sm font-medium dark:text-white">
+                          {weatherData.current.temp_c}°C, {weatherData.current.humidity}%
+                        </p>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Moon Phase</p>
+                      <div className="flex items-center gap-2">
+                        <Moon className="h-4 w-4 text-gray-500" />
+                        <p className="text-sm font-medium dark:text-white">
+                          {moon.moon_phase}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Location</p>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-gray-500" />
+                        <p className="text-sm font-medium dark:text-white">
+                          {weatherData.location.name}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Session Reference */}
+              <div className="mb-4">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Reference Session</p>
+                <Select
+                  value={selectedSessionId || ''}
+                  onValueChange={(value) => setSelectedSessionId(value)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a session" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {recentSessions.map((session) => (
+                      <SelectItem key={session.id} value={session.id}>
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-gray-500" />
+                          <span>{session.title || 'Untitled Session'}</span>
+                          <span className="text-xs text-gray-500">
+                            ({new Date(session.start_time).toLocaleDateString()})
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="space-y-4">
                 <div className="flex items-center justify-between bg-black/5 dark:bg-white/5 rounded-lg p-3">
                   <input
