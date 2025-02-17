@@ -416,7 +416,7 @@ export default function NotesPage() {
               </div>
 
               {/* Current Information Display */}
-              {(weatherData && moon && !selectedNote) || (selectedNote?.weatherSnapshot && (
+              {((weatherData && moon && !selectedNote) || selectedNote?.weatherSnapshot) && (
                 <div className="mb-4 p-3 rounded-lg bg-black/5 dark:bg-white/5">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="space-y-1">
@@ -437,7 +437,7 @@ export default function NotesPage() {
                         <p className="text-sm font-medium dark:text-white">
                           {selectedNote?.weatherSnapshot 
                             ? `${selectedNote.weatherSnapshot.temperature}°C, ${selectedNote.weatherSnapshot.humidity}%`
-                            : `${weatherData.current.temp_c}°C, ${weatherData.current.humidity}%`}
+                            : weatherData ? `${weatherData.current.temp_c}°C, ${weatherData.current.humidity}%` : 'Loading...'}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
@@ -445,7 +445,7 @@ export default function NotesPage() {
                         <p className="text-sm font-medium dark:text-white">
                           {selectedNote?.weatherSnapshot 
                             ? `Wind: ${selectedNote.weatherSnapshot.wind.speed} km/h ${selectedNote.weatherSnapshot.wind.direction}`
-                            : `AQI: ${getAQIDescription(weatherData.current.air_quality['us-epa-index'])}`}
+                            : weatherData?.current?.air_quality ? `AQI: ${getAQIDescription(weatherData.current.air_quality['us-epa-index'])}` : 'Loading...'}
                         </p>
                       </div>
                     </div>
@@ -456,14 +456,14 @@ export default function NotesPage() {
                         <p className="text-sm font-medium dark:text-white">
                           {selectedNote?.weatherSnapshot 
                             ? selectedNote.weatherSnapshot.moon.phase
-                            : moon.moon_phase}
+                            : moon?.moon_phase || 'Loading...'}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
                         <p className="text-xs text-gray-500">
                           {selectedNote?.weatherSnapshot 
                             ? `${selectedNote.weatherSnapshot.moon.illumination}% illuminated`
-                            : `${moon.moon_illumination}% illuminated`}
+                            : moon ? `${moon.moon_illumination}% illuminated` : 'Loading...'}
                         </p>
                       </div>
                     </div>
@@ -474,20 +474,20 @@ export default function NotesPage() {
                         <p className="text-sm font-medium dark:text-white">
                           {selectedNote?.weatherSnapshot 
                             ? selectedNote.weatherSnapshot.location.name
-                            : weatherData.location.name}
+                            : weatherData?.location?.name || 'Loading...'}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
                         <p className="text-xs text-gray-500">
                           {selectedNote?.weatherSnapshot 
                             ? `${selectedNote.weatherSnapshot.location.coordinates.lat.toFixed(2)}, ${selectedNote.weatherSnapshot.location.coordinates.lon.toFixed(2)}`
-                            : `${weatherData.location.lat.toFixed(2)}, ${weatherData.location.lon.toFixed(2)}`}
+                            : weatherData?.location ? `${weatherData.location.lat.toFixed(2)}, ${weatherData.location.lon.toFixed(2)}` : 'Loading...'}
                         </p>
                       </div>
                     </div>
                   </div>
                 </div>
-              ))}
+              )}
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between bg-black/5 dark:bg-white/5 rounded-lg p-3">
