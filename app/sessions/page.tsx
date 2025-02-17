@@ -308,13 +308,20 @@ export default function SessionsPage() {
                             return (
                               <div
                                 key={index}
-                                className={`absolute w-2 h-2 rounded-full shadow-sm outline outline-1 outline-offset-1 outline-black/10 dark:outline-white/20`}
+                                className={`absolute w-2 h-2 rounded-full shadow-sm outline outline-1 outline-offset-1 outline-black/10 dark:outline-white/20 transition-all hover:scale-110`}
                                 style={{
                                   left: `${x}%`,
                                   top: `${y}%`,
                                   transform: 'translate(-50%, -50%)',
                                   backgroundColor: 'transparent',
-                                  border: `2px solid ${clock.color.split(' ')[1].replace('bg-', '')}`
+                                  border: `2px solid ${clock.color.split(' ')[1].replace('bg-', '')}`,
+                                  transitionProperty: 'transform, background-color',
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = clock.color.split(' ')[1].replace('bg-', '');
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = 'transparent';
                                 }}
                               />
                             )

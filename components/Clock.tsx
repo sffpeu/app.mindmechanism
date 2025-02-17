@@ -774,7 +774,10 @@ export default function Clock({
                       pointerEvents: 'auto',
                       zIndex: 300,
                     }}
-                    whileHover={{ scale: 1.5 }}
+                    whileHover={{ 
+                      scale: 1.5,
+                      backgroundColor: dotColors[id % dotColors.length].replace('bg-[', '').replace(']', '')
+                    }}
                     transition={{ type: "spring", stiffness: 400, damping: 25 }}
                     onClick={() => handleNodeClick(index)}
                   />

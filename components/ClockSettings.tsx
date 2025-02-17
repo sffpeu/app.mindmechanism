@@ -362,7 +362,7 @@ export function ClockSettings({ settings, onSave, onCancel }: ClockSettingsProps
                           return (
                             <div
                               key={index}
-                              className="absolute w-2 h-2 rounded-full"
+                              className="absolute w-2 h-2 rounded-full transition-all hover:scale-110"
                               style={{
                                 left: `${x}%`,
                                 top: `${y}%`,
@@ -370,6 +370,12 @@ export function ClockSettings({ settings, onSave, onCancel }: ClockSettingsProps
                                 backgroundColor: 'transparent',
                                 border: `2px solid ${dotColors[settings.id % dotColors.length].replace('bg-[', '').replace(']', '')}`,
                                 transition: 'all 0.3s ease-in-out',
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = dotColors[settings.id % dotColors.length].replace('bg-[', '').replace(']', '');
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'transparent';
                               }}
                             />
                           );
