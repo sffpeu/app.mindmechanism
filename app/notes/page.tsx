@@ -377,8 +377,12 @@ export default function NotesPage() {
                         : 'hover:bg-black/5 dark:hover:bg-white/5'
                     }`}
                   >
-                    <h3 className="text-red-500 dark:text-red-400 font-medium">{session.title}</h3>
-                    <p className="text-sm text-black/50 dark:text-white/50">{session.date}</p>
+                    <h3 className="text-red-500 dark:text-red-400 font-medium">
+                      {clockTitles[session.clock_id] || 'Untitled Session'}
+                    </h3>
+                    <p className="text-sm text-black/50 dark:text-white/50">
+                      {new Date(session.start_time.toDate()).toLocaleDateString()}
+                    </p>
                   </button>
                 ))}
               </div>
