@@ -11,7 +11,7 @@ import { ClockSettings as ClockSettingsType } from '@/types/ClockSettings'
 import { useTheme } from '@/app/ThemeContext'
 import { useTimeTracking } from '@/lib/hooks/useTimeTracking'
 import { useAuth } from '@/lib/FirebaseAuthContext'
-import { Settings, Maximize2, Minimize2, Satellite, Info, X } from 'lucide-react'
+import { Settings, Maximize2, Minimize2, Satellite, Info, X, List } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import {
   DropdownMenu,
@@ -94,6 +94,7 @@ export default function ClockPage() {
   const [isPaused, setIsPaused] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [showWordList, setShowWordList] = useState(true);
+  const [isWordListVisible, setIsWordListVisible] = useState(true);
 
   // Add time tracking
   useTimeTracking(user?.uid, `clock-${params.id}`)
@@ -286,30 +287,48 @@ export default function ClockPage() {
     if (!words.length || !showWordList) return null;
 
     return (
-      <div className="fixed right-8 top-24 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/10 dark:border-white/10 rounded-lg p-4 w-64">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-medium text-black/90 dark:text-white/90">Assigned Words</h3>
-          <button
-            onClick={() => setShowWordList(false)}
-            className="text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-        <div className="space-y-2">
-          {words.map((word: string, index: number) => (
-            <div
-              key={index}
-              className="flex items-center gap-2"
-            >
-              <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium ${clockColors[id].split(' ')[1]} text-white`}>
-                {index + 1}
-              </div>
-              <span className="text-sm text-black/90 dark:text-white/90">{word}</span>
+      <>
+        {/* Toggle button */}
+        <button
+          onClick={() => setIsWordListVisible(!isWordListVisible)}
+          className="fixed left-4 top-4 z-50 p-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors"
+          aria-label={isWordListVisible ? "Hide word list" : "Show word list"}
+        >
+          <List className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+        </button>
+
+        {/* Word list panel with animation */}
+        <div 
+          className={`fixed left-4 top-16 z-50 transition-all duration-300 ease-in-out transform ${
+            isWordListVisible ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'
+          }`}
+        >
+          <div className="bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/10 dark:border-white/10 rounded-lg p-4 w-64">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-medium text-black/90 dark:text-white/90">Assigned Words</h3>
+              <button
+                onClick={() => setShowWordList(false)}
+                className="text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
-          ))}
+            <div className="space-y-2">
+              {words.map((word: string, index: number) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-2 p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                >
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium ${clockColors[id].split(' ')[1]} text-white`}>
+                    {index + 1}
+                  </div>
+                  <span className="text-sm text-black/90 dark:text-white/90">{word}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
+      </>
     );
   };
 
@@ -330,7 +349,7 @@ export default function ClockPage() {
           />
         </div>
         
-        {/* Settings Dropdown */}
+        {/* Settings Dropdown - Moved slightly to accommodate word list */}
         <div className="fixed top-4 right-4 z-50">
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
