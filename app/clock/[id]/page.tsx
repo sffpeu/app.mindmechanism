@@ -11,7 +11,7 @@ import { ClockSettings as ClockSettingsType } from '@/types/ClockSettings'
 import { useTheme } from '@/app/ThemeContext'
 import { useTimeTracking } from '@/lib/hooks/useTimeTracking'
 import { useAuth } from '@/lib/FirebaseAuthContext'
-import { Settings, Maximize2, Minimize2, Satellite, Info, X, List } from 'lucide-react'
+import { Settings, Maximize2, Minimize2, Satellite, Info, X, List, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import {
   DropdownMenu,
@@ -95,6 +95,7 @@ export default function ClockPage() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [showWordList, setShowWordList] = useState(true);
   const [isWordListVisible, setIsWordListVisible] = useState(true);
+  const [areInfoCardsVisible, setAreInfoCardsVisible] = useState(true);
 
   // Add time tracking
   useTimeTracking(user?.uid, `clock-${params.id}`)
@@ -288,30 +289,28 @@ export default function ClockPage() {
 
     return (
       <>
-        {/* Toggle button */}
-        <button
-          onClick={() => setIsWordListVisible(!isWordListVisible)}
-          className="fixed left-4 top-4 z-50 p-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors"
-          aria-label={isWordListVisible ? "Hide word list" : "Show word list"}
-        >
-          <List className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-        </button>
-
         {/* Word list panel with animation */}
         <div 
-          className={`fixed left-4 top-16 z-50 transition-all duration-300 ease-in-out transform ${
-            isWordListVisible ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'
+          className={`fixed left-0 top-16 z-50 transition-all duration-300 ease-in-out transform ${
+            isWordListVisible ? 'translate-x-0' : '-translate-x-[calc(100%-24px)]'
           }`}
         >
-          <div className="bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/10 dark:border-white/10 rounded-lg p-4 w-64">
-            <div className="flex items-center justify-between mb-3">
+          <div className="bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/10 dark:border-white/10 rounded-lg p-4 w-64 relative">
+            {/* Minimize/Expand button */}
+            <button
+              onClick={() => setIsWordListVisible(!isWordListVisible)}
+              className="absolute -right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors"
+              aria-label={isWordListVisible ? "Minimize word list" : "Expand word list"}
+            >
+              {isWordListVisible ? (
+                <ChevronLeft className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+              ) : (
+                <ChevronRight className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+              )}
+            </button>
+
+            <div className="flex items-center mb-3">
               <h3 className="text-sm font-medium text-black/90 dark:text-white/90">Assigned Words</h3>
-              <button
-                onClick={() => setShowWordList(false)}
-                className="text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white"
-              >
-                <X className="h-4 w-4" />
-              </button>
             </div>
             <div className="space-y-2">
               {words.map((word: string, index: number) => (
@@ -348,6 +347,45 @@ export default function ClockPage() {
             onPauseResume={handlePauseResume}
           />
         </div>
+        
+        {/* Info Cards with minimize/expand functionality */}
+        {showInfoCards && (
+          <div className={`fixed bottom-20 left-0 z-50 transition-all duration-300 ease-in-out transform ${
+            areInfoCardsVisible ? 'translate-x-0' : '-translate-x-[calc(100%-24px)]'
+          }`}>
+            <div className="bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/10 dark:border-white/10 rounded-lg p-4 w-64 relative">
+              {/* Minimize/Expand button */}
+              <button
+                onClick={() => setAreInfoCardsVisible(!areInfoCardsVisible)}
+                className="absolute -right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors"
+                aria-label={areInfoCardsVisible ? "Minimize info cards" : "Expand info cards"}
+              >
+                {areInfoCardsVisible ? (
+                  <ChevronLeft className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+                )}
+              </button>
+
+              <div className="space-y-2">
+                {weatherData && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-black/90 dark:text-white/90">
+                      {weatherData.current.temp_c}°C · {weatherData.current.condition.text}
+                    </span>
+                  </div>
+                )}
+                {moon && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-black/90 dark:text-white/90">
+                      Moon Phase: {moon.moon_phase}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
         
         {/* Settings Dropdown - Moved slightly to accommodate word list */}
         <div className="fixed top-4 right-4 z-50">
