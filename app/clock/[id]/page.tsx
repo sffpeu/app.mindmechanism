@@ -11,7 +11,7 @@ import { ClockSettings as ClockSettingsType } from '@/types/ClockSettings'
 import { useTheme } from '@/app/ThemeContext'
 import { useTimeTracking } from '@/lib/hooks/useTimeTracking'
 import { useAuth } from '@/lib/FirebaseAuthContext'
-import { Settings, Maximize2, Minimize2, Satellite, Info } from 'lucide-react'
+import { Settings, Maximize2, Minimize2, Satellite, Info, X } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import {
   DropdownMenu,
@@ -93,6 +93,7 @@ export default function ClockPage() {
   const [remainingTime, setRemainingTime] = useState<number | null>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [showWordList, setShowWordList] = useState(true);
 
   // Add time tracking
   useTimeTracking(user?.uid, `clock-${params.id}`)
@@ -280,6 +281,38 @@ export default function ClockPage() {
     }
   };
 
+  // Add word list component
+  const WordList = () => {
+    if (!words.length || !showWordList) return null;
+
+    return (
+      <div className="fixed right-8 top-24 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/10 dark:border-white/10 rounded-lg p-4 w-64">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-medium text-black/90 dark:text-white/90">Assigned Words</h3>
+          <button
+            onClick={() => setShowWordList(false)}
+            className="text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="space-y-2">
+          {words.map((word: string, index: number) => (
+            <div
+              key={index}
+              className="flex items-center gap-2"
+            >
+              <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium ${clockColors[id].split(' ')[1]} text-white`}>
+                {index + 1}
+              </div>
+              <span className="text-sm text-black/90 dark:text-white/90">{word}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   // Don't render clock until we have client-side time
   if (!currentTime) {
     return null
@@ -381,6 +414,7 @@ export default function ClockPage() {
             onCancel={() => setShowSettings(false)}
           />
         )}
+        <WordList />
       </div>
     </ProtectedRoute>
   )
