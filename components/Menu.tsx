@@ -58,7 +58,7 @@ export function Menu({
       {/* Menu Button */}
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="absolute top-4 left-4 p-2 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all z-50"
+        className="absolute top-4 left-4 p-2 rounded-lg bg-white dark:bg-black border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all z-50"
       >
         {isMenuOpen ? (
           <X className="h-5 w-5 text-black dark:text-white" />
@@ -75,7 +75,7 @@ export function Menu({
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
             transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
-            className="h-full w-64 bg-white dark:bg-black/90 backdrop-blur-lg border-r border-black/5 dark:border-white/10 shadow-lg overflow-y-auto"
+            className="h-full w-64 bg-white dark:bg-black border-r border-black/5 dark:border-white/10 shadow-lg overflow-y-auto"
           >
             <div className="pt-16 pb-4">
               <div className="px-2">
