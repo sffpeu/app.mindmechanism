@@ -56,6 +56,7 @@ interface MoonData {
 }
 
 // Clock colors mapping
+// Updated color mapping for deployment trigger
 const clockColors = [
   'text-red-500 bg-red-500',
   'text-orange-500 bg-orange-500',
