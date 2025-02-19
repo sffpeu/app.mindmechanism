@@ -273,11 +273,11 @@ export function SessionDurationDialog({
                           }}
                         >
                           <div className={cn(
-                            "relative w-5 h-5 rounded-full flex items-center justify-center", // Reduced size from w-6 h-6
+                            "relative w-4 h-4 rounded-full flex items-center justify-center", // Reduced size from w-5 h-5
                             bgColorClass,
                             words[index] ? 'opacity-100' : 'opacity-50'
                           )}>
-                            <span className="text-[9px] font-medium text-white"> {/* Reduced text size */}
+                            <span className="text-[8px] font-medium text-white"> {/* Reduced text size */}
                               {index + 1}
                             </span>
                             <motion.div
