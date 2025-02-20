@@ -159,7 +159,6 @@ export function Menu({
       <SettingsDialog 
         isOpen={isSettingsOpen} 
         onClose={() => setIsSettingsOpen(false)} 
-        className="z-[200]"
       />
     </div>
   )
