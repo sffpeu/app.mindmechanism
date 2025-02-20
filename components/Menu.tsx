@@ -41,7 +41,7 @@ export function Menu({
   }
 
   return (
-    <div className="fixed inset-y-0 left-0 z-50 flex">
+    <div className="fixed inset-y-0 left-0 z-[100] flex">
       {/* Backdrop when menu is open */}
       <AnimatePresence>
         {isMenuOpen && (
@@ -50,7 +50,7 @@ export function Menu({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsMenuOpen(false)}
-            className="fixed inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm z-40"
+            className="fixed inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm z-[90]"
           />
         )}
       </AnimatePresence>
@@ -58,7 +58,7 @@ export function Menu({
       {/* Menu Button */}
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="absolute top-4 left-4 p-2 rounded-lg bg-white dark:bg-black border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all z-50"
+        className="absolute top-4 left-4 p-2 rounded-lg bg-white dark:bg-black border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all z-[110]"
       >
         {isMenuOpen ? (
           <X className="h-5 w-5 text-black dark:text-white" />
@@ -75,7 +75,7 @@ export function Menu({
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
             transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
-            className="h-full w-64 bg-white dark:bg-black border-r border-black/5 dark:border-white/10 shadow-lg overflow-y-auto"
+            className="h-full w-64 bg-white dark:bg-black border-r border-black/5 dark:border-white/10 shadow-lg overflow-y-auto z-[100]"
           >
             <div className="pt-16 pb-4">
               <div className="px-2">
