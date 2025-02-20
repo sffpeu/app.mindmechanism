@@ -90,18 +90,20 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
           } : undefined}
           onMouseEnter={() => setHoveredDot(index)}
           onMouseLeave={() => setHoveredDot(null)}
+          onTouchStart={() => setHoveredDot(index)}
+          onTouchEnd={() => setHoveredDot(null)}
         >
           {index === 9 && activeDot === 9 && (
             <button
               onClick={() => router.push(isSmallMultiView ? '/multiview/1' : '/multiview/2')}
-              className={`w-3.5 h-3.5 rounded-full border-2 border-black dark:border-white transition-all duration-200 hover:scale-150 opacity-0 group-hover:opacity-100 ${
+              className={`w-6 h-6 rounded-full border-2 border-black dark:border-white transition-all duration-200 hover:scale-150 opacity-0 group-hover:opacity-100 ${
                 isSmallMultiView ? 'bg-black dark:bg-white' : 'bg-transparent'
-              }`}
+              } touch-manipulation`}
             />
           )}
           <button
             onClick={() => handleDotClick(index)}
-            className={`w-3.5 h-3.5 rounded-full transition-all duration-200 transform hover:scale-150 border-2 ${
+            className={`w-6 h-6 rounded-full transition-all duration-200 transform hover:scale-150 border-2 ${
               index === 9
                 ? 'bg-black dark:bg-white border-black dark:border-white'
                 : index === activeDot
@@ -109,7 +111,7 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
                   : hoveredDot === index
                     ? dotColors[index]
                     : 'bg-transparent border-gray-300 dark:border-gray-600'
-            }`}
+            } touch-manipulation`}
           />
         </DotContainer>
       ))}
