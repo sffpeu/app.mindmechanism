@@ -76,7 +76,14 @@ export default function ClockPage() {
   const encodedWords = searchParams.get('words')
   const words = encodedWords ? JSON.parse(decodeURIComponent(encodedWords)) : []
   const [showElements, setShowElements] = useState(true)
-  const [showSatellites, setShowSatellites] = useState(false)
+  const [showSatellites, setShowSatellites] = useState(() => {
+    // Initialize from localStorage if available, otherwise default to false
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('showSatellites')
+      return saved ? JSON.parse(saved) : false
+    }
+    return false
+  })
   const [showInfoCards, setShowInfoCards] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
@@ -257,6 +264,17 @@ export default function ClockPage() {
     };
   }, [sessionId, remainingTime, searchParams]);
 
+  // Add effect to persist satellite state
+  useEffect(() => {
+    localStorage.setItem('showSatellites', JSON.stringify(showSatellites))
+  }, [showSatellites])
+
+  // Update the satellite toggle handler
+  const handleSatellitesChange = (value: boolean) => {
+    setShowSatellites(value)
+    localStorage.setItem('showSatellites', JSON.stringify(value))
+  }
+
   const handleSettingsSave = (newSettings: Partial<ClockSettingsType>) => {
     setLocalClockSettings({ ...localClockSettings, ...newSettings })
     setShowSettings(false)
@@ -404,7 +422,7 @@ export default function ClockPage() {
                 </div>
                 <Switch
                   checked={showSatellites}
-                  onCheckedChange={setShowSatellites}
+                  onCheckedChange={handleSatellitesChange}
                 />
               </DropdownMenuItem>
               <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
@@ -446,7 +464,7 @@ export default function ClockPage() {
           showElements={showElements}
           onToggleShow={() => setShowElements(!showElements)}
           showSatellites={showSatellites}
-          onSatellitesChange={setShowSatellites}
+          onSatellitesChange={handleSatellitesChange}
           showInfoCards={showInfoCards}
           onInfoCardsChange={setShowInfoCards}
         />
