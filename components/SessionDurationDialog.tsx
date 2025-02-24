@@ -604,17 +604,23 @@ export function SessionDurationDialog({
                       disabled={!canProceed()}
                       className={cn(
                         "h-8 px-4 rounded-full flex items-center text-sm font-medium transition-all",
-                        bgColorClass,
-                        "text-white hover:opacity-90 disabled:opacity-50",
-                        "disabled:cursor-not-allowed"
+                        "bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-400",
+                        "hover:bg-gray-100 dark:hover:bg-white/10",
+                        "disabled:opacity-50 disabled:cursor-not-allowed"
                       )}
                     >
                       Skip
                       <ChevronRight className="w-4 h-4 ml-1" />
                     </button>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                    <button
+                      className={cn(
+                        "h-8 px-4 rounded-full flex items-center text-sm font-medium transition-all",
+                        bgColorClass,
+                        "text-white hover:opacity-90"
+                      )}
+                    >
                       {clockSettings[clockId]?.focusNodes || 0} words required
-                    </span>
+                    </button>
                   </>
                 )}
               </div>
