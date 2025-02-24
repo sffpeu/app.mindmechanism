@@ -149,6 +149,7 @@ export async function getUserNotes(userId: string): Promise<Note[]> {
         createdAt,
         updatedAt,
         weatherSnapshot: data.weatherSnapshot,
+        sessionId: data.sessionId || null,
       };
     });
   } catch (error) {
@@ -200,6 +201,7 @@ export const subscribeToUserNotes = (
             createdAt,
             updatedAt,
             weatherSnapshot: data.weatherSnapshot,
+            sessionId: data.sessionId || null,
           } as Note;
         });
         console.log('Received notes update, count:', notes.length);
