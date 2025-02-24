@@ -381,27 +381,50 @@ export default function NotesPage() {
                                     title: "Session Information",
                                     description: (
                                       <div className="space-y-2 mt-2">
-                                        <div className="flex items-center gap-2">
-                                          <div className={`w-2 h-2 rounded-full ${clockColors[session.clock_id].split(' ')[1]}`} />
-                                          <span className={`font-medium ${clockColors[session.clock_id].split(' ')[0]}`}>
-                                            {clockTitles[session.clock_id]}
-                                          </span>
-                                          <span className={`text-xs px-2 py-0.5 rounded-full ${
-                                            session.status === 'completed' 
-                                              ? 'bg-green-100 text-green-700'
-                                              : session.status === 'in_progress'
-                                              ? 'bg-blue-100 text-blue-700'
-                                              : 'bg-gray-100 text-gray-700'
-                                          }`}>
-                                            {session.status === 'completed' ? 'Completed' : session.status === 'in_progress' ? 'In Progress' : 'Aborted'}
-                                          </span>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                          <div className="space-y-1">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">Clock</p>
+                                            <div className="flex items-center gap-2">
+                                              <div className={`w-2 h-2 rounded-full ${clockColors[session.clock_id].split(' ')[1]}`} />
+                                              <span className={`text-sm font-medium ${clockColors[session.clock_id].split(' ')[0]}`}>
+                                                {clockTitles[session.clock_id]}
+                                              </span>
+                                            </div>
+                                          </div>
+                                          <div className="space-y-1">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">Status</p>
+                                            <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                              session.status === 'completed' 
+                                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                                : session.status === 'in_progress'
+                                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                                : 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400'
+                                            }`}>
+                                              {session.status === 'completed' ? 'Completed' : session.status === 'in_progress' ? 'In Progress' : 'Aborted'}
+                                            </span>
+                                          </div>
+                                          <div className="space-y-1">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">Start Time</p>
+                                            <div className="flex items-center gap-2">
+                                              <Clock className="h-4 w-4 text-gray-500" />
+                                              <p className="text-sm font-medium dark:text-white">
+                                                {session.start_time.toDate().toLocaleString()}
+                                              </p>
+                                            </div>
+                                          </div>
+                                          <div className="space-y-1">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">Duration</p>
+                                            <div className="flex items-center gap-2">
+                                              <Timer className="h-4 w-4 text-gray-500" />
+                                              <p className="text-sm font-medium dark:text-white">
+                                                {Math.round(session.duration / 1000 / 60)} minutes
+                                              </p>
+                                            </div>
+                                          </div>
                                         </div>
-                                        <p className="text-sm">{session.words.join(", ")}</p>
-                                        <div className="text-xs text-gray-500">
-                                          Started: {session.start_time.toDate().toLocaleString()}
-                                        </div>
-                                        <div className="text-xs text-gray-500">
-                                          Duration: {Math.round(session.duration / 1000 / 60)} minutes
+                                        <div className="space-y-1">
+                                          <p className="text-xs text-gray-500 dark:text-gray-400">Words</p>
+                                          <p className="text-sm">{session.words.join(", ")}</p>
                                         </div>
                                       </div>
                                     ),
@@ -559,36 +582,53 @@ export default function NotesPage() {
                         <SelectItem value="none">No session</SelectItem>
                         {recentSessions.map((session) => (
                           <SelectItem key={session.id} value={session.id}>
-                            <div className="flex flex-col space-y-1">
-                              <div className="flex items-center gap-2">
-                                <div className={`w-2 h-2 rounded-full ${clockColors[session.clock_id].split(' ')[1]}`} />
-                                <span className={`font-medium ${clockColors[session.clock_id].split(' ')[0]}`}>
-                                  {clockTitles[session.clock_id]}
-                                </span>
-                                <span className={`text-xs px-2 py-0.5 rounded-full ${
-                                  session.status === 'completed' 
-                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                    : session.status === 'in_progress'
-                                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                                    : 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400'
-                                }`}>
-                                  {session.status === 'completed' ? 'Completed' : session.status === 'in_progress' ? 'In Progress' : 'Aborted'}
-                                </span>
-                              </div>
-                              <span className="text-sm text-gray-600 dark:text-gray-300">{session.words.join(", ")}</span>
-                              <div className="flex items-center gap-2 text-xs text-gray-500">
-                                <Clock className="h-3 w-3" />
-                                <span>Started: {session.start_time.toDate().toLocaleString()}</span>
-                              </div>
-                              <div className="flex items-center gap-2 text-xs text-gray-500">
-                                <Timer className="h-3 w-3" />
-                                <span>Duration: {Math.round(session.duration / 1000 / 60)} minutes</span>
-                              </div>
+                            <div className="flex items-center gap-2">
+                              <div className={`w-2 h-2 rounded-full ${clockColors[session.clock_id].split(' ')[1]}`} />
+                              <span className={`font-medium ${clockColors[session.clock_id].split(' ')[0]}`}>
+                                {clockTitles[session.clock_id]}
+                              </span>
                             </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
+                    
+                    {/* Selected Session Info */}
+                    {selectedSessionId !== 'none' && (() => {
+                      const session = recentSessions.find(s => s.id === selectedSessionId);
+                      if (!session) return null;
+                      
+                      return (
+                        <div className="mt-3 p-3 rounded-lg bg-black/10 dark:bg-white/10">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className={`w-2 h-2 rounded-full ${clockColors[session.clock_id].split(' ')[1]}`} />
+                            <span className={`font-medium ${clockColors[session.clock_id].split(' ')[0]}`}>
+                              {clockTitles[session.clock_id]}
+                            </span>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${
+                              session.status === 'completed' 
+                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                : session.status === 'in_progress'
+                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                : 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400'
+                            }`}>
+                              {session.status === 'completed' ? 'Completed' : session.status === 'in_progress' ? 'In Progress' : 'Aborted'}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">{session.words.join(", ")}</p>
+                          <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-3.5 w-3.5" />
+                              <span>Started: {session.start_time.toDate().toLocaleString()}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Timer className="h-3.5 w-3.5" />
+                              <span>Duration: {Math.round(session.duration / 1000 / 60)} minutes</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
                 <div className="flex items-center justify-between bg-black/5 dark:bg-white/5 rounded-lg p-3">
