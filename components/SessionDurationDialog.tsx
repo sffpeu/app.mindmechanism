@@ -10,6 +10,7 @@ import { clockSettings } from '@/lib/clockSettings'
 import { GlossaryWord } from '@/types/Glossary'
 import { getClockWords } from '@/lib/glossary'
 import { supabase } from '@/lib/supabase'
+import { HintPopup } from '@/components/ui/hint-popup'
 
 interface SessionDurationDialogProps {
   open: boolean
@@ -43,9 +44,26 @@ export function SessionDurationDialog({
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedFilter, setSelectedFilter] = useState('All')
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
+  const [hoveredWord, setHoveredWord] = useState<string | null>(null)
+  const [showDurationHint, setShowDurationHint] = useState(false)
+  const [showWordsHint, setShowWordsHint] = useState(false)
 
   const textColorClass = clockColor?.split(' ')?.[0] || 'text-gray-500'
   const bgColorClass = clockColor?.split(' ')?.[1] || 'bg-gray-500'
+
+  useEffect(() => {
+    if (step === 'duration') {
+      const hasSeenDurationHint = localStorage.getItem('hasSeenDurationHint')
+      if (!hasSeenDurationHint) {
+        setShowDurationHint(true)
+      }
+    } else if (step === 'words') {
+      const hasSeenWordsHint = localStorage.getItem('hasSeenWordsHint')
+      if (!hasSeenWordsHint) {
+        setShowWordsHint(true)
+      }
+    }
+  }, [step])
 
   useEffect(() => {
     if (step === 'words') {
@@ -475,13 +493,16 @@ export function SessionDurationDialog({
                           setWords(newWords)
                         }
                       }}
+                      onMouseEnter={() => setHoveredWord(word.word)}
+                      onMouseLeave={() => setHoveredWord(null)}
                       disabled={words.includes(word.word)}
                       className={cn(
                         "p-2.5 rounded-lg text-left transition-all",
                         words.includes(word.word)
                           ? "opacity-50 cursor-not-allowed"
                           : "hover:bg-gray-50 dark:hover:bg-white/5",
-                        "bg-white dark:bg-black border border-gray-200 dark:border-gray-800"
+                        "bg-white dark:bg-black border",
+                        hoveredWord === word.word ? `border-2 ${textColorClass}` : "border-gray-200 dark:border-gray-800"
                       )}
                       aria-label={`Select word ${word.word}${words.includes(word.word) ? ' (already selected)' : ''}`}
                     >
@@ -561,19 +582,42 @@ export function SessionDurationDialog({
               </button>
             )}
             {step === 'words' ? (
-              <button
-                onClick={handleNext}
-                disabled={!canProceed()}
-                className={cn(
-                  "h-8 px-4 rounded-full flex items-center text-sm font-medium transition-all",
-                  bgColorClass,
-                  "text-white hover:opacity-90 disabled:opacity-50",
-                  "disabled:cursor-not-allowed"
+              <div className="flex items-center gap-2">
+                {words.some(word => word.trim() !== '') ? (
+                  <button
+                    onClick={handleNext}
+                    disabled={!canProceed()}
+                    className={cn(
+                      "h-8 px-4 rounded-full flex items-center text-sm font-medium transition-all",
+                      bgColorClass,
+                      "text-white hover:opacity-90 disabled:opacity-50",
+                      "disabled:cursor-not-allowed"
+                    )}
+                  >
+                    Start
+                    <ChevronRight className="w-4 h-4 ml-1" />
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={handleNext}
+                      disabled={!canProceed()}
+                      className={cn(
+                        "h-8 px-4 rounded-full flex items-center text-sm font-medium transition-all",
+                        bgColorClass,
+                        "text-white hover:opacity-90 disabled:opacity-50",
+                        "disabled:cursor-not-allowed"
+                      )}
+                    >
+                      Skip
+                      <ChevronRight className="w-4 h-4 ml-1" />
+                    </button>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      {clockSettings[clockId]?.focusNodes || 0} words required
+                    </span>
+                  </>
                 )}
-              >
-                {words.some(word => word.trim() !== '') ? 'Start' : 'Skip'}
-                <ChevronRight className="w-4 h-4 ml-1" />
-              </button>
+              </div>
             ) : step === 'duration' && (
               <button
                 onClick={handleNext}
@@ -803,6 +847,23 @@ export function SessionDurationDialog({
             </AnimatePresence>
           </div>
         </div>
+
+        <HintPopup
+          title="Set Your Session Duration"
+          description="Setting the right duration for your session is crucial. A focused session typically lasts between 15-60 minutes. Choose a duration that matches your energy levels and the complexity of your task."
+          storageKey="hasSeenDurationHint"
+          open={showDurationHint}
+          onOpenChange={setShowDurationHint}
+        />
+
+        <HintPopup
+          title="Assign Words to Focus Nodes"
+          description="Words help you maintain focus during your session. Each focus node represents a key concept or task you want to concentrate on. You can skip this step, but assigning words can make your session more meaningful and structured."
+          storageKey="hasSeenWordsHint"
+          open={showWordsHint}
+          onOpenChange={setShowWordsHint}
+        />
+
       </DialogContent>
     </Dialog>
   )
