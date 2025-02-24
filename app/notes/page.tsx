@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Menu } from '@/components/Menu'
 import { Card } from '@/components/ui/card'
-import { RotateCcw, PenLine, Files, Clock, ArrowUpDown, Save, Edit, X, Cloud, Thermometer, Droplets, Sun, Gauge, Wind, Moon, MapPin } from 'lucide-react'
+import { RotateCcw, PenLine, Files, Clock, ArrowUpDown, Save, Edit, X, Cloud, Thermometer, Droplets, Sun, Gauge, Wind, Moon, MapPin, Timer } from 'lucide-react'
 import { useTheme } from '@/app/ThemeContext'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
