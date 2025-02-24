@@ -43,7 +43,6 @@ export function SessionDurationDialog({
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedFilter, setSelectedFilter] = useState('All')
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
-  const [isWordSelectionSkipped, setIsWordSelectionSkipped] = useState(false)
 
   const textColorClass = clockColor?.split(' ')?.[0] || 'text-gray-500'
   const bgColorClass = clockColor?.split(' ')?.[1] || 'bg-gray-500'
@@ -113,6 +112,10 @@ export function SessionDurationDialog({
     if (step === 'duration') {
       setStep('words')
     } else if (step === 'words') {
+      const hasAnyWord = words.some(word => word.trim() !== '')
+      if (!hasAnyWord) {
+        setWords(Array(words.length).fill(''))
+      }
       if (isEndless) {
         onNext(null, words)
       } else if (isCustom && isCustomConfirmed) {
@@ -134,7 +137,8 @@ export function SessionDurationDialog({
     if (step === 'duration') {
       return isEndless || selectedPreset !== null || (isCustom && isCustomConfirmed)
     } else if (step === 'words') {
-      return isWordSelectionSkipped || words.every(word => word.trim() !== '')
+      const hasAnyWord = words.some(word => word.trim() !== '')
+      return !hasAnyWord || words.every(word => word.trim() !== '')
     }
     return true
   }
@@ -567,7 +571,7 @@ export function SessionDurationDialog({
                   "disabled:cursor-not-allowed"
                 )}
               >
-                Start
+                {words.some(word => word.trim() !== '') ? 'Start' : 'Skip'}
                 <ChevronRight className="w-4 h-4 ml-1" />
               </button>
             ) : step === 'duration' && (
@@ -794,17 +798,6 @@ export function SessionDurationDialog({
               {step === 'words' && (
                 <>
                   {renderWordsStep()}
-                  <div className="absolute left-1/2 top-4 -translate-x-1/2 flex items-center gap-2">
-                    <button
-                      onClick={() => {
-                        setIsWordSelectionSkipped(true);
-                        setWords(Array(words.length).fill('-'));
-                      }}
-                      className="h-8 px-4 rounded-full flex items-center text-sm font-medium transition-all bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/20"
-                    >
-                      Skip Word Selection
-                    </button>
-                  </div>
                 </>
               )}
             </AnimatePresence>
