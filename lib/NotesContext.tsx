@@ -9,8 +9,8 @@ interface NotesContextType {
   notes: Note[]
   isLoading: boolean
   error: string | null
-  addNote: (title: string, content: string, weatherSnapshot?: WeatherSnapshot) => Promise<string | undefined>
-  editNote: (noteId: string, title: string, content: string, weatherSnapshot?: WeatherSnapshot) => Promise<void>
+  addNote: (title: string, content: string, weatherSnapshot?: WeatherSnapshot, sessionId?: string | null) => Promise<string | undefined>
+  editNote: (noteId: string, title: string, content: string, weatherSnapshot?: WeatherSnapshot, sessionId?: string | null) => Promise<void>
   removeNote: (noteId: string) => Promise<void>
 }
 
@@ -51,7 +51,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     }
   }, [user])
 
-  const addNote = async (title: string, content: string, weatherSnapshot?: WeatherSnapshot): Promise<string | undefined> => {
+  const addNote = async (title: string, content: string, weatherSnapshot?: WeatherSnapshot, sessionId?: string | null): Promise<string | undefined> => {
     if (!user) {
       toast({
         title: "Authentication Error",
@@ -62,7 +62,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
     try {
       setError(null)
-      const noteId = await createNote(user.uid, title, content, weatherSnapshot)
+      const noteId = await createNote(user.uid, title, content, weatherSnapshot, sessionId)
       toast({
         title: "Success",
         description: "Note created successfully"
@@ -79,7 +79,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const editNote = async (noteId: string, title: string, content: string, weatherSnapshot?: WeatherSnapshot) => {
+  const editNote = async (noteId: string, title: string, content: string, weatherSnapshot?: WeatherSnapshot, sessionId?: string | null) => {
     if (!user) {
       toast({
         title: "Authentication Error",
@@ -90,7 +90,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
     try {
       setError(null)
-      await updateNote(user.uid, noteId, title, content, weatherSnapshot)
+      await updateNote(user.uid, noteId, title, content, weatherSnapshot, sessionId)
       toast({
         title: "Success",
         description: "Note updated successfully"

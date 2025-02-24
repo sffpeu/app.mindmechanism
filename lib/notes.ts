@@ -87,7 +87,8 @@ export const createNote = async (
   userId: string, 
   title: string, 
   content: string,
-  weatherSnapshot?: WeatherSnapshot
+  weatherSnapshot?: WeatherSnapshot,
+  sessionId?: string | null
 ): Promise<string> => {
   console.log('Creating note:', { userId, title });
   
@@ -104,6 +105,7 @@ export const createNote = async (
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
       weatherSnapshot,
+      sessionId: sessionId || null,
     };
     
     const docRef = await addDoc(collection(db, `users/${userId}/notes`), noteData);
@@ -214,14 +216,13 @@ export const subscribeToUserNotes = (
 };
 
 export const updateNote = async (
-  userId: string, 
-  noteId: string, 
-  title: string, 
+  userId: string,
+  noteId: string,
+  title: string,
   content: string,
-  weatherSnapshot?: WeatherSnapshot
+  weatherSnapshot?: WeatherSnapshot,
+  sessionId?: string | null
 ): Promise<void> => {
-  console.log('Updating note:', { userId, noteId, title });
-  
   try {
     if (!db) throw new Error('Firestore is not initialized');
     if (!userId) throw new Error('User ID is required');
@@ -230,19 +231,13 @@ export const updateNote = async (
     // Validate input data
     validateNoteData(title, content);
 
-    // Verify the note exists and belongs to the user
-    const noteRef = doc(db, `users/${userId}/notes`, noteId);
-    const noteDoc = await getDoc(noteRef);
-    
-    if (!noteDoc.exists()) {
-      throw new Error('Note not found');
-    }
-
+    const noteRef = doc(db, `users/${userId}/notes/${noteId}`);
     const updateData = {
       title: title.trim(),
       content: content.trim(),
       updatedAt: serverTimestamp(),
       weatherSnapshot,
+      sessionId: sessionId || null,
     };
 
     await updateDoc(noteRef, updateData);

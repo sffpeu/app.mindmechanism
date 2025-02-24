@@ -186,9 +186,9 @@ export default function NotesPage() {
     try {
       const weatherSnapshot = createWeatherSnapshot();
       if (selectedNote && isEditing) {
-        await editNote(selectedNote.id, noteTitle, noteContent, weatherSnapshot)
+        await editNote(selectedNote.id, noteTitle, noteContent, weatherSnapshot, selectedSessionId)
       } else {
-        const noteId = await addNote(noteTitle, noteContent, weatherSnapshot)
+        const noteId = await addNote(noteTitle, noteContent, weatherSnapshot, selectedSessionId)
         if (noteId) {
           console.log('Created note with ID:', noteId)
         }
@@ -471,6 +471,33 @@ export default function NotesPage() {
               )}
 
               <div className="space-y-4">
+                {/* Add Session Selector */}
+                {(!selectedNote || isEditing) && (
+                  <div className="flex flex-col space-y-2 bg-black/5 dark:bg-white/5 rounded-lg p-3">
+                    <label className="text-sm text-black/70 dark:text-white/70">Select Session</label>
+                    <Select
+                      value={selectedSessionId || ""}
+                      onValueChange={(value) => setSelectedSessionId(value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose a session" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">No session</SelectItem>
+                        {recentSessions.map((session) => (
+                          <SelectItem key={session.id} value={session.id}>
+                            <div className="flex flex-col">
+                              <span>{session.words.join(", ")}</span>
+                              <span className="text-xs text-gray-500">
+                                {new Date(session.timestamp).toLocaleString()}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <div className="flex items-center justify-between bg-black/5 dark:bg-white/5 rounded-lg p-3">
                   <input
                     type="text"
