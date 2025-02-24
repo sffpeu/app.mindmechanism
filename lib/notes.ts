@@ -58,6 +58,7 @@ export interface Note {
   createdAt: Timestamp;
   updatedAt: Timestamp;
   weatherSnapshot?: WeatherSnapshot;
+  sessionId?: string | null;
 }
 
 // Validation functions

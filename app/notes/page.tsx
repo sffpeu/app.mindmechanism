@@ -358,6 +358,45 @@ export default function NotesPage() {
                               </button>
                             </WeatherSnapshotPopover>
                           )}
+                          {note.sessionId && (
+                            <button 
+                              className="p-1 rounded-md hover:bg-purple-100 dark:hover:bg-purple-500/20 group transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const session = recentSessions.find(s => s.id === note.sessionId);
+                                if (session) {
+                                  toast({
+                                    title: "Session Information",
+                                    description: (
+                                      <div className="space-y-2 mt-2">
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-medium">{clockTitles[session.clock_id]}</span>
+                                          <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                            session.status === 'completed' 
+                                              ? 'bg-green-100 text-green-700'
+                                              : session.status === 'in_progress'
+                                              ? 'bg-blue-100 text-blue-700'
+                                              : 'bg-gray-100 text-gray-700'
+                                          }`}>
+                                            {session.status === 'completed' ? 'Completed' : session.status === 'in_progress' ? 'In Progress' : 'Aborted'}
+                                          </span>
+                                        </div>
+                                        <p className="text-sm">{session.words.join(", ")}</p>
+                                        <div className="text-xs text-gray-500">
+                                          Started: {session.start_time.toDate().toLocaleString()}
+                                        </div>
+                                        <div className="text-xs text-gray-500">
+                                          Duration: {Math.round(session.duration / 1000 / 60)} minutes
+                                        </div>
+                                      </div>
+                                    ),
+                                  });
+                                }
+                              }}
+                            >
+                              <Clock className="h-5 w-5 text-gray-500 group-hover:text-purple-500 dark:group-hover:text-purple-400 transition-colors" />
+                            </button>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-2 mt-1">
@@ -494,11 +533,28 @@ export default function NotesPage() {
                         <SelectItem value="none">No session</SelectItem>
                         {recentSessions.map((session) => (
                           <SelectItem key={session.id} value={session.id}>
-                            <div className="flex flex-col">
-                              <span>{session.words.join(", ")}</span>
-                              <span className="text-xs text-gray-500">
-                                {session.start_time.toDate().toLocaleString()}
-                              </span>
+                            <div className="flex flex-col space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{clockTitles[session.clock_id]}</span>
+                                <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                  session.status === 'completed' 
+                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                    : session.status === 'in_progress'
+                                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                    : 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400'
+                                }`}>
+                                  {session.status === 'completed' ? 'Completed' : session.status === 'in_progress' ? 'In Progress' : 'Aborted'}
+                                </span>
+                              </div>
+                              <span className="text-sm text-gray-600 dark:text-gray-300">{session.words.join(", ")}</span>
+                              <div className="flex items-center gap-2 text-xs text-gray-500">
+                                <Clock className="h-3 w-3" />
+                                <span>Started: {session.start_time.toDate().toLocaleString()}</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-xs text-gray-500">
+                                <Timer className="h-3 w-3" />
+                                <span>Duration: {Math.round(session.duration / 1000 / 60)} minutes</span>
+                              </div>
                             </div>
                           </SelectItem>
                         ))}
