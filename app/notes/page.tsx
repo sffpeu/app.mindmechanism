@@ -65,6 +65,18 @@ interface MoonData {
   moonset: string
 }
 
+const clockColors = [
+  'text-red-500 bg-red-500',
+  'text-orange-500 bg-orange-500',
+  'text-yellow-500 bg-yellow-500',
+  'text-green-500 bg-green-500',
+  'text-blue-500 bg-blue-500',
+  'text-pink-500 bg-pink-500',
+  'text-purple-500 bg-purple-500',
+  'text-indigo-500 bg-indigo-500',
+  'text-cyan-500 bg-cyan-500'
+]
+
 export default function NotesPage() {
   const { user } = useAuth()
   const { notes, isLoading, addNote, editNote, removeNote } = useNotes()
@@ -360,7 +372,7 @@ export default function NotesPage() {
                           )}
                           {note.sessionId && (
                             <button 
-                              className="p-1 rounded-md hover:bg-purple-100 dark:hover:bg-purple-500/20 group transition-colors"
+                              className="p-1 rounded-md group transition-colors"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 const session = recentSessions.find(s => s.id === note.sessionId);
@@ -370,7 +382,10 @@ export default function NotesPage() {
                                     description: (
                                       <div className="space-y-2 mt-2">
                                         <div className="flex items-center gap-2">
-                                          <span className="font-medium">{clockTitles[session.clock_id]}</span>
+                                          <div className={`w-2 h-2 rounded-full ${clockColors[session.clock_id].split(' ')[1]}`} />
+                                          <span className={`font-medium ${clockColors[session.clock_id].split(' ')[0]}`}>
+                                            {clockTitles[session.clock_id]}
+                                          </span>
                                           <span className={`text-xs px-2 py-0.5 rounded-full ${
                                             session.status === 'completed' 
                                               ? 'bg-green-100 text-green-700'
@@ -394,7 +409,18 @@ export default function NotesPage() {
                                 }
                               }}
                             >
-                              <Clock className="h-5 w-5 text-gray-500 group-hover:text-purple-500 dark:group-hover:text-purple-400 transition-colors" />
+                              {(() => {
+                                const session = recentSessions.find(s => s.id === note.sessionId);
+                                return (
+                                  <Clock 
+                                    className={`h-5 w-5 ${
+                                      session 
+                                        ? `${clockColors[session.clock_id].split(' ')[0]} group-hover:opacity-80` 
+                                        : 'text-gray-500 group-hover:text-gray-700'
+                                    } transition-colors`} 
+                                  />
+                                );
+                              })()}
                             </button>
                           )}
                         </div>
@@ -535,7 +561,10 @@ export default function NotesPage() {
                           <SelectItem key={session.id} value={session.id}>
                             <div className="flex flex-col space-y-1">
                               <div className="flex items-center gap-2">
-                                <span className="font-medium">{clockTitles[session.clock_id]}</span>
+                                <div className={`w-2 h-2 rounded-full ${clockColors[session.clock_id].split(' ')[1]}`} />
+                                <span className={`font-medium ${clockColors[session.clock_id].split(' ')[0]}`}>
+                                  {clockTitles[session.clock_id]}
+                                </span>
                                 <span className={`text-xs px-2 py-0.5 rounded-full ${
                                   session.status === 'completed' 
                                     ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
