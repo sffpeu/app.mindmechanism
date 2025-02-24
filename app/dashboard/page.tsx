@@ -30,6 +30,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Session as BaseSession } from '@/lib/sessions'
+import { useLocation } from '@/lib/hooks/useLocation'
 
 interface WeatherResponse {
   location: {
@@ -160,8 +161,9 @@ export default function DashboardPage() {
   const [moon, setMoon] = useState<MoonData | null>(null)
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
   const { isDarkMode } = useTheme()
-  const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null)
-  const [locationError, setLocationError] = useState<string | null>(null)
+  const [isWeatherLoading, setIsWeatherLoading] = useState(false)
+  const [weatherError, setWeatherError] = useState<string | null>(null)
+  const { location, error: locationError, isLoading: isLocationLoading } = useLocation()
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
   const { notes, isLoading: notesLoading, addNote, editNote, removeNote } = useNotes()
@@ -191,8 +193,6 @@ export default function DashboardPage() {
   const [showRecentSessions, setShowRecentSessions] = useState(true)
   const [isInitializing, setIsInitializing] = useState(true)
   const [authError, setAuthError] = useState<string | null>(null)
-  const [weatherError, setWeatherError] = useState<string | null>(null)
-  const [isWeatherLoading, setIsWeatherLoading] = useState(false)
 
   const getAQIDescription = (index: number) => {
     const descriptions = {
@@ -249,41 +249,6 @@ export default function DashboardPage() {
     return () => clearInterval(timer)
   }, [mounted])
 
-  // Request location permission and get coordinates
-  useEffect(() => {
-    if (!mounted) return;
-
-    const getLocation = () => {
-      if ('geolocation' in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            setLocation({
-              lat: position.coords.latitude,
-              lon: position.coords.longitude,
-            });
-            setLocationError(null);
-          },
-          (error) => {
-            console.error('Error getting location:', error);
-            // Don't show error to user, just fall back to IP-based location
-            setLocation(null);
-            setLocationError(null);
-          },
-          {
-            enableHighAccuracy: true,
-            timeout: 5000,
-            maximumAge: 0
-          }
-        );
-      } else {
-        setLocation(null);
-        setLocationError(null);
-      }
-    };
-
-    getLocation();
-  }, [mounted]);
-
   // Fetch weather and moon data
   useEffect(() => {
     if (!mounted) return;
@@ -293,7 +258,7 @@ export default function DashboardPage() {
       try {
         const weatherRes = await fetch(
           `https://api.weatherapi.com/v1/current.json?key=6cb652a81cb64a19a84103447252001&q=${
-            location ? `${location.lat},${location.lon}` : 'auto:ip'
+            location?.coords ? `${location.coords.lat},${location.coords.lon}` : 'auto:ip'
           }&aqi=yes`
         );
         if (!weatherRes.ok) {
@@ -305,7 +270,7 @@ export default function DashboardPage() {
 
         const astronomyRes = await fetch(
           `https://api.weatherapi.com/v1/astronomy.json?key=6cb652a81cb64a19a84103447252001&q=${
-            location ? `${location.lat},${location.lon}` : 'auto:ip'
+            location?.coords ? `${location.coords.lat},${location.coords.lon}` : 'auto:ip'
           }`
         );
         if (!astronomyRes.ok) {
@@ -324,7 +289,7 @@ export default function DashboardPage() {
     fetchData();
     const interval = setInterval(fetchData, 5 * 60 * 1000); // Update every 5 minutes
     return () => clearInterval(interval);
-  }, [mounted, location]);
+  }, [mounted, location?.coords]);
 
   // Handle authentication and initialization
   useEffect(() => {
@@ -663,7 +628,7 @@ export default function DashboardPage() {
                         <Wifi className="h-4 w-4 text-gray-600 dark:text-gray-300" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium dark:text-white">Mindmechanism</p>
+                        <p className="text-sm font-medium dark:text-white">M13 Mechanism</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">No device connected</p>
                       </div>
                     </div>

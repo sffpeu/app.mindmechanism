@@ -26,7 +26,7 @@ export default function HomePage() {
         <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 p-8 mb-8">
           <div className="relative z-10">
             <h1 className="text-4xl font-bold text-black dark:text-white mb-4">
-              Welcome to Mind Mechanism
+              Welcome to M13 Mechanism
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-2xl">
               Explore a unique meditation experience with our innovative clock interface. Track your progress, discover insights, and enhance your practice.

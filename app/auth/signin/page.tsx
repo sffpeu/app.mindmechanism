@@ -31,7 +31,7 @@ export default function SignIn() {
           transition={{ duration: 0.5 }}
           className="bg-white dark:bg-black/40 backdrop-blur-lg rounded-xl p-8 shadow-lg border border-black/5 dark:border-white/10"
         >
-          <h2 className="text-2xl font-bold text-center mb-6 dark:text-white">Welcome to Mind Mechanism</h2>
+          <h2 className="text-2xl font-bold text-center mb-6 dark:text-white">Welcome to M13 Mechanism</h2>
           <p className="text-gray-600 dark:text-gray-400 text-center mb-8">
             Sign in to track your meditation journey and save your progress
           </p>

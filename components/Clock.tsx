@@ -10,6 +10,8 @@ import { motion } from 'framer-motion';
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { updateSession, updateSessionActivity, pauseSession } from '@/lib/sessions'
 import { toast } from 'react-hot-toast';
+import { useLocation } from '@/lib/hooks/useLocation';
+import { Timestamp } from 'firebase/firestore';
 
 const dotColors = [
   'bg-[#fd290a]', // 1. Red
@@ -195,6 +197,7 @@ export default function Clock({
   const [pausedTimeRemaining, setPausedTimeRemaining] = useState<number | null>(null);
   const [initialDuration, setInitialDuration] = useState<number | null>(null);
   const { user } = useAuth() as { user: { uid: string } | null }
+  const { location } = useLocation();
   const searchParams = new URLSearchParams(window.location.search);
   const duration = searchParams.get('duration');
   const sessionId = searchParams.get('sessionId');

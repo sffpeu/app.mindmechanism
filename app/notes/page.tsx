@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select"
 import { getUserSessions } from '@/lib/sessions'
 import { Session } from '@/lib/sessions'
+import { useLocation } from '@/lib/hooks/useLocation'
 
 interface WeatherResponse {
   location: {
@@ -68,6 +69,7 @@ export default function NotesPage() {
   const { user } = useAuth()
   const { notes, isLoading, addNote, editNote, removeNote } = useNotes()
   const [showElements, setShowElements] = useState(true)
+  const { location, error: locationError, isLoading: isLocationLoading } = useLocation()
   const [showSatellites, setShowSatellites] = useState(false)
   const [noteTitle, setNoteTitle] = useState('')
   const [noteContent, setNoteContent] = useState('')
@@ -78,8 +80,6 @@ export default function NotesPage() {
   const { isDarkMode } = useTheme()
   const [weatherData, setWeatherData] = useState<WeatherResponse | null>(null)
   const [moon, setMoon] = useState<MoonData | null>(null)
-  const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null)
-  const [locationError, setLocationError] = useState<string | null>(null)
   const [recentSessions, setRecentSessions] = useState<Session[]>([])
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null)
 
@@ -95,26 +95,19 @@ export default function NotesPage() {
     "Medieval Observations"
   ]
 
-  // Request location permission and get coordinates
+  // Load recent sessions
   useEffect(() => {
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLocation({
-            lat: position.coords.latitude,
-            lon: position.coords.longitude,
-          });
-          setLocationError(null);
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-          setLocationError('Unable to get your location. Using IP-based location instead.');
-        }
-      );
-    } else {
-      setLocationError('Geolocation is not supported by your browser. Using IP-based location instead.');
-    }
-  }, []);
+    const loadSessions = async () => {
+      if (!user) return;
+      try {
+        const sessions = await getUserSessions(user.uid);
+        setRecentSessions(sessions);
+      } catch (error) {
+        console.error('Error loading sessions:', error);
+      }
+    };
+    loadSessions();
+  }, [user]);
 
   // Fetch weather and moon data
   useEffect(() => {
@@ -122,7 +115,7 @@ export default function NotesPage() {
       try {
         const weatherRes = await fetch(
           `https://api.weatherapi.com/v1/current.json?key=6cb652a81cb64a19a84103447252001&q=${
-            location ? `${location.lat},${location.lon}` : 'auto:ip'
+            location?.coords ? `${location.coords.lat},${location.coords.lon}` : 'auto:ip'
           }&aqi=yes`
         );
         if (!weatherRes.ok) {
@@ -133,7 +126,7 @@ export default function NotesPage() {
 
         const astronomyRes = await fetch(
           `https://api.weatherapi.com/v1/astronomy.json?key=6cb652a81cb64a19a84103447252001&q=${
-            location ? `${location.lat},${location.lon}` : 'auto:ip'
+            location?.coords ? `${location.coords.lat},${location.coords.lon}` : 'auto:ip'
           }`
         );
         if (!astronomyRes.ok) {
@@ -149,21 +142,7 @@ export default function NotesPage() {
     fetchData();
     const interval = setInterval(fetchData, 5 * 60 * 1000); // Update every 5 minutes
     return () => clearInterval(interval);
-  }, [location]);
-
-  // Load recent sessions
-  useEffect(() => {
-    const loadSessions = async () => {
-      if (!user) return;
-      try {
-        const sessions = await getUserSessions(user.uid);
-        setRecentSessions(sessions);
-      } catch (error) {
-        console.error('Error loading sessions:', error);
-      }
-    };
-    loadSessions();
-  }, [user]);
+  }, [location?.coords]);
 
   const createWeatherSnapshot = (): WeatherSnapshot | undefined => {
     if (!weatherData || !moon) return undefined;
