@@ -81,7 +81,7 @@ export default function NotesPage() {
   const [weatherData, setWeatherData] = useState<WeatherResponse | null>(null)
   const [moon, setMoon] = useState<MoonData | null>(null)
   const [recentSessions, setRecentSessions] = useState<Session[]>([])
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null)
+  const [selectedSessionId, setSelectedSessionId] = useState<string>('none')
 
   const clockTitles = [
     "Galileo's First Observation",
@@ -104,6 +104,11 @@ export default function NotesPage() {
         setRecentSessions(sessions);
       } catch (error) {
         console.error('Error loading sessions:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load recent sessions"
+        });
+        setRecentSessions([]);
       }
     };
     loadSessions();
@@ -185,10 +190,12 @@ export default function NotesPage() {
 
     try {
       const weatherSnapshot = createWeatherSnapshot();
+      const finalSessionId = selectedSessionId === "none" ? null : selectedSessionId;
+      
       if (selectedNote && isEditing) {
-        await editNote(selectedNote.id, noteTitle, noteContent, weatherSnapshot, selectedSessionId)
+        await editNote(selectedNote.id, noteTitle, noteContent, weatherSnapshot, finalSessionId)
       } else {
-        const noteId = await addNote(noteTitle, noteContent, weatherSnapshot, selectedSessionId)
+        const noteId = await addNote(noteTitle, noteContent, weatherSnapshot, finalSessionId)
         if (noteId) {
           console.log('Created note with ID:', noteId)
         }
@@ -231,6 +238,7 @@ export default function NotesPage() {
     setNoteContent('')
     setSelectedNote(null)
     setIsEditing(false)
+    setSelectedSessionId('none')
   }
 
   const handleNoteClick = (note: Note) => {
@@ -476,14 +484,14 @@ export default function NotesPage() {
                   <div className="flex flex-col space-y-2 bg-black/5 dark:bg-white/5 rounded-lg p-3">
                     <label className="text-sm text-black/70 dark:text-white/70">Select Session</label>
                     <Select
-                      value={selectedSessionId || ""}
+                      value={selectedSessionId}
                       onValueChange={(value) => setSelectedSessionId(value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Choose a session" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">No session</SelectItem>
+                        <SelectItem value="none">No session</SelectItem>
                         {recentSessions.map((session) => (
                           <SelectItem key={session.id} value={session.id}>
                             <div className="flex flex-col">
