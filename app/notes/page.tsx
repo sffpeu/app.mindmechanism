@@ -489,7 +489,7 @@ export default function NotesPage() {
                             <div className="flex flex-col">
                               <span>{session.words.join(", ")}</span>
                               <span className="text-xs text-gray-500">
-                                {new Date(session.timestamp).toLocaleString()}
+                                {session.start_time.toDate().toLocaleString()}
                               </span>
                             </div>
                           </SelectItem>
