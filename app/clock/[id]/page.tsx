@@ -307,46 +307,42 @@ export default function ClockPage() {
     if (!words.length || !showWordList) return null;
 
     return (
-      <>
-        {/* Word list panel with animation */}
-        <div 
-          className={`fixed left-0 top-16 z-50 transition-all duration-300 ease-in-out transform ${
-            isWordListVisible ? 'translate-x-0' : '-translate-x-[calc(100%-24px)]'
-          }`}
-        >
-          <div className="bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/10 dark:border-white/10 rounded-lg p-3 w-48 relative">
-            {/* Minimize/Expand button */}
-            <button
-              onClick={() => setIsWordListVisible(!isWordListVisible)}
-              className="absolute -right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors"
-              aria-label={isWordListVisible ? "Minimize word list" : "Expand word list"}
-            >
-              {isWordListVisible ? (
-                <ChevronLeft className="h-4 w-4 text-gray-700 dark:text-gray-300" />
-              ) : (
-                <ChevronRight className="h-4 w-4 text-gray-700 dark:text-gray-300" />
-              )}
-            </button>
+      <div 
+        className={`fixed left-0 top-16 z-50 transition-all duration-300 ease-in-out transform ${
+          isWordListVisible ? 'translate-x-0' : '-translate-x-[calc(100%-24px)]'
+        }`}
+      >
+        <div className="bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/10 dark:border-white/10 rounded-lg p-3 w-48 relative">
+          <button
+            onClick={() => setIsWordListVisible(!isWordListVisible)}
+            className="absolute -right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors"
+            aria-label={isWordListVisible ? "Minimize word list" : "Expand word list"}
+          >
+            {isWordListVisible ? (
+              <ChevronLeft className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+            ) : (
+              <ChevronRight className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+            )}
+          </button>
 
-            <div className="flex items-center mb-2">
-              <h3 className="text-xs font-medium text-black/90 dark:text-white/90">Focus Words</h3>
-            </div>
-            <div className="space-y-1.5">
-              {words.map((word: string, index: number) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-                >
-                  <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-medium ${clockColors[id].split(' ')[1]} text-white`}>
-                    {index + 1}
-                  </div>
-                  <span className="text-xs font-medium text-black/90 dark:text-white/90">{word}</span>
+          <div className="flex items-center mb-2">
+            <h3 className="text-xs font-medium text-black/90 dark:text-white/90">Focus Words</h3>
+          </div>
+          <div className="space-y-1.5">
+            {words.map((word: string, index: number) => (
+              <div
+                key={index}
+                className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+              >
+                <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-medium ${clockColors[id].split(' ')[1]} text-white`}>
+                  {index + 1}
                 </div>
-              ))}
-            </div>
+                <span className="text-xs font-medium text-black/90 dark:text-white/90">{word}</span>
+              </div>
+            ))}
           </div>
         </div>
-      </>
+      </div>
     );
   };
 

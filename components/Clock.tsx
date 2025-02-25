@@ -519,12 +519,14 @@ export default function Clock({
         {Array.from({ length: Math.max(0, clockFocusNodes || 0) }).map((_, index) => {
           const angle = ((360 / Math.max(1, clockFocusNodes || 1)) * index + clockStartingDegree) % 360;
           const radians = angle * (Math.PI / 180);
-          const radius = isMultiView ? 53 : 55;
-          const x = 50 + radius * Math.cos(radians);
-          const y = 50 + radius * Math.sin(radians);
           
-          // Calculate position for the word label (slightly outside the node)
-          const labelRadius = radius + 8; // Increased radius for the label
+          // Calculate node position
+          const nodeRadius = isMultiView ? 53 : 55;
+          const x = 50 + nodeRadius * Math.cos(radians);
+          const y = 50 + nodeRadius * Math.sin(radians);
+          
+          // Calculate word label position (slightly outside the node)
+          const labelRadius = nodeRadius + 8;
           const labelX = 50 + labelRadius * Math.cos(radians);
           const labelY = 50 + labelRadius * Math.sin(radians);
           
@@ -533,6 +535,7 @@ export default function Clock({
 
           return (
             <div key={`${clockId}-${index}`} className="absolute">
+              {/* Focus Node */}
               <motion.div
                 className={`absolute ${isMultiView ? 'w-2 h-2' : 'w-3 h-3'} rounded-full cursor-pointer`}
                 style={{
@@ -541,7 +544,10 @@ export default function Clock({
                   ...getFocusNodeStyle(index, isMultiView),
                 }}
                 onClick={() => handleNodeClick(index)}
+                whileHover={{ scale: 1.2 }}
               />
+              
+              {/* Word Label */}
               {word && (
                 <motion.div
                   className="absolute whitespace-nowrap pointer-events-none"
@@ -572,7 +578,6 @@ export default function Clock({
   };
 
   const renderWordDisplay = () => {
-    // We don't need this anymore since words are shown next to nodes
     return null;
   };
 
