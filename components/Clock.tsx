@@ -522,18 +522,49 @@ export default function Clock({
           const radius = isMultiView ? 53 : 55;
           const x = 50 + radius * Math.cos(radians);
           const y = 50 + radius * Math.sin(radians);
+          
+          // Calculate position for the word label (slightly outside the node)
+          const labelRadius = radius + 8; // Increased radius for the label
+          const labelX = 50 + labelRadius * Math.cos(radians);
+          const labelY = 50 + labelRadius * Math.sin(radians);
+          
+          const isSelected = selectedNodeIndex === index;
+          const word = customWords?.[index];
 
           return (
-            <motion.div
-              key={`${clockId}-${index}`}
-              className={`absolute ${isMultiView ? 'w-2 h-2' : 'w-3 h-3'} rounded-full cursor-pointer`}
-              style={{
-                left: `${x}%`,
-                top: `${y}%`,
-                ...getFocusNodeStyle(index, isMultiView),
-              }}
-              onClick={() => handleNodeClick(index)}
-            />
+            <div key={`${clockId}-${index}`} className="absolute">
+              <motion.div
+                className={`absolute ${isMultiView ? 'w-2 h-2' : 'w-3 h-3'} rounded-full cursor-pointer`}
+                style={{
+                  left: `${x}%`,
+                  top: `${y}%`,
+                  ...getFocusNodeStyle(index, isMultiView),
+                }}
+                onClick={() => handleNodeClick(index)}
+              />
+              {word && (
+                <motion.div
+                  className="absolute whitespace-nowrap pointer-events-none"
+                  style={{
+                    left: `${labelX}%`,
+                    top: `${labelY}%`,
+                    transform: `translate(-50%, -50%) rotate(${angle > 90 && angle < 270 ? angle + 180 : angle}deg)`,
+                    transformOrigin: 'center',
+                    zIndex: isSelected ? 401 : 201,
+                  }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: isSelected ? 1 : 0.7 }}
+                  whileHover={{ opacity: 1 }}
+                >
+                  <div 
+                    className={`px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
+                    ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all`}
+                  >
+                    <span className="text-black/90 dark:text-white/90">{word}</span>
+                  </div>
+                </motion.div>
+              )}
+            </div>
           );
         })}
       </div>
@@ -541,29 +572,8 @@ export default function Clock({
   };
 
   const renderWordDisplay = () => {
-    if (selectedNodeIndex === null || !customWords || !customWords[selectedNodeIndex]) return null;
-
-    return (
-      <motion.div
-        className="absolute inset-0 flex items-center justify-center pointer-events-none"
-        style={{ zIndex: 1000 }}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.8 }}
-      >
-        <motion.div
-          className="bg-white/90 dark:bg-black/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-lg"
-          style={{
-            transform: `rotate(${rotation}deg)`,
-            transformOrigin: 'center',
-          }}
-        >
-          <p className="text-sm font-medium text-black dark:text-white whitespace-nowrap">
-            {customWords[selectedNodeIndex]}
-          </p>
-        </motion.div>
-      </motion.div>
-    );
+    // We don't need this anymore since words are shown next to nodes
+    return null;
   };
 
   const getTransitionConfig = () => ({
@@ -1133,22 +1143,11 @@ export default function Clock({
 
 function getElapsedTime(currentDate: Date, startDateTime: Date): string {
   const elapsed = currentDate.getTime() - startDateTime.getTime();
-  const days = Math.floor(elapsed / (24 * 60 * 60 * 1000));
-  
-  // If more than 365 days, show years
-  if (days >= 365) {
-    const years = Math.floor(days / 365);
-    const remainingDays = days % 365;
-    const hours = Math.floor((elapsed % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
-    const minutes = Math.floor((elapsed % (60 * 60 * 1000)) / (60 * 1000));
-    const seconds = Math.floor((elapsed % (60 * 1000)) / 1000);
-    return `${years}y ${remainingDays}d ${hours}h ${minutes}m ${seconds}s`;
-  }
-  
-  // Otherwise show days as before
+  const years = Math.floor(elapsed / (365 * 24 * 60 * 60 * 1000));
+  const remainingDays = Math.floor((elapsed % (365 * 24 * 60 * 60 * 1000)) / (24 * 60 * 60 * 1000));
   const hours = Math.floor((elapsed % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
   const minutes = Math.floor((elapsed % (60 * 60 * 1000)) / (60 * 1000));
   const seconds = Math.floor((elapsed % (60 * 1000)) / 1000);
-  return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+  return `${years}y ${remainingDays}d ${hours}h ${minutes}m ${seconds}s`;
 }
 
