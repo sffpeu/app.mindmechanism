@@ -22,6 +22,7 @@ import {
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import Timer from '@/components/Timer'
 import { pauseSession, updateSessionActivity, updateSession } from '@/lib/sessions'
+import { motion } from 'framer-motion'
 
 interface WeatherResponse {
   location: {
@@ -407,20 +408,42 @@ export default function ClockPage() {
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <p className="text-xs font-medium text-black/60 dark:text-white/60">Rotation</p>
-                      <p className="text-sm font-medium text-black/90 dark:text-white/90">
-                        {clockInfo.rotation.toFixed(3)}°
-                      </p>
+                      <motion.p 
+                        className="text-sm font-medium text-black/90 dark:text-white/90"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                      >
+                        <motion.span
+                          initial={{ scale: 0.8, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          key={clockInfo.rotation}
+                          transition={{ type: "spring", damping: 10, stiffness: 100 }}
+                        >
+                          {clockInfo.rotation.toFixed(3)}°
+                        </motion.span>
+                      </motion.p>
                     </div>
                     <div>
                       <p className="text-xs font-medium text-black/60 dark:text-white/60">R. Complete</p>
-                      <p className="text-sm font-medium text-black/90 dark:text-white/90">
-                        {clockInfo.rotationsCompleted}
-                      </p>
+                      <motion.p 
+                        className="text-sm font-medium text-black/90 dark:text-white/90"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                      >
+                        <motion.span
+                          initial={{ scale: 0.8, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          key={clockInfo.rotationsCompleted}
+                          transition={{ type: "spring", damping: 10, stiffness: 100 }}
+                        >
+                          {clockInfo.rotationsCompleted}
+                        </motion.span>
+                      </motion.p>
                     </div>
                   </div>
                   <div>
                     <p className="text-xs font-medium text-black/60 dark:text-white/60">Elapsed</p>
-                    <p className="text-sm font-medium text-black/90 dark:text-white/90">
+                    <p className="text-sm font-medium text-black/90 dark:text-white/90 font-mono">
                       {clockInfo.elapsedTime}
                     </p>
                   </div>
@@ -445,9 +468,20 @@ export default function ClockPage() {
                   {weatherData && (
                     <div>
                       <p className="text-xs font-medium text-black/60 dark:text-white/60">Weather</p>
-                      <p className="text-sm font-medium text-black/90 dark:text-white/90">
-                        {weatherData.current.temp_c}°C · {weatherData.current.condition.text}
-                      </p>
+                      <motion.p 
+                        className="text-sm font-medium text-black/90 dark:text-white/90"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                      >
+                        <motion.span
+                          initial={{ scale: 0.8, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          key={weatherData.current.temp_c}
+                          transition={{ type: "spring", damping: 10, stiffness: 100 }}
+                        >
+                          {weatherData.current.temp_c}°C · {weatherData.current.condition.text}
+                        </motion.span>
+                      </motion.p>
                     </div>
                   )}
                   {moon && (
