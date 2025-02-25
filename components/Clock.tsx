@@ -823,23 +823,6 @@ export default function Clock({
     );
   };
 
-  function InfoCard({ icon, title, value, onHide }: { icon: React.ReactNode; title: string; value: string; onHide: () => void }) {
-    return (
-      <Card 
-        className="bg-white/80 dark:bg-black/80 backdrop-blur-sm cursor-pointer hover:bg-white/90 dark:hover:bg-black/90 transition-colors"
-        onClick={onHide}
-      >
-        <CardContent className="flex items-center p-1.5">
-          <div className="mr-2 text-gray-500 dark:text-gray-400 flex-shrink-0">{icon}</div>
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 truncate">{title}</p>
-            <p className="text-sm font-semibold truncate dark:text-white">{value}</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   // Update other states less frequently
   useEffect(() => {
     const interval = setInterval(() => {
@@ -1116,58 +1099,17 @@ export default function Clock({
 
       <div className="w-full max-w-[1000px] mx-auto mb-2 px-3 relative">
         {showElements && (
-          <>
-            <div className="flex justify-center gap-2 mb-2">
-              <motion.button
-                onClick={() => {
-                  if (!infoCardsHiddenByNode) {
-                    setShowInfoCards(prev => !prev);
-                  }
-                }}
-                className="w-20 h-1 rounded-full bg-gray-200 dark:bg-gray-700 shadow-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300 ease-out"
-                whileHover={{ scaleX: 1.2 }}
-              />
-            </div>
-            <motion.div 
-              className="h-[60px] flex items-center justify-center overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800"
-              initial={false}
-              animate={{ 
-                height: showInfoCards ? "60px" : "0px",
-                opacity: showInfoCards ? 1 : 0,
-                y: showInfoCards ? 0 : 20
+          <div className="flex justify-center gap-2 mb-2">
+            <motion.button
+              onClick={() => {
+                if (!infoCardsHiddenByNode) {
+                  setShowInfoCards(prev => !prev);
+                }
               }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-            >
-              <div className="w-full">
-                <div className="flex justify-start items-center gap-1.5 px-2">
-                  <div className="shrink-0">
-                    <InfoCard icon={<ClockIcon className="h-4 w-4" />} title="Current" value={currentTime.toLocaleTimeString()} onHide={() => setShowInfoCards(false)} />
-                  </div>
-                  <div className="shrink-0">
-                    <InfoCard icon={<Calendar className="h-4 w-4" />} title="Started" value={startDateTime.toLocaleDateString()} onHide={() => setShowInfoCards(false)} />
-                  </div>
-                  <div className="shrink-0">
-                    <InfoCard icon={<RotateCw className="h-4 w-4" />} title="Rotation" value={`${rotationDirection === 'clockwise' ? '+' : ''}${rotation.toFixed(3)}°`} onHide={() => setShowInfoCards(false)} />
-                  </div>
-                  <div className="shrink-0">
-                    <InfoCard icon={<Repeat className="h-4 w-4" />} title="R. Complete" value={rotationsCompleted.toString()} onHide={() => setShowInfoCards(false)} />
-                  </div>
-                  <div className="shrink-0">
-                    <InfoCard icon={<Timer className="h-4 w-4" />} title="Elapsed" value={elapsedTime} onHide={() => setShowInfoCards(false)} />
-                  </div>
-                  <div className="shrink-0">
-                    <InfoCard icon={<Compass className="h-4 w-4" />} title="Start °" value={`${startingDegree.toFixed(1)}°`} onHide={() => setShowInfoCards(false)} />
-                  </div>
-                  <div className="shrink-0">
-                    <InfoCard icon={<RotateCw className="h-4 w-4" />} title="Rot. Time" value={`${rotationTime / 1000}s`} onHide={() => setShowInfoCards(false)} />
-                  </div>
-                  <div className="shrink-0">
-                    <InfoCard icon={<div className={`w-4 h-4 ${dotColors[id % dotColors.length]} rounded-full`} />} title="Focus Nodes" value={focusNodes.toString()} onHide={() => setShowInfoCards(false)} />
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </>
+              className="w-20 h-1 rounded-full bg-gray-200 dark:bg-gray-700 shadow-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300 ease-out"
+              whileHover={{ scaleX: 1.2 }}
+            />
+          </div>
         )}
       </div>
     </div>
