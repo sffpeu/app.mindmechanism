@@ -104,6 +104,11 @@ export default function ClockPage() {
   const [showWordList, setShowWordList] = useState(true);
   const [isWordListVisible, setIsWordListVisible] = useState(true);
   const [areInfoCardsVisible, setAreInfoCardsVisible] = useState(true);
+  const [clockInfo, setClockInfo] = useState({
+    rotation: 0,
+    rotationsCompleted: 0,
+    elapsedTime: '0y 0d 0h 0m 0s'
+  });
 
   // Add time tracking
   useTimeTracking(user?.uid, `clock-${params.id}`)
@@ -382,21 +387,78 @@ export default function ClockPage() {
                 )}
               </button>
 
-              <div className="space-y-2">
-                {weatherData && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-black/90 dark:text-white/90">
-                      {weatherData.current.temp_c}°C · {weatherData.current.condition.text}
-                    </span>
+              <div className="space-y-3">
+                {/* Clock Information */}
+                <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <p className="text-xs font-medium text-black/60 dark:text-white/60">Current</p>
+                      <p className="text-sm font-medium text-black/90 dark:text-white/90">
+                        {currentTime.toLocaleTimeString()}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-black/60 dark:text-white/60">Started</p>
+                      <p className="text-sm font-medium text-black/90 dark:text-white/90">
+                        {localClockSettings.startDateTime.toLocaleDateString()}
+                      </p>
+                    </div>
                   </div>
-                )}
-                {moon && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-black/90 dark:text-white/90">
-                      Moon Phase: {moon.moon_phase}
-                    </span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <p className="text-xs font-medium text-black/60 dark:text-white/60">Rotation</p>
+                      <p className="text-sm font-medium text-black/90 dark:text-white/90">
+                        {clockInfo.rotation.toFixed(3)}°
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-black/60 dark:text-white/60">R. Complete</p>
+                      <p className="text-sm font-medium text-black/90 dark:text-white/90">
+                        {clockInfo.rotationsCompleted}
+                      </p>
+                    </div>
                   </div>
-                )}
+                  <div>
+                    <p className="text-xs font-medium text-black/60 dark:text-white/60">Elapsed</p>
+                    <p className="text-sm font-medium text-black/90 dark:text-white/90">
+                      {clockInfo.elapsedTime}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <p className="text-xs font-medium text-black/60 dark:text-white/60">Start °</p>
+                      <p className="text-sm font-medium text-black/90 dark:text-white/90">
+                        {localClockSettings.startingDegree.toFixed(1)}°
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-black/60 dark:text-white/60">Rot. Time</p>
+                      <p className="text-sm font-medium text-black/90 dark:text-white/90">
+                        {localClockSettings.rotationTime / 1000}s
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Weather and Moon Information */}
+                <div className="space-y-2">
+                  {weatherData && (
+                    <div>
+                      <p className="text-xs font-medium text-black/60 dark:text-white/60">Weather</p>
+                      <p className="text-sm font-medium text-black/90 dark:text-white/90">
+                        {weatherData.current.temp_c}°C · {weatherData.current.condition.text}
+                      </p>
+                    </div>
+                  )}
+                  {moon && (
+                    <div>
+                      <p className="text-xs font-medium text-black/60 dark:text-white/60">Moon Phase</p>
+                      <p className="text-sm font-medium text-black/90 dark:text-white/90">
+                        {moon.moon_phase}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -478,6 +540,7 @@ export default function ClockPage() {
           isMultiView2={false}
           allClocks={clockSettings}
           customWords={words}
+          onInfoUpdate={setClockInfo}
         />
         {showSettings && (
           <ClockSettings

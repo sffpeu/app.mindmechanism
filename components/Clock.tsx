@@ -111,6 +111,11 @@ interface ClockProps extends Partial<ClockSettings> {
   hideControls?: boolean;
   showSatellites?: boolean;
   showInfo?: boolean;
+  onInfoUpdate?: (info: {
+    rotation: number;
+    rotationsCompleted: number;
+    elapsedTime: string;
+  }) => void;
 }
 
 // Update the display state type
@@ -173,7 +178,8 @@ export default function Clock({
   hideControls = false,
   showSatellites = true,
   showInfo = true,
-  customWords = []
+  customWords = [],
+  onInfoUpdate
 }: ClockProps) {
   if (!(startDateTime instanceof Date) || isNaN(startDateTime.getTime())) {
     console.error(`Invalid startDateTime for clock ${id}:`, startDateTime);
@@ -833,6 +839,28 @@ export default function Clock({
       </Card>
     );
   }
+
+  // Update other states less frequently
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const elapsedMilliseconds = now - startDateTime.getTime();
+      const calculatedRotation = (elapsedMilliseconds / rotationTime) * 360;
+      const currentRotation = rotationDirection === 'clockwise'
+        ? (startingDegree + calculatedRotation) % 360
+        : (startingDegree - calculatedRotation + 360) % 360;
+      const rotationsCount = Math.floor(Math.abs(calculatedRotation) / 360);
+      const timeElapsed = getElapsedTime(new Date(now), startDateTime);
+
+      onInfoUpdate?.({
+        rotation: currentRotation,
+        rotationsCompleted: rotationsCount,
+        elapsedTime: timeElapsed,
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [startDateTime, rotationTime, startingDegree, rotationDirection, onInfoUpdate]);
 
   if (isMultiView || isMultiView2) {
     return (
