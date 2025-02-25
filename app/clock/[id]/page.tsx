@@ -314,7 +314,7 @@ export default function ClockPage() {
             isWordListVisible ? 'translate-x-0' : '-translate-x-[calc(100%-24px)]'
           }`}
         >
-          <div className="bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/10 dark:border-white/10 rounded-lg p-4 w-64 relative">
+          <div className="bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/10 dark:border-white/10 rounded-lg p-4 w-72 relative">
             {/* Minimize/Expand button */}
             <button
               onClick={() => setIsWordListVisible(!isWordListVisible)}
@@ -328,19 +328,24 @@ export default function ClockPage() {
               )}
             </button>
 
-            <div className="flex items-center mb-3">
+            <div className="flex items-center mb-4">
               <h3 className="text-sm font-medium text-black/90 dark:text-white/90">Assigned Words</h3>
             </div>
-            <div className="space-y-2">
+            <div className="grid gap-3">
               {words.map((word: string, index: number) => (
                 <div
                   key={index}
-                  className="flex items-center gap-2 p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                  className="bg-white/50 dark:bg-white/5 backdrop-blur-sm border border-black/5 dark:border-white/10 rounded-lg p-3 hover:bg-white/70 dark:hover:bg-white/10 transition-all shadow-sm hover:shadow-md"
                 >
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium ${clockColors[id].split(' ')[1]} text-white`}>
-                    {index + 1}
+                  <div className="flex items-center gap-3">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${clockColors[id].split(' ')[1]} text-white shadow-sm`}>
+                      {index + 1}
+                    </div>
+                    <div className="flex-1">
+                      <span className="text-base font-medium text-black/90 dark:text-white/90">{word}</span>
+                      <div className="mt-1 text-xs text-black/60 dark:text-white/60">Focus point {index + 1}</div>
+                    </div>
                   </div>
-                  <span className="text-sm text-black/90 dark:text-white/90">{word}</span>
                 </div>
               ))}
             </div>
