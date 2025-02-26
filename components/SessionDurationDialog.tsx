@@ -11,6 +11,7 @@ import { GlossaryWord } from '@/types/Glossary'
 import { getClockWords } from '@/lib/glossary'
 import { supabase } from '@/lib/supabase'
 import { HintPopup } from '@/components/ui/hint-popup'
+import { defaultClockWords } from '@/lib/defaultWords'
 
 interface SessionDurationDialogProps {
   open: boolean
@@ -188,24 +189,19 @@ export function SessionDurationDialog({
   }
 
   const handleRandomDefaultWords = () => {
-    const availableDefaultWords = glossaryWords.filter(word => 
-      !words.includes(word.word) && word.version === 'Default'
-    )
-    if (availableDefaultWords.length === 0) return
+    const clockDefaultWords = defaultClockWords[clockId] || [];
+    if (clockDefaultWords.length === 0) return;
 
-    const emptySlots = words.map((word, index) => word ? null : index).filter(index => index !== null) as number[]
-    if (emptySlots.length === 0) return
+    const emptySlots = words.map((word, index) => word ? null : index).filter(index => index !== null) as number[];
+    if (emptySlots.length === 0) return;
 
-    const newWords = [...words]
-    emptySlots.forEach(slotIndex => {
-      const randomIndex = Math.floor(Math.random() * availableDefaultWords.length)
-      const randomWord = availableDefaultWords[randomIndex]
-      if (randomWord) {
-        newWords[slotIndex] = randomWord.word
-        availableDefaultWords.splice(randomIndex, 1)
+    const newWords = [...words];
+    emptySlots.forEach((slotIndex, index) => {
+      if (index < clockDefaultWords.length) {
+        newWords[slotIndex] = clockDefaultWords[index];
       }
-    })
-    setWords(newWords)
+    });
+    setWords(newWords);
   }
 
   const handleResetAllWords = () => {
