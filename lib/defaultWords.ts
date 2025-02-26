@@ -1,4 +1,9 @@
-export const defaultClockWords = {
+// Define the type for the defaultClockWords object
+type DefaultClockWords = {
+  [key: number]: string[];
+};
+
+export const defaultClockWords: DefaultClockWords = {
   0: ["Achievement", "Willingness", "Vitality", "Boldness", "Insight", "Command", "Reflection", "Illusion"],
   1: ["Union", "Sturdiness", "Insightful", "Modesty", "Suprise", "joyless"],
   2: ["Rampant", "Causing", "Salvage", "Roaring", "Pertentions", "Selatiousness", "Aim", "Rebirth", "Exuberance", "Urge"],
