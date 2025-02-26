@@ -11,7 +11,6 @@ import { GlossaryWord } from '@/types/Glossary'
 import { getClockWords } from '@/lib/glossary'
 import { supabase } from '@/lib/supabase'
 import { HintPopup } from '@/components/ui/hint-popup'
-import { defaultClockWords } from '@/lib/defaultWords'
 
 interface SessionDurationDialogProps {
   open: boolean
@@ -189,34 +188,34 @@ export function SessionDurationDialog({
   }
 
   const handleRandomDefaultWords = () => {
-    // Themes for each clock
+    // Get all default words from the glossary
+    const defaultWords = glossaryWords.filter(word => word.version === 'Default');
+    if (defaultWords.length === 0) return;
+
+    // Define themes for each clock
     const clockThemes = {
-      0: ["Achievement", "Willingness", "Vitality", "Boldness", "Insight", "Command", "Reflection", "Illusion"],
-      1: ["Union", "Sturdiness", "Insight", "Modesty", "Surprise", "Joy"],
-      2: ["Rampant", "Cause", "Salvage", "Roar", "Aim", "Rebirth", "Exuberance", "Urge"],
-      3: ["Balance", "Submerge", "Attract", "Curiosity", "Collide", "Concern", "Fate", "Life", "Protect", "Triumph"],
-      4: ["Resonate", "Immerse", "Righteous", "Compulsion", "Yearn", "Adapt", "Foster", "Flaunt", "Beguile", "Repair", "Transform", "Suspend"],
-      5: ["Child", "Unveil", "Flight", "Premonition"],
-      6: ["Seek", "Ideal", "Surrender", "Bliss", "Spontaneous", "Discourse", "Empathy", "Prayer", "Praise", "Libation", "Atone", "Ceremony"],
-      7: ["Infinity", "Love", "Vibrate", "Center", "Pure", "Stable", "Kind", "Transform", "Self", "Being", "Limitless", "Sensual", "Effort"],
-      8: ["Infinity", "Love", "Vibrate"]
+      0: ["achievement", "will", "vital", "bold", "insight", "command", "reflect", "illusion"],
+      1: ["union", "sturdy", "insight", "modest", "surprise", "joy"],
+      2: ["rampant", "cause", "salvage", "roar", "aim", "rebirth", "exuberant", "urge"],
+      3: ["balance", "submerge", "attract", "curious", "collide", "concern", "fate", "life", "protect", "triumph"],
+      4: ["resonate", "immerse", "righteous", "compel", "yearn", "adapt", "foster", "flaunt", "transform", "repair"],
+      5: ["child", "unveil", "flight", "premonition"],
+      6: ["seek", "ideal", "surrender", "bliss", "spontaneous", "discourse", "empathy", "righteous", "prayer", "majesty"],
+      7: ["infinity", "love", "vibrate", "center", "pure", "stable", "kind", "transform", "self", "limit"],
+      8: ["infinity", "love", "vibrate"]
     };
 
-    const themes = clockThemes[clockId] || [];
-    if (themes.length === 0) return;
+    // Get themes for current clock
+    const currentThemes = clockThemes[clockId as keyof typeof clockThemes] || [];
+    if (currentThemes.length === 0) return;
 
-    // Filter glossary words that match our themes and are marked as default
-    const matchingWords = glossaryWords.filter(word => {
-      if (word.version !== 'Default') return false;
-      
-      // Check if the word or its definition matches any of our themes
-      return themes.some(theme => 
-        word.word.toLowerCase().includes(theme.toLowerCase()) ||
-        word.definition.toLowerCase().includes(theme.toLowerCase())
-      );
-    });
-
-    if (matchingWords.length === 0) return;
+    // Find matching default words
+    const matchingWords = defaultWords.filter(word => 
+      currentThemes.some(theme => 
+        word.word.toLowerCase().includes(theme) || 
+        word.definition.toLowerCase().includes(theme)
+      )
+    );
 
     const emptySlots = words.map((word, index) => word ? null : index).filter(index => index !== null) as number[];
     if (emptySlots.length === 0) return;
