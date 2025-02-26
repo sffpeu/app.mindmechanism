@@ -70,6 +70,32 @@ const clockColors = [
   'text-cyan-500 bg-cyan-500'
 ]
 
+// Clock titles mapping
+const clockTitles = [
+  "Galileo's First Observation",
+  "Neptune's Discovery",
+  "Galileo's Spring Observation",
+  "Jupiter's Moons",
+  "Uranus Discovery",
+  "Saturn's Rings",
+  "Ancient Star Charts",
+  "Winter Solstice Study",
+  "Medieval Observations"
+]
+
+// Clock descriptions
+const clockDescriptions = [
+  "Galileo's groundbreaking first observation of celestial bodies, marking the beginning of modern astronomy.",
+  "The historic discovery of Neptune, predicted through mathematical calculations before visual confirmation.",
+  "Detailed spring observations by Galileo, revealing new insights about planetary movements.",
+  "The first documented observation of Jupiter's moons, changing our understanding of the solar system.",
+  "William Herschel's unexpected discovery of Uranus, expanding the known boundaries of our solar system.",
+  "The first detailed study of Saturn's rings, revealing their complex structure and composition.",
+  "Ancient star charts from early astronomers, mapping the night sky with remarkable accuracy.",
+  "Studies of the winter solstice, tracking the sun's annual journey across the sky.",
+  "Medieval astronomical observations that bridged ancient and modern understanding of the cosmos."
+]
+
 export default function ClockPage() {
   const params = useParams()
   const searchParams = useSearchParams()
@@ -389,6 +415,16 @@ export default function ClockPage() {
               </button>
 
               <div className="space-y-3">
+                {/* Clock Title and Description */}
+                <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10">
+                  <h3 className={`text-sm font-medium ${clockColors[id].split(' ')[0]}`}>
+                    {clockTitles[id]}
+                  </h3>
+                  <p className="text-xs text-black/60 dark:text-white/60 line-clamp-2">
+                    {clockDescriptions[id]}
+                  </p>
+                </div>
+
                 {/* Clock Information */}
                 <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10">
                   <div className="grid grid-cols-2 gap-2">
