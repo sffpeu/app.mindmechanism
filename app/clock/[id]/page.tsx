@@ -359,7 +359,7 @@ export default function ClockPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50 dark:bg-black/95">
+      <div className="fixed inset-0 bg-gray-50 dark:bg-black/95 overflow-hidden">
         {/* Timer Component - Moved to bottom left */}
         <div className="fixed bottom-4 left-4 z-50">
           <Timer
@@ -498,7 +498,7 @@ export default function ClockPage() {
           </div>
         )}
         
-        {/* Settings Dropdown - Moved slightly to accommodate word list */}
+        {/* Settings Dropdown */}
         <div className="fixed top-4 right-4 z-50">
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
@@ -545,13 +545,18 @@ export default function ClockPage() {
           </DropdownMenu>
         </div>
 
+        {/* Dot Navigation - Made smaller and repositioned */}
         {showElements && (
-          <DotNavigation
-            activeDot={id}
-            isSmallMultiView={isSmallMultiView}
-            onOutlinedDotClick={() => setIsSmallMultiView(!isSmallMultiView)}
-          />
+          <div className="fixed top-1/2 -translate-y-1/2 right-4 z-40">
+            <DotNavigation
+              activeDot={id}
+              isSmallMultiView={isSmallMultiView}
+              onOutlinedDotClick={() => setIsSmallMultiView(!isSmallMultiView)}
+            />
+          </div>
         )}
+
+        {/* Menu */}
         <Menu
           showElements={showElements}
           onToggleShow={() => setShowElements(!showElements)}
@@ -560,22 +565,27 @@ export default function ClockPage() {
           showInfoCards={showInfoCards}
           onInfoCardsChange={setShowInfoCards}
         />
-        <Clock
-          {...localClockSettings}
-          id={id}
-          showElements={showElements}
-          onToggleShow={() => setShowElements(!showElements)}
-          currentTime={currentTime}
-          syncTrigger={syncTrigger}
-          hideControls={false}
-          showSatellites={showSatellites}
-          showInfo={showInfoCards && !isFullscreen}
-          isMultiView={false}
-          isMultiView2={false}
-          allClocks={clockSettings}
-          customWords={words}
-          onInfoUpdate={setClockInfo}
-        />
+
+        {/* Clock - Centered in viewport */}
+        <div className="fixed inset-0 flex items-center justify-center">
+          <Clock
+            {...localClockSettings}
+            id={id}
+            showElements={showElements}
+            onToggleShow={() => setShowElements(!showElements)}
+            currentTime={currentTime}
+            syncTrigger={syncTrigger}
+            hideControls={false}
+            showSatellites={showSatellites}
+            showInfo={showInfoCards && !isFullscreen}
+            isMultiView={false}
+            isMultiView2={false}
+            allClocks={clockSettings}
+            customWords={words}
+            onInfoUpdate={setClockInfo}
+          />
+        </div>
+
         {showSettings && (
           <ClockSettings
             settings={localClockSettings}
