@@ -189,20 +189,46 @@ export function SessionDurationDialog({
   }
 
   const handleRandomDefaultWords = () => {
-    const clockDefaultWords = defaultClockWords[clockId] || [];
-    if (clockDefaultWords.length === 0) return;
+    // Themes for each clock
+    const clockThemes = {
+      0: ["Achievement", "Willingness", "Vitality", "Boldness", "Insight", "Command", "Reflection", "Illusion"],
+      1: ["Union", "Sturdiness", "Insight", "Modesty", "Surprise", "Joy"],
+      2: ["Rampant", "Cause", "Salvage", "Roar", "Aim", "Rebirth", "Exuberance", "Urge"],
+      3: ["Balance", "Submerge", "Attract", "Curiosity", "Collide", "Concern", "Fate", "Life", "Protect", "Triumph"],
+      4: ["Resonate", "Immerse", "Righteous", "Compulsion", "Yearn", "Adapt", "Foster", "Flaunt", "Beguile", "Repair", "Transform", "Suspend"],
+      5: ["Child", "Unveil", "Flight", "Premonition"],
+      6: ["Seek", "Ideal", "Surrender", "Bliss", "Spontaneous", "Discourse", "Empathy", "Prayer", "Praise", "Libation", "Atone", "Ceremony"],
+      7: ["Infinity", "Love", "Vibrate", "Center", "Pure", "Stable", "Kind", "Transform", "Self", "Being", "Limitless", "Sensual", "Effort"],
+      8: ["Infinity", "Love", "Vibrate"]
+    };
+
+    const themes = clockThemes[clockId] || [];
+    if (themes.length === 0) return;
+
+    // Filter glossary words that match our themes and are marked as default
+    const matchingWords = glossaryWords.filter(word => {
+      if (word.version !== 'Default') return false;
+      
+      // Check if the word or its definition matches any of our themes
+      return themes.some(theme => 
+        word.word.toLowerCase().includes(theme.toLowerCase()) ||
+        word.definition.toLowerCase().includes(theme.toLowerCase())
+      );
+    });
+
+    if (matchingWords.length === 0) return;
 
     const emptySlots = words.map((word, index) => word ? null : index).filter(index => index !== null) as number[];
     if (emptySlots.length === 0) return;
 
     const newWords = [...words];
     emptySlots.forEach((slotIndex, index) => {
-      if (index < clockDefaultWords.length) {
-        newWords[slotIndex] = clockDefaultWords[index];
+      if (index < matchingWords.length) {
+        newWords[slotIndex] = matchingWords[index].word;
       }
     });
     setWords(newWords);
-  }
+  };
 
   const handleResetAllWords = () => {
     setWords(Array(words.length).fill(''))
