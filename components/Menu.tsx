@@ -58,12 +58,12 @@ export function Menu({
       {/* Menu Button */}
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="absolute top-4 left-4 p-3 rounded-lg bg-white dark:bg-black border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all z-[110] touch-manipulation"
+        className="absolute top-4 left-4 p-2.5 rounded-lg bg-white dark:bg-black border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all z-[110] touch-manipulation"
       >
         {isMenuOpen ? (
-          <X className="h-6 w-6 text-black dark:text-white" />
+          <X className="h-5 w-5 text-black dark:text-white" />
         ) : (
-          <MenuIcon className="h-6 w-6 text-black dark:text-white" />
+          <MenuIcon className="h-5 w-5 text-black dark:text-white" />
         )}
       </button>
 
