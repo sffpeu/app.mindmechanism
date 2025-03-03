@@ -1,16 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { Menu as MenuIcon, X, Settings, Sun, Moon, Eye, Home, LayoutGrid, Play, BookOpen, ClipboardList, LogOut, Info, LayoutDashboard, Clock, User } from 'lucide-react'
+import { Menu as MenuIcon, Settings, Sun, Moon, BookOpen, ClipboardList, LogOut, LayoutDashboard, Clock } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useRouter, usePathname } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useTheme } from '@/app/ThemeContext'
 import { useAuth } from '@/lib/FirebaseAuthContext'
-import Image from 'next/image'
 import { SettingsDialog } from './settings/SettingsDialog'
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 
@@ -28,42 +27,25 @@ const menuContainerVariants = {
     opacity: 0,
     x: -20,
     transition: {
-      duration: 0.2,
-      when: "afterChildren"
-    }
-  },
-  visible: { 
-    opacity: 1,
-    x: 0,
-    transition: {
-      duration: 0.3,
-      when: "beforeChildren",
-      staggerChildren: 0.05
-    }
-  }
-}
-
-const menuItemVariants = {
-  hidden: { 
-    opacity: 0,
-    x: -10,
-  },
-  visible: { 
-    opacity: 1,
-    x: 0,
-    transition: {
       duration: 0.2
+    }
+  },
+  visible: { 
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.3
     }
   }
 }
 
 const MenuCategory = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <motion.div variants={menuItemVariants} className="px-2">
+  <div className="px-2">
     <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-4 mb-2">{title}</h3>
     <div className="space-y-1">
       {children}
     </div>
-  </motion.div>
+  </div>
 )
 
 export function Menu({
@@ -89,24 +71,18 @@ export function Menu({
   const NavLink = ({ href, icon: Icon, children }: { href: string; icon: any; children: React.ReactNode }) => {
     const isActive = pathname === href
     return (
-      <motion.div variants={menuItemVariants}>
-        <Link
-          href={href}
-          className={`group flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation relative ${
-            isActive ? 'bg-black/5 dark:bg-white/10 text-black dark:text-white font-medium' : ''
-          }`}
-        >
-          <Icon className="h-4 w-4 group-hover:scale-110 transition-transform" />
-          <span className="text-sm">{children}</span>
-          {isActive && (
-            <motion.div
-              layoutId="active-indicator"
-              className="absolute left-0 w-1 h-5 bg-gradient-to-b from-black to-gray-700 dark:from-white dark:to-white/70 rounded-full my-auto top-0 bottom-0"
-              transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-            />
-          )}
-        </Link>
-      </motion.div>
+      <Link
+        href={href}
+        className={`group flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation relative ${
+          isActive ? 'bg-black/5 dark:bg-white/10 text-black dark:text-white font-medium' : ''
+        }`}
+      >
+        <Icon className="h-4 w-4 group-hover:scale-110 transition-transform" />
+        <span className="text-sm">{children}</span>
+        {isActive && (
+          <div className="absolute left-0 w-1 h-5 bg-gradient-to-b from-black to-gray-700 dark:from-white dark:to-white/70 rounded-full my-auto top-0 bottom-0" />
+        )}
+      </Link>
     )
   }
 
@@ -126,38 +102,7 @@ export function Menu({
           side="left"
           className="w-80 p-0 bg-gradient-to-b from-white via-white to-gray-50 dark:from-black dark:via-black/95 dark:to-black/90 backdrop-blur-xl border-r border-black/5 dark:border-white/10"
         >
-          <SheetClose asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-4 right-4 h-8 w-8 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </SheetClose>
-          
           <div className="h-full flex flex-col">
-            {user && (
-              <motion.div 
-                variants={menuItemVariants}
-                className="pt-16 px-6 pb-6 border-b border-black/5 dark:border-white/10"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-black/5 to-black/10 dark:from-white/10 dark:to-white/5 flex items-center justify-center">
-                    <User className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">
-                      {user.email?.split('@')[0]}
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {user.email}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
             <motion.div
               className="flex-1 py-6 overflow-y-auto scrollbar-none"
               initial="hidden"
@@ -174,54 +119,48 @@ export function Menu({
               <Separator className="my-6 bg-black/5 dark:bg-white/10" />
 
               <MenuCategory title="Preferences">
-                <motion.div variants={menuItemVariants}>
-                  <button
-                    onClick={() => setIsDarkMode(!isDarkMode)}
-                    className="group flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation"
-                  >
-                    <div className="flex items-center gap-3">
-                      {isDarkMode ? 
-                        <Moon className="h-4 w-4 group-hover:scale-110 transition-transform" /> : 
-                        <Sun className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                      }
-                      <span className="text-sm">
-                        {isDarkMode ? 'Dark Mode' : 'Light Mode'}
-                      </span>
-                    </div>
-                    <Switch
-                      checked={isDarkMode}
-                      onCheckedChange={setIsDarkMode}
-                      className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-white data-[state=unchecked]:bg-black/20 dark:data-[state=unchecked]:bg-white/20 h-5 w-9"
-                    />
-                  </button>
-                </motion.div>
+                <button
+                  onClick={() => setIsDarkMode(!isDarkMode)}
+                  className="group flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation"
+                >
+                  <div className="flex items-center gap-3">
+                    {isDarkMode ? 
+                      <Moon className="h-4 w-4 group-hover:scale-110 transition-transform" /> : 
+                      <Sun className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                    }
+                    <span className="text-sm">
+                      {isDarkMode ? 'Dark Mode' : 'Light Mode'}
+                    </span>
+                  </div>
+                  <Switch
+                    checked={isDarkMode}
+                    onCheckedChange={setIsDarkMode}
+                    className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-white data-[state=unchecked]:bg-black/20 dark:data-[state=unchecked]:bg-white/20 h-5 w-9"
+                  />
+                </button>
 
-                <motion.div variants={menuItemVariants}>
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false)
-                      setIsSettingsOpen(true)
-                    }}
-                    className="group flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation"
-                  >
-                    <Settings className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                    <span className="text-sm">Settings</span>
-                  </button>
-                </motion.div>
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false)
+                    setIsSettingsOpen(true)
+                  }}
+                  className="group flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation"
+                >
+                  <Settings className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                  <span className="text-sm">Settings</span>
+                </button>
               </MenuCategory>
 
               {user && (
-                <motion.div variants={menuItemVariants}>
-                  <div className="px-2 mt-6">
-                    <button
-                      onClick={handleSignOut}
-                      className="group flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 transition-all touch-manipulation"
-                    >
-                      <LogOut className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                      <span className="text-sm">Sign Out</span>
-                    </button>
-                  </div>
-                </motion.div>
+                <div className="px-2 mt-6">
+                  <button
+                    onClick={handleSignOut}
+                    className="group flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 transition-all touch-manipulation"
+                  >
+                    <LogOut className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                    <span className="text-sm">Sign Out</span>
+                  </button>
+                </div>
               )}
             </motion.div>
 
