@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Menu as MenuIcon, Settings, Sun, Moon, BookOpen, ClipboardList, LogOut, LayoutDashboard, Clock } from 'lucide-react'
+import { Menu as MenuIcon, X, Settings, Sun, Moon, BookOpen, ClipboardList, LogOut, LayoutDashboard, Clock } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -48,6 +48,53 @@ const MenuCategory = ({ title, children }: { title: string; children: React.Reac
   </div>
 )
 
+const Path = (props: any) => (
+  <motion.path
+    fill="transparent"
+    strokeWidth="2"
+    stroke="currentColor"
+    strokeLinecap="round"
+    {...props}
+  />
+)
+
+const MenuIcon = ({ isOpen }: { isOpen: boolean }) => {
+  return (
+    <motion.svg
+      width="16"
+      height="16"
+      viewBox="0 0 20 20"
+      className="text-black dark:text-white"
+    >
+      <Path
+        variants={{
+          closed: { d: "M 2 4 L 18 4" },
+          open: { d: "M 3 16.5 L 17 2.5" }
+        }}
+        animate={isOpen ? "open" : "closed"}
+        transition={{ duration: 0.3 }}
+      />
+      <Path
+        d="M 2 10 L 18 10"
+        variants={{
+          closed: { opacity: 1 },
+          open: { opacity: 0 }
+        }}
+        transition={{ duration: 0.3 }}
+        animate={isOpen ? "open" : "closed"}
+      />
+      <Path
+        variants={{
+          closed: { d: "M 2 16 L 18 16" },
+          open: { d: "M 3 2.5 L 17 16.5" }
+        }}
+        animate={isOpen ? "open" : "closed"}
+        transition={{ duration: 0.3 }}
+      />
+    </motion.svg>
+  )
+}
+
 export function Menu({
   showElements = true,
   onToggleShow = () => {},
@@ -93,11 +140,9 @@ export function Menu({
           <Button
             variant="ghost"
             size="icon"
-            className={`fixed top-4 left-4 z-[110] h-9 w-9 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 shadow-sm transition-opacity ${
-              isMenuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'
-            }`}
+            className="fixed top-4 left-4 z-[110] h-9 w-9 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 shadow-sm"
           >
-            <MenuIcon className="h-4 w-4 text-black dark:text-white" />
+            <MenuIcon isOpen={isMenuOpen} />
           </Button>
         </SheetTrigger>
         <SheetContent
