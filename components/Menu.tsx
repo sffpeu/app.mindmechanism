@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Menu as MenuIcon, X, Settings, Sun, Moon, Eye, Home, LayoutGrid, Play, BookOpen, ClipboardList, LogOut, Info, LayoutDashboard, Clock } from 'lucide-react'
+import { Menu as MenuIcon, X, Settings, Sun, Moon, Eye, Home, LayoutGrid, Play, BookOpen, ClipboardList, LogOut, Info, LayoutDashboard, Clock, User } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -38,7 +38,7 @@ const menuContainerVariants = {
     transition: {
       duration: 0.3,
       when: "beforeChildren",
-      staggerChildren: 0.1
+      staggerChildren: 0.05
     }
   }
 }
@@ -46,16 +46,25 @@ const menuContainerVariants = {
 const menuItemVariants = {
   hidden: { 
     opacity: 0,
-    x: -20,
+    x: -10,
   },
   visible: { 
     opacity: 1,
     x: 0,
     transition: {
-      duration: 0.3
+      duration: 0.2
     }
   }
 }
+
+const MenuCategory = ({ title, children }: { title: string; children: React.ReactNode }) => (
+  <motion.div variants={menuItemVariants} className="px-2">
+    <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-4 mb-2">{title}</h3>
+    <div className="space-y-1">
+      {children}
+    </div>
+  </motion.div>
+)
 
 export function Menu({
   showElements = true,
@@ -84,15 +93,15 @@ export function Menu({
         <Link
           href={href}
           className={`group flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation relative ${
-            isActive ? 'bg-black/5 dark:bg-white/10 text-black dark:text-white' : ''
+            isActive ? 'bg-black/5 dark:bg-white/10 text-black dark:text-white font-medium' : ''
           }`}
         >
           <Icon className="h-4 w-4 group-hover:scale-110 transition-transform" />
-          <span className="text-sm font-medium">{children}</span>
+          <span className="text-sm">{children}</span>
           {isActive && (
             <motion.div
               layoutId="active-indicator"
-              className="absolute left-0 w-1 h-5 bg-black dark:bg-white rounded-full my-auto top-0 bottom-0"
+              className="absolute left-0 w-1 h-5 bg-gradient-to-b from-black to-gray-700 dark:from-white dark:to-white/70 rounded-full my-auto top-0 bottom-0"
               transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
             />
           )}
@@ -108,14 +117,14 @@ export function Menu({
           <Button
             variant="ghost"
             size="icon"
-            className="fixed top-4 left-4 z-[110] h-9 w-9 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90"
+            className="fixed top-4 left-4 z-[110] h-9 w-9 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 shadow-sm"
           >
             <MenuIcon className="h-4 w-4 text-black dark:text-white" />
           </Button>
         </SheetTrigger>
         <SheetContent
           side="left"
-          className="w-72 p-0 bg-gradient-to-b from-white via-white to-gray-50 dark:from-black dark:via-black/95 dark:to-black/90 backdrop-blur-xl"
+          className="w-80 p-0 bg-gradient-to-b from-white via-white to-gray-50 dark:from-black dark:via-black/95 dark:to-black/90 backdrop-blur-xl border-r border-black/5 dark:border-white/10"
         >
           <SheetClose asChild>
             <Button
@@ -127,23 +136,44 @@ export function Menu({
             </Button>
           </SheetClose>
           
-          <div className="h-full flex flex-col pt-16">
+          <div className="h-full flex flex-col">
+            {user && (
+              <motion.div 
+                variants={menuItemVariants}
+                className="pt-16 px-6 pb-6 border-b border-black/5 dark:border-white/10"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-black/5 to-black/10 dark:from-white/10 dark:to-white/5 flex items-center justify-center">
+                    <User className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                      {user.email?.split('@')[0]}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      {user.email}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             <motion.div
-              className="flex-1 py-4"
+              className="flex-1 py-6 overflow-y-auto scrollbar-none"
               initial="hidden"
               animate={isMenuOpen ? "visible" : "hidden"}
               variants={menuContainerVariants}
             >
-              <motion.div className="px-2 space-y-1">
+              <MenuCategory title="Navigation">
                 <NavLink href="/dashboard" icon={LayoutDashboard}>Dashboard</NavLink>
                 <NavLink href="/sessions" icon={Clock}>Sessions</NavLink>
                 <NavLink href="/notes" icon={ClipboardList}>Notes</NavLink>
                 <NavLink href="/glossary" icon={BookOpen}>Glossary</NavLink>
-              </motion.div>
+              </MenuCategory>
 
               <Separator className="my-6 bg-black/5 dark:bg-white/10" />
 
-              <motion.div className="px-2 space-y-1">
+              <MenuCategory title="Preferences">
                 <motion.div variants={menuItemVariants}>
                   <button
                     onClick={() => setIsDarkMode(!isDarkMode)}
@@ -154,7 +184,7 @@ export function Menu({
                         <Moon className="h-4 w-4 group-hover:scale-110 transition-transform" /> : 
                         <Sun className="h-4 w-4 group-hover:scale-110 transition-transform" />
                       }
-                      <span className="text-sm font-medium">
+                      <span className="text-sm">
                         {isDarkMode ? 'Dark Mode' : 'Light Mode'}
                       </span>
                     </div>
@@ -175,25 +205,31 @@ export function Menu({
                     className="group flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation"
                   >
                     <Settings className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                    <span className="text-sm font-medium">Settings</span>
+                    <span className="text-sm">Settings</span>
                   </button>
                 </motion.div>
-              </motion.div>
+              </MenuCategory>
 
               {user && (
                 <motion.div variants={menuItemVariants}>
-                  <div className="px-2 mt-6 pt-6 border-t border-black/5 dark:border-white/10">
+                  <div className="px-2 mt-6">
                     <button
                       onClick={handleSignOut}
                       className="group flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 transition-all touch-manipulation"
                     >
                       <LogOut className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                      <span className="text-sm font-medium">Sign Out</span>
+                      <span className="text-sm">Sign Out</span>
                     </button>
                   </div>
                 </motion.div>
               )}
             </motion.div>
+
+            <div className="p-6 border-t border-black/5 dark:border-white/10">
+              <div className="text-xs text-center text-gray-500 dark:text-gray-400">
+                Mind Mechanism v1.0.0
+              </div>
+            </div>
           </div>
         </SheetContent>
       </Sheet>
