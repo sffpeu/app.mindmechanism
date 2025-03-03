@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Pause, Play } from 'lucide-react';
 
 interface TimerProps {
@@ -25,6 +25,26 @@ const formatTime = (ms: number) => {
 };
 
 export default function Timer({ remainingTime, isPaused, onPauseResume, className = '' }: TimerProps) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const prevRemainingTimeRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    // Initialize audio element
+    if (!audioRef.current) {
+      audioRef.current = new Audio('/sounds/timer-complete.mp3');
+    }
+  }, []);
+
+  useEffect(() => {
+    // Check if timer just reached zero
+    if (prevRemainingTimeRef.current && prevRemainingTimeRef.current > 0 && remainingTime === 0) {
+      audioRef.current?.play().catch(error => {
+        console.error('Error playing sound:', error);
+      });
+    }
+    prevRemainingTimeRef.current = remainingTime;
+  }, [remainingTime]);
+
   return (
     <div className={`flex items-center gap-2 bg-white/10 dark:bg-black/20 backdrop-blur-sm rounded-lg px-3 py-1.5 ${className}`}>
       <span className="font-medium text-black/70 dark:text-white/70">
