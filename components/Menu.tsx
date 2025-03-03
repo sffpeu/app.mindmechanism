@@ -10,7 +10,7 @@ import { useTheme } from '@/app/ThemeContext'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import Image from 'next/image'
 import { SettingsDialog } from './settings/SettingsDialog'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 
@@ -23,20 +23,34 @@ interface MenuProps {
   onInfoCardsChange?: (checked: boolean) => void
 }
 
-const menuItemVariants = {
-  hidden: { opacity: 0, x: -20 },
-  visible: (i: number) => ({
+const menuContainerVariants = {
+  hidden: { 
+    opacity: 0,
+    x: -20,
+    transition: {
+      duration: 0.2,
+      when: "afterChildren"
+    }
+  },
+  visible: { 
     opacity: 1,
     x: 0,
     transition: {
-      delay: i * 0.075,
-      duration: 0.5,
-      ease: [0.22, 1, 0.36, 1]
+      duration: 0.3,
+      when: "beforeChildren",
+      staggerChildren: 0.1
     }
-  }),
-  exit: {
+  }
+}
+
+const menuItemVariants = {
+  hidden: { 
     opacity: 0,
     x: -20,
+  },
+  visible: { 
+    opacity: 1,
+    x: 0,
     transition: {
       duration: 0.3
     }
@@ -63,13 +77,10 @@ export function Menu({
     await signOut()
   }
 
-  const NavLink = ({ href, icon: Icon, children, index }: { href: string; icon: any; children: React.ReactNode; index: number }) => {
+  const NavLink = ({ href, icon: Icon, children }: { href: string; icon: any; children: React.ReactNode }) => {
     const isActive = pathname === href
     return (
-      <motion.div
-        variants={menuItemVariants}
-        custom={index}
-      >
+      <motion.div variants={menuItemVariants}>
         <Link
           href={href}
           className={`group flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation relative ${
@@ -106,88 +117,83 @@ export function Menu({
           side="left"
           className="w-72 p-0 bg-gradient-to-b from-white via-white to-gray-50 dark:from-black dark:via-black/95 dark:to-black/90 backdrop-blur-xl"
         >
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsMenuOpen(false)}
-            className="absolute top-4 right-4 h-8 w-8 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10"
-          >
-            <X className="h-4 w-4" />
-          </Button>
+          <SheetClose asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 h-8 w-8 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </SheetClose>
           
           <div className="h-full flex flex-col pt-16">
-            <div className="flex-1 py-4">
-              <AnimatePresence mode="wait">
-                {isMenuOpen && (
-                  <motion.div
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    className="space-y-6"
+            <motion.div
+              className="flex-1 py-4"
+              initial="hidden"
+              animate={isMenuOpen ? "visible" : "hidden"}
+              variants={menuContainerVariants}
+            >
+              <motion.div className="px-2 space-y-1">
+                <NavLink href="/dashboard" icon={LayoutDashboard}>Dashboard</NavLink>
+                <NavLink href="/sessions" icon={Clock}>Sessions</NavLink>
+                <NavLink href="/notes" icon={ClipboardList}>Notes</NavLink>
+                <NavLink href="/glossary" icon={BookOpen}>Glossary</NavLink>
+              </motion.div>
+
+              <Separator className="my-6 bg-black/5 dark:bg-white/10" />
+
+              <motion.div className="px-2 space-y-1">
+                <motion.div variants={menuItemVariants}>
+                  <button
+                    onClick={() => setIsDarkMode(!isDarkMode)}
+                    className="group flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation"
                   >
-                    <motion.div className="px-2 space-y-1">
-                      <NavLink href="/dashboard" icon={LayoutDashboard} index={0}>Dashboard</NavLink>
-                      <NavLink href="/sessions" icon={Clock} index={1}>Sessions</NavLink>
-                      <NavLink href="/notes" icon={ClipboardList} index={2}>Notes</NavLink>
-                      <NavLink href="/glossary" icon={BookOpen} index={3}>Glossary</NavLink>
-                    </motion.div>
+                    <div className="flex items-center gap-3">
+                      {isDarkMode ? 
+                        <Moon className="h-4 w-4 group-hover:scale-110 transition-transform" /> : 
+                        <Sun className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                      }
+                      <span className="text-sm font-medium">
+                        {isDarkMode ? 'Dark Mode' : 'Light Mode'}
+                      </span>
+                    </div>
+                    <Switch
+                      checked={isDarkMode}
+                      onCheckedChange={setIsDarkMode}
+                      className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-white data-[state=unchecked]:bg-black/20 dark:data-[state=unchecked]:bg-white/20 h-5 w-9"
+                    />
+                  </button>
+                </motion.div>
 
-                    <Separator className="bg-black/5 dark:bg-white/10" />
+                <motion.div variants={menuItemVariants}>
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false)
+                      setIsSettingsOpen(true)
+                    }}
+                    className="group flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation"
+                  >
+                    <Settings className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                    <span className="text-sm font-medium">Settings</span>
+                  </button>
+                </motion.div>
+              </motion.div>
 
-                    <motion.div className="px-2 space-y-1">
-                      <motion.div variants={menuItemVariants} custom={4}>
-                        <button
-                          onClick={() => setIsDarkMode(!isDarkMode)}
-                          className="group flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation"
-                        >
-                          <div className="flex items-center gap-3">
-                            {isDarkMode ? 
-                              <Moon className="h-4 w-4 group-hover:scale-110 transition-transform" /> : 
-                              <Sun className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                            }
-                            <span className="text-sm font-medium">
-                              {isDarkMode ? 'Dark Mode' : 'Light Mode'}
-                            </span>
-                          </div>
-                          <Switch
-                            checked={isDarkMode}
-                            onCheckedChange={setIsDarkMode}
-                            className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-white data-[state=unchecked]:bg-black/20 dark:data-[state=unchecked]:bg-white/20 h-5 w-9"
-                          />
-                        </button>
-                      </motion.div>
-
-                      <motion.div variants={menuItemVariants} custom={5}>
-                        <button
-                          onClick={() => {
-                            setIsMenuOpen(false)
-                            setIsSettingsOpen(true)
-                          }}
-                          className="group flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation"
-                        >
-                          <Settings className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                          <span className="text-sm font-medium">Settings</span>
-                        </button>
-                      </motion.div>
-                    </motion.div>
-
-                    {user && (
-                      <motion.div variants={menuItemVariants} custom={6}>
-                        <div className="px-2 border-t border-black/5 dark:border-white/10 pt-6">
-                          <button
-                            onClick={handleSignOut}
-                            className="group flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 transition-all touch-manipulation"
-                          >
-                            <LogOut className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                            <span className="text-sm font-medium">Sign Out</span>
-                          </button>
-                        </div>
-                      </motion.div>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+              {user && (
+                <motion.div variants={menuItemVariants}>
+                  <div className="px-2 mt-6 pt-6 border-t border-black/5 dark:border-white/10">
+                    <button
+                      onClick={handleSignOut}
+                      className="group flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 transition-all touch-manipulation"
+                    >
+                      <LogOut className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                      <span className="text-sm font-medium">Sign Out</span>
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </motion.div>
           </div>
         </SheetContent>
       </Sheet>
