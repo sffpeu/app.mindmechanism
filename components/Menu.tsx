@@ -104,7 +104,7 @@ export function Menu({
         >
           <div className="h-full flex flex-col">
             <motion.div
-              className="flex-1 py-6 overflow-y-auto scrollbar-none"
+              className="flex-1 pt-16 pb-6 overflow-y-auto scrollbar-none"
               initial="hidden"
               animate={isMenuOpen ? "visible" : "hidden"}
               variants={menuContainerVariants}
