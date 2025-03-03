@@ -58,7 +58,7 @@ export function Menu({
       {/* Menu Button */}
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="absolute top-4 left-4 p-2.5 rounded-lg bg-white dark:bg-black border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all z-[110] touch-manipulation"
+        className="absolute top-4 left-4 p-2.5 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:bg-white/90 dark:hover:bg-black/90 transition-all z-[110] touch-manipulation"
       >
         {isMenuOpen ? (
           <X className="h-5 w-5 text-black dark:text-white" />
@@ -71,52 +71,91 @@ export function Menu({
       <AnimatePresence mode="wait">
         {isMenuOpen && (
           <motion.div
-            initial={{ x: "-100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
-            transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
-            className="h-full w-72 bg-white dark:bg-black border-r border-black/5 dark:border-white/10 shadow-lg overflow-y-auto z-[100]"
+            initial={{ x: "-100%", opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: "-100%", opacity: 0 }}
+            transition={{ type: "spring", bounce: 0.1, duration: 0.4 }}
+            className="h-full w-72 bg-gradient-to-b from-white via-white to-gray-50 dark:from-black dark:via-black/95 dark:to-black/90 border-r border-black/5 dark:border-white/10 shadow-xl overflow-y-auto z-[100] backdrop-blur-xl"
           >
             <div className="pt-16 pb-4">
-              <div className="px-2">
+              <div className="px-2 space-y-1">
                 <Link
                   href="/dashboard"
-                  className="flex items-center gap-3 px-4 py-3.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-all touch-manipulation"
+                  className={`group flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation relative ${
+                    pathname === '/dashboard' ? 'bg-black/5 dark:bg-white/10 text-black dark:text-white' : ''
+                  }`}
                 >
-                  <LayoutDashboard className="h-6 w-6" />
+                  <LayoutDashboard className="h-5 w-5 group-hover:scale-110 transition-transform" />
                   <span className="font-medium">Dashboard</span>
+                  {pathname === '/dashboard' && (
+                    <motion.div
+                      layoutId="active-indicator"
+                      className="absolute left-0 w-1 h-6 bg-black dark:bg-white rounded-full my-auto top-0 bottom-0"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
                 </Link>
                 <Link
                   href="/sessions"
-                  className="flex items-center gap-3 px-4 py-3.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-all touch-manipulation"
+                  className={`group flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation relative ${
+                    pathname === '/sessions' ? 'bg-black/5 dark:bg-white/10 text-black dark:text-white' : ''
+                  }`}
                 >
-                  <Clock className="h-6 w-6" />
+                  <Clock className="h-5 w-5 group-hover:scale-110 transition-transform" />
                   <span className="font-medium">Sessions</span>
+                  {pathname === '/sessions' && (
+                    <motion.div
+                      layoutId="active-indicator"
+                      className="absolute left-0 w-1 h-6 bg-black dark:bg-white rounded-full my-auto top-0 bottom-0"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
                 </Link>
                 <Link
                   href="/notes"
-                  className="flex items-center gap-3 px-4 py-3.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-all touch-manipulation"
+                  className={`group flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation relative ${
+                    pathname === '/notes' ? 'bg-black/5 dark:bg-white/10 text-black dark:text-white' : ''
+                  }`}
                 >
-                  <ClipboardList className="h-6 w-6" />
+                  <ClipboardList className="h-5 w-5 group-hover:scale-110 transition-transform" />
                   <span className="font-medium">Notes</span>
+                  {pathname === '/notes' && (
+                    <motion.div
+                      layoutId="active-indicator"
+                      className="absolute left-0 w-1 h-6 bg-black dark:bg-white rounded-full my-auto top-0 bottom-0"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
                 </Link>
                 <Link
                   href="/glossary"
-                  className="flex items-center gap-3 px-4 py-3.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-all touch-manipulation"
+                  className={`group flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation relative ${
+                    pathname === '/glossary' ? 'bg-black/5 dark:bg-white/10 text-black dark:text-white' : ''
+                  }`}
                 >
-                  <BookOpen className="h-6 w-6" />
+                  <BookOpen className="h-5 w-5 group-hover:scale-110 transition-transform" />
                   <span className="font-medium">Glossary</span>
+                  {pathname === '/glossary' && (
+                    <motion.div
+                      layoutId="active-indicator"
+                      className="absolute left-0 w-1 h-6 bg-black dark:bg-white rounded-full my-auto top-0 bottom-0"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
                 </Link>
               </div>
 
               {/* Settings Section */}
-              <div className="px-2 mt-4 border-t border-gray-200 dark:border-white/10">
+              <div className="px-2 mt-6 pt-6 border-t border-black/5 dark:border-white/10 space-y-1">
                 <button
                   onClick={() => setIsDarkMode(!isDarkMode)}
-                  className="flex items-center justify-between w-full px-4 py-3.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-all touch-manipulation"
+                  className="group flex items-center justify-between w-full px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation"
                 >
                   <div className="flex items-center gap-3">
-                    {isDarkMode ? <Moon className="h-6 w-6" /> : <Sun className="h-6 w-6" />}
+                    {isDarkMode ? 
+                      <Moon className="h-5 w-5 group-hover:scale-110 transition-transform" /> : 
+                      <Sun className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                    }
                     <span className="font-medium">
                       {isDarkMode ? 'Dark Mode' : 'Light Mode'}
                     </span>
@@ -124,30 +163,28 @@ export function Menu({
                   <Switch
                     checked={isDarkMode}
                     onCheckedChange={setIsDarkMode}
-                    className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-white data-[state=unchecked]:bg-black/20 dark:data-[state=unchecked]:bg-white/20 h-6 w-11"
+                    className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-white data-[state=unchecked]:bg-black/20 dark:data-[state=unchecked]:bg-white/20 h-5 w-10"
                   />
                 </button>
 
                 <button
                   onClick={() => setIsSettingsOpen(true)}
-                  className="flex items-center gap-3 w-full px-4 py-3.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-all touch-manipulation"
+                  className="group flex items-center gap-3 w-full px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation"
                 >
-                  <Settings className="h-6 w-6" />
+                  <Settings className="h-5 w-5 group-hover:scale-110 transition-transform" />
                   <span className="font-medium">Settings</span>
                 </button>
               </div>
 
               {/* Sign Out Section */}
               {user && (
-                <div className="px-2 mt-4 border-t border-gray-200 dark:border-white/10">
+                <div className="px-2 mt-6 pt-6 border-t border-black/5 dark:border-white/10">
                   <button
                     onClick={handleSignOut}
-                    className="flex items-center justify-between w-full px-4 py-3.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-all touch-manipulation"
+                    className="group flex items-center gap-3 w-full px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 transition-all touch-manipulation"
                   >
-                    <div className="flex items-center gap-3">
-                      <LogOut className="h-6 w-6" />
-                      <span className="font-medium">Sign Out</span>
-                    </div>
+                    <LogOut className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                    <span className="font-medium">Sign Out</span>
                   </button>
                 </div>
               )}
