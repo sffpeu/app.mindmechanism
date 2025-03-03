@@ -58,7 +58,7 @@ const Path = (props: any) => (
   />
 )
 
-const MenuIcon = ({ isOpen }: { isOpen: boolean }) => {
+const AnimatedMenuIcon = ({ isOpen }: { isOpen: boolean }) => {
   return (
     <motion.svg
       width="16"
@@ -142,7 +142,7 @@ export function Menu({
             size="icon"
             className="fixed top-4 left-4 z-[110] h-9 w-9 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 shadow-sm"
           >
-            <MenuIcon isOpen={isMenuOpen} />
+            <AnimatedMenuIcon isOpen={isMenuOpen} />
           </Button>
         </SheetTrigger>
         <SheetContent
