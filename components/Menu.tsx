@@ -93,7 +93,9 @@ export function Menu({
           <Button
             variant="ghost"
             size="icon"
-            className="fixed top-4 left-4 z-[110] h-9 w-9 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 shadow-sm"
+            className={`fixed top-4 left-4 z-[110] h-9 w-9 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 shadow-sm transition-opacity ${
+              isMenuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'
+            }`}
           >
             <MenuIcon className="h-4 w-4 text-black dark:text-white" />
           </Button>
