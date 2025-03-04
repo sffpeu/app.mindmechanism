@@ -77,10 +77,10 @@ export default function MultiViewPage() {
                     </div>
                   </div>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-[95%] h-[95%] rounded-full relative">
+                    <div className="w-[98%] h-[98%] rounded-full relative">
                       {Array.from({ length: clock.focusNodes }).map((_, nodeIndex) => {
                         const angle = (nodeIndex * 360) / clock.focusNodes
-                        const radius = 47.5
+                        const radius = 49
                         const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
                         const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
                         return (
@@ -100,8 +100,7 @@ export default function MultiViewPage() {
                             style={{
                               left: `${x}%`,
                               top: `${y}%`,
-                              transform: 'translate(-50%, -50%)',
-                              opacity: 0.5,
+                              transform: 'translate(-50%, -50%)'
                             }}
                           />
                         )
