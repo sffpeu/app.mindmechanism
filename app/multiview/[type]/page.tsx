@@ -101,7 +101,7 @@ export default function MultiViewPage() {
                         <div className="w-full h-full rounded-full relative">
                           {Array.from({ length: clock.focusNodes }).map((_, nodeIndex) => {
                             const angle = (nodeIndex * 360) / clock.focusNodes
-                            const radius = 49.95
+                            const radius = 55
                             const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
                             const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
                             return (
@@ -117,6 +117,36 @@ export default function MultiViewPage() {
                                   index === 6 ? 'bg-purple-500' :
                                   index === 7 ? 'bg-indigo-500' :
                                   'bg-cyan-500'
+                                } dark:brightness-125`}
+                                style={{
+                                  left: `${x}%`,
+                                  top: `${y}%`,
+                                  transform: 'translate(-50%, -50%)',
+                                  mixBlendMode: 'multiply',
+                                }}
+                              />
+                            )
+                          })}
+
+                          {/* Satellites */}
+                          {showSatellites && clock.satellites?.map((satellite, satIndex) => {
+                            const angle = (satIndex * 360) / (clock.satellites?.length || 1)
+                            const radius = 60
+                            const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
+                            const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
+                            return (
+                              <div
+                                key={`satellite-${satIndex}`}
+                                className={`absolute w-2 h-2 rounded-full ${
+                                  index === 0 ? 'bg-red-300' :
+                                  index === 1 ? 'bg-orange-300' :
+                                  index === 2 ? 'bg-yellow-300' :
+                                  index === 3 ? 'bg-green-300' :
+                                  index === 4 ? 'bg-blue-300' :
+                                  index === 5 ? 'bg-pink-300' :
+                                  index === 6 ? 'bg-purple-300' :
+                                  index === 7 ? 'bg-indigo-300' :
+                                  'bg-cyan-300'
                                 } dark:brightness-125`}
                                 style={{
                                   left: `${x}%`,
