@@ -77,30 +77,31 @@ export default function MultiViewPage() {
                     </div>
                   </div>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-[98%] h-[98%] rounded-full relative">
+                    <div className="w-full h-full rounded-full relative">
                       {Array.from({ length: clock.focusNodes }).map((_, nodeIndex) => {
                         const angle = (nodeIndex * 360) / clock.focusNodes
-                        const radius = 49
+                        const radius = 51
                         const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
                         const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
                         return (
                           <div
                             key={nodeIndex}
-                            className={`absolute w-2.5 h-2.5 rounded-full ${
-                              index === 0 ? 'bg-red-500' :
-                              index === 1 ? 'bg-orange-500' :
-                              index === 2 ? 'bg-yellow-500' :
-                              index === 3 ? 'bg-green-500' :
-                              index === 4 ? 'bg-blue-500' :
-                              index === 5 ? 'bg-pink-500' :
-                              index === 6 ? 'bg-purple-500' :
-                              index === 7 ? 'bg-indigo-500' :
-                              'bg-cyan-500'
+                            className={`absolute w-2.5 h-2.5 rounded-full shadow-lg ${
+                              index === 0 ? 'bg-red-400' :
+                              index === 1 ? 'bg-orange-400' :
+                              index === 2 ? 'bg-yellow-400' :
+                              index === 3 ? 'bg-green-400' :
+                              index === 4 ? 'bg-blue-400' :
+                              index === 5 ? 'bg-pink-400' :
+                              index === 6 ? 'bg-purple-400' :
+                              index === 7 ? 'bg-indigo-400' :
+                              'bg-cyan-400'
                             }`}
                             style={{
                               left: `${x}%`,
                               top: `${y}%`,
-                              transform: 'translate(-50%, -50%)'
+                              transform: 'translate(-50%, -50%)',
+                              filter: 'brightness(1.2)'
                             }}
                           />
                         )
