@@ -7,6 +7,7 @@ import { useParams } from 'next/navigation'
 import DotNavigation from '@/components/DotNavigation'
 import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
+import { clockSatellites, defaultSatelliteConfigs } from '@/components/Clock'
 
 export default function MultiViewPage() {
   const params = useParams()
@@ -129,34 +130,57 @@ export default function MultiViewPage() {
                           })}
 
                           {/* Satellites */}
-                          {clock.satellites?.map((satellite, satIndex) => {
-                            const angle = (satIndex * 360) / (clock.satellites?.length || 1)
-                            const radius = 65 // Increased radius to position satellites further out
-                            const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
-                            const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
-                            return (
-                              <div
-                                key={`satellite-${satIndex}`}
-                                className={`absolute w-2 h-2 rounded-full ${
-                                  index === 0 ? 'bg-red-300' :
-                                  index === 1 ? 'bg-orange-300' :
-                                  index === 2 ? 'bg-yellow-300' :
-                                  index === 3 ? 'bg-green-300' :
-                                  index === 4 ? 'bg-blue-300' :
-                                  index === 5 ? 'bg-pink-300' :
-                                  index === 6 ? 'bg-purple-300' :
-                                  index === 7 ? 'bg-indigo-300' :
-                                  'bg-cyan-300'
-                                } dark:brightness-150`}
-                                style={{
-                                  left: `${x}%`,
-                                  top: `${y}%`,
-                                  transform: 'translate(-50%, -50%)',
-                                  mixBlendMode: isDarkMode ? 'screen' : 'multiply',
-                                }}
-                              />
-                            )
-                          })}
+                          {(() => {
+                            const satelliteCount = clockSatellites[index] || 0;
+                            const clockSatelliteSettings = clock.satellites || 
+                              defaultSatelliteConfigs[index] || 
+                              Array.from({ length: satelliteCount }).map((_, i) => ({
+                                rotationTime: 60000,
+                                rotationDirection: 'clockwise' as const,
+                              }));
+
+                            return clockSatelliteSettings.map((satellite, satIndex) => {
+                              // Calculate base position
+                              const angle = ((360 / Math.max(1, satelliteCount)) * satIndex) % 360;
+                              const radius = 65; // Increased radius for multiview
+                              
+                              // Calculate satellite rotation
+                              const now = Date.now();
+                              const elapsedMilliseconds = now - clock.startDateTime.getTime();
+                              const satelliteRotation = (elapsedMilliseconds / satellite.rotationTime) * 360;
+                              const totalRotation = satellite.rotationDirection === 'clockwise'
+                                ? satelliteRotation
+                                : -satelliteRotation;
+
+                              // Apply both base position and rotation
+                              const rotatedRadians = (angle + totalRotation) * (Math.PI / 180);
+                              const x = 50 + radius * Math.cos(rotatedRadians);
+                              const y = 50 + radius * Math.sin(rotatedRadians);
+                              
+                              return (
+                                <div
+                                  key={`satellite-${satIndex}`}
+                                  className={`absolute w-2 h-2 rounded-full ${
+                                    index === 0 ? 'bg-red-300' :
+                                    index === 1 ? 'bg-orange-300' :
+                                    index === 2 ? 'bg-yellow-300' :
+                                    index === 3 ? 'bg-green-300' :
+                                    index === 4 ? 'bg-blue-300' :
+                                    index === 5 ? 'bg-pink-300' :
+                                    index === 6 ? 'bg-purple-300' :
+                                    index === 7 ? 'bg-indigo-300' :
+                                    'bg-cyan-300'
+                                  } dark:brightness-150`}
+                                  style={{
+                                    left: `${x}%`,
+                                    top: `${y}%`,
+                                    transform: 'translate(-50%, -50%)',
+                                    mixBlendMode: isDarkMode ? 'screen' : 'multiply',
+                                  }}
+                                />
+                              );
+                            });
+                          })()}
                         </div>
                       </div>
                     </div>
