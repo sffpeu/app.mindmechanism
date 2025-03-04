@@ -108,15 +108,15 @@ export default function MultiViewPage() {
                               <div
                                 key={nodeIndex}
                                 className={`absolute w-3 h-3 rounded-full ${
-                                  index === 0 ? 'bg-red-500 dark:bg-red-400' :
-                                  index === 1 ? 'bg-orange-500 dark:bg-orange-400' :
-                                  index === 2 ? 'bg-yellow-500 dark:bg-yellow-400' :
-                                  index === 3 ? 'bg-green-500 dark:bg-green-400' :
-                                  index === 4 ? 'bg-blue-500 dark:bg-blue-400' :
-                                  index === 5 ? 'bg-pink-500 dark:bg-pink-400' :
-                                  index === 6 ? 'bg-purple-500 dark:bg-purple-400' :
-                                  index === 7 ? 'bg-indigo-500 dark:bg-indigo-400' :
-                                  'bg-cyan-500 dark:bg-cyan-400'
+                                  index === 0 ? 'bg-red-500' :
+                                  index === 1 ? 'bg-orange-500' :
+                                  index === 2 ? 'bg-yellow-500' :
+                                  index === 3 ? 'bg-green-500' :
+                                  index === 4 ? 'bg-blue-500' :
+                                  index === 5 ? 'bg-pink-500' :
+                                  index === 6 ? 'bg-purple-500' :
+                                  index === 7 ? 'bg-indigo-500' :
+                                  'bg-cyan-500'
                                 } dark:brightness-150`}
                                 style={{
                                   left: `${x}%`,
@@ -129,24 +129,24 @@ export default function MultiViewPage() {
                           })}
 
                           {/* Satellites */}
-                          {showSatellites && clock.satellites?.map((satellite, satIndex) => {
+                          {clock.satellites?.map((satellite, satIndex) => {
                             const angle = (satIndex * 360) / (clock.satellites?.length || 1)
-                            const radius = 60
+                            const radius = 65 // Increased radius to position satellites further out
                             const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
                             const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
                             return (
                               <div
                                 key={`satellite-${satIndex}`}
                                 className={`absolute w-2 h-2 rounded-full ${
-                                  index === 0 ? 'bg-red-300 dark:bg-red-200' :
-                                  index === 1 ? 'bg-orange-300 dark:bg-orange-200' :
-                                  index === 2 ? 'bg-yellow-300 dark:bg-yellow-200' :
-                                  index === 3 ? 'bg-green-300 dark:bg-green-200' :
-                                  index === 4 ? 'bg-blue-300 dark:bg-blue-200' :
-                                  index === 5 ? 'bg-pink-300 dark:bg-pink-200' :
-                                  index === 6 ? 'bg-purple-300 dark:bg-purple-200' :
-                                  index === 7 ? 'bg-indigo-300 dark:bg-indigo-200' :
-                                  'bg-cyan-300 dark:bg-cyan-200'
+                                  index === 0 ? 'bg-red-300' :
+                                  index === 1 ? 'bg-orange-300' :
+                                  index === 2 ? 'bg-yellow-300' :
+                                  index === 3 ? 'bg-green-300' :
+                                  index === 4 ? 'bg-blue-300' :
+                                  index === 5 ? 'bg-pink-300' :
+                                  index === 6 ? 'bg-purple-300' :
+                                  index === 7 ? 'bg-indigo-300' :
+                                  'bg-cyan-300'
                                 } dark:brightness-150`}
                                 style={{
                                   left: `${x}%`,
