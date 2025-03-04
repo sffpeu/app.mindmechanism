@@ -290,13 +290,30 @@ export default function SessionsPage() {
                     'border-black/5 dark:border-white/10 hover:border-cyan-500/50 hover:shadow-[0_0_15px_rgba(6,182,212,0.3)]'
                   } ${isCreateListView ? 'flex gap-8 items-start' : 'flex flex-col'}`}>
                     <div className={`aspect-square relative flex items-center justify-center ${isCreateListView ? 'w-40 shrink-0' : ''}`}>
-                      <div className="w-3/4 h-3/4 relative">
-                        <Image
-                          src={`/${i + 1}_small.svg`}
-                          alt={`Clock ${i + 1}`}
-                          fill
-                          className="object-contain dark:invert [&>path]:fill-white"
-                        />
+                      <div className="w-full h-full relative rounded-full overflow-hidden">
+                        <div
+                          className="absolute inset-0"
+                          style={{
+                            transform: `rotate(${clock.imageOrientation}deg)`,
+                          }}
+                        >
+                          <div
+                            className="absolute inset-0"
+                            style={{
+                              transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) scale(${clock.imageScale})`,
+                              transformOrigin: 'center',
+                            }}
+                          >
+                            <Image
+                              src={clock.imageUrl}
+                              alt={`Clock ${i + 1}`}
+                              fill
+                              className="object-cover rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none"
+                              priority
+                              loading="eager"
+                            />
+                          </div>
+                        </div>
                       </div>
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="w-[90%] h-[90%] rounded-full relative">
@@ -305,7 +322,6 @@ export default function SessionsPage() {
                             const radius = 48
                             const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
                             const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
-                            const color = clock.color.split(' ')[1].replace('bg-', '')
                             return (
                               <div
                                 key={index}
