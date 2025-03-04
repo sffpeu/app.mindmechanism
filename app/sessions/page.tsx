@@ -289,8 +289,8 @@ export default function SessionsPage() {
                     clock.color.includes('indigo') ? 'border-black/5 dark:border-white/10 hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.3)]' :
                     'border-black/5 dark:border-white/10 hover:border-cyan-500/50 hover:shadow-[0_0_15px_rgba(6,182,212,0.3)]'
                   } ${isCreateListView ? 'flex gap-8 items-start' : 'flex flex-col'}`}>
-                    <div className={`aspect-square relative flex items-center justify-center ${isCreateListView ? 'w-32 shrink-0' : ''}`}>
-                      <div className="w-[85%] h-[85%] relative rounded-full overflow-hidden">
+                    <div className={`aspect-square relative flex items-center justify-center ${isCreateListView ? 'w-28 shrink-0' : ''}`}>
+                      <div className="w-[75%] h-[75%] relative rounded-full overflow-hidden">
                         <div
                           className="absolute inset-0"
                           style={{
