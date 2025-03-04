@@ -69,7 +69,7 @@ export default function MultiViewPage() {
                           src={clock.imageUrl}
                           alt={`Clock ${index + 1}`}
                           fill
-                          className="object-cover rounded-full brightness-0 invert"
+                          className="object-cover rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none"
                           priority
                           loading="eager"
                         />
@@ -87,21 +87,21 @@ export default function MultiViewPage() {
                           <div
                             key={nodeIndex}
                             className={`absolute w-2.5 h-2.5 rounded-full shadow-lg ${
-                              index === 0 ? 'bg-[#ff0000]' :
-                              index === 1 ? 'bg-[#ff8000]' :
-                              index === 2 ? 'bg-[#ffff00]' :
-                              index === 3 ? 'bg-[#00ff00]' :
-                              index === 4 ? 'bg-[#0080ff]' :
-                              index === 5 ? 'bg-[#ff00ff]' :
-                              index === 6 ? 'bg-[#8000ff]' :
-                              index === 7 ? 'bg-[#4040ff]' :
-                              'bg-[#00ffff]'
+                              index === 0 ? 'bg-red-500' :
+                              index === 1 ? 'bg-orange-500' :
+                              index === 2 ? 'bg-yellow-500' :
+                              index === 3 ? 'bg-green-500' :
+                              index === 4 ? 'bg-blue-500' :
+                              index === 5 ? 'bg-pink-500' :
+                              index === 6 ? 'bg-purple-500' :
+                              index === 7 ? 'bg-indigo-500' :
+                              'bg-cyan-500'
                             }`}
                             style={{
                               left: `${x}%`,
                               top: `${y}%`,
                               transform: 'translate(-50%, -50%)',
-                              filter: 'brightness(1.4) saturate(1.5)'
+                              filter: 'brightness(1.2)'
                             }}
                           />
                         )
