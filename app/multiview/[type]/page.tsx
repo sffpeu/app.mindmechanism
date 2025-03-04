@@ -36,7 +36,7 @@ export default function MultiViewPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-black">
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-black/90">
       {showElements && (
         <DotNavigation
           activeDot={9}
@@ -59,7 +59,7 @@ export default function MultiViewPage() {
                   key={index}
                   className="absolute inset-0 flex items-center justify-center"
                   style={{
-                    mixBlendMode: 'multiply',
+                    mixBlendMode: isDarkMode ? 'screen' : 'multiply',
                   }}
                 >
                   <div className="w-full h-full relative">
@@ -82,7 +82,7 @@ export default function MultiViewPage() {
                             src={`/${index + 1}.svg`}
                             alt={`Clock ${index + 1}`}
                             fill
-                            className="object-cover rounded-full dark:invert dark:brightness-[0.87] [&_*]:fill-current [&_*]:stroke-none"
+                            className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
                             priority
                             loading="eager"
                           />
@@ -108,21 +108,21 @@ export default function MultiViewPage() {
                               <div
                                 key={nodeIndex}
                                 className={`absolute w-3 h-3 rounded-full ${
-                                  index === 0 ? 'bg-red-500' :
-                                  index === 1 ? 'bg-orange-500' :
-                                  index === 2 ? 'bg-yellow-500' :
-                                  index === 3 ? 'bg-green-500' :
-                                  index === 4 ? 'bg-blue-500' :
-                                  index === 5 ? 'bg-pink-500' :
-                                  index === 6 ? 'bg-purple-500' :
-                                  index === 7 ? 'bg-indigo-500' :
-                                  'bg-cyan-500'
-                                } dark:brightness-125`}
+                                  index === 0 ? 'bg-red-500 dark:bg-red-400' :
+                                  index === 1 ? 'bg-orange-500 dark:bg-orange-400' :
+                                  index === 2 ? 'bg-yellow-500 dark:bg-yellow-400' :
+                                  index === 3 ? 'bg-green-500 dark:bg-green-400' :
+                                  index === 4 ? 'bg-blue-500 dark:bg-blue-400' :
+                                  index === 5 ? 'bg-pink-500 dark:bg-pink-400' :
+                                  index === 6 ? 'bg-purple-500 dark:bg-purple-400' :
+                                  index === 7 ? 'bg-indigo-500 dark:bg-indigo-400' :
+                                  'bg-cyan-500 dark:bg-cyan-400'
+                                } dark:brightness-150`}
                                 style={{
                                   left: `${x}%`,
                                   top: `${y}%`,
                                   transform: 'translate(-50%, -50%)',
-                                  mixBlendMode: 'multiply',
+                                  mixBlendMode: isDarkMode ? 'screen' : 'multiply',
                                 }}
                               />
                             )
@@ -138,21 +138,21 @@ export default function MultiViewPage() {
                               <div
                                 key={`satellite-${satIndex}`}
                                 className={`absolute w-2 h-2 rounded-full ${
-                                  index === 0 ? 'bg-red-300' :
-                                  index === 1 ? 'bg-orange-300' :
-                                  index === 2 ? 'bg-yellow-300' :
-                                  index === 3 ? 'bg-green-300' :
-                                  index === 4 ? 'bg-blue-300' :
-                                  index === 5 ? 'bg-pink-300' :
-                                  index === 6 ? 'bg-purple-300' :
-                                  index === 7 ? 'bg-indigo-300' :
-                                  'bg-cyan-300'
-                                } dark:brightness-125`}
+                                  index === 0 ? 'bg-red-300 dark:bg-red-200' :
+                                  index === 1 ? 'bg-orange-300 dark:bg-orange-200' :
+                                  index === 2 ? 'bg-yellow-300 dark:bg-yellow-200' :
+                                  index === 3 ? 'bg-green-300 dark:bg-green-200' :
+                                  index === 4 ? 'bg-blue-300 dark:bg-blue-200' :
+                                  index === 5 ? 'bg-pink-300 dark:bg-pink-200' :
+                                  index === 6 ? 'bg-purple-300 dark:bg-purple-200' :
+                                  index === 7 ? 'bg-indigo-300 dark:bg-indigo-200' :
+                                  'bg-cyan-300 dark:bg-cyan-200'
+                                } dark:brightness-150`}
                                 style={{
                                   left: `${x}%`,
                                   top: `${y}%`,
                                   transform: 'translate(-50%, -50%)',
-                                  mixBlendMode: 'multiply',
+                                  mixBlendMode: isDarkMode ? 'screen' : 'multiply',
                                 }}
                               />
                             )
