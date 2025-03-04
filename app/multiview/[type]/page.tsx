@@ -60,7 +60,6 @@ export default function MultiViewPage() {
                   className="absolute inset-0 flex items-center justify-center"
                   style={{
                     mixBlendMode: 'multiply',
-                    opacity: 0.15,
                   }}
                 >
                   <div className="w-full h-full relative">
