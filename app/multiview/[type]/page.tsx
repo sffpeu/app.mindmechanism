@@ -101,7 +101,7 @@ export default function MultiViewPage() {
                         <div className="w-full h-full rounded-full relative">
                           {Array.from({ length: clock.focusNodes }).map((_, nodeIndex) => {
                             const angle = (nodeIndex * 360) / clock.focusNodes
-                            const radius = 49.9
+                            const radius = 49.95
                             const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
                             const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
                             return (
