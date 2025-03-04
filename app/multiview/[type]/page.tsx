@@ -47,7 +47,7 @@ export default function MultiViewPage() {
                 key={index}
                 className="absolute inset-0 flex items-center justify-center"
                 style={{
-                  opacity: 1 / clockSettings.length,
+                  opacity: 0.15,
                 }}
               >
                 <div className="w-full h-full relative">
@@ -101,7 +101,7 @@ export default function MultiViewPage() {
                               left: `${x}%`,
                               top: `${y}%`,
                               transform: 'translate(-50%, -50%)',
-                              opacity: 1 / clockSettings.length,
+                              opacity: 0.5,
                             }}
                           />
                         )
