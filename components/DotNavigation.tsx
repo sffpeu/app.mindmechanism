@@ -48,10 +48,10 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
       // Handle multiview navigation
       if (activeDot === 9) {
         // Toggle between multiview 1 and 2
-        router.push(isSmallMultiView ? '/multiview/1' : '/multiview/2');
+        router.push(isSmallMultiView ? '/multiview/2' : '/multiview/1');
       } else {
-        // Go to multiview 1
-        router.push('/multiview/1');
+        // Go to multiview 2
+        router.push('/multiview/2');
       }
       return;
     }
@@ -95,7 +95,7 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
         >
           {index === 9 && activeDot === 9 && (
             <button
-              onClick={() => router.push(isSmallMultiView ? '/multiview/1' : '/multiview/2')}
+              onClick={() => router.push(isSmallMultiView ? '/multiview/2' : '/multiview/1')}
               className={`w-4 h-4 rounded-full border-2 border-black dark:border-white transition-all duration-200 hover:scale-150 opacity-0 group-hover:opacity-100 ${
                 isSmallMultiView ? 'bg-black dark:bg-white' : 'bg-transparent'
               } touch-manipulation`}
