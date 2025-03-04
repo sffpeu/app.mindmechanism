@@ -36,7 +36,7 @@ export default function MultiViewPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-black/95">
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-black">
       {showElements && (
         <DotNavigation
           activeDot={9}
@@ -82,7 +82,7 @@ export default function MultiViewPage() {
                             src={clock.imageUrl}
                             alt={`Clock ${index + 1}`}
                             fill
-                            className="object-cover rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none"
+                            className="object-cover rounded-full dark:invert dark:brightness-[0.87] [&_*]:fill-current [&_*]:stroke-none"
                             priority
                             loading="eager"
                           />
@@ -101,13 +101,13 @@ export default function MultiViewPage() {
                         <div className="w-full h-full rounded-full relative">
                           {Array.from({ length: clock.focusNodes }).map((_, nodeIndex) => {
                             const angle = (nodeIndex * 360) / clock.focusNodes
-                            const radius = 49.5
+                            const radius = 49.9
                             const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
                             const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
                             return (
                               <div
                                 key={nodeIndex}
-                                className={`absolute w-2 h-2 rounded-full ${
+                                className={`absolute w-3 h-3 rounded-full ${
                                   index === 0 ? 'bg-red-500' :
                                   index === 1 ? 'bg-orange-500' :
                                   index === 2 ? 'bg-yellow-500' :
@@ -117,7 +117,7 @@ export default function MultiViewPage() {
                                   index === 6 ? 'bg-purple-500' :
                                   index === 7 ? 'bg-indigo-500' :
                                   'bg-cyan-500'
-                                }`}
+                                } dark:brightness-125`}
                                 style={{
                                   left: `${x}%`,
                                   top: `${y}%`,
