@@ -325,7 +325,7 @@ export default function SessionsPage() {
                             return (
                               <div
                                 key={index}
-                                className={`absolute w-2 h-2 rounded-full md:opacity-0 opacity-100 md:group-hover:opacity-100 transition-opacity duration-200 ${clock.color.split(' ')[1]}`}
+                                className={`absolute w-2 h-2 rounded-full ${clock.color.split(' ')[1]}`}
                                 style={{
                                   left: `${x}%`,
                                   top: `${y}%`,
