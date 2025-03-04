@@ -47,7 +47,7 @@ export default function MultiViewPage() {
                 key={index}
                 className="absolute inset-0 flex items-center justify-center"
                 style={{
-                  opacity: 0.15,
+                  opacity: 1,
                 }}
               >
                 <div className="w-full h-full relative">
@@ -69,7 +69,7 @@ export default function MultiViewPage() {
                           src={clock.imageUrl}
                           alt={`Clock ${index + 1}`}
                           fill
-                          className="object-cover rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none"
+                          className="object-cover rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none mix-blend-multiply dark:mix-blend-screen"
                           priority
                           loading="eager"
                         />
@@ -77,10 +77,10 @@ export default function MultiViewPage() {
                     </div>
                   </div>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-[90%] h-[90%] rounded-full relative">
+                    <div className="w-[120%] h-[120%] rounded-full relative">
                       {Array.from({ length: clock.focusNodes }).map((_, nodeIndex) => {
                         const angle = (nodeIndex * 360) / clock.focusNodes
-                        const radius = 48
+                        const radius = 58 // Increased radius to place nodes outside
                         const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
                         const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
                         return (
@@ -101,7 +101,7 @@ export default function MultiViewPage() {
                               left: `${x}%`,
                               top: `${y}%`,
                               transform: 'translate(-50%, -50%)',
-                              opacity: 0.5,
+                              opacity: 0.75,
                             }}
                           />
                         )
