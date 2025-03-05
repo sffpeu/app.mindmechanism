@@ -1,13 +1,12 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { useParams } from 'next/navigation'
 import DotNavigation from '@/components/DotNavigation'
 import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
-import { clockSatellites, defaultSatelliteConfigs } from '@/components/Clock'
 import { motion } from 'framer-motion'
 
 export default function MultiViewPage() {
@@ -17,8 +16,6 @@ export default function MultiViewPage() {
   const [showSatellites, setShowSatellites] = useState(false)
   const { isDarkMode } = useTheme()
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
-  const [satellitePositions, setSatellitePositions] = useState<Record<string, { x: number; y: number }>>({})
-  const animationFrameRef = useRef<number>()
 
   // Initialize and update current time
   useEffect(() => {
@@ -29,51 +26,6 @@ export default function MultiViewPage() {
     return () => clearInterval(timer)
   }, [])
 
-  // Smooth satellite animation
-  useEffect(() => {
-    const updateSatellitePositions = () => {
-      const newPositions: Record<string, { x: number; y: number }> = {};
-      
-      clockSettings.forEach((clock, clockIndex) => {
-        const satelliteCount = clockSatellites[clockIndex] || 0;
-        const clockSatelliteSettings = clock.satellites || 
-          defaultSatelliteConfigs[clockIndex] || 
-          Array.from({ length: satelliteCount }).map(() => ({
-            rotationTime: 60000,
-            rotationDirection: 'clockwise' as const,
-          }));
-
-        clockSatelliteSettings.forEach((satellite, satIndex) => {
-          const angle = ((360 / Math.max(1, satelliteCount)) * satIndex) % 360;
-          const radius = 65;
-          
-          const now = Date.now();
-          const elapsedMilliseconds = now - clock.startDateTime.getTime();
-          const satelliteRotation = (elapsedMilliseconds / satellite.rotationTime) * 360;
-          const totalRotation = satellite.rotationDirection === 'clockwise'
-            ? satelliteRotation
-            : -satelliteRotation;
-
-          const rotatedRadians = (angle + totalRotation) * (Math.PI / 180);
-          const x = 50 + radius * Math.cos(rotatedRadians);
-          const y = 50 + radius * Math.sin(rotatedRadians);
-          
-          newPositions[`${clockIndex}-${satIndex}`] = { x, y };
-        });
-      });
-
-      setSatellitePositions(newPositions);
-      animationFrameRef.current = requestAnimationFrame(updateSatellitePositions);
-    };
-
-    updateSatellitePositions();
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, []);
-
   // Calculate rotation for each clock
   const getClockRotation = (clock: typeof clockSettings[0]) => {
     if (!currentTime) return 0
@@ -83,6 +35,19 @@ export default function MultiViewPage() {
       ? (clock.startingDegree + calculatedRotation) % 360
       : (clock.startingDegree - calculatedRotation + 360) % 360
   }
+
+  // Focus node colors from individual clocks
+  const focusNodeColors = [
+    'bg-[#fd290a]', // 1. Red
+    'bg-[#fba63b]', // 2. Orange
+    'bg-[#f7da5f]', // 3. Yellow
+    'bg-[#6dc037]', // 4. Green
+    'bg-[#156fde]', // 5. Blue
+    'bg-[#941952]', // 6. Dark Pink
+    'bg-[#541b96]', // 7. Purple
+    'bg-[#ee5fa7]', // 8. Pink
+    'bg-[#56c1ff]', // 9. Light Blue
+  ]
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-black/90">
@@ -154,77 +119,25 @@ export default function MultiViewPage() {
                             const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
                             const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
                             return (
-                              <div
+                              <motion.div
                                 key={nodeIndex}
-                                className={`absolute w-3 h-3 rounded-full ${
-                                  index === 0 ? 'bg-red-500' :
-                                  index === 1 ? 'bg-orange-500' :
-                                  index === 2 ? 'bg-yellow-500' :
-                                  index === 3 ? 'bg-green-500' :
-                                  index === 4 ? 'bg-blue-500' :
-                                  index === 5 ? 'bg-pink-500' :
-                                  index === 6 ? 'bg-purple-500' :
-                                  index === 7 ? 'bg-indigo-500' :
-                                  'bg-cyan-500'
-                                } dark:brightness-150`}
+                                className={`absolute w-3 h-3 rounded-full ${focusNodeColors[index]} dark:brightness-150`}
                                 style={{
                                   left: `${x}%`,
                                   top: `${y}%`,
                                   transform: 'translate(-50%, -50%)',
                                   mixBlendMode: isDarkMode ? 'screen' : 'multiply',
                                 }}
+                                initial={{ opacity: 0, scale: 0 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{
+                                  duration: 0.5,
+                                  delay: nodeIndex * 0.1,
+                                  ease: "easeOut"
+                                }}
                               />
                             )
                           })}
-
-                          {/* Satellites */}
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-full h-full rounded-full relative">
-                              {(() => {
-                                const satelliteCount = clockSatellites[index] || 0;
-                                const clockSatelliteSettings = clock.satellites || 
-                                  defaultSatelliteConfigs[index] || 
-                                  Array.from({ length: satelliteCount }).map((_, i) => ({
-                                    rotationTime: 60000,
-                                    rotationDirection: 'clockwise' as const,
-                                  }));
-
-                                return clockSatelliteSettings.map((satellite, satIndex) => {
-                                  const position = satellitePositions[`${index}-${satIndex}`] || { x: 0, y: 0 };
-                                  
-                                  return (
-                                    <motion.div
-                                      key={`satellite-${satIndex}`}
-                                      className={`absolute w-3 h-3 rounded-full ${
-                                        index === 0 ? 'bg-red-300' :
-                                        index === 1 ? 'bg-orange-300' :
-                                        index === 2 ? 'bg-yellow-300' :
-                                        index === 3 ? 'bg-green-300' :
-                                        index === 4 ? 'bg-blue-300' :
-                                        index === 5 ? 'bg-pink-300' :
-                                        index === 6 ? 'bg-purple-300' :
-                                        index === 7 ? 'bg-indigo-300' :
-                                        'bg-cyan-300'
-                                      } dark:brightness-150`}
-                                      style={{
-                                        mixBlendMode: isDarkMode ? 'screen' : 'multiply',
-                                      }}
-                                      animate={{
-                                        x: `${position.x}%`,
-                                        y: `${position.y}%`,
-                                      }}
-                                      transition={{
-                                        type: "spring",
-                                        stiffness: 100,
-                                        damping: 30,
-                                        mass: 0.5
-                                      }}
-                                    />
-                                  );
-                                });
-                              })()}
-                            </div>
-                          </div>
                         </div>
                       </div>
                     </div>
