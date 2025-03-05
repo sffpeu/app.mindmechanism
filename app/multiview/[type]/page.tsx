@@ -8,6 +8,20 @@ import DotNavigation from '@/components/DotNavigation'
 import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
+import type { ClockSettings } from '@/types/ClockSettings'
+
+// Default satellite configurations for each clock
+const defaultSatelliteConfigs = {
+  1: [{ rotationTime: 60000, rotationDirection: 'clockwise' }],
+  2: [{ rotationTime: 45000, rotationDirection: 'counterclockwise' }],
+  3: [{ rotationTime: 30000, rotationDirection: 'clockwise' }],
+  4: [{ rotationTime: 40000, rotationDirection: 'counterclockwise' }],
+  5: [{ rotationTime: 50000, rotationDirection: 'clockwise' }],
+  6: [{ rotationTime: 35000, rotationDirection: 'counterclockwise' }],
+  7: [{ rotationTime: 55000, rotationDirection: 'clockwise' }],
+  8: [{ rotationTime: 45000, rotationDirection: 'counterclockwise' }],
+  9: [{ rotationTime: 40000, rotationDirection: 'clockwise' }],
+}
 
 export default function MultiViewPage() {
   const params = useParams()
@@ -16,6 +30,7 @@ export default function MultiViewPage() {
   const [showSatellites, setShowSatellites] = useState(false)
   const { isDarkMode } = useTheme()
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
+  const isMultiView2 = type === 2
 
   // Initialize and update current time
   useEffect(() => {
@@ -48,6 +63,54 @@ export default function MultiViewPage() {
     'bg-[#ee5fa7]', // 8. Pink
     'bg-[#56c1ff]', // 9. Light Blue
   ]
+
+  // Render satellites for a clock
+  const renderSatellites = (clockId: number, rotation: number) => {
+    if (!showSatellites) return null;
+    
+    const satelliteConfig = defaultSatelliteConfigs[clockId as keyof typeof defaultSatelliteConfigs] || [];
+    
+    return satelliteConfig.map((satellite, index) => {
+      const now = Date.now();
+      const elapsedMilliseconds = now - clockSettings[clockId - 1].startDateTime.getTime();
+      const satelliteRotation = (elapsedMilliseconds / satellite.rotationTime) * 360;
+      const totalRotation = satellite.rotationDirection === 'clockwise'
+        ? satelliteRotation
+        : -satelliteRotation;
+
+      // Calculate position
+      const angle = totalRotation % 360;
+      const radians = angle * (Math.PI / 180);
+      const radius = 57; // Slightly larger radius for multiview
+      const x = 50 + radius * Math.cos(radians);
+      const y = 50 + radius * Math.sin(radians);
+
+      return (
+        <motion.div
+          key={`satellite-${clockId}-${index}`}
+          className="absolute"
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{
+            delay: 1 + (index * 0.1),
+            duration: 0.5,
+            ease: "easeOut"
+          }}
+          style={{
+            left: `${x}%`,
+            top: `${y}%`,
+            transform: 'translate(-50%, -50%)',
+            zIndex: 1000,
+          }}
+          whileHover={{ scale: 1.5 }}
+        >
+          <div 
+            className="w-3 h-3 rounded-full bg-black dark:bg-white"
+          />
+        </motion.div>
+      );
+    });
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-black/90">
@@ -141,6 +204,13 @@ export default function MultiViewPage() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Satellites */}
+                    {!isMultiView2 && (
+                      <div className="absolute inset-0" style={{ pointerEvents: 'none' }}>
+                        {renderSatellites(index + 1, rotation)}
+                      </div>
+                    )}
                   </div>
                 </div>
               )
