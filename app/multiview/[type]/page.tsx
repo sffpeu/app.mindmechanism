@@ -9,6 +9,7 @@ import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import type { ClockSettings } from '@/types/ClockSettings'
+import { Eye, EyeOff } from 'lucide-react'
 
 // Default satellite configurations for each clock
 const defaultSatelliteConfigs = {
@@ -105,9 +106,12 @@ export default function MultiViewPage() {
           whileHover={{ scale: 1.5 }}
         >
           <div 
-            className="w-2.5 h-2.5 rounded-full bg-black dark:bg-white"
+            className="w-2.5 h-2.5 rounded-full bg-black dark:bg-white shadow-lg"
             style={{
               mixBlendMode: isDarkMode ? 'screen' : 'multiply',
+              boxShadow: isDarkMode 
+                ? '0 0 10px rgba(255, 255, 255, 0.5)' 
+                : '0 0 10px rgba(0, 0, 0, 0.3)',
             }}
           />
         </motion.div>
@@ -129,6 +133,24 @@ export default function MultiViewPage() {
         showSatellites={showSatellites}
         onSatellitesChange={setShowSatellites}
       />
+
+      {/* Satellite Toggle Button */}
+      <div className="fixed top-24 right-8 z-50">
+        <button
+          onClick={() => setShowSatellites(!showSatellites)}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:bg-gray-50 dark:hover:bg-white/5 transition-all shadow-sm"
+        >
+          {showSatellites ? (
+            <Eye className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+          ) : (
+            <EyeOff className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+          )}
+          <span className="text-sm text-gray-600 dark:text-gray-300">
+            {showSatellites ? 'Hide' : 'Show'} Satellites
+          </span>
+        </button>
+      </div>
+
       <div className="flex-grow flex items-center justify-center">
         {type === 1 && (
           <div className="relative w-[600px] h-[600px]">
@@ -209,7 +231,7 @@ export default function MultiViewPage() {
                     </div>
 
                     {/* Satellites */}
-                    <div className="absolute inset-0">
+                    <div className="absolute inset-0" style={{ zIndex: 100 }}>
                       {renderSatellites(index + 1, rotation)}
                     </div>
                   </div>
