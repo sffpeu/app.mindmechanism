@@ -82,14 +82,18 @@ export default function MultiViewPage() {
       // Calculate position
       const angle = totalRotation % 360;
       const radians = angle * (Math.PI / 180);
-      const radius = 53; // Adjusted radius to match focus nodes
+      const radius = 58; // Increased radius to be outside focus nodes
       const x = 50 + radius * Math.cos(radians);
       const y = 50 + radius * Math.sin(radians);
+
+      // Calculate time for this satellite
+      const rotationsCompleted = Math.floor(Math.abs(totalRotation) / 360);
+      const timeInSeconds = (elapsedMilliseconds / 1000).toFixed(1);
 
       return (
         <motion.div
           key={`satellite-${clockId}-${index}`}
-          className="absolute"
+          className="absolute group"
           initial={{ opacity: 0, scale: 0 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{
@@ -114,6 +118,12 @@ export default function MultiViewPage() {
                 : '0 0 10px rgba(0, 0, 0, 0.3)',
             }}
           />
+          {/* Tooltip */}
+          <div className="absolute left-1/2 -translate-x-1/2 -top-6 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+            <div className="px-2 py-1 rounded-md bg-black/80 dark:bg-white/80 text-white dark:text-black text-xs font-medium shadow-lg">
+              {timeInSeconds}s • {rotationsCompleted} rotations
+            </div>
+          </div>
         </motion.div>
       );
     });
@@ -167,10 +177,15 @@ export default function MultiViewPage() {
                   <div className="w-full h-full relative">
                     {/* Clock face */}
                     <div className="absolute inset-0">
-                      <div
+                      <motion.div
                         className="absolute inset-0"
+                        animate={{ rotate: rotation }}
+                        transition={{
+                          duration: 1,
+                          ease: "linear",
+                        }}
                         style={{
-                          transform: `rotate(${rotation}deg)`,
+                          transformOrigin: 'center',
                         }}
                       >
                         <div
@@ -189,7 +204,7 @@ export default function MultiViewPage() {
                             loading="eager"
                           />
                         </div>
-                      </div>
+                      </motion.div>
                     </div>
 
                     {/* Focus nodes */}
@@ -231,9 +246,19 @@ export default function MultiViewPage() {
                     </div>
 
                     {/* Satellites */}
-                    <div className="absolute inset-0" style={{ zIndex: 100 }}>
+                    <motion.div 
+                      className="absolute inset-0" 
+                      style={{ zIndex: 100 }}
+                      animate={{ rotate: rotation }}
+                      transition={{
+                        duration: 1,
+                        ease: "linear",
+                        repeat: Infinity,
+                        repeatType: "loop"
+                      }}
+                    >
                       {renderSatellites(index + 1, rotation)}
-                    </div>
+                    </motion.div>
                   </div>
                 </div>
               )
