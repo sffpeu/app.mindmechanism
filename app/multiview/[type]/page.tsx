@@ -81,7 +81,7 @@ export default function MultiViewPage() {
       // Calculate position
       const angle = totalRotation % 360;
       const radians = angle * (Math.PI / 180);
-      const radius = 57; // Slightly larger radius for multiview
+      const radius = 53; // Adjusted radius to match focus nodes
       const x = 50 + radius * Math.cos(radians);
       const y = 50 + radius * Math.sin(radians);
 
@@ -92,7 +92,7 @@ export default function MultiViewPage() {
           initial={{ opacity: 0, scale: 0 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{
-            delay: 1 + (index * 0.1),
+            delay: 0.5 + (index * 0.1),
             duration: 0.5,
             ease: "easeOut"
           }}
@@ -105,7 +105,10 @@ export default function MultiViewPage() {
           whileHover={{ scale: 1.5 }}
         >
           <div 
-            className="w-3 h-3 rounded-full bg-black dark:bg-white"
+            className="w-2.5 h-2.5 rounded-full bg-black dark:bg-white"
+            style={{
+              mixBlendMode: isDarkMode ? 'screen' : 'multiply',
+            }}
           />
         </motion.div>
       );
@@ -206,11 +209,9 @@ export default function MultiViewPage() {
                     </div>
 
                     {/* Satellites */}
-                    {!isMultiView2 && (
-                      <div className="absolute inset-0" style={{ pointerEvents: 'none' }}>
-                        {renderSatellites(index + 1, rotation)}
-                      </div>
-                    )}
+                    <div className="absolute inset-0">
+                      {renderSatellites(index + 1, rotation)}
+                    </div>
                   </div>
                 </div>
               )
