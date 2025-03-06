@@ -126,12 +126,15 @@ export default function MultiViewPage() {
                             return (
                               <motion.div
                                 key={nodeIndex}
-                                className={`absolute w-3 h-3 rounded-full ${focusNodeColors[index]} dark:brightness-150`}
+                                className={`absolute w-2 h-2 rounded-full ${focusNodeColors[index]} dark:brightness-150`}
                                 style={{
                                   left: `${x}%`,
                                   top: `${y}%`,
                                   transform: 'translate(-50%, -50%)',
                                   mixBlendMode: isDarkMode ? 'screen' : 'multiply',
+                                  boxShadow: isDarkMode 
+                                    ? '0 0 4px rgba(255, 255, 255, 0.3)' 
+                                    : '0 0 4px rgba(0, 0, 0, 0.2)'
                                 }}
                                 initial={{ opacity: 0, scale: 0 }}
                                 animate={{ opacity: 1, scale: 1 }}
@@ -146,6 +149,45 @@ export default function MultiViewPage() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Satellites (only for clock 1) */}
+                    {index === 0 && (
+                      <div className="absolute inset-0">
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-full h-full rounded-full relative">
+                            {Array.from({ length: 8 }).map((_, satelliteIndex) => {
+                              const angle = (satelliteIndex * 360) / 8
+                              const radius = 57
+                              const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
+                              const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
+                              return (
+                                <motion.div
+                                  key={satelliteIndex}
+                                  className="absolute w-2 h-2 rounded-full"
+                                  style={{
+                                    left: `${x}%`,
+                                    top: `${y}%`,
+                                    transform: 'translate(-50%, -50%)',
+                                    backgroundColor: isDarkMode ? '#fff' : '#000',
+                                    boxShadow: isDarkMode 
+                                      ? '0 0 6px rgba(255, 255, 255, 0.4)' 
+                                      : '0 0 6px rgba(0, 0, 0, 0.4)'
+                                  }}
+                                  initial={{ opacity: 0, scale: 0 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  transition={{
+                                    duration: 0.5,
+                                    delay: 1 + satelliteIndex * 0.1,
+                                    ease: "easeOut"
+                                  }}
+                                  whileHover={{ scale: 1.5 }}
+                                />
+                              )
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )
