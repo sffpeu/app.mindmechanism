@@ -153,13 +153,25 @@ export default function MultiViewPage() {
                     {/* Satellites (only for clock 1) */}
                     {index === 0 && (
                       <div className="absolute inset-0">
-                        <div className="absolute inset-0 flex items-center justify-center">
+                        <motion.div
+                          className="absolute inset-0"
+                          animate={{ rotate: rotation }}
+                          transition={{
+                            duration: 1,
+                            ease: "linear",
+                            repeat: Infinity,
+                          }}
+                          style={{
+                            transformOrigin: 'center',
+                          }}
+                        >
                           <div className="w-full h-full rounded-full relative">
                             {Array.from({ length: 8 }).map((_, satelliteIndex) => {
-                              const angle = (satelliteIndex * 360) / 8
-                              const radius = 62
-                              const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
-                              const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
+                              const angle = (satelliteIndex * 360) / 8;
+                              const radius = 62;
+                              const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180));
+                              const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180));
+                              
                               return (
                                 <motion.div
                                   key={satelliteIndex}
@@ -185,7 +197,7 @@ export default function MultiViewPage() {
                               )
                             })}
                           </div>
-                        </div>
+                        </motion.div>
                       </div>
                     )}
                   </div>
