@@ -222,7 +222,7 @@ export default function MultiViewPage() {
                         <div className="w-full h-full rounded-full relative">
                           {Array.from({ length: clock.focusNodes }).map((_, nodeIndex) => {
                             const angle = (nodeIndex * 360) / clock.focusNodes
-                            const radius = 52
+                            const radius = 55
                             const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
                             const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
                             return (
@@ -259,7 +259,7 @@ export default function MultiViewPage() {
                           <div className="w-full h-full rounded-full relative">
                             {Array.from({ length: clockSatellites[index] }).map((_, satelliteIndex) => {
                               const angle = (satelliteIndex * 360) / clockSatellites[index]
-                              const radius = 58
+                              const radius = 60
                               
                               // Use pre-calculated rotation from animation frame
                               const totalRotation = satelliteRotations[index]?.[satelliteIndex] || 0
