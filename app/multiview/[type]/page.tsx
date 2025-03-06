@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { useParams } from 'next/navigation'
@@ -29,6 +29,8 @@ export default function MultiViewPage() {
   const { isDarkMode } = useTheme()
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
   const isMultiView2 = type === 2
+  const [satelliteRotations, setSatelliteRotations] = useState<number[]>(Array(8).fill(0))
+  const animationRef = useRef<number>()
 
   // Initialize and update current time
   useEffect(() => {
@@ -38,6 +40,34 @@ export default function MultiViewPage() {
     }, 1000)
     return () => clearInterval(timer)
   }, [])
+
+  // Smooth animation for satellites
+  useEffect(() => {
+    if (type !== 1) return
+
+    const animate = () => {
+      const now = Date.now()
+      const clock = clockSettings[0] // Clock 1
+      const elapsedMilliseconds = now - clock.startDateTime.getTime()
+      
+      const newRotations = defaultSatelliteConfigs.map(config => {
+        const satelliteRotation = (elapsedMilliseconds / config.rotationTime) * 360
+        return config.rotationDirection === 'clockwise'
+          ? satelliteRotation
+          : -satelliteRotation
+      })
+
+      setSatelliteRotations(newRotations)
+      animationRef.current = requestAnimationFrame(animate)
+    }
+
+    animate()
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
+    }
+  }, [type])
 
   // Calculate rotation for each clock
   const getClockRotation = (clock: typeof clockSettings[0]) => {
@@ -171,14 +201,8 @@ export default function MultiViewPage() {
                               const angle = (satelliteIndex * 360) / 8
                               const radius = 62
                               
-                              // Calculate satellite rotation
-                              const now = Date.now()
-                              const elapsedMilliseconds = now - clock.startDateTime.getTime()
-                              const satelliteConfig = defaultSatelliteConfigs[satelliteIndex]
-                              const satelliteRotation = (elapsedMilliseconds / satelliteConfig.rotationTime) * 360
-                              const totalRotation = satelliteConfig.rotationDirection === 'clockwise'
-                                ? satelliteRotation
-                                : -satelliteRotation
+                              // Use pre-calculated rotation from animation frame
+                              const totalRotation = satelliteRotations[satelliteIndex]
 
                               // Apply both base position and rotation
                               const rotatedRadians = (angle + totalRotation) * (Math.PI / 180)
@@ -196,7 +220,8 @@ export default function MultiViewPage() {
                                     backgroundColor: isDarkMode ? '#fff' : '#000',
                                     boxShadow: isDarkMode 
                                       ? '0 0 6px rgba(255, 255, 255, 0.4)' 
-                                      : '0 0 6px rgba(0, 0, 0, 0.4)'
+                                      : '0 0 6px rgba(0, 0, 0, 0.4)',
+                                    willChange: 'transform'
                                   }}
                                   initial={{ opacity: 0, scale: 0 }}
                                   animate={{ 
