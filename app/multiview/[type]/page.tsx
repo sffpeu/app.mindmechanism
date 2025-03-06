@@ -10,6 +10,18 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import type { ClockSettings } from '@/types/ClockSettings'
 
+// Default satellite configurations for clock 1
+const defaultSatelliteConfigs = [
+  { rotationTime: 300 * 1000, rotationDirection: 'clockwise' },
+  { rotationTime: 600 * 1000, rotationDirection: 'counterclockwise' },
+  { rotationTime: 900 * 1000, rotationDirection: 'clockwise' },
+  { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' },
+  { rotationTime: 2700 * 1000, rotationDirection: 'clockwise' },
+  { rotationTime: 5400 * 1000, rotationDirection: 'counterclockwise' },
+  { rotationTime: 5400 * 1000, rotationDirection: 'clockwise' },
+  { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' }
+];
+
 export default function MultiViewPage() {
   const params = useParams()
   const type = parseInt(params.type as string)
@@ -153,25 +165,26 @@ export default function MultiViewPage() {
                     {/* Satellites (only for clock 1) */}
                     {index === 0 && (
                       <div className="absolute inset-0">
-                        <motion.div
-                          className="absolute inset-0"
-                          animate={{ rotate: rotation }}
-                          transition={{
-                            duration: 1,
-                            ease: "linear",
-                            repeat: Infinity,
-                          }}
-                          style={{
-                            transformOrigin: 'center',
-                          }}
-                        >
+                        <div className="absolute inset-0 flex items-center justify-center">
                           <div className="w-full h-full rounded-full relative">
                             {Array.from({ length: 8 }).map((_, satelliteIndex) => {
-                              const angle = (satelliteIndex * 360) / 8;
-                              const radius = 62;
-                              const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180));
-                              const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180));
+                              const angle = (satelliteIndex * 360) / 8
+                              const radius = 62
                               
+                              // Calculate satellite rotation
+                              const now = Date.now()
+                              const elapsedMilliseconds = now - clock.startDateTime.getTime()
+                              const satelliteConfig = defaultSatelliteConfigs[satelliteIndex]
+                              const satelliteRotation = (elapsedMilliseconds / satelliteConfig.rotationTime) * 360
+                              const totalRotation = satelliteConfig.rotationDirection === 'clockwise'
+                                ? satelliteRotation
+                                : -satelliteRotation
+
+                              // Apply both base position and rotation
+                              const rotatedRadians = (angle + totalRotation) * (Math.PI / 180)
+                              const x = 50 + radius * Math.cos((rotatedRadians - 90 * (Math.PI / 180)))
+                              const y = 50 + radius * Math.sin((rotatedRadians - 90 * (Math.PI / 180)))
+
                               return (
                                 <motion.div
                                   key={satelliteIndex}
@@ -186,7 +199,10 @@ export default function MultiViewPage() {
                                       : '0 0 6px rgba(0, 0, 0, 0.4)'
                                   }}
                                   initial={{ opacity: 0, scale: 0 }}
-                                  animate={{ opacity: 1, scale: 1 }}
+                                  animate={{ 
+                                    opacity: 1, 
+                                    scale: 1,
+                                  }}
                                   transition={{
                                     duration: 0.5,
                                     delay: 1 + satelliteIndex * 0.1,
@@ -197,7 +213,7 @@ export default function MultiViewPage() {
                               )
                             })}
                           </div>
-                        </motion.div>
+                        </div>
                       </div>
                     )}
                   </div>
