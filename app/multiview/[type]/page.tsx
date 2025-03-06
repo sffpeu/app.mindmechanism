@@ -157,7 +157,7 @@ export default function MultiViewPage() {
                           <div className="w-full h-full rounded-full relative">
                             {Array.from({ length: 8 }).map((_, satelliteIndex) => {
                               const angle = (satelliteIndex * 360) / 8
-                              const radius = 57
+                              const radius = 62
                               const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
                               const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
                               return (
