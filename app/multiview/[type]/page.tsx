@@ -9,35 +9,11 @@ import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import type { ClockSettings } from '@/types/ClockSettings'
-import { Eye, EyeOff } from 'lucide-react'
-
-type SatelliteConfig = {
-  rotationTime: number;
-  rotationDirection: 'clockwise' | 'counterclockwise';
-};
-
-type SatelliteConfigs = {
-  [key: number]: SatelliteConfig[];
-};
-
-// Default satellite configurations for each clock
-const defaultSatelliteConfigs: SatelliteConfigs = {
-  1: [{ rotationTime: 60000, rotationDirection: 'clockwise' }],
-  2: [{ rotationTime: 45000, rotationDirection: 'counterclockwise' }],
-  3: [{ rotationTime: 30000, rotationDirection: 'clockwise' }],
-  4: [{ rotationTime: 40000, rotationDirection: 'counterclockwise' }],
-  5: [{ rotationTime: 50000, rotationDirection: 'clockwise' }],
-  6: [{ rotationTime: 35000, rotationDirection: 'counterclockwise' }],
-  7: [{ rotationTime: 55000, rotationDirection: 'clockwise' }],
-  8: [{ rotationTime: 45000, rotationDirection: 'counterclockwise' }],
-  9: [{ rotationTime: 40000, rotationDirection: 'clockwise' }],
-}
 
 export default function MultiViewPage() {
   const params = useParams()
   const type = parseInt(params.type as string)
   const [showElements, setShowElements] = useState(true)
-  const [showSatellites, setShowSatellites] = useState(false)
   const { isDarkMode } = useTheme()
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
   const isMultiView2 = type === 2
@@ -74,72 +50,6 @@ export default function MultiViewPage() {
     'bg-[#56c1ff]', // 9. Light Blue
   ]
 
-  // Render a single satellite
-  const renderSatellite = (clockId: number, satellite: { rotationTime: number; rotationDirection: 'clockwise' | 'counterclockwise' }, index: number) => {
-    const clock = clockSettings[clockId - 1];
-    const duration = satellite.rotationTime / 1000; // Convert to seconds for animation
-
-    return (
-      <motion.div
-        key={`satellite-${clockId}-${index}`}
-        className="absolute left-1/2 top-1/2 group"
-        initial={{ opacity: 0, scale: 0 }}
-        animate={{ 
-          opacity: 1, 
-          scale: 1,
-          rotate: satellite.rotationDirection === 'clockwise' ? 360 : -360
-        }}
-        transition={{
-          opacity: { duration: 0.5, delay: 0.2 },
-          scale: { duration: 0.5, delay: 0.2 },
-          rotate: {
-            duration: duration,
-            ease: "linear",
-            repeat: Infinity,
-            repeatType: "loop"
-          }
-        }}
-        style={{
-          width: '0',
-          height: '0'
-        }}
-      >
-        <div
-          className="absolute"
-          style={{
-            left: '58%', // Increased radius to be outside focus nodes
-            top: '0%',
-            transform: 'translate(-50%, -50%)',
-          }}
-        >
-          <div 
-            className="w-2.5 h-2.5 rounded-full bg-black dark:bg-white shadow-lg"
-            style={{
-              mixBlendMode: isDarkMode ? 'screen' : 'multiply',
-              boxShadow: isDarkMode 
-                ? '0 0 10px rgba(255, 255, 255, 0.5)' 
-                : '0 0 10px rgba(0, 0, 0, 0.3)',
-            }}
-          />
-          {/* Tooltip */}
-          <div className="absolute left-1/2 -translate-x-1/2 -top-6 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-            <div className="px-2 py-1 rounded-md bg-black/80 dark:bg-white/80 text-white dark:text-black text-xs font-medium shadow-lg">
-              {((Date.now() - clock.startDateTime.getTime()) / 1000).toFixed(1)}s
-            </div>
-          </div>
-        </div>
-      </motion.div>
-    );
-  };
-
-  // Render satellites for a clock
-  const renderSatellites = (clockId: number) => {
-    if (!showSatellites) return null;
-    
-    const satelliteConfig = defaultSatelliteConfigs[clockId as keyof typeof defaultSatelliteConfigs] || [];
-    return satelliteConfig.map((satellite, index) => renderSatellite(clockId, satellite, index));
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-black/90">
       {showElements && (
@@ -151,26 +61,7 @@ export default function MultiViewPage() {
       <Menu
         showElements={showElements}
         onToggleShow={() => setShowElements(!showElements)}
-        showSatellites={showSatellites}
-        onSatellitesChange={setShowSatellites}
       />
-
-      {/* Satellite Toggle Button */}
-      <div className="fixed top-24 right-8 z-50">
-        <button
-          onClick={() => setShowSatellites(!showSatellites)}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:bg-gray-50 dark:hover:bg-white/5 transition-all shadow-sm"
-        >
-          {showSatellites ? (
-            <Eye className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-          ) : (
-            <EyeOff className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-          )}
-          <span className="text-sm text-gray-600 dark:text-gray-300">
-            {showSatellites ? 'Hide' : 'Show'} Satellites
-          </span>
-        </button>
-      </div>
 
       <div className="flex-grow flex items-center justify-center">
         {type === 1 && (
@@ -219,15 +110,10 @@ export default function MultiViewPage() {
                     </div>
 
                     {/* Focus nodes */}
-                    <motion.div 
+                    <div 
                       className="absolute inset-0"
-                      animate={{ rotate: rotation }}
-                      transition={{
-                        duration: 1,
-                        ease: "linear",
-                      }}
                       style={{
-                        transformOrigin: 'center',
+                        transform: `rotate(${rotation}deg)`,
                       }}
                     >
                       <div className="absolute inset-0 flex items-center justify-center">
@@ -259,11 +145,6 @@ export default function MultiViewPage() {
                           })}
                         </div>
                       </div>
-                    </motion.div>
-
-                    {/* Satellites */}
-                    <div className="absolute inset-0" style={{ zIndex: 100 }}>
-                      {renderSatellites(index + 1)}
                     </div>
                   </div>
                 </div>
