@@ -11,8 +11,17 @@ import { motion } from 'framer-motion'
 import type { ClockSettings } from '@/types/ClockSettings'
 import { Eye, EyeOff } from 'lucide-react'
 
+type SatelliteConfig = {
+  rotationTime: number;
+  rotationDirection: 'clockwise' | 'counterclockwise';
+};
+
+type SatelliteConfigs = {
+  [key: number]: SatelliteConfig[];
+};
+
 // Default satellite configurations for each clock
-const defaultSatelliteConfigs = {
+const defaultSatelliteConfigs: SatelliteConfigs = {
   1: [{ rotationTime: 60000, rotationDirection: 'clockwise' }],
   2: [{ rotationTime: 45000, rotationDirection: 'counterclockwise' }],
   3: [{ rotationTime: 30000, rotationDirection: 'clockwise' }],
@@ -65,49 +74,43 @@ export default function MultiViewPage() {
     'bg-[#56c1ff]', // 9. Light Blue
   ]
 
-  // Render satellites for a clock
-  const renderSatellites = (clockId: number, rotation: number) => {
-    if (!showSatellites) return null;
-    
-    const satelliteConfig = defaultSatelliteConfigs[clockId as keyof typeof defaultSatelliteConfigs] || [];
-    
-    return satelliteConfig.map((satellite, index) => {
-      const now = Date.now();
-      const elapsedMilliseconds = now - clockSettings[clockId - 1].startDateTime.getTime();
-      const satelliteRotation = (elapsedMilliseconds / satellite.rotationTime) * 360;
-      const totalRotation = satellite.rotationDirection === 'clockwise'
-        ? satelliteRotation
-        : -satelliteRotation;
+  // Render a single satellite
+  const renderSatellite = (clockId: number, satellite: { rotationTime: number; rotationDirection: 'clockwise' | 'counterclockwise' }, index: number) => {
+    const clock = clockSettings[clockId - 1];
+    const duration = satellite.rotationTime / 1000; // Convert to seconds for animation
 
-      // Calculate position
-      const angle = totalRotation % 360;
-      const radians = angle * (Math.PI / 180);
-      const radius = 58; // Increased radius to be outside focus nodes
-      const x = 50 + radius * Math.cos(radians);
-      const y = 50 + radius * Math.sin(radians);
-
-      // Calculate time for this satellite
-      const rotationsCompleted = Math.floor(Math.abs(totalRotation) / 360);
-      const timeInSeconds = (elapsedMilliseconds / 1000).toFixed(1);
-
-      return (
-        <motion.div
-          key={`satellite-${clockId}-${index}`}
-          className="absolute group"
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{
-            delay: 0.5 + (index * 0.1),
-            duration: 0.5,
-            ease: "easeOut"
-          }}
+    return (
+      <motion.div
+        key={`satellite-${clockId}-${index}`}
+        className="absolute left-1/2 top-1/2 group"
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ 
+          opacity: 1, 
+          scale: 1,
+          rotate: satellite.rotationDirection === 'clockwise' ? 360 : -360
+        }}
+        transition={{
+          opacity: { duration: 0.5, delay: 0.2 },
+          scale: { duration: 0.5, delay: 0.2 },
+          rotate: {
+            duration: duration,
+            ease: "linear",
+            repeat: Infinity,
+            repeatType: "loop"
+          }
+        }}
+        style={{
+          width: '0',
+          height: '0'
+        }}
+      >
+        <div
+          className="absolute"
           style={{
-            left: `${x}%`,
-            top: `${y}%`,
+            left: '58%', // Increased radius to be outside focus nodes
+            top: '0%',
             transform: 'translate(-50%, -50%)',
-            zIndex: 1000,
           }}
-          whileHover={{ scale: 1.5 }}
         >
           <div 
             className="w-2.5 h-2.5 rounded-full bg-black dark:bg-white shadow-lg"
@@ -119,14 +122,22 @@ export default function MultiViewPage() {
             }}
           />
           {/* Tooltip */}
-          <div className="absolute left-1/2 -translate-x-1/2 -top-6 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+          <div className="absolute left-1/2 -translate-x-1/2 -top-6 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
             <div className="px-2 py-1 rounded-md bg-black/80 dark:bg-white/80 text-white dark:text-black text-xs font-medium shadow-lg">
-              {timeInSeconds}s • {rotationsCompleted} rotations
+              {((Date.now() - clock.startDateTime.getTime()) / 1000).toFixed(1)}s
             </div>
           </div>
-        </motion.div>
-      );
-    });
+        </div>
+      </motion.div>
+    );
+  };
+
+  // Render satellites for a clock
+  const renderSatellites = (clockId: number) => {
+    if (!showSatellites) return null;
+    
+    const satelliteConfig = defaultSatelliteConfigs[clockId as keyof typeof defaultSatelliteConfigs] || [];
+    return satelliteConfig.map((satellite, index) => renderSatellite(clockId, satellite, index));
   };
 
   return (
@@ -208,10 +219,15 @@ export default function MultiViewPage() {
                     </div>
 
                     {/* Focus nodes */}
-                    <div 
+                    <motion.div 
                       className="absolute inset-0"
+                      animate={{ rotate: rotation }}
+                      transition={{
+                        duration: 1,
+                        ease: "linear",
+                      }}
                       style={{
-                        transform: `rotate(${rotation}deg)`,
+                        transformOrigin: 'center',
                       }}
                     >
                       <div className="absolute inset-0 flex items-center justify-center">
@@ -243,22 +259,12 @@ export default function MultiViewPage() {
                           })}
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
 
                     {/* Satellites */}
-                    <motion.div 
-                      className="absolute inset-0" 
-                      style={{ zIndex: 100 }}
-                      animate={{ rotate: rotation }}
-                      transition={{
-                        duration: 1,
-                        ease: "linear",
-                        repeat: Infinity,
-                        repeatType: "loop"
-                      }}
-                    >
-                      {renderSatellites(index + 1, rotation)}
-                    </motion.div>
+                    <div className="absolute inset-0" style={{ zIndex: 100 }}>
+                      {renderSatellites(index + 1)}
+                    </div>
                   </div>
                 </div>
               )
