@@ -10,17 +10,70 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import type { ClockSettings } from '@/types/ClockSettings'
 
-// Default satellite configurations for clock 1
-const defaultSatelliteConfigs = [
-  { rotationTime: 300 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 600 * 1000, rotationDirection: 'counterclockwise' },
-  { rotationTime: 900 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' },
-  { rotationTime: 2700 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 5400 * 1000, rotationDirection: 'counterclockwise' },
-  { rotationTime: 5400 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' }
-];
+// Default satellite configurations for all clocks
+const defaultSatelliteConfigs: Record<number, Array<{ rotationTime: number, rotationDirection: 'clockwise' | 'counterclockwise' }>> = {
+  0: [ // Clock 1
+    { rotationTime: 300 * 1000, rotationDirection: 'clockwise' },
+    { rotationTime: 600 * 1000, rotationDirection: 'counterclockwise' },
+    { rotationTime: 900 * 1000, rotationDirection: 'clockwise' },
+    { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' },
+    { rotationTime: 2700 * 1000, rotationDirection: 'clockwise' },
+    { rotationTime: 5400 * 1000, rotationDirection: 'counterclockwise' },
+    { rotationTime: 5400 * 1000, rotationDirection: 'clockwise' },
+    { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' }
+  ],
+  1: [ // Clock 2
+    { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' },
+    { rotationTime: 3600 * 1000, rotationDirection: 'counterclockwise' }
+  ],
+  2: [ // Clock 3
+    { rotationTime: 600 * 1000, rotationDirection: 'counterclockwise' },
+    { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' }
+  ],
+  3: [ // Clock 4
+    { rotationTime: 60 * 1000, rotationDirection: 'clockwise' }
+  ],
+  4: [ // Clock 5
+    { rotationTime: 720 * 1000, rotationDirection: 'clockwise' },
+    { rotationTime: 1140 * 1000, rotationDirection: 'counterclockwise' },
+    { rotationTime: 1710 * 1000, rotationDirection: 'clockwise' },
+    { rotationTime: 1710 * 1000, rotationDirection: 'counterclockwise' },
+    { rotationTime: 900 * 1000, rotationDirection: 'clockwise' }
+  ],
+  5: [ // Clock 6
+    { rotationTime: 60 * 1000, rotationDirection: 'clockwise' }
+  ],
+  6: [ // Clock 7
+    { rotationTime: 900 * 1000, rotationDirection: 'clockwise' },
+    { rotationTime: 900 * 1000, rotationDirection: 'counterclockwise' },
+    { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' },
+    { rotationTime: 900 * 1000, rotationDirection: 'counterclockwise' },
+    { rotationTime: 700 * 1000, rotationDirection: 'clockwise' }
+  ],
+  7: [ // Clock 8
+    { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' },
+    { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' },
+    { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' },
+    { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' },
+    { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' }
+  ],
+  8: [ // Clock 9
+    { rotationTime: 3600 * 1000, rotationDirection: 'clockwise' }
+  ]
+};
+
+// Satellite counts for each clock
+const clockSatellites: Record<number, number> = {
+  0: 8, // Clock 1
+  1: 2, // Clock 2
+  2: 2, // Clock 3
+  3: 1, // Clock 4
+  4: 5, // Clock 5
+  5: 1, // Clock 6
+  6: 5, // Clock 7
+  7: 5, // Clock 8
+  8: 1, // Clock 9
+};
 
 export default function MultiViewPage() {
   const params = useParams()
@@ -29,7 +82,7 @@ export default function MultiViewPage() {
   const { isDarkMode } = useTheme()
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
   const isMultiView2 = type === 2
-  const [satelliteRotations, setSatelliteRotations] = useState<number[]>(Array(8).fill(0))
+  const [satelliteRotations, setSatelliteRotations] = useState<Record<number, number[]>>({})
   const animationRef = useRef<number>()
 
   // Initialize and update current time
@@ -47,14 +100,21 @@ export default function MultiViewPage() {
 
     const animate = () => {
       const now = Date.now()
-      const clock = clockSettings[0] // Clock 1
-      const elapsedMilliseconds = now - clock.startDateTime.getTime()
+      const newRotations: Record<number, number[]> = {}
       
-      const newRotations = defaultSatelliteConfigs.map(config => {
-        const satelliteRotation = (elapsedMilliseconds / config.rotationTime) * 360
-        return config.rotationDirection === 'clockwise'
-          ? satelliteRotation
-          : -satelliteRotation
+      // Calculate rotations for all clocks' satellites
+      clockSettings.forEach((clock, clockIndex) => {
+        if (!clockSatellites[clockIndex]) return
+        
+        const elapsedMilliseconds = now - clock.startDateTime.getTime()
+        const configs = defaultSatelliteConfigs[clockIndex] || []
+        
+        newRotations[clockIndex] = configs.map(config => {
+          const satelliteRotation = (elapsedMilliseconds / config.rotationTime) * 360
+          return config.rotationDirection === 'clockwise'
+            ? satelliteRotation
+            : -satelliteRotation
+        })
       })
 
       setSatelliteRotations(newRotations)
@@ -192,17 +252,17 @@ export default function MultiViewPage() {
                       </div>
                     </div>
 
-                    {/* Satellites (only for clock 1) */}
-                    {index === 0 && (
+                    {/* Satellites for all clocks */}
+                    {clockSatellites[index] > 0 && (
                       <div className="absolute inset-0">
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div className="w-full h-full rounded-full relative">
-                            {Array.from({ length: 8 }).map((_, satelliteIndex) => {
-                              const angle = (satelliteIndex * 360) / 8
+                            {Array.from({ length: clockSatellites[index] }).map((_, satelliteIndex) => {
+                              const angle = (satelliteIndex * 360) / clockSatellites[index]
                               const radius = 62
                               
                               // Use pre-calculated rotation from animation frame
-                              const totalRotation = satelliteRotations[satelliteIndex]
+                              const totalRotation = satelliteRotations[index]?.[satelliteIndex] || 0
 
                               // Apply both base position and rotation
                               const rotatedRadians = (angle + totalRotation) * (Math.PI / 180)
