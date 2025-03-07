@@ -847,7 +847,15 @@ export default function Clock({
 
   if (isMultiView || isMultiView2) {
     return (
-      <div className="relative w-[75vw] h-[75vw] max-w-[550px] max-h-[550px]">
+      <motion.div 
+        className="relative w-[75vw] h-[75vw] max-w-[550px] max-h-[550px]"
+        initial={{ scale: isMultiView2 ? 1.25 : 1 }}
+        animate={{ scale: isMultiView2 ? 0.75 : 1 }}
+        transition={{
+          duration: 0.8,
+          ease: [0.4, 0, 0.2, 1]
+        }}
+      >
         {/* Satellite grid pattern - only shown in multiview2 */}
         {isMultiView2 && (
           <motion.div 
@@ -1087,7 +1095,7 @@ export default function Clock({
             })}
           </div>
         )}
-      </div>
+      </motion.div>
     );
   }
 
