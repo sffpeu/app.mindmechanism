@@ -308,7 +308,7 @@ export default function MultiViewPage() {
           </div>
         )}
         {type === 2 && (
-          <div className="relative w-[600px] h-[600px]">
+          <div className="relative w-[450px] h-[450px]">
             {clockSettings.map((clock, index) => {
               if (index >= 9) return null;
               const rotation = getClockRotation(clock)
