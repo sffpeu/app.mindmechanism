@@ -309,6 +309,54 @@ export default function MultiViewPage() {
         )}
         {type === 2 && (
           <div className="relative w-[450px] h-[450px]">
+            {/* Large background circles */}
+            {Array.from({ length: 9 }).map((_, index) => {
+              if (index === 8) return null; // Skip center position
+              const angle = (360 / 8) * index;
+              const radius = 180; // Increased radius for larger circles
+              const radians = (angle * Math.PI) / 180;
+              const x = 50 + radius * Math.cos(radians);
+              const y = 50 + radius * Math.sin(radians);
+
+              return (
+                <motion.div
+                  key={`large-circle-${index}`}
+                  className="absolute w-[120px] h-[120px] rounded-full"
+                  style={{
+                    left: `${x}%`,
+                    top: `${y}%`,
+                    transform: 'translate(-50%, -50%)',
+                    border: '2px solid',
+                    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                  }}
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{
+                    duration: 0.8,
+                    delay: index * 0.1,
+                    ease: "easeOut"
+                  }}
+                />
+              );
+            })}
+            {/* Center large circle */}
+            <motion.div
+              className="absolute w-[120px] h-[120px] rounded-full"
+              style={{
+                left: '50%',
+                top: '50%',
+                transform: 'translate(-50%, -50%)',
+                border: '2px solid',
+                borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+              }}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{
+                duration: 0.8,
+                delay: 0.8,
+                ease: "easeOut"
+              }}
+            />
             {clockSettings.map((clock, index) => {
               if (index >= 9) return null;
               const rotation = getClockRotation(clock)
