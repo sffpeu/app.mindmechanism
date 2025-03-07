@@ -308,72 +308,53 @@ export default function MultiViewPage() {
           </div>
         )}
         {type === 2 && (
-          <div className="relative w-[500px] h-[500px]">
+          <div className="relative w-[600px] h-[600px]">
             {clockSettings.map((clock, index) => {
               if (index >= 9) return null;
-
-              // Calculate position for each mini clock
-              const angle = (360 / 8) * index;
-              const radius = index === 8 ? 0 : 35; // Center clock and outer clocks
-              const radians = (angle * Math.PI) / 180;
-              const x = 50 + radius * Math.cos(radians);
-              const y = 50 + radius * Math.sin(radians);
-
-              // Adjust size based on position
-              const clockSize = index === 8 ? '30%' : '22%';
-
-              // Calculate rotation
-              const now = Date.now();
-              const elapsedMilliseconds = now - clock.startDateTime.getTime();
-              const calculatedRotation = (elapsedMilliseconds / clock.rotationTime) * 360;
-              const clockRotation = clock.rotationDirection === 'clockwise'
-                ? (clock.startingDegree + calculatedRotation) % 360
-                : (clock.startingDegree - calculatedRotation + 360) % 360;
-
+              const rotation = getClockRotation(clock)
               return (
-                <motion.div
-                  key={`mini-clock-${clock.id}`}
-                  className={`absolute aspect-square hover:scale-110 transition-transform duration-200 group`}
+                <div
+                  key={index}
+                  className="absolute inset-0 flex items-center justify-center"
                   style={{
-                    width: clockSize,
-                    left: `${x}%`,
-                    top: `${y}%`,
-                    transform: 'translate(-50%, -50%)',
-                    zIndex: index === 8 ? 40 : 30,
+                    mixBlendMode: isDarkMode ? 'screen' : 'multiply',
                   }}
                 >
-                  <div className="relative w-full h-full">
-                    {/* Tooltip */}
-                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-black dark:text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-                      {clockRotation.toFixed(1)}°
-                    </div>
-                    <div
-                      className="absolute inset-0 rounded-full overflow-hidden"
-                      style={{
-                        transform: `rotate(${clockRotation}deg)`,
-                      }}
-                    >
-                      <div
+                  <div className="w-full h-full relative">
+                    {/* Clock face */}
+                    <div className="absolute inset-0">
+                      <motion.div
                         className="absolute inset-0"
+                        animate={{ rotate: rotation }}
+                        transition={{
+                          duration: 1,
+                          ease: "linear",
+                        }}
                         style={{
-                          transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) rotate(${clock.imageOrientation}deg) scale(${clock.imageScale})`,
                           transformOrigin: 'center',
-                          mixBlendMode: 'multiply',
                         }}
                       >
-                        <Image 
-                          src={`/${index + 1}.svg`}
-                          alt={`Clock Face ${index + 1}`}
-                          fill
-                          className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
-                          priority
-                          loading="eager"
-                        />
-                      </div>
+                        <div
+                          className="absolute inset-0"
+                          style={{
+                            transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) rotate(${clock.imageOrientation}deg) scale(${clock.imageScale})`,
+                            transformOrigin: 'center',
+                          }}
+                        >
+                          <Image
+                            src={`/${index + 1}.svg`}
+                            alt={`Clock ${index + 1}`}
+                            fill
+                            className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
+                            priority
+                            loading="eager"
+                          />
+                        </div>
+                      </motion.div>
                     </div>
                   </div>
-                </motion.div>
-              );
+                </div>
+              )
             })}
           </div>
         )}
