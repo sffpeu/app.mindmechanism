@@ -9,6 +9,7 @@ import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import type { ClockSettings } from '@/types/ClockSettings'
+import React from 'react'
 
 // Default satellite configurations for all clocks
 const defaultSatelliteConfigs: Record<number, Array<{ rotationTime: number, rotationDirection: 'clockwise' | 'counterclockwise' }>> = {
@@ -308,101 +309,195 @@ export default function MultiViewPage() {
           </div>
         )}
         {type === 2 && (
-          <div className="relative w-[450px] h-[450px]">
-            {/* Large background circles */}
-            {Array.from({ length: 9 }).map((_, index) => {
-              if (index === 8) return null; // Skip center position
-              const angle = (360 / 8) * index;
-              const radius = 180; // Increased radius for larger circles
-              const radians = (angle * Math.PI) / 180;
-              const x = 50 + radius * Math.cos(radians);
-              const y = 50 + radius * Math.sin(radians);
-
-              return (
-                <motion.div
-                  key={`large-circle-${index}`}
-                  className="absolute w-[120px] h-[120px] rounded-full"
-                  style={{
-                    left: `${x}%`,
-                    top: `${y}%`,
-                    transform: 'translate(-50%, -50%)',
-                    border: '2px solid',
-                    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                  }}
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{
-                    duration: 0.8,
-                    delay: index * 0.1,
-                    ease: "easeOut"
-                  }}
+          <div className="relative w-[550px] h-[550px]">
+            {/* Satellite grid pattern */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.2 }}
+              transition={{ duration: 1 }}
+              className="absolute inset-[-12%] rounded-full overflow-hidden"
+            >
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Image
+                  src="/satellite-grid.jpg"
+                  alt="Satellite Grid Pattern"
+                  layout="fill"
+                  objectFit="cover"
+                  className="opacity-20 dark:invert"
+                  priority
                 />
-              );
-            })}
-            {/* Center large circle */}
-            <motion.div
-              className="absolute w-[120px] h-[120px] rounded-full"
-              style={{
-                left: '50%',
-                top: '50%',
-                transform: 'translate(-50%, -50%)',
-                border: '2px solid',
-                borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-              }}
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{
-                duration: 0.8,
-                delay: 0.8,
-                ease: "easeOut"
-              }}
-            />
+              </div>
+            </motion.div>
+
+            {/* Render both inner and outer layers of clocks */}
             {clockSettings.map((clock, index) => {
               if (index >= 9) return null;
-              const rotation = getClockRotation(clock)
+
+              // Calculate positions for two layers
+              const isCenter = index === 8;
+              const isInnerLayer = !isCenter && index < 8;
+              const isOuterLayer = !isCenter && index < 8;
+              
+              // Inner layer configuration
+              const innerRadius = 35;
+              const innerAngle = (360 / 8) * index;
+              const innerRadians = (innerAngle * Math.PI) / 180;
+              const innerX = 50 + innerRadius * Math.cos(innerRadians);
+              const innerY = 50 + innerRadius * Math.sin(innerRadians);
+
+              // Outer layer configuration
+              const outerRadius = 70;
+              const outerAngle = (360 / 8) * index;
+              const outerRadians = (outerAngle * Math.PI) / 180;
+              const outerX = 50 + outerRadius * Math.cos(outerRadians);
+              const outerY = 50 + outerRadius * Math.sin(outerRadians);
+
+              // Calculate rotation
+              const now = Date.now();
+              const elapsedMilliseconds = now - clock.startDateTime.getTime();
+              const calculatedRotation = (elapsedMilliseconds / clock.rotationTime) * 360;
+              const clockRotation = clock.rotationDirection === 'clockwise'
+                ? (clock.startingDegree + calculatedRotation) % 360
+                : (clock.startingDegree - calculatedRotation + 360) % 360;
+
               return (
-                <div
-                  key={index}
-                  className="absolute inset-0 flex items-center justify-center"
-                  style={{
-                    mixBlendMode: isDarkMode ? 'screen' : 'multiply',
-                  }}
-                >
-                  <div className="w-full h-full relative">
-                    {/* Clock face */}
-                    <div className="absolute inset-0">
-                      <motion.div
-                        className="absolute inset-0"
-                        animate={{ rotate: rotation }}
-                        transition={{
-                          duration: 1,
-                          ease: "linear",
-                        }}
-                        style={{
-                          transformOrigin: 'center',
-                        }}
-                      >
+                <React.Fragment key={`clock-group-${index}`}>
+                  {/* Center clock */}
+                  {isCenter && (
+                    <motion.div
+                      key={`center-clock-${index}`}
+                      className="absolute aspect-square hover:scale-110 transition-transform duration-200 group"
+                      style={{
+                        width: '30%',
+                        left: '50%',
+                        top: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        zIndex: 40,
+                      }}
+                    >
+                      <div className="relative w-full h-full">
+                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-black dark:text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                          {clockRotation.toFixed(1)}°
+                        </div>
                         <div
-                          className="absolute inset-0"
+                          className="absolute inset-0 rounded-full overflow-hidden"
                           style={{
-                            transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) rotate(${clock.imageOrientation}deg) scale(${clock.imageScale})`,
-                            transformOrigin: 'center',
+                            transform: `rotate(${clockRotation}deg)`,
                           }}
                         >
-                          <Image
-                            src={`/${index + 1}.svg`}
-                            alt={`Clock ${index + 1}`}
-                            fill
-                            className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
-                            priority
-                            loading="eager"
-                          />
+                          <div
+                            className="absolute inset-0"
+                            style={{
+                              transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) rotate(${clock.imageOrientation}deg) scale(${clock.imageScale})`,
+                              transformOrigin: 'center',
+                              mixBlendMode: 'multiply',
+                            }}
+                          >
+                            <Image 
+                              src={`/${index + 1}.svg`}
+                              alt={`Clock Face ${index + 1}`}
+                              fill
+                              className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
+                              priority
+                              loading="eager"
+                            />
+                          </div>
                         </div>
-                      </motion.div>
-                    </div>
-                  </div>
-                </div>
-              )
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Inner layer clock */}
+                  {isInnerLayer && (
+                    <motion.div
+                      key={`inner-clock-${index}`}
+                      className="absolute aspect-square hover:scale-110 transition-transform duration-200 group"
+                      style={{
+                        width: '22%',
+                        left: `${innerX}%`,
+                        top: `${innerY}%`,
+                        transform: 'translate(-50%, -50%)',
+                        zIndex: 30,
+                      }}
+                    >
+                      <div className="relative w-full h-full">
+                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-black dark:text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                          {clockRotation.toFixed(1)}°
+                        </div>
+                        <div
+                          className="absolute inset-0 rounded-full overflow-hidden"
+                          style={{
+                            transform: `rotate(${clockRotation}deg)`,
+                          }}
+                        >
+                          <div
+                            className="absolute inset-0"
+                            style={{
+                              transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) rotate(${clock.imageOrientation}deg) scale(${clock.imageScale})`,
+                              transformOrigin: 'center',
+                              mixBlendMode: 'multiply',
+                            }}
+                          >
+                            <Image 
+                              src={`/${index + 1}.svg`}
+                              alt={`Clock Face ${index + 1}`}
+                              fill
+                              className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
+                              priority
+                              loading="eager"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Outer layer clock */}
+                  {isOuterLayer && (
+                    <motion.div
+                      key={`outer-clock-${index}`}
+                      className="absolute aspect-square hover:scale-110 transition-transform duration-200 group"
+                      style={{
+                        width: '20%',
+                        left: `${outerX}%`,
+                        top: `${outerY}%`,
+                        transform: 'translate(-50%, -50%)',
+                        zIndex: 20,
+                      }}
+                    >
+                      <div className="relative w-full h-full">
+                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-black dark:text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                          {clockRotation.toFixed(1)}°
+                        </div>
+                        <div
+                          className="absolute inset-0 rounded-full overflow-hidden"
+                          style={{
+                            transform: `rotate(${clockRotation}deg)`,
+                          }}
+                        >
+                          <div
+                            className="absolute inset-0"
+                            style={{
+                              transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) rotate(${clock.imageOrientation}deg) scale(${clock.imageScale})`,
+                              transformOrigin: 'center',
+                              mixBlendMode: 'multiply',
+                            }}
+                          >
+                            <Image 
+                              src={`/${index + 1}.svg`}
+                              alt={`Clock Face ${index + 1}`}
+                              fill
+                              className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
+                              priority
+                              loading="eager"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </React.Fragment>
+              );
             })}
           </div>
         )}
