@@ -104,26 +104,25 @@ export default function MultiViewPage() {
   // Update rotation values continuously
   useEffect(() => {
     const updateRotations = () => {
-      if (hoveredClock !== null) {
-        const now = new Date()
-        const clock = clockSettings[hoveredClock]
-        const elapsedMilliseconds = now.getTime() - clock.startDateTime.getTime()
-        const calculatedRotation = (elapsedMilliseconds / clock.rotationTime) * 360
+      const now = Date.now();
+      clockSettings.forEach((clock, index) => {
+        const elapsedMilliseconds = now - clock.startDateTime.getTime();
+        const calculatedRotation = (elapsedMilliseconds / clock.rotationTime) * 360;
         const newRotation = clock.rotationDirection === 'clockwise'
           ? (clock.startingDegree + calculatedRotation) % 360
-          : (clock.startingDegree - calculatedRotation + 360) % 360
+          : (clock.startingDegree - calculatedRotation + 360) % 360;
 
         setRotationValues(prev => ({
           ...prev,
-          [hoveredClock]: newRotation
-        }))
-      }
-      requestAnimationFrame(updateRotations)
-    }
+          [index]: newRotation
+        }));
+      });
+      requestAnimationFrame(updateRotations);
+    };
 
-    const animationId = requestAnimationFrame(updateRotations)
-    return () => cancelAnimationFrame(animationId)
-  }, [hoveredClock])
+    const animationId = requestAnimationFrame(updateRotations);
+    return () => cancelAnimationFrame(animationId);
+  }, []);
 
   // Smooth animation for satellites
   useEffect(() => {
@@ -431,9 +430,9 @@ export default function MultiViewPage() {
                 return (
                   <div
                     key={index}
-                    className="absolute aspect-square group hover:scale-110 transition-transform duration-200"
+                    className="absolute aspect-square hover:scale-110 transition-transform duration-200 group"
                     style={{
-                      width: '32%',
+                      width: '22%',
                       left: `${x}%`,
                       top: `${y}%`,
                       transform: 'translate(-50%, -50%)',
@@ -442,34 +441,33 @@ export default function MultiViewPage() {
                     onMouseEnter={() => setHoveredClock(index)}
                     onMouseLeave={() => setHoveredClock(null)}
                   >
-                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-black dark:text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-                      {(hoveredClock === index && rotationValues[index] !== undefined ? rotationValues[index] : rotation).toFixed(1)}°
-                    </div>
                     <div className="relative w-full h-full">
-                      <div className="absolute inset-0 rounded-full overflow-hidden">
+                      {/* Tooltip */}
+                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-black dark:text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                        {rotationValues[index]?.toFixed(1)}°
+                      </div>
+                      <div
+                        className="absolute inset-0 rounded-full overflow-hidden"
+                        style={{
+                          transform: `rotate(${rotation}deg)`,
+                        }}
+                      >
                         <div
                           className="absolute inset-0"
-                          style={{ 
-                            transform: `rotate(${rotation}deg)`,
+                          style={{
+                            transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) rotate(${clock.imageOrientation}deg) scale(${clock.imageScale})`,
                             transformOrigin: 'center',
+                            mixBlendMode: 'multiply',
                           }}
                         >
-                          <div
-                            className="absolute inset-0"
-                            style={{
-                              transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) rotate(${clock.imageOrientation}deg) scale(${clock.imageScale})`,
-                              transformOrigin: 'center',
-                            }}
-                          >
-                            <Image
-                              src={`/clock_${index + 1}.svg`}
-                              alt={`Clock ${index + 1}`}
-                              fill
-                              className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
-                              priority
-                              loading="eager"
-                            />
-                          </div>
+                          <Image 
+                            src={`/clock_${index + 1}.svg`}
+                            alt={`Clock ${index + 1}`}
+                            fill
+                            className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
+                            priority
+                            loading="eager"
+                          />
                         </div>
                       </div>
                     </div>
