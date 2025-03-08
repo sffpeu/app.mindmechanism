@@ -156,6 +156,16 @@ function hexToRgb(hex: string) {
   } : null;
 }
 
+// Helper function to calculate clock rotation
+const getClockRotation = (clock: ClockSettings) => {
+  const now = Date.now();
+  const elapsedMilliseconds = now - clock.startDateTime.getTime();
+  const calculatedRotation = (elapsedMilliseconds / clock.rotationTime) * 360;
+  return clock.rotationDirection === 'clockwise'
+    ? (clock.startingDegree + calculatedRotation) % 360
+    : (clock.startingDegree - calculatedRotation + 360) % 360;
+};
+
 export default function Clock({ 
   id, 
   startDateTime = new Date('2024-01-01T00:00:00Z'),
@@ -878,73 +888,106 @@ export default function Clock({
         )}
 
         {/* Individual clocks in multiview2 */}
-        {isMultiView2 && allClocks?.map((clock, index) => {
-          if (index >= 9) return null;
-
-          // Calculate position for each mini clock
-          const angle = (360 / 8) * index;
-          const radius = index === 8 ? 0 : 35; // Increased radius for more spacing
-          const radians = (angle * Math.PI) / 180;
-          const x = 50 + radius * Math.cos(radians);
-          const y = 50 + radius * Math.sin(radians);
-
-          // Adjust size based on position
-          const clockSize = index === 8 ? '30%' : '22%'; // Center clock is larger, outer clocks slightly smaller
-
-          // Calculate rotation
-          const now = Date.now();
-          const elapsedMilliseconds = now - clock.startDateTime.getTime();
-          const calculatedRotation = (elapsedMilliseconds / clock.rotationTime) * 360;
-          const clockRotation = clock.rotationDirection === 'clockwise'
-            ? (clock.startingDegree + calculatedRotation) % 360
-            : (clock.startingDegree - calculatedRotation + 360) % 360;
-
-          return (
-            <motion.div
-              key={`mini-clock-${clock.id}`}
-              className={`absolute aspect-square hover:scale-110 transition-transform duration-200 group`}
-              style={{
-                width: clockSize,
-                left: `${x}%`,
-                top: `${y}%`,
-                transform: 'translate(-50%, -50%)',
-                zIndex: index === 8 ? 40 : 30,
-              }}
-            >
+        {isMultiView2 && (
+          <>
+            {/* Center layered clocks */}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[30%] aspect-square" style={{ zIndex: 40 }}>
               <div className="relative w-full h-full">
-                {/* Tooltip */}
-                <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-black dark:text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-                  {clockRotation.toFixed(1)}°
-                </div>
-                <div
-                  className="absolute inset-0 rounded-full overflow-hidden"
+                {allClocks?.map((clock, index) => (
+                  <div key={`center-clock-${clock.id}`} className="absolute inset-0" style={{ mixBlendMode: 'multiply' }}>
+                    <div className="absolute inset-0 rounded-full overflow-hidden">
+                      <motion.div 
+                        className="absolute inset-0"
+                        style={{ 
+                          transform: `rotate(${getClockRotation(clock)}deg)`,
+                        }}
+                      >
+                        <div
+                          className="absolute inset-0"
+                          style={{
+                            transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) rotate(${clock.imageOrientation}deg) scale(${clock.imageScale})`,
+                            transformOrigin: 'center',
+                          }}
+                        >
+                          <Image 
+                            src={clock.imageUrl}
+                            alt={`Clock Face ${index + 1}`}
+                            layout="fill"
+                            objectFit="cover"
+                            className="rounded-full [&_*]:fill-current [&_*]:stroke-none"
+                            priority
+                            loading="eager"
+                          />
+                        </div>
+                      </motion.div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Outer ring clocks */}
+            {allClocks?.map((clock, index) => {
+              // Skip the 9th clock as it's part of the center stack
+              if (index >= 8) return null;
+
+              // Calculate position for each outer clock
+              const angle = (360 / 8) * index;
+              const radius = 35; // Distance from center
+              const radians = (angle * Math.PI) / 180;
+              const x = 50 + radius * Math.cos(radians);
+              const y = 50 + radius * Math.sin(radians);
+
+              const clockRotation = getClockRotation(clock);
+
+              return (
+                <motion.div
+                  key={`outer-clock-${clock.id}`}
+                  className="absolute aspect-square hover:scale-110 transition-transform duration-200 group"
                   style={{
-                    transform: `rotate(${clockRotation}deg)`,
+                    width: '22%',
+                    left: `${x}%`,
+                    top: `${y}%`,
+                    transform: 'translate(-50%, -50%)',
+                    zIndex: 30,
                   }}
                 >
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) rotate(${clock.imageOrientation}deg) scale(${clock.imageScale})`,
-                      transformOrigin: 'center',
-                      mixBlendMode: 'multiply',
-                    }}
-                  >
-                    <Image 
-                      src={clock.imageUrl}
-                      alt={`Clock Face ${index + 1}`}
-                      layout="fill"
-                      objectFit="cover"
-                      className="rounded-full [&_*]:fill-current [&_*]:stroke-none"
-                      priority
-                      loading="eager"
-                    />
+                  <div className="relative w-full h-full">
+                    {/* Tooltip */}
+                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-black dark:text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                      {clockRotation.toFixed(1)}°
+                    </div>
+                    <div
+                      className="absolute inset-0 rounded-full overflow-hidden"
+                      style={{
+                        transform: `rotate(${clockRotation}deg)`,
+                      }}
+                    >
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) rotate(${clock.imageOrientation}deg) scale(${clock.imageScale})`,
+                          transformOrigin: 'center',
+                          mixBlendMode: 'multiply',
+                        }}
+                      >
+                        <Image 
+                          src={clock.imageUrl}
+                          alt={`Clock Face ${index + 1}`}
+                          layout="fill"
+                          objectFit="cover"
+                          className="rounded-full [&_*]:fill-current [&_*]:stroke-none"
+                          priority
+                          loading="eager"
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
+                </motion.div>
+              );
+            })}
+          </>
+        )}
 
         {!hideControls && (
           <>
