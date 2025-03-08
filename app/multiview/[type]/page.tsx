@@ -432,7 +432,7 @@ export default function MultiViewPage() {
                     onMouseLeave={() => setHoveredClock(null)}
                   >
                     <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-black dark:text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-                      {(hoveredClock === index ? rotationValues[index] : rotation).toFixed(1)}°
+                      {(hoveredClock === index && rotationValues[index] !== undefined ? rotationValues[index] : rotation).toFixed(1)}°
                     </div>
                     <div className="relative w-full h-full">
                       <div className="absolute inset-0 rounded-full overflow-hidden">
