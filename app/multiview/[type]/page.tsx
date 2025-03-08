@@ -402,7 +402,7 @@ export default function MultiViewPage() {
                     key={index}
                     className="absolute aspect-square group hover:scale-110 transition-transform duration-200"
                     style={{
-                      width: '35%',
+                      width: '32%',
                       left: `${x}%`,
                       top: `${y}%`,
                       transform: 'translate(-50%, -50%)',
@@ -410,7 +410,7 @@ export default function MultiViewPage() {
                     }}
                   >
                     <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-black dark:text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-                      {rotation.toFixed(1)}°
+                      {getClockRotation(clock).toFixed(1)}°
                     </div>
                     <div className="relative w-full h-full">
                       <div className="absolute inset-0 rounded-full overflow-hidden">
