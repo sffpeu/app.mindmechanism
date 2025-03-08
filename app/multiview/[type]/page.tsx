@@ -382,12 +382,12 @@ export default function MultiViewPage() {
 
             {/* Outer ring clocks */}
             {clockSettings.map((clock, index) => {
-              if (index >= 8) return null;
+              if (index >= 9) return null;
               const rotation = getClockRotation(clock);
               
               // Calculate position for outer clock
-              const angle = (360 / 8) * index;
-              const radius = 65; // Increased distance even more
+              const angle = (360 / 9) * index;
+              const radius = 70;
               const radians = (angle * Math.PI) / 180;
               const x = 50 + radius * Math.cos(radians);
               const y = 50 + radius * Math.sin(radians);
@@ -397,7 +397,7 @@ export default function MultiViewPage() {
                   key={index}
                   className="absolute aspect-square hover:scale-110 transition-transform duration-200"
                   style={{
-                    width: '20%', // Increased size for thicker clocks
+                    width: '25%',
                     left: `${x}%`,
                     top: `${y}%`,
                     transform: 'translate(-50%, -50%)',
@@ -405,7 +405,7 @@ export default function MultiViewPage() {
                   }}
                 >
                   <div className="relative w-full h-full">
-                    <div className="absolute inset-0 rounded-full overflow-hidden shadow-lg bg-white dark:bg-black">
+                    <div className="absolute inset-0 rounded-full overflow-hidden">
                       <motion.div
                         className="absolute inset-0"
                         animate={{ rotate: rotation }}
