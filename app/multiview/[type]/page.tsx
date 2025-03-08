@@ -386,9 +386,10 @@ export default function MultiViewPage() {
               const rotation = getClockRotation(clock);
               
               // Calculate position for outer clock
-              const angle = (360 / 9) * index;
-              const radius = 70;
-              const radians = (angle * Math.PI) / 180;
+              // Start from top (270 degrees) and move clockwise
+              const angle = 270 + (360 / 9) * index;
+              const radius = 75; // Adjusted to match satellite grid endpoints
+              const radians = angle * (Math.PI / 180);
               const x = 50 + radius * Math.cos(radians);
               const y = 50 + radius * Math.sin(radians);
 
@@ -397,7 +398,7 @@ export default function MultiViewPage() {
                   key={index}
                   className="absolute aspect-square hover:scale-110 transition-transform duration-200"
                   style={{
-                    width: '25%',
+                    width: '28%', // Increased size to match grid endpoints
                     left: `${x}%`,
                     top: `${y}%`,
                     transform: 'translate(-50%, -50%)',
