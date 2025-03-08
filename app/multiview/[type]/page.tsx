@@ -310,7 +310,7 @@ export default function MultiViewPage() {
         {type === 2 && (
           <div className="relative w-[450px] h-[450px]">
             {/* Center layered clocks */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[30%] aspect-square" style={{ zIndex: 40 }}>
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] aspect-square" style={{ zIndex: 40 }}>
               {clockSettings.map((clock, index) => {
                 if (index >= 9) return null;
                 const rotation = getClockRotation(clock);
@@ -458,7 +458,7 @@ export default function MultiViewPage() {
               
               // Calculate position for outer clock
               const angle = (360 / 8) * index;
-              const radius = 35; // Distance from center
+              const radius = 45; // Increased distance from center
               const radians = (angle * Math.PI) / 180;
               const x = 50 + radius * Math.cos(radians);
               const y = 50 + radius * Math.sin(radians);
@@ -468,7 +468,7 @@ export default function MultiViewPage() {
                   key={index}
                   className="absolute aspect-square hover:scale-110 transition-transform duration-200"
                   style={{
-                    width: '22%',
+                    width: '18%', // Slightly smaller outer clocks
                     left: `${x}%`,
                     top: `${y}%`,
                     transform: 'translate(-50%, -50%)',
