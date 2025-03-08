@@ -309,8 +309,28 @@ export default function MultiViewPage() {
         )}
         {type === 2 && (
           <div className="relative w-[450px] h-[450px]">
+            {/* Satellite grid pattern */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.2 }}
+              transition={{ duration: 1 }}
+              className="absolute inset-[-12%] rounded-full overflow-hidden"
+              style={{ zIndex: 20 }}
+            >
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Image
+                  src="/satellite-grid.jpg"
+                  alt="Satellite Grid Pattern"
+                  layout="fill"
+                  objectFit="cover"
+                  className="opacity-20 dark:invert"
+                  priority
+                />
+              </div>
+            </motion.div>
+
             {/* Center layered clocks */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] aspect-square" style={{ zIndex: 40 }}>
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] aspect-square" style={{ zIndex: 40 }}>
               {clockSettings.map((clock, index) => {
                 if (index >= 9) return null;
                 const rotation = getClockRotation(clock);
@@ -354,97 +374,6 @@ export default function MultiViewPage() {
                           </div>
                         </motion.div>
                       </div>
-
-                      {/* Focus nodes */}
-                      <div 
-                        className="absolute inset-0"
-                        style={{
-                          transform: `rotate(${rotation}deg)`,
-                        }}
-                      >
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-full h-full rounded-full relative">
-                            {Array.from({ length: clock.focusNodes }).map((_, nodeIndex) => {
-                              const angle = (nodeIndex * 360) / clock.focusNodes;
-                              const radius = 55;
-                              const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180));
-                              const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180));
-                              return (
-                                <motion.div
-                                  key={nodeIndex}
-                                  className={`absolute w-2 h-2 rounded-full ${focusNodeColors[index]} dark:brightness-150`}
-                                  style={{
-                                    left: `${x}%`,
-                                    top: `${y}%`,
-                                    transform: 'translate(-50%, -50%)',
-                                    mixBlendMode: isDarkMode ? 'screen' : 'multiply',
-                                    boxShadow: isDarkMode 
-                                      ? '0 0 4px rgba(255, 255, 255, 0.3)' 
-                                      : '0 0 4px rgba(0, 0, 0, 0.2)'
-                                  }}
-                                  initial={{ opacity: 0, scale: 0 }}
-                                  animate={{ opacity: 1, scale: 1 }}
-                                  transition={{
-                                    duration: 0.5,
-                                    delay: nodeIndex * 0.1,
-                                    ease: "easeOut"
-                                  }}
-                                />
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Satellites */}
-                      {clockSatellites[index] > 0 && (
-                        <div className="absolute inset-0">
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-full h-full rounded-full relative">
-                              {Array.from({ length: clockSatellites[index] }).map((_, satelliteIndex) => {
-                                const angle = (satelliteIndex * 360) / clockSatellites[index];
-                                const radius = 60;
-                                
-                                // Use pre-calculated rotation from animation frame
-                                const totalRotation = satelliteRotations[index]?.[satelliteIndex] || 0;
-
-                                // Apply both base position and rotation
-                                const rotatedRadians = (angle + totalRotation) * (Math.PI / 180);
-                                const x = 50 + radius * Math.cos((rotatedRadians - 90 * (Math.PI / 180)));
-                                const y = 50 + radius * Math.sin((rotatedRadians - 90 * (Math.PI / 180)));
-
-                                return (
-                                  <motion.div
-                                    key={satelliteIndex}
-                                    className="absolute w-2 h-2 rounded-full"
-                                    style={{
-                                      left: `${x}%`,
-                                      top: `${y}%`,
-                                      transform: 'translate(-50%, -50%)',
-                                      backgroundColor: isDarkMode ? '#fff' : '#000',
-                                      boxShadow: isDarkMode 
-                                        ? '0 0 6px rgba(255, 255, 255, 0.4)' 
-                                        : '0 0 6px rgba(0, 0, 0, 0.4)',
-                                      willChange: 'transform'
-                                    }}
-                                    initial={{ opacity: 0, scale: 0 }}
-                                    animate={{ 
-                                      opacity: 1, 
-                                      scale: 1,
-                                    }}
-                                    transition={{
-                                      duration: 0.5,
-                                      delay: 1 + satelliteIndex * 0.1,
-                                      ease: "easeOut"
-                                    }}
-                                    whileHover={{ scale: 1.5 }}
-                                  />
-                                );
-                              })}
-                            </div>
-                          </div>
-                        </div>
-                      )}
                     </div>
                   </div>
                 );
@@ -458,7 +387,7 @@ export default function MultiViewPage() {
               
               // Calculate position for outer clock
               const angle = (360 / 8) * index;
-              const radius = 45; // Increased distance from center
+              const radius = 60; // Increased distance from center even more
               const radians = (angle * Math.PI) / 180;
               const x = 50 + radius * Math.cos(radians);
               const y = 50 + radius * Math.sin(radians);
@@ -468,7 +397,7 @@ export default function MultiViewPage() {
                   key={index}
                   className="absolute aspect-square hover:scale-110 transition-transform duration-200"
                   style={{
-                    width: '18%', // Slightly smaller outer clocks
+                    width: '15%', // Even smaller outer clocks
                     left: `${x}%`,
                     top: `${y}%`,
                     transform: 'translate(-50%, -50%)',
