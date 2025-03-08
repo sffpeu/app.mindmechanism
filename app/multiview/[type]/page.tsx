@@ -312,9 +312,9 @@ export default function MultiViewPage() {
             {/* Satellite grid pattern */}
             <motion.div 
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.2 }}
+              animate={{ opacity: 0.4 }}
               transition={{ duration: 1 }}
-              className="absolute inset-[-12%] rounded-full overflow-hidden"
+              className="absolute inset-[-25%] rounded-full overflow-hidden"
               style={{ zIndex: 20 }}
             >
               <div className="absolute inset-0 flex items-center justify-center">
@@ -323,7 +323,7 @@ export default function MultiViewPage() {
                   alt="Satellite Grid Pattern"
                   layout="fill"
                   objectFit="cover"
-                  className="opacity-20 dark:invert"
+                  className="opacity-40 dark:invert"
                   priority
                 />
               </div>
@@ -387,7 +387,7 @@ export default function MultiViewPage() {
               
               // Calculate position for outer clock
               const angle = (360 / 8) * index;
-              const radius = 60; // Increased distance from center even more
+              const radius = 65; // Increased distance even more
               const radians = (angle * Math.PI) / 180;
               const x = 50 + radius * Math.cos(radians);
               const y = 50 + radius * Math.sin(radians);
@@ -397,7 +397,7 @@ export default function MultiViewPage() {
                   key={index}
                   className="absolute aspect-square hover:scale-110 transition-transform duration-200"
                   style={{
-                    width: '15%', // Even smaller outer clocks
+                    width: '20%', // Increased size for thicker clocks
                     left: `${x}%`,
                     top: `${y}%`,
                     transform: 'translate(-50%, -50%)',
@@ -405,7 +405,7 @@ export default function MultiViewPage() {
                   }}
                 >
                   <div className="relative w-full h-full">
-                    <div className="absolute inset-0">
+                    <div className="absolute inset-0 rounded-full overflow-hidden shadow-lg bg-white dark:bg-black">
                       <motion.div
                         className="absolute inset-0"
                         animate={{ rotate: rotation }}
