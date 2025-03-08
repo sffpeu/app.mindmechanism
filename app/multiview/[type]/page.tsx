@@ -310,11 +310,8 @@ export default function MultiViewPage() {
         {type === 2 && (
           <div className="relative w-[450px] h-[450px]">
             {/* Satellite grid pattern */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.4 }}
-              transition={{ duration: 1 }}
-              className="absolute inset-[-25%] rounded-full overflow-hidden"
+            <div 
+              className="absolute inset-[-25%] rounded-full overflow-hidden opacity-40"
               style={{ zIndex: 20 }}
             >
               <div className="absolute inset-0 flex items-center justify-center">
@@ -327,7 +324,7 @@ export default function MultiViewPage() {
                   priority
                 />
               </div>
-            </motion.div>
+            </div>
 
             {/* Center layered clocks */}
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] aspect-square" style={{ zIndex: 40 }}>
