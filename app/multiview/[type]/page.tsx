@@ -84,6 +84,8 @@ export default function MultiViewPage() {
   const isMultiView2 = type === 2
   const [satelliteRotations, setSatelliteRotations] = useState<Record<number, number[]>>({})
   const animationRef = useRef<number>()
+  const [hoveredClock, setHoveredClock] = useState<number | null>(null)
+  const [rotationValues, setRotationValues] = useState<Record<number, number>>({})
 
   // Initialize and update current time
   useEffect(() => {
@@ -93,6 +95,24 @@ export default function MultiViewPage() {
     }, 1000)
     return () => clearInterval(timer)
   }, [])
+
+  // Update rotation values when hovering
+  useEffect(() => {
+    if (hoveredClock === null) return
+
+    const updateRotation = () => {
+      setRotationValues(prev => ({
+        ...prev,
+        [hoveredClock]: getClockRotation(clockSettings[hoveredClock])
+      }))
+    }
+
+    // Update immediately and then every 16ms (60fps)
+    updateRotation()
+    const interval = setInterval(updateRotation, 16)
+
+    return () => clearInterval(interval)
+  }, [hoveredClock, currentTime])
 
   // Smooth animation for satellites
   useEffect(() => {
@@ -408,9 +428,11 @@ export default function MultiViewPage() {
                       transform: 'translate(-50%, -50%)',
                       zIndex: 30,
                     }}
+                    onMouseEnter={() => setHoveredClock(index)}
+                    onMouseLeave={() => setHoveredClock(null)}
                   >
                     <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-black dark:text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-                      {getClockRotation(clock).toFixed(1)}°
+                      {(hoveredClock === index ? rotationValues[index] : rotation).toFixed(1)}°
                     </div>
                     <div className="relative w-full h-full">
                       <div className="absolute inset-0 rounded-full overflow-hidden">
