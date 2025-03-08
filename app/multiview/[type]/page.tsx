@@ -200,7 +200,7 @@ export default function MultiViewPage() {
                           }}
                         >
                           <Image
-                            src={`/${index + 1}.svg`}
+                            src={`/clock_${index + 1}.svg`}
                             alt={`Clock ${index + 1}`}
                             fill
                             className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
@@ -363,7 +363,7 @@ export default function MultiViewPage() {
                             }}
                           >
                             <Image
-                              src={`/${index + 1}.svg`}
+                              src={`/clock_${index + 1}.svg`}
                               alt={`Clock ${index + 1}`}
                               fill
                               className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
@@ -432,7 +432,7 @@ export default function MultiViewPage() {
                             }}
                           >
                             <Image
-                              src={`/${index + 1}_small.svg`}
+                              src={`/clock_${index + 1}.svg`}
                               alt={`Clock ${index + 1}`}
                               fill
                               className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
@@ -444,7 +444,7 @@ export default function MultiViewPage() {
                       </div>
                     </div>
                   </div>
-                );
+                )
               })}
             </motion.div>
           </div>
@@ -452,4 +452,4 @@ export default function MultiViewPage() {
       </div>
     </div>
   )
-} 
+}
