@@ -45,14 +45,8 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
 
   const handleDotClick = (index: number) => {
     if (index === 9) {
-      // Handle multiview navigation
-      if (activeDot === 9) {
-        // Toggle between multiview 1 and 2
-        router.push(isSmallMultiView ? '/multiview/2' : '/multiview/1');
-      } else {
-        // Go to multiview 2
-        router.push('/multiview/2');
-      }
+      // Always navigate to multiview/2 when clicking the last dot
+      router.push('/multiview/2');
       return;
     }
     router.push(`/clock/${index}`);

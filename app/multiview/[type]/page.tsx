@@ -397,7 +397,7 @@ export default function MultiViewPage() {
               return (
                 <div
                   key={index}
-                  className="absolute aspect-square hover:scale-110 transition-transform duration-200"
+                  className="absolute aspect-square group hover:scale-110 transition-transform duration-200"
                   style={{
                     width: '30%',
                     left: `${x}%`,
@@ -406,6 +406,10 @@ export default function MultiViewPage() {
                     zIndex: 30,
                   }}
                 >
+                  {/* Rotation Tooltip */}
+                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-black dark:text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                    {rotation.toFixed(1)}°
+                  </div>
                   <div className="relative w-full h-full">
                     <div className="absolute inset-0 rounded-full overflow-hidden">
                       <motion.div
