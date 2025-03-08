@@ -89,30 +89,41 @@ export default function MultiViewPage() {
 
   // Initialize and update current time
   useEffect(() => {
-    setCurrentTime(new Date())
-    const timer = setInterval(() => {
+    const updateTime = () => {
       setCurrentTime(new Date())
-    }, 1000)
-    return () => clearInterval(timer)
+      animationRef.current = requestAnimationFrame(updateTime)
+    }
+    updateTime()
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
+    }
   }, [])
 
-  // Update rotation values when hovering
+  // Update rotation values continuously
   useEffect(() => {
-    if (hoveredClock === null) return
+    const updateRotations = () => {
+      if (hoveredClock !== null) {
+        const now = new Date()
+        const clock = clockSettings[hoveredClock]
+        const elapsedMilliseconds = now.getTime() - clock.startDateTime.getTime()
+        const calculatedRotation = (elapsedMilliseconds / clock.rotationTime) * 360
+        const newRotation = clock.rotationDirection === 'clockwise'
+          ? (clock.startingDegree + calculatedRotation) % 360
+          : (clock.startingDegree - calculatedRotation + 360) % 360
 
-    const updateRotation = () => {
-      setRotationValues(prev => ({
-        ...prev,
-        [hoveredClock]: getClockRotation(clockSettings[hoveredClock])
-      }))
+        setRotationValues(prev => ({
+          ...prev,
+          [hoveredClock]: newRotation
+        }))
+      }
+      requestAnimationFrame(updateRotations)
     }
 
-    // Update immediately and then every 16ms (60fps)
-    updateRotation()
-    const interval = setInterval(updateRotation, 16)
-
-    return () => clearInterval(interval)
-  }, [hoveredClock, currentTime])
+    const animationId = requestAnimationFrame(updateRotations)
+    return () => cancelAnimationFrame(animationId)
+  }, [hoveredClock])
 
   // Smooth animation for satellites
   useEffect(() => {
