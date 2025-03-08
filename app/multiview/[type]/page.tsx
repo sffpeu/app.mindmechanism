@@ -389,7 +389,7 @@ export default function MultiViewPage() {
               // Start from top (270 degrees) and move clockwise
               // Add 20 degrees offset to align with grid intersections (360/18 = 20 degrees is half the spacing between points)
               const angle = 270 + 20 + (360 / 9) * index;
-              const radius = 65; // Reduced radius to align centers with grid outline
+              const radius = 72; // Increased radius to touch grid outline
               const radians = angle * (Math.PI / 180);
               const x = 50 + radius * Math.cos(radians);
               const y = 50 + radius * Math.sin(radians);
@@ -399,7 +399,7 @@ export default function MultiViewPage() {
                   key={index}
                   className="absolute aspect-square hover:scale-110 transition-transform duration-200"
                   style={{
-                    width: '30%', // Slightly increased size for better visibility
+                    width: '30%',
                     left: `${x}%`,
                     top: `${y}%`,
                     transform: 'translate(-50%, -50%)',
