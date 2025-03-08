@@ -200,7 +200,7 @@ export default function MultiViewPage() {
                           }}
                         >
                           <Image
-                            src={clock.imageUrl}
+                            src={`/${index + 1}.svg`}
                             alt={`Clock ${index + 1}`}
                             fill
                             className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
@@ -363,7 +363,7 @@ export default function MultiViewPage() {
                             }}
                           >
                             <Image
-                              src={clock.imageUrl}
+                              src={`/${index + 1}.svg`}
                               alt={`Clock ${index + 1}`}
                               fill
                               className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
