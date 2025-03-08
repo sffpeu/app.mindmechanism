@@ -416,7 +416,7 @@ export default function MultiViewPage() {
                       {rotation.toFixed(1)}°
                     </div>
                     <div className="relative w-full h-full">
-                      <div className="absolute inset-0 rounded-full overflow-hidden shadow-lg">
+                      <div className="absolute inset-0 rounded-full overflow-hidden">
                         <div
                           className="absolute inset-0"
                           style={{ 
