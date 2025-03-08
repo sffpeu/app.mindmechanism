@@ -391,10 +391,8 @@ export default function MultiViewPage() {
                 const rotation = getClockRotation(clock);
                 
                 // Calculate position for outer clock
-                // Start from top (270 degrees) and move clockwise
-                // Add 20 degrees offset to align with grid intersections (360/18 = 20 degrees is half the spacing between points)
                 const angle = 270 + 20 + (360 / 9) * index;
-                const radius = 72; // Increased radius to touch grid outline
+                const radius = 72;
                 const radians = angle * (Math.PI / 180);
                 const x = 50 + radius * Math.cos(radians);
                 const y = 50 + radius * Math.sin(radians);
@@ -404,14 +402,13 @@ export default function MultiViewPage() {
                     key={index}
                     className="absolute aspect-square group hover:scale-110 transition-transform duration-200"
                     style={{
-                      width: '35%', // Increased from 30% to 35% for thicker appearance
+                      width: '35%',
                       left: `${x}%`,
                       top: `${y}%`,
                       transform: 'translate(-50%, -50%)',
                       zIndex: 30,
                     }}
                   >
-                    {/* Rotation Tooltip */}
                     <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-black dark:text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
                       {rotation.toFixed(1)}°
                     </div>
