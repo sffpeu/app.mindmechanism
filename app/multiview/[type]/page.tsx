@@ -79,7 +79,7 @@ const clockSatellites: Record<number, number> = {
 const clockOrder = [
   5, // Clock 6
   3, // Clock 4
-  8, // Clock 9 (center)
+  8, // Clock 9
   2, // Clock 3
   0, // Clock 1
   7, // Clock 8
@@ -369,49 +369,6 @@ export default function MultiViewPage() {
               </div>
             </div>
 
-            {/* Center layered clocks */}
-            <motion.div 
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[30%] aspect-square" 
-              style={{ zIndex: 40 }}
-            >
-              <div className="relative w-full h-full">
-                {/* Only render Clock 9 in the center */}
-                {clockSettings.map((clock, index) => {
-                  if (index !== 8) return null; // Only show Clock 9 (index 8)
-                  const rotation = getClockRotation(clock);
-                  return (
-                    <div key={`center-clock-${clock.id}`} className="absolute inset-0" style={{ mixBlendMode: 'multiply' }}>
-                      <div className="absolute inset-0 rounded-full overflow-hidden">
-                        <motion.div 
-                          className="absolute inset-0"
-                          style={{ 
-                            transform: `rotate(${rotation}deg)`,
-                          }}
-                        >
-                          <div
-                            className="absolute inset-0"
-                            style={{
-                              transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) rotate(${clock.imageOrientation}deg) scale(${clock.imageScale})`,
-                              transformOrigin: 'center',
-                            }}
-                          >
-                            <Image 
-                              src={`/${index + 1}.svg`}
-                              alt={`Clock ${index + 1}`}
-                              fill
-                              className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
-                              priority
-                              loading="eager"
-                            />
-                          </div>
-                        </motion.div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </motion.div>
-
             {/* Outer ring clocks */}
             <motion.div 
               className="absolute inset-0"
@@ -420,12 +377,11 @@ export default function MultiViewPage() {
               transition={{ duration: 0.3, delay: 0.5 }}
             >
               {clockOrder.map((clockIndex, orderIndex) => {
-                if (clockIndex === 8) return null; // Skip Clock 9 as it's in the center
                 const clock = clockSettings[clockIndex];
                 const rotation = getClockRotation(clock);
                 
                 // Calculate position for outer clock
-                const angle = (360 / 8) * orderIndex; // 8 positions for outer ring
+                const angle = (360 / 9) * orderIndex; // 9 positions for all clocks
                 const radius = 72; // Distance from center
                 const radians = (angle - 90) * (Math.PI / 180); // Start from top (-90 degrees)
                 const x = 50 + radius * Math.cos(radians);
