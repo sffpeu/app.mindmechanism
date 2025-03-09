@@ -410,71 +410,78 @@ export default function MultiViewPage() {
             </motion.div>
 
             {/* Outer ring clocks */}
-            {clockSettings.map((clock, index) => {
-              // Skip the 9th clock as it's part of the center stack
-              if (index >= 8) return null;
+            <motion.div 
+              className="absolute inset-0"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.5 }}
+            >
+              {clockSettings.map((clock, index) => {
+                // Skip the 9th clock as it's part of the center stack
+                if (index >= 8) return null;
 
-              // Map the index to the desired clock position
-              const clockOrder = [5, 3, 8, 2, 0, 6, 4, 1, 7]; // 6,4,9,3,1,7,5,2,8 (zero-based indices)
-              const positionIndex = clockOrder[index];
+                // Map the index to the desired clock position
+                const clockOrder = [5, 3, 8, 2, 0, 6, 4, 1, 7]; // 6,4,9,3,1,7,5,2,8 (zero-based indices)
+                const positionIndex = clockOrder[index];
 
-              // Calculate position for each outer clock
-              const angle = (360 / 8) * index;
-              const radius = 35; // Distance from center
-              const radians = (angle * Math.PI) / 180;
-              const x = 50 + radius * Math.cos(radians);
-              const y = 50 + radius * Math.sin(radians);
+                // Calculate position for each outer clock
+                const angle = (360 / 8) * index;
+                const radius = 72; // Distance from center
+                const radians = angle * (Math.PI / 180);
+                const x = 50 + radius * Math.cos(radians);
+                const y = 50 + radius * Math.sin(radians);
 
-              const clockRotation = getClockRotation(clock);
+                const clockRotation = getClockRotation(clockSettings[clockOrder[index]]);
 
-              return (
-                <motion.div
-                  key={`outer-clock-${clockOrder[index]}`}
-                  className="absolute aspect-square hover:scale-110 transition-transform duration-200 group"
-                  style={{
-                    width: '22%',
-                    left: `${x}%`,
-                    top: `${y}%`,
-                    transform: 'translate(-50%, -50%)',
-                    zIndex: 30,
-                  }}
-                  onMouseEnter={() => setHoveredClock(clockOrder[index])}
-                  onMouseLeave={() => setHoveredClock(null)}
-                >
-                  <div className="relative w-full h-full">
-                    {/* Tooltip */}
-                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-black dark:text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-                      {rotationValues[clockOrder[index]]?.toFixed(1)}°
-                    </div>
-                    <div
-                      className="absolute inset-0 rounded-full overflow-hidden"
-                      style={{
-                        transform: `rotate(${clockRotation}deg)`,
-                      }}
-                    >
+                return (
+                  <motion.div
+                    key={`outer-clock-${clockOrder[index]}`}
+                    className="absolute aspect-square hover:scale-110 transition-transform duration-200 group"
+                    style={{
+                      width: '22%',
+                      left: `${x}%`,
+                      top: `${y}%`,
+                      transform: 'translate(-50%, -50%)',
+                      zIndex: 30,
+                    }}
+                    onMouseEnter={() => setHoveredClock(clockOrder[index])}
+                    onMouseLeave={() => setHoveredClock(null)}
+                  >
+                    <div className="relative w-full h-full">
+                      {/* Tooltip */}
+                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-black dark:text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                        {rotationValues[clockOrder[index]]?.toFixed(1)}°
+                      </div>
                       <div
-                        className="absolute inset-0"
+                        className="absolute inset-0 rounded-full overflow-hidden"
                         style={{
-                          transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) rotate(${clock.imageOrientation}deg) scale(${clock.imageScale})`,
-                          transformOrigin: 'center',
-                          mixBlendMode: 'multiply',
+                          transform: `rotate(${clockRotation}deg)`,
                         }}
                       >
-                        <Image 
-                          src={`/clock_${clockOrder[index] + 1}.svg`}
-                          alt={`Clock Face ${clockOrder[index] + 1}`}
-                          layout="fill"
-                          objectFit="cover"
-                          className="rounded-full [&_*]:fill-current [&_*]:stroke-none"
-                          priority
-                          loading="eager"
-                        />
+                        <div
+                          className="absolute inset-0"
+                          style={{
+                            transform: `translate(${clockSettings[clockOrder[index]].imageX || 0}%, ${clockSettings[clockOrder[index]].imageY || 0}%) rotate(${clockSettings[clockOrder[index]].imageOrientation}deg) scale(${clockSettings[clockOrder[index]].imageScale})`,
+                            transformOrigin: 'center',
+                            mixBlendMode: 'multiply',
+                          }}
+                        >
+                          <Image 
+                            src={`/${clockOrder[index] + 1}.svg`}
+                            alt={`Clock Face ${clockOrder[index] + 1}`}
+                            layout="fill"
+                            objectFit="cover"
+                            className="rounded-full [&_*]:fill-current [&_*]:stroke-none"
+                            priority
+                            loading="eager"
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </motion.div>
-              );
-            })}
+                  </motion.div>
+                );
+              })}
+            </motion.div>
           </div>
         )}
       </div>
