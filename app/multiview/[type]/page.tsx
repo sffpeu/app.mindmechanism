@@ -75,6 +75,22 @@ const clockSatellites: Record<number, number> = {
   8: 1, // Clock 9
 };
 
+// Add the position mapping function before the MultiViewPage component
+const getMultiview2Position = (index: number): number => {
+  const positionMap: Record<number, number> = {
+    0: 5, // Clock 1 → Position 6
+    1: 3, // Clock 2 → Position 4
+    2: 8, // Clock 3 → Position 9
+    3: 2, // Clock 4 → Position 3
+    4: 0, // Clock 5 → Position 1
+    5: 6, // Clock 6 → Position 7
+    6: 4, // Clock 7 → Position 5
+    7: 1, // Clock 8 → Position 2
+    8: 7, // Clock 9 → Position 8
+  };
+  return positionMap[index] ?? index;
+};
+
 export default function MultiViewPage() {
   const params = useParams()
   const type = parseInt(params.type as string)
@@ -420,8 +436,9 @@ export default function MultiViewPage() {
                 if (index >= 9) return null;
                 const rotation = getClockRotation(clock);
                 
-                // Calculate position for outer clock
-                const angle = 270 + 20 + (360 / 9) * index;
+                // Calculate position for outer clock using the new mapping
+                const mappedPosition = getMultiview2Position(index);
+                const angle = 270 + 20 + (360 / 9) * mappedPosition;
                 const radius = 72;
                 const radians = angle * (Math.PI / 180);
                 const x = 50 + radius * Math.cos(radians);
