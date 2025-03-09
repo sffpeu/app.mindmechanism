@@ -75,6 +75,9 @@ const clockSatellites: Record<number, number> = {
   8: 1, // Clock 9
 };
 
+// Define the new clock order for multiview 2
+const clockOrder = [5, 3, 8, 2, 0, 7, 4, 1, 6]; // [6,4,9,3,1,8,5,2,7] mapped to 0-based indices
+
 export default function MultiViewPage() {
   const params = useParams()
   const type = parseInt(params.type as string)
@@ -417,25 +420,25 @@ export default function MultiViewPage() {
               transition={{ duration: 0.3, delay: 0.5 }}
             >
               {clockSettings.map((clock, index) => {
-                // Skip the 9th clock as it's part of the center stack
-                if (index >= 8) return null;
-
-                // Map the index to the desired clock position
-                const clockOrder = [5, 3, 8, 2, 0, 6, 4, 1, 7]; // 6,4,9,3,1,7,5,2,8 (zero-based indices)
-                const positionIndex = clockOrder[index];
-
-                // Calculate position for each outer clock
-                const angle = (360 / 8) * index;
+                // Skip the center clock (Clock 9, index 8)
+                if (index === 8) return null;
+                
+                // Get the position in the ring based on the clock order
+                const orderIndex = clockOrder.indexOf(index);
+                if (orderIndex === -1) return null;
+                
+                const rotation = getClockRotation(clock);
+                
+                // Calculate position for outer clock
+                const angle = (360 / 8) * orderIndex; // Divide circle into 8 parts
                 const radius = 72; // Distance from center
                 const radians = angle * (Math.PI / 180);
                 const x = 50 + radius * Math.cos(radians);
                 const y = 50 + radius * Math.sin(radians);
 
-                const clockRotation = getClockRotation(clockSettings[clockOrder[index]]);
-
                 return (
-                  <motion.div
-                    key={`outer-clock-${clockOrder[index]}`}
+                  <div
+                    key={index}
                     className="absolute aspect-square hover:scale-110 transition-transform duration-200 group"
                     style={{
                       width: '22%',
@@ -444,42 +447,41 @@ export default function MultiViewPage() {
                       transform: 'translate(-50%, -50%)',
                       zIndex: 30,
                     }}
-                    onMouseEnter={() => setHoveredClock(clockOrder[index])}
+                    onMouseEnter={() => setHoveredClock(index)}
                     onMouseLeave={() => setHoveredClock(null)}
                   >
                     <div className="relative w-full h-full">
                       {/* Tooltip */}
                       <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-black dark:text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-                        {rotationValues[clockOrder[index]]?.toFixed(1)}°
+                        {rotationValues[index]?.toFixed(1)}°
                       </div>
                       <div
                         className="absolute inset-0 rounded-full overflow-hidden"
                         style={{
-                          transform: `rotate(${clockRotation}deg)`,
+                          transform: `rotate(${rotation}deg)`,
                         }}
                       >
                         <div
                           className="absolute inset-0"
                           style={{
-                            transform: `translate(${clockSettings[clockOrder[index]].imageX || 0}%, ${clockSettings[clockOrder[index]].imageY || 0}%) rotate(${clockSettings[clockOrder[index]].imageOrientation}deg) scale(${clockSettings[clockOrder[index]].imageScale})`,
+                            transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) rotate(${clock.imageOrientation}deg) scale(${clock.imageScale})`,
                             transformOrigin: 'center',
                             mixBlendMode: 'multiply',
                           }}
                         >
                           <Image 
-                            src={`/${clockOrder[index] + 1}.svg`}
-                            alt={`Clock Face ${clockOrder[index] + 1}`}
-                            layout="fill"
-                            objectFit="cover"
-                            className="rounded-full [&_*]:fill-current [&_*]:stroke-none"
+                            src={`/clock_${index + 1}.svg`}
+                            alt={`Clock ${index + 1}`}
+                            fill
+                            className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
                             priority
                             loading="eager"
                           />
                         </div>
                       </div>
                     </div>
-                  </motion.div>
-                );
+                  </div>
+                )
               })}
             </motion.div>
           </div>
