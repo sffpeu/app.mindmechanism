@@ -420,8 +420,11 @@ export default function MultiViewPage() {
                 if (index >= 9) return null;
                 const rotation = getClockRotation(clock);
                 
+                // Map indices to swap positions of Clock 1 and Clock 6
+                const positionIndex = index === 0 ? 5 : index === 5 ? 0 : index;
+                
                 // Calculate position for outer clock
-                const angle = 270 + 20 + (360 / 9) * index;
+                const angle = 270 + 20 + (360 / 9) * positionIndex;
                 const radius = 72;
                 const radians = angle * (Math.PI / 180);
                 const x = 50 + radius * Math.cos(radians);
