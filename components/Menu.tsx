@@ -140,14 +140,14 @@ export function Menu({
           <Button
             variant="ghost"
             size="icon"
-            className="fixed top-4 left-4 z-[999] h-9 w-9 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 shadow-sm"
+            className="fixed top-4 left-4 z-[999] h-9 w-9 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 shadow-sm pointer-events-auto"
           >
             <AnimatedMenuIcon isOpen={isMenuOpen} />
           </Button>
         </SheetTrigger>
         <SheetContent
           side="left"
-          className="w-80 p-0 bg-gradient-to-b from-white via-white to-gray-50 dark:from-black dark:via-black/95 dark:to-black/90 backdrop-blur-xl border-r border-black/5 dark:border-white/10 [&>button[type='button']]:hidden z-[999]"
+          className="w-80 p-0 bg-gradient-to-b from-white via-white to-gray-50 dark:from-black dark:via-black/95 dark:to-black/90 backdrop-blur-xl border-r border-black/5 dark:border-white/10 [&>button[type='button']]:hidden z-[999] pointer-events-auto"
         >
           <div className="h-full flex flex-col">
             <motion.div

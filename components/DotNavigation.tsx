@@ -66,12 +66,12 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
         duration: 0.5,
         ease: [0.16, 1, 0.3, 1]
       } : undefined}
-      className="fixed right-8 top-[55%] -translate-y-1/2 flex flex-col space-y-3 z-[999]"
+      className="fixed right-8 top-[55%] -translate-y-1/2 flex flex-col space-y-3 z-[999] pointer-events-auto"
     >
       {Array.from({ length: 10 }).map((_, index) => (
         <DotContainer 
           key={index} 
-          className="flex items-center justify-end gap-1.5 group relative"
+          className="flex items-center justify-end gap-1.5 group relative pointer-events-auto"
           initial={isSessionsPage ? { x: 25, opacity: 0 } : undefined}
           animate={isSessionsPage ? { 
             x: isVisible ? 0 : 25,
@@ -86,14 +86,13 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
           onMouseLeave={() => setHoveredDot(null)}
           onTouchStart={() => setHoveredDot(index)}
           onTouchEnd={() => setHoveredDot(null)}
-          style={{ pointerEvents: 'auto' }}
         >
           {index === 9 && activeDot === 9 && (
             <button
               onClick={() => router.push('/multiview/2')}
               className={`w-4 h-4 rounded-full border-2 border-black dark:border-white transition-all duration-200 hover:scale-150 opacity-0 group-hover:opacity-100 ${
                 isSmallMultiView ? 'bg-black dark:bg-white' : 'bg-transparent'
-              } touch-manipulation`}
+              } touch-manipulation pointer-events-auto`}
             />
           )}
           <button
@@ -106,7 +105,7 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
                   : hoveredDot === index
                     ? dotColors[index]
                     : 'bg-transparent border-gray-300 dark:border-gray-600'
-            } touch-manipulation`}
+            } touch-manipulation pointer-events-auto`}
           />
         </DotContainer>
       ))}
