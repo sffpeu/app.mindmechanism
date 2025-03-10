@@ -75,19 +75,6 @@ const clockSatellites: Record<number, number> = {
   8: 1, // Clock 9
 };
 
-// Define the new clock order for multiview 2 (0-based indices)
-const clockOrder = [
-  5, // Clock 6
-  3, // Clock 4
-  8, // Clock 9
-  2, // Clock 3
-  0, // Clock 1
-  7, // Clock 8
-  4, // Clock 5
-  1, // Clock 2
-  6, // Clock 7
-];
-
 export default function MultiViewPage() {
   const params = useParams()
   const type = parseInt(params.type as string)
@@ -369,6 +356,59 @@ export default function MultiViewPage() {
               </div>
             </div>
 
+            {/* Center layered clocks */}
+            <motion.div 
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] aspect-square" 
+              style={{ zIndex: 40 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              {clockSettings.map((clock, index) => {
+                if (index >= 9) return null;
+                const rotation = getClockRotation(clock);
+                return (
+                  <div
+                    key={index}
+                    className="absolute inset-0 flex items-center justify-center"
+                    style={{
+                      mixBlendMode: isDarkMode ? 'screen' : 'multiply',
+                    }}
+                  >
+                    <div className="w-full h-full relative">
+                      {/* Clock face */}
+                      <div className="absolute inset-0">
+                        <div
+                          className="absolute inset-0"
+                          style={{ 
+                            transform: `rotate(${rotation}deg)`,
+                            transformOrigin: 'center',
+                          }}
+                        >
+                          <div
+                            className="absolute inset-0"
+                            style={{
+                              transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) rotate(${clock.imageOrientation}deg) scale(${clock.imageScale})`,
+                              transformOrigin: 'center',
+                            }}
+                          >
+                            <Image
+                              src={`/${index + 1}.svg`}
+                              alt={`Clock ${index + 1}`}
+                              fill
+                              className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
+                              priority
+                              loading="eager"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </motion.div>
+
             {/* Outer ring clocks */}
             <motion.div 
               className="absolute inset-0"
@@ -376,35 +416,35 @@ export default function MultiViewPage() {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3, delay: 0.5 }}
             >
-              {clockOrder.map((clockIndex, orderIndex) => {
-                const clock = clockSettings[clockIndex];
+              {clockSettings.map((clock, index) => {
+                if (index >= 9) return null;
                 const rotation = getClockRotation(clock);
                 
                 // Calculate position for outer clock
-                const angle = (360 / 9) * orderIndex; // 9 positions for all clocks
-                const radius = 72; // Distance from center
-                const radians = (angle - 90) * (Math.PI / 180); // Start from top (-90 degrees)
+                const angle = 270 + 20 + (360 / 9) * index;
+                const radius = 72;
+                const radians = angle * (Math.PI / 180);
                 const x = 50 + radius * Math.cos(radians);
                 const y = 50 + radius * Math.sin(radians);
 
                 return (
                   <div
-                    key={clockIndex}
+                    key={index}
                     className="absolute aspect-square hover:scale-110 transition-transform duration-200 group"
                     style={{
-                      width: '22%',
+                      width: '28%',
                       left: `${x}%`,
                       top: `${y}%`,
                       transform: 'translate(-50%, -50%)',
                       zIndex: 30,
                     }}
-                    onMouseEnter={() => setHoveredClock(clockIndex)}
+                    onMouseEnter={() => setHoveredClock(index)}
                     onMouseLeave={() => setHoveredClock(null)}
                   >
                     <div className="relative w-full h-full">
                       {/* Tooltip */}
                       <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-black dark:text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-                        {rotationValues[clockIndex]?.toFixed(1)}°
+                        {rotationValues[index]?.toFixed(1)}°
                       </div>
                       <div
                         className="absolute inset-0 rounded-full overflow-hidden"
@@ -421,8 +461,8 @@ export default function MultiViewPage() {
                           }}
                         >
                           <Image 
-                            src={`/${clockIndex + 1}.svg`}
-                            alt={`Clock ${clockIndex + 1}`}
+                            src={`/clock_${index + 1}.svg`}
+                            alt={`Clock ${index + 1}`}
                             fill
                             className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
                             priority
@@ -432,7 +472,7 @@ export default function MultiViewPage() {
                       </div>
                     </div>
                   </div>
-                );
+                )
               })}
             </motion.div>
           </div>
