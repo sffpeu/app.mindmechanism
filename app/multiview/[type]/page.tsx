@@ -194,18 +194,20 @@ export default function MultiViewPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-black/90">
-      {showElements && (
-        <DotNavigation
-          activeDot={9}
-          isSmallMultiView={type === 2}
+      <div className="relative z-[999]">
+        {showElements && (
+          <DotNavigation
+            activeDot={9}
+            isSmallMultiView={type === 2}
+          />
+        )}
+        <Menu
+          showElements={showElements}
+          onToggleShow={() => setShowElements(!showElements)}
         />
-      )}
-      <Menu
-        showElements={showElements}
-        onToggleShow={() => setShowElements(!showElements)}
-      />
+      </div>
 
-      <div className="flex-grow flex items-center justify-center">
+      <div className="flex-grow flex items-center justify-center relative z-0">
         {type === 1 && (
           <div className="relative w-[600px] h-[600px]">
             {clockSettings.map((clock, index) => {

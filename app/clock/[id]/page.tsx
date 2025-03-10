@@ -385,7 +385,50 @@ export default function ClockPage() {
 
   return (
     <ProtectedRoute>
-      <div className="fixed inset-0 bg-gray-50 dark:bg-black/95 overflow-hidden">
+      <div className="min-h-screen bg-gray-50 dark:bg-black/95">
+        <div className="relative z-[999]">
+          {/* Dot Navigation - Made smaller and repositioned */}
+          {showElements && (
+            <div className="fixed top-1/2 -translate-y-1/2 right-4">
+              <DotNavigation
+                activeDot={id}
+                isSmallMultiView={isSmallMultiView}
+                onOutlinedDotClick={() => setIsSmallMultiView(!isSmallMultiView)}
+              />
+            </div>
+          )}
+
+          {/* Menu */}
+          <Menu
+            showElements={showElements}
+            onToggleShow={() => setShowElements(!showElements)}
+            showSatellites={showSatellites}
+            onSatellitesChange={handleSatellitesChange}
+            showInfoCards={showInfoCards}
+            onInfoCardsChange={setShowInfoCards}
+          />
+        </div>
+
+        {/* Clock - Centered in viewport */}
+        <div className="fixed inset-0 flex items-center justify-center relative z-0">
+          <Clock
+            {...localClockSettings}
+            id={id}
+            showElements={showElements}
+            onToggleShow={() => setShowElements(!showElements)}
+            currentTime={currentTime}
+            syncTrigger={syncTrigger}
+            hideControls={false}
+            showSatellites={showSatellites}
+            showInfo={showInfoCards && !isFullscreen}
+            isMultiView={false}
+            isMultiView2={false}
+            allClocks={clockSettings}
+            customWords={words}
+            onInfoUpdate={setClockInfo}
+          />
+        </div>
+
         {/* Timer Component - Moved to bottom left */}
         <div className="fixed bottom-4 left-4 z-50">
           <Timer
@@ -579,47 +622,6 @@ export default function ClockPage() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>
-
-        {/* Dot Navigation - Made smaller and repositioned */}
-        {showElements && (
-          <div className="fixed top-1/2 -translate-y-1/2 right-4 z-40">
-            <DotNavigation
-              activeDot={id}
-              isSmallMultiView={isSmallMultiView}
-              onOutlinedDotClick={() => setIsSmallMultiView(!isSmallMultiView)}
-            />
-          </div>
-        )}
-
-        {/* Menu */}
-        <Menu
-          showElements={showElements}
-          onToggleShow={() => setShowElements(!showElements)}
-          showSatellites={showSatellites}
-          onSatellitesChange={handleSatellitesChange}
-          showInfoCards={showInfoCards}
-          onInfoCardsChange={setShowInfoCards}
-        />
-
-        {/* Clock - Centered in viewport */}
-        <div className="fixed inset-0 flex items-center justify-center">
-          <Clock
-            {...localClockSettings}
-            id={id}
-            showElements={showElements}
-            onToggleShow={() => setShowElements(!showElements)}
-            currentTime={currentTime}
-            syncTrigger={syncTrigger}
-            hideControls={false}
-            showSatellites={showSatellites}
-            showInfo={showInfoCards && !isFullscreen}
-            isMultiView={false}
-            isMultiView2={false}
-            allClocks={clockSettings}
-            customWords={words}
-            onInfoUpdate={setClockInfo}
-          />
         </div>
 
         {showSettings && (
