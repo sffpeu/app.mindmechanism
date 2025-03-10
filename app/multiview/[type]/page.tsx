@@ -420,8 +420,17 @@ export default function MultiViewPage() {
                 if (index >= 9) return null;
                 const rotation = getClockRotation(clock);
                 
-                // Map indices to swap positions of Clock 1 and Clock 6
-                const positionIndex = index === 0 ? 5 : index === 5 ? 0 : index;
+                // Map indices to arrange clocks in specific order
+                const positionIndex = index === 5 ? 0 : // Clock 6 to position 1
+                                    index === 3 ? 1 : // Clock 4 to position 2
+                                    index === 8 ? 2 : // Clock 9 to position 3
+                                    index === 2 ? 3 : // Clock 3 to position 4
+                                    index === 0 ? 4 : // Clock 1 to position 5
+                                    index === 6 ? 5 : // Clock 7 to position 6
+                                    index === 4 ? 6 : // Clock 5 to position 7
+                                    index === 1 ? 7 : // Clock 2 to position 8
+                                    index === 7 ? 8 : // Clock 8 to position 9
+                                    index;
                 
                 // Calculate position for outer clock
                 const angle = 270 + 20 + (360 / 9) * positionIndex;
