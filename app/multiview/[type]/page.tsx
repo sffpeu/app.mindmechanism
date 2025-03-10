@@ -221,10 +221,14 @@ export default function MultiViewPage() {
                   <div className="w-full h-full relative">
                     {/* Clock face */}
                     <div className="absolute inset-0">
-                      <div
+                      <motion.div
                         className="absolute inset-0"
+                        animate={{ rotate: rotation }}
+                        transition={{
+                          duration: 1,
+                          ease: "linear",
+                        }}
                         style={{
-                          transform: `rotate(${rotation}deg)`,
                           transformOrigin: 'center',
                         }}
                       >
@@ -244,7 +248,7 @@ export default function MultiViewPage() {
                             loading="eager"
                           />
                         </div>
-                      </div>
+                      </motion.div>
                     </div>
 
                     {/* Focus nodes */}
