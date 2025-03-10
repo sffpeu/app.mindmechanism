@@ -122,7 +122,7 @@ export default function MultiViewPage() {
 
     const animationId = requestAnimationFrame(updateRotations);
     return () => cancelAnimationFrame(animationId);
-  }, []);
+  }, [clockSettings]);
 
   // Smooth animation for satellites
   useEffect(() => {
@@ -418,7 +418,7 @@ export default function MultiViewPage() {
             >
               {clockSettings.map((clock, index) => {
                 if (index >= 9) return null;
-                const rotation = getClockRotation(clock);
+                const rotation = rotationValues[index] || 0;
                 
                 // Map indices to arrange clocks in specific order
                 const positionIndex = index === 5 ? 0 : // Clock 6 to position 1
@@ -456,7 +456,7 @@ export default function MultiViewPage() {
                     <div className="relative w-full h-full">
                       {/* Tooltip */}
                       <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-black dark:text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-                        {rotationValues[index]?.toFixed(1)}°
+                        {rotation.toFixed(1)}°
                       </div>
                       <div
                         className="absolute inset-0 rounded-full overflow-hidden"
