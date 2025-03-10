@@ -262,7 +262,7 @@ export default function MultiViewPage() {
                             const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
                             const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
                             return (
-                              <div
+                              <motion.div
                                 key={nodeIndex}
                                 className={`absolute w-2 h-2 rounded-full ${focusNodeColors[index]} dark:brightness-150`}
                                 style={{
@@ -273,6 +273,13 @@ export default function MultiViewPage() {
                                   boxShadow: isDarkMode 
                                     ? '0 0 4px rgba(255, 255, 255, 0.3)' 
                                     : '0 0 4px rgba(0, 0, 0, 0.2)'
+                                }}
+                                initial={{ opacity: 0, scale: 0 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{
+                                  duration: 0.5,
+                                  delay: nodeIndex * 0.1,
+                                  ease: "easeOut"
                                 }}
                               />
                             )
@@ -289,7 +296,7 @@ export default function MultiViewPage() {
                             {Array.from({ length: clockSatellites[index] }).map((_, satelliteIndex) => {
                               const { x, y } = getSatellitePosition(index, satelliteIndex, clockSatellites[index])
                               return (
-                                <div
+                                <motion.div
                                   key={satelliteIndex}
                                   className="absolute w-2 h-2 rounded-full"
                                   style={{
@@ -302,6 +309,17 @@ export default function MultiViewPage() {
                                       : '0 0 6px rgba(0, 0, 0, 0.4)',
                                     willChange: 'transform'
                                   }}
+                                  initial={{ opacity: 0, scale: 0 }}
+                                  animate={{ 
+                                    opacity: 1, 
+                                    scale: 1,
+                                  }}
+                                  transition={{
+                                    duration: 0.5,
+                                    delay: 1 + satelliteIndex * 0.1,
+                                    ease: "easeOut"
+                                  }}
+                                  whileHover={{ scale: 1.5 }}
                                 />
                               )
                             })}
