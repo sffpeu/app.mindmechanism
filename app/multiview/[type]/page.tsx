@@ -324,7 +324,7 @@ export default function MultiViewPage() {
           </div>
         )}
         {type === 2 && (
-          <div className="relative w-[450px] h-[450px]">
+          <div className="relative w-[450px] h-[450px] flex items-center justify-center">
             {/* Satellite grid pattern */}
             <motion.div 
               className="absolute inset-[-25%] rounded-full overflow-hidden opacity-40"
@@ -347,7 +347,7 @@ export default function MultiViewPage() {
 
             {/* Center layered clocks */}
             <motion.div 
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] aspect-square" 
+              className="absolute w-[95%] aspect-square" 
               style={{ zIndex: 40 }}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -396,7 +396,7 @@ export default function MultiViewPage() {
 
             {/* Outer ring clocks */}
             <motion.div 
-              className="absolute inset-0"
+              className="absolute w-full h-full"
               style={{ zIndex: 30 }}
             >
               {clockSettings.slice(0, 9).map((clock, index) => {
