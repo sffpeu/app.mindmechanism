@@ -498,57 +498,6 @@ export default function MultiViewPage() {
             </motion.div>
           </div>
         )}
-        {/* Satellites layer - only for multiview1 */}
-        {!isMultiView2 && (
-          <div className="absolute inset-[5%] rounded-full" style={{ zIndex: 110, pointerEvents: 'none' }}>
-            {clockSettings.map((clock, clockIndex) => {
-              const satelliteCount = clockSatellites[clockIndex] || 0;
-              
-              return (
-                <div 
-                  key={`satellites-${clock.id}`}
-                  className="absolute inset-0"
-                  style={{ 
-                    pointerEvents: 'auto',
-                    zIndex: 110,
-                  }}
-                >
-                  {Array.from({ length: satelliteCount }).map((_, satelliteIndex) => {
-                    const { x, y } = getSatellitePosition(clockIndex, satelliteIndex, satelliteCount);
-                    
-                    return (
-                      <motion.div
-                        key={`satellite-${clockIndex}-${satelliteIndex}`}
-                        className="absolute"
-                        style={{
-                          left: `${x}%`,
-                          top: `${y}%`,
-                          transform: 'translate(-50%, -50%)',
-                          zIndex: 1000,
-                        }}
-                        initial={{ opacity: 0, scale: 0 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{
-                          delay: 1 + (satelliteIndex * 0.1),
-                          duration: 0.5,
-                          ease: "easeOut"
-                        }}
-                        whileHover={{ scale: 1.5 }}
-                      >
-                        <div 
-                          className="w-3 h-3 rounded-full bg-black dark:bg-white"
-                          style={{
-                            boxShadow: '0 0 6px rgba(0, 0, 0, 0.4)',
-                          }}
-                        />
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              );
-            })}
-          </div>
-        )}
       </div>
     </div>
   )
