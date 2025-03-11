@@ -325,13 +325,13 @@ export default function MultiViewPage() {
         )}
         {type === 2 && (
           <div className="relative w-[450px] h-[450px]">
-            {/* Satellite grid pattern */}
+            {/* Satellite grid pattern - shown last */}
             <motion.div 
               className="absolute inset-[-25%] rounded-full overflow-hidden opacity-40"
               style={{ zIndex: 20 }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.4 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.8, delay: 1.2 }}
             >
               <div className="absolute inset-0 flex items-center justify-center">
                 <Image
@@ -345,13 +345,92 @@ export default function MultiViewPage() {
               </div>
             </motion.div>
 
-            {/* Center layered clocks with optimized rendering */}
+            {/* Outer ring clocks - shown first */}
             <motion.div 
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] aspect-square" 
-              style={{ zIndex: 40 }}
+              className="absolute inset-0"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
+              style={{ zIndex: 30 }}
+            >
+              {clockSettings.slice(0, 9).map((clock, index) => {
+                const rotation = rotationValues[index]?.[0] || 0;
+                
+                // Map indices to arrange clocks in specific order
+                const positionIndex = index === 5 ? 0 : // Clock 6 to position 1
+                                    index === 3 ? 1 : // Clock 4 to position 2
+                                    index === 8 ? 2 : // Clock 9 to position 3
+                                    index === 2 ? 3 : // Clock 3 to position 4
+                                    index === 0 ? 4 : // Clock 1 to position 5
+                                    index === 6 ? 5 : // Clock 7 to position 6
+                                    index === 4 ? 6 : // Clock 5 to position 7
+                                    index === 1 ? 7 : // Clock 2 to position 8
+                                    index === 7 ? 8 : // Clock 8 to position 9
+                                    index;
+
+                // Calculate position for outer clock
+                const angle = 270 + 20 + (360 / 9) * positionIndex;
+                const radius = 72;
+                const radians = angle * (Math.PI / 180);
+                const x = 50 + radius * Math.cos(radians);
+                const y = 50 + radius * Math.sin(radians);
+
+                return (
+                  <motion.div
+                    key={index}
+                    className="absolute aspect-square transition-transform duration-200"
+                    style={{
+                      width: '28%',
+                      left: `${x}%`,
+                      top: `${y}%`,
+                      transform: 'translate(-50%, -50%)',
+                    }}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{
+                      duration: 0.4,
+                      delay: positionIndex * 0.08,
+                      ease: "easeOut"
+                    }}
+                  >
+                    <div className="relative w-full h-full">
+                      <div
+                        className="absolute inset-0 rounded-full overflow-hidden"
+                        style={{
+                          transform: `rotate(${rotation}deg)`,
+                        }}
+                      >
+                        <div
+                          className="absolute inset-0"
+                          style={{
+                            transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) rotate(${clock.imageOrientation}deg) scale(${clock.imageScale})`,
+                            transformOrigin: 'center',
+                            mixBlendMode: 'multiply',
+                          }}
+                        >
+                          <Image 
+                            src={`/clock_${index + 1}.svg`}
+                            alt={`Clock ${index + 1}`}
+                            fill
+                            className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
+                            priority
+                            loading="eager"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+
+            {/* Center layered clocks - shown second */}
+            <motion.div 
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] aspect-square" 
+              style={{ zIndex: 40 }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
             >
               {clockSettings.slice(0, 9).map((clock, index) => (
                 <div
@@ -392,78 +471,6 @@ export default function MultiViewPage() {
                   </div>
                 </div>
               ))}
-            </motion.div>
-
-            {/* Outer ring clocks */}
-            <motion.div 
-              className="absolute inset-0"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3, delay: 0.5 }}
-            >
-              {clockSettings.slice(0, 9).map((clock, index) => {
-                const rotation = rotationValues[index]?.[0] || 0;
-                
-                // Map indices to arrange clocks in specific order
-                const positionIndex = index === 5 ? 0 : // Clock 6 to position 1
-                                    index === 3 ? 1 : // Clock 4 to position 2
-                                    index === 8 ? 2 : // Clock 9 to position 3
-                                    index === 2 ? 3 : // Clock 3 to position 4
-                                    index === 0 ? 4 : // Clock 1 to position 5
-                                    index === 6 ? 5 : // Clock 7 to position 6
-                                    index === 4 ? 6 : // Clock 5 to position 7
-                                    index === 1 ? 7 : // Clock 2 to position 8
-                                    index === 7 ? 8 : // Clock 8 to position 9
-                                    index;
-                
-                // Calculate position for outer clock
-                const angle = 270 + 20 + (360 / 9) * positionIndex;
-                const radius = 72;
-                const radians = angle * (Math.PI / 180);
-                const x = 50 + radius * Math.cos(radians);
-                const y = 50 + radius * Math.sin(radians);
-
-                return (
-                  <div
-                    key={index}
-                    className="absolute aspect-square transition-transform duration-200"
-                    style={{
-                      width: '28%',
-                      left: `${x}%`,
-                      top: `${y}%`,
-                      transform: 'translate(-50%, -50%)',
-                      zIndex: 30,
-                    }}
-                  >
-                    <div className="relative w-full h-full">
-                      <div
-                        className="absolute inset-0 rounded-full overflow-hidden"
-                        style={{
-                          transform: `rotate(${rotation}deg)`,
-                        }}
-                      >
-                        <div
-                          className="absolute inset-0"
-                          style={{
-                            transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) rotate(${clock.imageOrientation}deg) scale(${clock.imageScale})`,
-                            transformOrigin: 'center',
-                            mixBlendMode: 'multiply',
-                          }}
-                        >
-                          <Image 
-                            src={`/clock_${index + 1}.svg`}
-                            alt={`Clock ${index + 1}`}
-                            fill
-                            className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
-                            priority
-                            loading="eager"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
             </motion.div>
           </div>
         )}
