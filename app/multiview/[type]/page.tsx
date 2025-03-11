@@ -396,7 +396,7 @@ export default function MultiViewPage() {
 
             {/* Outer ring clocks */}
             <motion.div 
-              className="absolute w-full h-full"
+              className="absolute w-[95%] h-[95%] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
               style={{ zIndex: 30 }}
             >
               {clockSettings.slice(0, 9).map((clock, index) => {
