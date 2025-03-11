@@ -82,7 +82,7 @@ export default function MultiViewPage() {
   const { isDarkMode } = useTheme()
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
   const isMultiView2 = type === 2
-  const [rotationValues, setRotationValues] = useState<Record<number, number>>({})
+  const [rotationValues, setRotationValues] = useState<Record<number, number[]>>({})
   const animationRef = useRef<number>()
 
   // Initialize and update current time with optimized animation frame
@@ -99,18 +99,37 @@ export default function MultiViewPage() {
     }
   }, [])
 
+  // Memoize satellite positions for better performance
+  const getSatellitePosition = useCallback((index: number, satelliteIndex: number, totalSatellites: number) => {
+    const baseAngle = (satelliteIndex * 360) / totalSatellites;
+    const radius = 60;
+    const rotation = rotationValues[index]?.[satelliteIndex] || 0;
+    const rotatedRadians = ((baseAngle + rotation) % 360) * (Math.PI / 180);
+    const x = 50 + radius * Math.cos(rotatedRadians - Math.PI / 2);
+    const y = 50 + radius * Math.sin(rotatedRadians - Math.PI / 2);
+    return { x, y };
+  }, [rotationValues]);
+
   // Optimize rotation values update with batch updates
   useEffect(() => {
+    if (type !== 1) return;
+
     const updateRotations = () => {
       const now = Date.now();
-      const newRotations: Record<number, number> = {};
+      const newRotations: Record<number, number[]> = {};
       
       clockSettings.forEach((clock, index) => {
+        if (!clockSatellites[index]) return;
+        
         const elapsedMilliseconds = now - clock.startDateTime.getTime();
-        const calculatedRotation = (elapsedMilliseconds / clock.rotationTime) * 360;
-        newRotations[index] = clock.rotationDirection === 'clockwise'
-          ? (clock.startingDegree + calculatedRotation) % 360
-          : (clock.startingDegree - calculatedRotation + 360) % 360;
+        const configs = defaultSatelliteConfigs[index] || [];
+        
+        newRotations[index] = configs.map(config => {
+          const satelliteRotation = (elapsedMilliseconds / config.rotationTime) * 360;
+          return config.rotationDirection === 'clockwise'
+            ? satelliteRotation % 360
+            : (-satelliteRotation + 360) % 360;
+        });
       });
 
       setRotationValues(newRotations);
@@ -123,51 +142,43 @@ export default function MultiViewPage() {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [clockSettings]);
+  }, [type, clockSettings]);
 
-  // Memoize satellite positions for better performance
-  const getSatellitePosition = useCallback((index: number, satelliteIndex: number, totalSatellites: number) => {
-    const angle = (satelliteIndex * 360) / totalSatellites;
-    const radius = 60;
-    const rotatedRadians = (angle + (rotationValues[index] || 0)) * (Math.PI / 180);
-    const x = 50 + radius * Math.cos((rotatedRadians - 90 * (Math.PI / 180)));
-    const y = 50 + radius * Math.sin((rotatedRadians - 90 * (Math.PI / 180)));
-    return { x, y };
-  }, [rotationValues]);
-
+  // Remove the duplicate satellite animation effect
   // Smooth animation for satellites
   useEffect(() => {
-    if (type !== 1) return
+    if (type !== 1) return;
 
     const animate = () => {
-      const now = Date.now()
-      const newRotations: Record<number, number[]> = {}
+      const now = Date.now();
+      const newRotations: Record<number, number[]> = {};
       
       // Calculate rotations for all clocks' satellites
       clockSettings.forEach((clock, clockIndex) => {
-        if (!clockSatellites[clockIndex]) return
+        if (!clockSatellites[clockIndex]) return;
         
-        const elapsedMilliseconds = now - clock.startDateTime.getTime()
-        const configs = defaultSatelliteConfigs[clockIndex] || []
+        const elapsedMilliseconds = now - clock.startDateTime.getTime();
+        const configs = defaultSatelliteConfigs[clockIndex] || [];
         
         newRotations[clockIndex] = configs.map(config => {
-          const satelliteRotation = (elapsedMilliseconds / config.rotationTime) * 360
+          const satelliteRotation = (elapsedMilliseconds / config.rotationTime) * 360;
           return config.rotationDirection === 'clockwise'
-            ? satelliteRotation
-            : -satelliteRotation
-        })
-      })
+            ? satelliteRotation % 360
+            : (-satelliteRotation + 360) % 360;
+        });
+      });
 
-      animationRef.current = requestAnimationFrame(animate)
-    }
+      setRotationValues(newRotations);
+      animationRef.current = requestAnimationFrame(animate);
+    };
 
-    animate()
+    animate();
     return () => {
       if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current)
+        cancelAnimationFrame(animationRef.current);
       }
-    }
-  }, [type])
+    };
+  }, [type, clockSettings]);
 
   // Calculate rotation for each clock
   const getClockRotation = (clock: typeof clockSettings[0]) => {
@@ -485,6 +496,57 @@ export default function MultiViewPage() {
                 );
               })}
             </motion.div>
+          </div>
+        )}
+        {/* Satellites layer - only for multiview1 */}
+        {!isMultiView2 && (
+          <div className="absolute inset-[5%] rounded-full" style={{ zIndex: 110, pointerEvents: 'none' }}>
+            {clockSettings.map((clock, clockIndex) => {
+              const satelliteCount = clockSatellites[clockIndex] || 0;
+              
+              return (
+                <div 
+                  key={`satellites-${clock.id}`}
+                  className="absolute inset-0"
+                  style={{ 
+                    pointerEvents: 'auto',
+                    zIndex: 110,
+                  }}
+                >
+                  {Array.from({ length: satelliteCount }).map((_, satelliteIndex) => {
+                    const { x, y } = getSatellitePosition(clockIndex, satelliteIndex, satelliteCount);
+                    
+                    return (
+                      <motion.div
+                        key={`satellite-${clockIndex}-${satelliteIndex}`}
+                        className="absolute"
+                        style={{
+                          left: `${x}%`,
+                          top: `${y}%`,
+                          transform: 'translate(-50%, -50%)',
+                          zIndex: 1000,
+                        }}
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{
+                          delay: 1 + (satelliteIndex * 0.1),
+                          duration: 0.5,
+                          ease: "easeOut"
+                        }}
+                        whileHover={{ scale: 1.5 }}
+                      >
+                        <div 
+                          className="w-3 h-3 rounded-full bg-black dark:bg-white"
+                          style={{
+                            boxShadow: '0 0 6px rgba(0, 0, 0, 0.4)',
+                          }}
+                        />
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
