@@ -102,10 +102,9 @@ export default function MultiViewPage() {
   // Memoize satellite positions for better performance
   const getSatellitePosition = useCallback((index: number, satelliteIndex: number, totalSatellites: number) => {
     const baseAngle = (satelliteIndex * 360) / totalSatellites;
-    const radius = 57; // Reduced from 60 to move satellites closer to center
+    const radius = 58.5; // Slightly increased for more outward position
     const rotation = rotationValues[index]?.[satelliteIndex] || 0;
     const rotatedRadians = ((baseAngle + rotation) % 360) * (Math.PI / 180);
-    // Add x and y offsets to adjust position (-2% left, -2% up)
     const x = 48 + radius * Math.cos(rotatedRadians - Math.PI / 2);
     const y = 48 + radius * Math.sin(rotatedRadians - Math.PI / 2);
     return { x, y };
@@ -237,14 +236,14 @@ export default function MultiViewPage() {
                   }}
                 >
                   <div className="w-full h-full relative">
-                    {/* Clock face */}
+                    {/* Clock face with shorter initial animation */}
                     <div className="absolute inset-0">
                       <motion.div
                         className="absolute inset-0"
                         animate={{ rotate: rotation }}
                         transition={{
-                          duration: 1,
-                          ease: "linear",
+                          duration: 0.3, // Shortened from 1 to 0.3
+                          ease: "easeOut",
                         }}
                         style={{
                           transformOrigin: 'center',
@@ -269,7 +268,7 @@ export default function MultiViewPage() {
                       </motion.div>
                     </div>
 
-                    {/* Focus nodes */}
+                    {/* Focus nodes moved slightly inward */}
                     <div 
                       className="absolute inset-0"
                       style={{
@@ -280,7 +279,7 @@ export default function MultiViewPage() {
                         <div className="w-full h-full rounded-full relative">
                           {Array.from({ length: clock.focusNodes }).map((_, nodeIndex) => {
                             const angle = (nodeIndex * 360) / clock.focusNodes
-                            const radius = 55
+                            const radius = 53 // Reduced from 55 to move focus nodes inward
                             const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
                             const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
                             return (
@@ -299,8 +298,8 @@ export default function MultiViewPage() {
                                 initial={{ opacity: 0, scale: 0 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{
-                                  duration: 0.5,
-                                  delay: nodeIndex * 0.1,
+                                  duration: 0.3,
+                                  delay: nodeIndex * 0.05,
                                   ease: "easeOut"
                                 }}
                               />
@@ -310,7 +309,7 @@ export default function MultiViewPage() {
                       </div>
                     </div>
 
-                    {/* Satellites for all clocks */}
+                    {/* Satellites with reduced shadow and smoother animation */}
                     {clockSatellites[index] > 0 && (
                       <div className="absolute inset-0">
                         <div className="absolute inset-0 flex items-center justify-center">
@@ -327,8 +326,8 @@ export default function MultiViewPage() {
                                     transform: 'translate(-50%, -50%)',
                                     backgroundColor: isDarkMode ? '#fff' : '#000',
                                     boxShadow: isDarkMode 
-                                      ? '0 0 8px rgba(255, 255, 255, 0.5)' 
-                                      : '0 0 8px rgba(0, 0, 0, 0.5)',
+                                      ? '0 0 6px rgba(255, 255, 255, 0.3)' 
+                                      : '0 0 6px rgba(0, 0, 0, 0.3)',
                                     willChange: 'transform'
                                   }}
                                   initial={{ opacity: 0, scale: 0 }}
@@ -337,8 +336,8 @@ export default function MultiViewPage() {
                                     scale: 1,
                                   }}
                                   transition={{
-                                    duration: 0.5,
-                                    delay: 1 + satelliteIndex * 0.1,
+                                    duration: 0.3,
+                                    delay: 0.3 + satelliteIndex * 0.05,
                                     ease: "easeOut"
                                   }}
                                   whileHover={{ scale: 1.8 }}
