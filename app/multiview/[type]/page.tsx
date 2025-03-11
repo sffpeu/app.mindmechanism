@@ -110,62 +110,36 @@ export default function MultiViewPage() {
     return { x, y };
   }, [rotationValues]);
 
-  // Optimize rotation values update with batch updates
+  // Remove the duplicate satellite animation effect and combine the rotation logic
   useEffect(() => {
-    if (type !== 1) return;
-
-    const updateRotations = () => {
-      const now = Date.now();
-      const newRotations: Record<number, number[]> = {};
-      
-      clockSettings.forEach((clock, index) => {
-        if (!clockSatellites[index]) return;
-        
-        const elapsedMilliseconds = now - clock.startDateTime.getTime();
-        const configs = defaultSatelliteConfigs[index] || [];
-        
-        newRotations[index] = configs.map(config => {
-          const satelliteRotation = (elapsedMilliseconds / config.rotationTime) * 360;
-          return config.rotationDirection === 'clockwise'
-            ? satelliteRotation % 360
-            : (-satelliteRotation + 360) % 360;
-        });
-      });
-
-      setRotationValues(newRotations);
-      animationRef.current = requestAnimationFrame(updateRotations);
-    };
-
-    updateRotations();
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, [type, clockSettings]);
-
-  // Remove the duplicate satellite animation effect
-  // Smooth animation for satellites
-  useEffect(() => {
-    if (type !== 1) return;
+    if (type !== 1 && type !== 2) return;
 
     const animate = () => {
       const now = Date.now();
       const newRotations: Record<number, number[]> = {};
       
-      // Calculate rotations for all clocks' satellites
+      // Calculate rotations for all clocks
       clockSettings.forEach((clock, clockIndex) => {
-        if (!clockSatellites[clockIndex]) return;
-        
         const elapsedMilliseconds = now - clock.startDateTime.getTime();
-        const configs = defaultSatelliteConfigs[clockIndex] || [];
+        const calculatedRotation = (elapsedMilliseconds / clock.rotationTime) * 360;
+        const baseRotation = clock.rotationDirection === 'clockwise'
+          ? (clock.startingDegree + calculatedRotation) % 360
+          : (clock.startingDegree - calculatedRotation + 360) % 360;
         
-        newRotations[clockIndex] = configs.map(config => {
-          const satelliteRotation = (elapsedMilliseconds / config.rotationTime) * 360;
-          return config.rotationDirection === 'clockwise'
-            ? satelliteRotation % 360
-            : (-satelliteRotation + 360) % 360;
-        });
+        // Store the base rotation as first element
+        newRotations[clockIndex] = [baseRotation];
+        
+        // Add satellite rotations if they exist
+        if (clockSatellites[clockIndex]) {
+          const configs = defaultSatelliteConfigs[clockIndex] || [];
+          const satelliteRotations = configs.map(config => {
+            const satelliteRotation = (elapsedMilliseconds / config.rotationTime) * 360;
+            return config.rotationDirection === 'clockwise'
+              ? satelliteRotation % 360
+              : (-satelliteRotation + 360) % 360;
+          });
+          newRotations[clockIndex].push(...satelliteRotations);
+        }
       });
 
       setRotationValues(newRotations);
@@ -180,14 +154,9 @@ export default function MultiViewPage() {
     };
   }, [type, clockSettings]);
 
-  // Calculate rotation for each clock
-  const getClockRotation = (clock: typeof clockSettings[0]) => {
-    if (!currentTime) return 0
-    const elapsedMilliseconds = currentTime.getTime() - clock.startDateTime.getTime()
-    const calculatedRotation = (elapsedMilliseconds / clock.rotationTime) * 360
-    return clock.rotationDirection === 'clockwise'
-      ? (clock.startingDegree + calculatedRotation) % 360
-      : (clock.startingDegree - calculatedRotation + 360) % 360
+  // Update getClockRotation to use rotationValues
+  const getClockRotation = (clock: typeof clockSettings[0], index: number) => {
+    return (rotationValues[index]?.[0] || 0);
   }
 
   // Focus node colors from individual clocks
@@ -226,7 +195,7 @@ export default function MultiViewPage() {
         {type === 1 && (
           <div className="relative w-[600px] h-[600px]">
             {clockSettings.map((clock, index) => {
-              const rotation = getClockRotation(clock)
+              const rotation = getClockRotation(clock, index)
               return (
                 <div
                   key={index}
@@ -397,7 +366,7 @@ export default function MultiViewPage() {
                       <div
                         className="absolute inset-0"
                         style={{ 
-                          transform: `rotate(${rotationValues[index] || 0}deg)`,
+                          transform: `rotate(${rotationValues[index]?.[0] || 0}deg)`,
                           transformOrigin: 'center',
                           willChange: 'transform'
                         }}
@@ -433,7 +402,7 @@ export default function MultiViewPage() {
               transition={{ duration: 0.3, delay: 0.5 }}
             >
               {clockSettings.slice(0, 9).map((clock, index) => {
-                const rotation = rotationValues[index] || 0;
+                const rotation = rotationValues[index]?.[0] || 0;
                 
                 // Map indices to arrange clocks in specific order
                 const positionIndex = index === 5 ? 0 : // Clock 6 to position 1
