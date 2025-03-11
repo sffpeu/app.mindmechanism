@@ -319,15 +319,15 @@ export default function MultiViewPage() {
                               return (
                                 <motion.div
                                   key={satelliteIndex}
-                                  className="absolute w-2 h-2 rounded-full"
+                                  className="absolute w-3 h-3 rounded-full"
                                   style={{
                                     left: `${x}%`,
                                     top: `${y}%`,
                                     transform: 'translate(-50%, -50%)',
                                     backgroundColor: isDarkMode ? '#fff' : '#000',
                                     boxShadow: isDarkMode 
-                                      ? '0 0 6px rgba(255, 255, 255, 0.4)' 
-                                      : '0 0 6px rgba(0, 0, 0, 0.4)',
+                                      ? '0 0 8px rgba(255, 255, 255, 0.5)' 
+                                      : '0 0 8px rgba(0, 0, 0, 0.5)',
                                     willChange: 'transform'
                                   }}
                                   initial={{ opacity: 0, scale: 0 }}
@@ -340,7 +340,7 @@ export default function MultiViewPage() {
                                     delay: 1 + satelliteIndex * 0.1,
                                     ease: "easeOut"
                                   }}
-                                  whileHover={{ scale: 1.5 }}
+                                  whileHover={{ scale: 1.8 }}
                                 />
                               )
                             })}
