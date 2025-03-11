@@ -102,11 +102,12 @@ export default function MultiViewPage() {
   // Memoize satellite positions for better performance
   const getSatellitePosition = useCallback((index: number, satelliteIndex: number, totalSatellites: number) => {
     const baseAngle = (satelliteIndex * 360) / totalSatellites;
-    const radius = 60;
+    const radius = 57; // Reduced from 60 to move satellites closer to center
     const rotation = rotationValues[index]?.[satelliteIndex] || 0;
     const rotatedRadians = ((baseAngle + rotation) % 360) * (Math.PI / 180);
-    const x = 50 + radius * Math.cos(rotatedRadians - Math.PI / 2);
-    const y = 50 + radius * Math.sin(rotatedRadians - Math.PI / 2);
+    // Add x and y offsets to adjust position (-2% left, -2% up)
+    const x = 48 + radius * Math.cos(rotatedRadians - Math.PI / 2);
+    const y = 48 + radius * Math.sin(rotatedRadians - Math.PI / 2);
     return { x, y };
   }, [rotationValues]);
 
