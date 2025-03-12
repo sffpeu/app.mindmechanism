@@ -6,11 +6,11 @@ export interface GlossaryWord {
   phonetic_spelling: string;
   rating: '+' | '-' | '~';
   source: 'system' | 'user';
-  version: 'Default' | string;
+  version: 'Default' | 'User';
   user_id?: string;
   created_at: string;
 }
 
 export type WordRating = '+' | '-' | '~';
-export type WordSource = 'System' | string;
-export type WordVersion = 'Default' | string; 
+export type WordSource = 'system' | 'user';
+export type WordVersion = 'Default' | 'User'; 
