@@ -3,12 +3,15 @@
 import { useEffect, useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
-import { Search, Plus, ThumbsUp, ThumbsDown, Minus, Tag, LayoutGrid, List, Home } from 'lucide-react'
+import { Search, Plus, ThumbsUp, ThumbsDown, Minus, Tag, LayoutGrid, List, Home, UserCircle2 } from 'lucide-react'
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords, searchWords } from '@/lib/glossary'
+import { AddWordDialog } from '@/components/AddWordDialog'
+import { useAuth } from '@/app/AuthContext'
 
 export default function GlossaryPage() {
   const { isDarkMode } = useTheme()
+  const { user } = useAuth()
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -17,12 +20,14 @@ export default function GlossaryPage() {
   const [words, setWords] = useState<GlossaryWord[]>([])
   const [loading, setLoading] = useState(true)
   const [isListView, setIsListView] = useState(false)
+  const [isAddWordOpen, setIsAddWordOpen] = useState(false)
+  const [selectedTab, setSelectedTab] = useState<'all' | 'my-words'>('all')
 
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
 
   useEffect(() => {
     loadWords()
-  }, [])
+  }, [selectedTab])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -42,7 +47,12 @@ export default function GlossaryPage() {
       console.log('Fetching words...')
       const allWords = await getAllWords()
       console.log('Fetched words:', allWords.length)
-      setWords(allWords)
+      
+      if (selectedTab === 'my-words') {
+        setWords(allWords.filter(word => word.source === 'user' && word.user_id === user?.uid))
+      } else {
+        setWords(allWords)
+      }
     } catch (error) {
       console.error('Error loading words:', error)
     }
@@ -55,7 +65,12 @@ export default function GlossaryPage() {
       console.log('Searching words with query:', searchQuery)
       const results = await searchWords(searchQuery)
       console.log('Search results:', results.length)
-      setWords(results)
+      
+      if (selectedTab === 'my-words') {
+        setWords(results.filter(word => word.source === 'user' && word.user_id === user?.uid))
+      } else {
+        setWords(results)
+      }
     } catch (error) {
       console.error('Error searching words:', error)
     }
@@ -63,7 +78,6 @@ export default function GlossaryPage() {
   }
 
   const filteredWords = words.filter(word => {
-    console.log('Filtering words, current count:', words.length)
     if (selectedFilter === 'All') return true
     if (selectedFilter === 'Positive') return word.rating === '+'
     if (selectedFilter === 'Neutral') return word.rating === '~'
@@ -87,6 +101,31 @@ export default function GlossaryPage() {
         <div className="mb-8">
           <h1 className="text-2xl font-semibold dark:text-white mb-2">Glossary</h1>
           <p className="text-gray-600 dark:text-gray-400">Browse and search through meditation focus words</p>
+        </div>
+
+        {/* Tabs */}
+        <div className="mb-6 flex space-x-1 bg-white dark:bg-black/40 backdrop-blur-lg rounded-lg p-1 w-fit">
+          <button
+            onClick={() => setSelectedTab('all')}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+              selectedTab === 'all'
+                ? 'bg-black dark:bg-white text-white dark:text-black'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+            }`}
+          >
+            All Words
+          </button>
+          <button
+            onClick={() => setSelectedTab('my-words')}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${
+              selectedTab === 'my-words'
+                ? 'bg-black dark:bg-white text-white dark:text-black'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+            }`}
+          >
+            <UserCircle2 className="w-4 h-4" />
+            My Words
+          </button>
         </div>
 
         {/* Search and Filters */}
@@ -128,7 +167,10 @@ export default function GlossaryPage() {
                   {filter}
                 </button>
               ))}
-              <button className="px-4 py-2 rounded-lg bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all text-gray-900 dark:text-white">
+              <button 
+                onClick={() => setIsAddWordOpen(true)}
+                className="px-4 py-2 rounded-lg bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all text-gray-900 dark:text-white"
+              >
                 <Plus className="h-5 w-5" />
               </button>
             </div>
@@ -160,7 +202,7 @@ export default function GlossaryPage() {
               <div>Definition</div>
               <div className="text-center">Grade</div>
               <div className="text-center">Rating</div>
-              <div className="text-center">Default</div>
+              <div className="text-center">Type</div>
             </div>
           )}
           <div className={`${isListView ? 'space-y-1' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'}`}>
@@ -168,7 +210,7 @@ export default function GlossaryPage() {
               <div className="col-span-full text-center py-8 text-gray-500">Loading words...</div>
             ) : filteredWords.length === 0 ? (
               <div className="col-span-full text-center py-8 text-gray-500">No words found</div>
-            ) : (
+            ) :
               filteredWords.map((word) => (
                 <div
                   key={word.id}
@@ -202,7 +244,16 @@ export default function GlossaryPage() {
                         </div>
                       </div>
                       <div className="flex items-center justify-center w-full">
-                        {word.version === 'Default' && (
+                        {word.source === 'user' ? (
+                          <div className="group relative">
+                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400">
+                              U
+                            </div>
+                            <span className="absolute -bottom-8 right-0 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                              User Word
+                            </span>
+                          </div>
+                        ) : word.version === 'Default' && (
                           <div className="group relative">
                             <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
                               D
@@ -214,7 +265,7 @@ export default function GlossaryPage() {
                         )}
                       </div>
                     </>
-                  ) : (
+                  ) :
                     <>
                       <div className="flex justify-between items-start">
                         <div className="flex-1 min-w-0">
@@ -236,7 +287,16 @@ export default function GlossaryPage() {
                           >
                             {word.rating}
                           </div>
-                          {word.version === 'Default' && (
+                          {word.source === 'user' ? (
+                            <div className="group relative">
+                              <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400">
+                                U
+                              </div>
+                              <span className="absolute -bottom-8 right-0 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                                User Word
+                              </span>
+                            </div>
+                          ) : word.version === 'Default' && (
                             <div className="group relative">
                               <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
                                 D
@@ -250,13 +310,19 @@ export default function GlossaryPage() {
                       </div>
                       <p className="text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-2">{word.definition}</p>
                     </>
-                  )}
+                  }
                 </div>
               ))
-            )}
+            }
           </div>
         </div>
       </div>
+
+      <AddWordDialog
+        open={isAddWordOpen}
+        onOpenChange={setIsAddWordOpen}
+        onWordAdded={loadWords}
+      />
     </div>
   )
 } 
