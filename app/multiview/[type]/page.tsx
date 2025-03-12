@@ -402,54 +402,56 @@ export default function MultiViewPage() {
 
             {/* Outer ring clocks */}
             <motion.div 
-              className="absolute w-full h-full left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-              style={{ zIndex: 30 }}
+              className="absolute inset-0"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.5 }}
             >
               {clockSettings.slice(0, 9).map((clock, index) => {
-                const rotation = rotationValues[index]?.[0] || 0;
-                
-                // Map indices to arrange clocks in specific order
-                const positionIndex = index === 5 ? 0 : // Clock 6 to position 1
-                                    index === 3 ? 1 : // Clock 4 to position 2
-                                    index === 8 ? 2 : // Clock 9 to position 3
-                                    index === 2 ? 3 : // Clock 3 to position 4
-                                    index === 0 ? 4 : // Clock 1 to position 5
-                                    index === 6 ? 5 : // Clock 7 to position 6
-                                    index === 4 ? 6 : // Clock 5 to position 7
-                                    index === 1 ? 7 : // Clock 2 to position 8
-                                    index === 7 ? 8 : // Clock 8 to position 9
-                                    index;
-                
-                // Calculate position for outer clock
-                const angle = 270 + 20 + (360 / 9) * positionIndex;
-                const radius = 65; // Adjusted radius to match grid
-                const radians = angle * (Math.PI / 180);
+                // Skip the 9th clock as it's part of the center stack
+                if (index >= 8) return null;
+
+                // Calculate position for each outer clock
+                const angle = (360 / 8) * index;
+                const radius = 35; // Distance from center
+                const radians = (angle * Math.PI) / 180;
                 const x = 50 + radius * Math.cos(radians);
                 const y = 50 + radius * Math.sin(radians);
 
+                const clockRotation = getClockRotation(clock, index);
+
                 return (
                   <motion.div
-                    key={index}
-                    className="absolute aspect-square transition-transform duration-200"
+                    key={`outer-clock-${clock.id}`}
+                    className="absolute aspect-square hover:scale-110 transition-transform duration-200 group"
                     style={{
-                      width: '25%', // Slightly smaller outer clocks
+                      width: '22%',
                       left: `${x}%`,
                       top: `${y}%`,
                       transform: 'translate(-50%, -50%)',
+                      zIndex: 30,
                     }}
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{
-                      duration: 0.4,
-                      delay: positionIndex * 0.08,
-                      ease: "easeOut"
+                      duration: 0.8,
+                      delay: index * 0.1,
+                      ease: [0.4, 0, 0.2, 1]
                     }}
                   >
                     <div className="relative w-full h-full">
-                      <div
+                      {/* Tooltip */}
+                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-black dark:text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                        {clockRotation.toFixed(1)}°
+                      </div>
+                      <motion.div
                         className="absolute inset-0 rounded-full overflow-hidden"
-                        style={{
-                          transform: `rotate(${rotation}deg)`,
+                        animate={{ rotate: clockRotation }}
+                        transition={{
+                          duration: clock.rotationTime / 1000,
+                          ease: "linear",
+                          repeat: Infinity,
+                          repeatType: "loop"
                         }}
                       >
                         <div
@@ -461,15 +463,16 @@ export default function MultiViewPage() {
                           }}
                         >
                           <Image 
-                            src={`/clock_${index + 1}.svg`}
-                            alt={`Clock ${index + 1}`}
-                            fill
-                            className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
+                            src={clock.imageUrl}
+                            alt={`Clock Face ${index + 1}`}
+                            layout="fill"
+                            objectFit="cover"
+                            className="rounded-full [&_*]:fill-current [&_*]:stroke-none"
                             priority
                             loading="eager"
                           />
                         </div>
-                      </div>
+                      </motion.div>
                     </div>
                   </motion.div>
                 );
