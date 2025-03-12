@@ -17,6 +17,16 @@ service cloud.firestore {
       allow write: if isUserAuthenticated(userId);
     }
 
+    // Glossary
+    match /glossary/{wordId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.source == 'user' && request.resource.data.user_id == request.auth.uid;
+      allow update, delete: if isAuthenticated() && (
+        resource.data.source == 'user' && 
+        resource.data.user_id == request.auth.uid
+      );
+    }
+
     // Notes
     match /users/{userId}/notes/{noteId} {
       allow write: if isUserAuthenticated(userId);

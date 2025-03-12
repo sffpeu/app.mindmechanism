@@ -110,36 +110,62 @@ export default function MultiViewPage() {
     return { x, y };
   }, [rotationValues]);
 
-  // Remove the duplicate satellite animation effect and combine the rotation logic
+  // Optimize rotation values update with batch updates
   useEffect(() => {
-    if (type !== 1 && type !== 2) return;
+    if (type !== 1) return;
+
+    const updateRotations = () => {
+      const now = Date.now();
+      const newRotations: Record<number, number[]> = {};
+      
+      clockSettings.forEach((clock, index) => {
+        if (!clockSatellites[index]) return;
+        
+        const elapsedMilliseconds = now - clock.startDateTime.getTime();
+        const configs = defaultSatelliteConfigs[index] || [];
+        
+        newRotations[index] = configs.map(config => {
+          const satelliteRotation = (elapsedMilliseconds / config.rotationTime) * 360;
+          return config.rotationDirection === 'clockwise'
+            ? satelliteRotation % 360
+            : (-satelliteRotation + 360) % 360;
+        });
+      });
+
+      setRotationValues(newRotations);
+      animationRef.current = requestAnimationFrame(updateRotations);
+    };
+
+    updateRotations();
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [type, clockSettings]);
+
+  // Remove the duplicate satellite animation effect
+  // Smooth animation for satellites
+  useEffect(() => {
+    if (type !== 1) return;
 
     const animate = () => {
       const now = Date.now();
       const newRotations: Record<number, number[]> = {};
       
-      // Calculate rotations for all clocks
+      // Calculate rotations for all clocks' satellites
       clockSettings.forEach((clock, clockIndex) => {
+        if (!clockSatellites[clockIndex]) return;
+        
         const elapsedMilliseconds = now - clock.startDateTime.getTime();
-        const calculatedRotation = (elapsedMilliseconds / clock.rotationTime) * 360;
-        const baseRotation = clock.rotationDirection === 'clockwise'
-          ? (clock.startingDegree + calculatedRotation) % 360
-          : (clock.startingDegree - calculatedRotation + 360) % 360;
+        const configs = defaultSatelliteConfigs[clockIndex] || [];
         
-        // Store the base rotation as first element
-        newRotations[clockIndex] = [baseRotation];
-        
-        // Add satellite rotations if they exist
-        if (clockSatellites[clockIndex]) {
-          const configs = defaultSatelliteConfigs[clockIndex] || [];
-          const satelliteRotations = configs.map(config => {
-            const satelliteRotation = (elapsedMilliseconds / config.rotationTime) * 360;
-            return config.rotationDirection === 'clockwise'
-              ? satelliteRotation % 360
-              : (-satelliteRotation + 360) % 360;
-          });
-          newRotations[clockIndex].push(...satelliteRotations);
-        }
+        newRotations[clockIndex] = configs.map(config => {
+          const satelliteRotation = (elapsedMilliseconds / config.rotationTime) * 360;
+          return config.rotationDirection === 'clockwise'
+            ? satelliteRotation % 360
+            : (-satelliteRotation + 360) % 360;
+        });
       });
 
       setRotationValues(newRotations);
@@ -154,9 +180,14 @@ export default function MultiViewPage() {
     };
   }, [type, clockSettings]);
 
-  // Update getClockRotation to use rotationValues
-  const getClockRotation = (clock: typeof clockSettings[0], index: number) => {
-    return (rotationValues[index]?.[0] || 0);
+  // Calculate rotation for each clock
+  const getClockRotation = (clock: typeof clockSettings[0]) => {
+    if (!currentTime) return 0
+    const elapsedMilliseconds = currentTime.getTime() - clock.startDateTime.getTime()
+    const calculatedRotation = (elapsedMilliseconds / clock.rotationTime) * 360
+    return clock.rotationDirection === 'clockwise'
+      ? (clock.startingDegree + calculatedRotation) % 360
+      : (clock.startingDegree - calculatedRotation + 360) % 360
   }
 
   // Focus node colors from individual clocks
@@ -195,7 +226,7 @@ export default function MultiViewPage() {
         {type === 1 && (
           <div className="relative w-[600px] h-[600px]">
             {clockSettings.map((clock, index) => {
-              const rotation = getClockRotation(clock, index)
+              const rotation = getClockRotation(clock)
               return (
                 <div
                   key={index}
@@ -324,14 +355,14 @@ export default function MultiViewPage() {
           </div>
         )}
         {type === 2 && (
-          <div className="relative w-[450px] h-[450px] flex items-center justify-center">
+          <div className="relative w-[450px] h-[450px]">
             {/* Satellite grid pattern */}
             <motion.div 
               className="absolute inset-[-25%] rounded-full overflow-hidden opacity-40"
               style={{ zIndex: 20 }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.4 }}
-              transition={{ duration: 0.8, delay: 1.2 }}
+              transition={{ duration: 0.5 }}
             >
               <div className="absolute inset-0 flex items-center justify-center">
                 <Image
@@ -347,17 +378,11 @@ export default function MultiViewPage() {
 
             {/* Center layered clocks with optimized rendering */}
             <motion.div 
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] aspect-square" 
-              style={{ 
-                zIndex: 40
-              }}
-              initial={{ opacity: 0, scale: 1.25 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ 
-                duration: 1,
-                delay: 0.4,
-                ease: [0.4, 0, 0.2, 1]
-              }}
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] aspect-square" 
+              style={{ zIndex: 40 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
             >
               {clockSettings.slice(0, 9).map((clock, index) => (
                 <div
@@ -372,7 +397,7 @@ export default function MultiViewPage() {
                       <div
                         className="absolute inset-0"
                         style={{ 
-                          transform: `rotate(${rotationValues[index]?.[0] || 0}deg)`,
+                          transform: `rotate(${rotationValues[index] || 0}deg)`,
                           transformOrigin: 'center',
                           willChange: 'transform'
                         }}
@@ -408,50 +433,44 @@ export default function MultiViewPage() {
               transition={{ duration: 0.3, delay: 0.5 }}
             >
               {clockSettings.slice(0, 9).map((clock, index) => {
-                // Skip the 9th clock as it's part of the center stack
-                if (index >= 8) return null;
-
-                // Calculate position for each outer clock
-                const angle = (360 / 8) * index;
-                const radius = 35; // Distance from center
-                const radians = (angle * Math.PI) / 180;
+                const rotation = rotationValues[index] || 0;
+                
+                // Map indices to arrange clocks in specific order
+                const positionIndex = index === 5 ? 0 : // Clock 6 to position 1
+                                    index === 3 ? 1 : // Clock 4 to position 2
+                                    index === 8 ? 2 : // Clock 9 to position 3
+                                    index === 2 ? 3 : // Clock 3 to position 4
+                                    index === 0 ? 4 : // Clock 1 to position 5
+                                    index === 6 ? 5 : // Clock 7 to position 6
+                                    index === 4 ? 6 : // Clock 5 to position 7
+                                    index === 1 ? 7 : // Clock 2 to position 8
+                                    index === 7 ? 8 : // Clock 8 to position 9
+                                    index;
+                
+                // Calculate position for outer clock
+                const angle = 270 + 20 + (360 / 9) * positionIndex;
+                const radius = 72;
+                const radians = angle * (Math.PI / 180);
                 const x = 50 + radius * Math.cos(radians);
                 const y = 50 + radius * Math.sin(radians);
 
-                const clockRotation = getClockRotation(clock, index);
-
                 return (
-                  <motion.div
-                    key={`outer-clock-${clock.id}`}
-                    className="absolute aspect-square hover:scale-110 transition-transform duration-200 group"
+                  <div
+                    key={index}
+                    className="absolute aspect-square transition-transform duration-200"
                     style={{
-                      width: '22%',
+                      width: '28%',
                       left: `${x}%`,
                       top: `${y}%`,
                       transform: 'translate(-50%, -50%)',
                       zIndex: 30,
                     }}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{
-                      duration: 0.8,
-                      delay: index * 0.1,
-                      ease: [0.4, 0, 0.2, 1]
-                    }}
                   >
                     <div className="relative w-full h-full">
-                      {/* Tooltip */}
-                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-black dark:text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-                        {clockRotation.toFixed(1)}°
-                      </div>
-                      <motion.div
+                      <div
                         className="absolute inset-0 rounded-full overflow-hidden"
-                        animate={{ rotate: clockRotation }}
-                        transition={{
-                          duration: clock.rotationTime / 1000,
-                          ease: "linear",
-                          repeat: Infinity,
-                          repeatType: "loop"
+                        style={{
+                          transform: `rotate(${rotation}deg)`,
                         }}
                       >
                         <div
@@ -463,18 +482,17 @@ export default function MultiViewPage() {
                           }}
                         >
                           <Image 
-                            src={clock.imageUrl}
-                            alt={`Clock Face ${index + 1}`}
-                            layout="fill"
-                            objectFit="cover"
-                            className="rounded-full [&_*]:fill-current [&_*]:stroke-none"
+                            src={`/clock_${index + 1}.svg`}
+                            alt={`Clock ${index + 1}`}
+                            fill
+                            className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
                             priority
                             loading="eager"
                           />
                         </div>
-                      </motion.div>
+                      </div>
                     </div>
-                  </motion.div>
+                  </div>
                 );
               })}
             </motion.div>

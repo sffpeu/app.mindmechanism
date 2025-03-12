@@ -887,42 +887,89 @@ export default function Clock({
           </motion.div>
         )}
 
+        {/* Clock faces layer */}
+        <div className="absolute inset-[5%] rounded-full">
+          <div className="absolute inset-0 dark:invert" style={{ zIndex: 1 }}>
+            {allClocks?.map((clock, index) => {
+              const clockRotation = getClockRotation(clock);
+
+              return (
+                <div key={clock.id} className="absolute inset-0" style={{ mixBlendMode: 'multiply' }}>
+                  <div className="absolute inset-[2%] rounded-full overflow-hidden">
+                    <motion.div 
+                      className="absolute inset-0"
+                      style={{ 
+                        willChange: 'transform',
+                      }}
+                      animate={{ rotate: clockRotation }}
+                      transition={getTransitionConfig()}
+                    >
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) rotate(${clock.imageOrientation}deg) scale(${clock.imageScale})`,
+                          transformOrigin: 'center',
+                        }}
+                      >
+                        <Image 
+                          src={clock.imageUrl}
+                          alt={`Clock Face ${index + 1}`}
+                          layout="fill"
+                          objectFit="cover"
+                          className="rounded-full [&_*]:fill-current [&_*]:stroke-none"
+                          priority
+                          loading="eager"
+                        />
+                      </div>
+                    </motion.div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Individual clocks in multiview2 */}
         {isMultiView2 && (
           <>
             {/* Center layered clocks */}
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[30%] aspect-square" style={{ zIndex: 40 }}>
               <div className="relative w-full h-full">
-                {allClocks?.map((clock, index) => (
-                  <div key={`center-clock-${clock.id}`} className="absolute inset-0" style={{ mixBlendMode: 'multiply' }}>
-                    <div className="absolute inset-0 rounded-full overflow-hidden">
-                      <motion.div 
-                        className="absolute inset-0"
-                        style={{ 
-                          transform: `rotate(${getClockRotation(clock)}deg)`,
-                        }}
-                      >
-                        <div
+                {allClocks?.map((clock, index) => {
+                  const clockRotation = getClockRotation(clock);
+                  return (
+                    <div key={`center-clock-${clock.id}`} className="absolute inset-0" style={{ mixBlendMode: 'multiply' }}>
+                      <div className="absolute inset-0 rounded-full overflow-hidden">
+                        <motion.div 
                           className="absolute inset-0"
-                          style={{
-                            transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) rotate(${clock.imageOrientation}deg) scale(${clock.imageScale})`,
-                            transformOrigin: 'center',
+                          style={{ 
+                            willChange: 'transform',
                           }}
+                          animate={{ rotate: clockRotation }}
+                          transition={getTransitionConfig()}
                         >
-                          <Image 
-                            src={clock.imageUrl}
-                            alt={`Clock Face ${index + 1}`}
-                            layout="fill"
-                            objectFit="cover"
-                            className="rounded-full [&_*]:fill-current [&_*]:stroke-none"
-                            priority
-                            loading="eager"
-                          />
-                        </div>
-                      </motion.div>
+                          <div
+                            className="absolute inset-0"
+                            style={{
+                              transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) rotate(${clock.imageOrientation}deg) scale(${clock.imageScale})`,
+                              transformOrigin: 'center',
+                            }}
+                          >
+                            <Image 
+                              src={clock.imageUrl}
+                              alt={`Clock Face ${index + 1}`}
+                              layout="fill"
+                              objectFit="cover"
+                              className="rounded-full [&_*]:fill-current [&_*]:stroke-none"
+                              priority
+                              loading="eager"
+                            />
+                          </div>
+                        </motion.div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -957,11 +1004,10 @@ export default function Clock({
                     <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-black dark:text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
                       {clockRotation.toFixed(1)}°
                     </div>
-                    <div
+                    <motion.div
                       className="absolute inset-0 rounded-full overflow-hidden"
-                      style={{
-                        transform: `rotate(${clockRotation}deg)`,
-                      }}
+                      animate={{ rotate: clockRotation }}
+                      transition={getTransitionConfig()}
                     >
                       <div
                         className="absolute inset-0"
@@ -981,7 +1027,7 @@ export default function Clock({
                           loading="eager"
                         />
                       </div>
-                    </div>
+                    </motion.div>
                   </div>
                 </motion.div>
               );
@@ -1039,104 +1085,6 @@ export default function Clock({
               times: [0, 0.25, 0.5, 0.75, 1]
             }}
           />
-        )}
-        {/* Clock faces layer */}
-        <div className="absolute inset-[5%] rounded-full">
-          <div className="absolute inset-0 dark:invert" style={{ zIndex: 1 }}>
-            {allClocks?.map((clock, index) => {
-              const now = Date.now();
-              const elapsedMilliseconds = now - clock.startDateTime.getTime();
-              const calculatedRotation = (elapsedMilliseconds / clock.rotationTime) * 360;
-              const clockRotation = clock.rotationDirection === 'clockwise'
-                ? (clock.startingDegree + calculatedRotation) % 360
-                : (clock.startingDegree - calculatedRotation + 360) % 360;
-
-              return (
-                <div key={clock.id} className="absolute inset-0" style={{ mixBlendMode: 'multiply' }}>
-                  <div className="absolute inset-[2%] rounded-full overflow-hidden">
-                    <div 
-                      className="absolute inset-0"
-                      style={{ 
-                        transform: `rotate(${clockRotation}deg)`,
-                      }}
-                    >
-                      <div
-                        className="absolute inset-0"
-                        style={{
-                          transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) rotate(${clock.imageOrientation}deg) scale(${clock.imageScale})`,
-                          transformOrigin: 'center',
-                        }}
-                      >
-                        <Image 
-                          src={clock.imageUrl}
-                          alt={`Clock Face ${index + 1}`}
-                          layout="fill"
-                          objectFit="cover"
-                          className="rounded-full [&_*]:fill-current [&_*]:stroke-none"
-                          priority
-                          loading="eager"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        {/* Focus nodes layer - only for multiview1 */}
-        {!isMultiView2 && (
-          <div className="absolute inset-[5%] rounded-full" style={{ zIndex: 100, pointerEvents: 'none' }}>
-            {allClocks?.map((clock, index) => {
-              const now = Date.now();
-              const elapsedMilliseconds = now - clock.startDateTime.getTime();
-              const calculatedRotation = (elapsedMilliseconds / clock.rotationTime) * 360;
-              const clockRotation = clock.rotationDirection === 'clockwise'
-                ? (clock.startingDegree + calculatedRotation) % 360
-                : (clock.startingDegree - calculatedRotation + 360) % 360;
-
-              return (
-                <div 
-                  key={`focus-nodes-${clock.id}`}
-                  className="absolute inset-0"
-                  style={{ 
-                    transform: `rotate(${clockRotation}deg)`,
-                    pointerEvents: 'auto',
-                    zIndex: 100,
-                  }}
-                >
-                  {renderFocusNodes(clockRotation, clock.focusNodes, clock.startingDegree, clock.id)}
-                </div>
-              );
-            })}
-          </div>
-        )}
-        {/* Satellites layer - only for multiview1 */}
-        {!isMultiView2 && (
-          <div className="absolute inset-[5%] rounded-full" style={{ zIndex: 110, pointerEvents: 'none' }}>
-            {allClocks?.map((clock, index) => {
-              const now = Date.now();
-              const elapsedMilliseconds = now - clock.startDateTime.getTime();
-              const calculatedRotation = (elapsedMilliseconds / clock.rotationTime) * 360;
-              const clockRotation = clock.rotationDirection === 'clockwise'
-                ? (clock.startingDegree + calculatedRotation) % 360
-                : (clock.startingDegree - calculatedRotation + 360) % 360;
-
-              return (
-                <div 
-                  key={`satellites-${clock.id}`}
-                  className="absolute inset-0"
-                  style={{ 
-                    transform: `rotate(${clockRotation}deg)`,
-                    pointerEvents: 'auto',
-                    zIndex: 110,
-                  }}
-                >
-                  {renderSatellites(clockRotation, clock.id)}
-                </div>
-              );
-            })}
-          </div>
         )}
       </motion.div>
     );
