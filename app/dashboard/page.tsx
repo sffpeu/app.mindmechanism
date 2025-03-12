@@ -154,7 +154,7 @@ const formatDuration = (ms: number) => {
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const { notes } = useNotes();
+  const { notes, addNote, editNote } = useNotes();
   const { theme } = useTheme();
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [weatherData, setWeatherData] = useState<WeatherResponse | null>(null);
