@@ -9,7 +9,6 @@ import { cn } from '@/lib/utils'
 import { clockSettings } from '@/lib/clockSettings'
 import { GlossaryWord } from '@/types/Glossary'
 import { getClockWords } from '@/lib/glossary'
-import { supabase } from '@/lib/supabase'
 import { HintPopup } from '@/components/ui/hint-popup'
 
 interface SessionDurationDialogProps {
@@ -47,9 +46,14 @@ export function SessionDurationDialog({
   const [hoveredWord, setHoveredWord] = useState<string | null>(null)
   const [showDurationHint, setShowDurationHint] = useState(false)
   const [showWordsHint, setShowWordsHint] = useState(false)
+  const [isGlossaryOpen, setIsGlossaryOpen] = useState(false)
+  const [selectedWordIndex, setSelectedWordIndex] = useState<number | null>(null)
+  const [filteredWords, setFilteredWords] = useState<GlossaryWord[]>([])
 
   const textColorClass = clockColor?.split(' ')?.[0] || 'text-gray-500'
   const bgColorClass = clockColor?.split(' ')?.[1] || 'bg-gray-500'
+
+  const presets = [5, 10, 15, 20, 25, 30]
 
   useEffect(() => {
     if (step === 'duration') {
@@ -80,18 +84,10 @@ export function SessionDurationDialog({
 
   const loadGlossaryWords = async () => {
     try {
-      const { data, error } = await supabase
-        .from('glossary')
-        .select('*')
-        .order('word')
-
-      if (error) {
-        console.error('Error loading glossary words:', error)
-        return
-      }
-      setGlossaryWords(data || [])
+      const words = await getClockWords();
+      setGlossaryWords(words);
     } catch (error) {
-      console.error('Error loading glossary words:', error)
+      console.error('Error loading glossary words:', error);
     }
   }
 
@@ -231,6 +227,27 @@ export function SessionDurationDialog({
 
   const handleResetAllWords = () => {
     setWords(Array(words.length).fill(''))
+  }
+
+  const handleWordSelect = (word: GlossaryWord) => {
+    if (selectedWordIndex !== null) {
+      const newWords = [...words]
+      newWords[selectedWordIndex] = word.word
+      setWords(newWords)
+      setIsGlossaryOpen(false)
+      setSelectedWordIndex(null)
+      setSearchQuery('')
+    }
+  }
+
+  const handleRandomize = () => {
+    if (glossaryWords.length === 0) return
+
+    const newWords = words.map(() => {
+      const randomIndex = Math.floor(Math.random() * glossaryWords.length)
+      return glossaryWords[randomIndex].word
+    })
+    setWords(newWords)
   }
 
   const renderStepIndicator = () => (

@@ -2,7 +2,7 @@ import { db } from './firebase';
 import { GlossaryWord, WordRating } from '@/types/Glossary';
 import { 
   collection,
-  query,
+  query as firestoreQuery,
   getDocs,
   addDoc,
   updateDoc,
@@ -18,7 +18,7 @@ export async function getAllWords(): Promise<GlossaryWord[]> {
     if (!db) throw new Error('Firestore is not initialized');
 
     const glossaryRef = collection(db as Firestore, 'glossary');
-    const q = query(glossaryRef, orderBy('word'));
+    const q = firestoreQuery(glossaryRef, orderBy('word'));
     const querySnapshot = await getDocs(q);
     
     return querySnapshot.docs.map(doc => ({
@@ -36,7 +36,7 @@ export async function getWordsByRating(rating: string): Promise<GlossaryWord[]> 
     if (!db) throw new Error('Firestore is not initialized');
 
     const glossaryRef = collection(db as Firestore, 'glossary');
-    const q = query(
+    const q = firestoreQuery(
       glossaryRef,
       where('rating', '==', rating),
       orderBy('word')
@@ -58,7 +58,7 @@ export async function getClockWords(): Promise<GlossaryWord[]> {
     if (!db) throw new Error('Firestore is not initialized');
 
     const glossaryRef = collection(db as Firestore, 'glossary');
-    const q = query(
+    const q = firestoreQuery(
       glossaryRef,
       where('grade', '>=', 4),
       orderBy('grade'),
@@ -127,7 +127,7 @@ export async function deleteUserWord(id: string): Promise<boolean> {
   }
 }
 
-export async function searchWords(query: string): Promise<GlossaryWord[]> {
+export async function searchWords(searchText: string): Promise<GlossaryWord[]> {
   try {
     if (!db) throw new Error('Firestore is not initialized');
 
@@ -135,10 +135,10 @@ export async function searchWords(query: string): Promise<GlossaryWord[]> {
     // For a production app, you might want to use Algolia or a similar search service
     // This is a simple implementation that will only match exact substrings
     const glossaryRef = collection(db as Firestore, 'glossary');
-    const q = query(glossaryRef, orderBy('word'));
+    const q = firestoreQuery(glossaryRef, orderBy('word'));
     const querySnapshot = await getDocs(q);
     
-    const searchQuery = query.toLowerCase();
+    const searchQuery = searchText.toLowerCase();
     return querySnapshot.docs
       .map(doc => ({
         id: doc.id,
