@@ -345,13 +345,19 @@ export default function MultiViewPage() {
               </div>
             </motion.div>
 
-            {/* Center layered clocks */}
+            {/* Center layered clocks with optimized rendering */}
             <motion.div 
-              className="absolute w-[95%] aspect-square" 
-              style={{ zIndex: 40 }}
-              initial={{ opacity: 0, scale: 0.9 }}
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[30%] aspect-square" 
+              style={{ 
+                zIndex: 40
+              }}
+              initial={{ opacity: 0, scale: 1.25 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
+              transition={{ 
+                duration: 1,
+                delay: 0.4,
+                ease: [0.4, 0, 0.2, 1]
+              }}
             >
               {clockSettings.slice(0, 9).map((clock, index) => (
                 <div
