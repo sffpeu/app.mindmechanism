@@ -12,19 +12,36 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/');
+      router.push('/auth/signin');
     }
   }, [user, loading, router]);
 
-  // Show nothing while loading
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-black/95">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
+      <div className="min-h-screen bg-gray-50 dark:bg-black/95 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-gray-200 dark:border-gray-700 border-t-black dark:border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
       </div>
     );
   }
 
-  // If not loading and we have a user, show the protected content
-  return user ? <>{children}</> : null;
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-black/95 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600 dark:text-gray-400 mb-4">Please sign in to continue</p>
+          <button 
+            onClick={() => router.push('/auth/signin')}
+            className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-black/90 dark:hover:bg-white/90 transition-colors"
+          >
+            Sign In
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
 } 
