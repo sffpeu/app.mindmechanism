@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { ThemeProvider } from '@/lib/ThemeContext';
+import { ThemeProvider } from '@/app/ThemeContext';
 import { AuthProvider } from '@/lib/FirebaseAuthContext';
 import { NotesProvider } from '@/lib/NotesContext';
 import { TimeTrackingProvider } from '@/lib/TimeTrackingContext';
