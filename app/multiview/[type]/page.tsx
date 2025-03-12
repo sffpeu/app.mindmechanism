@@ -347,7 +347,7 @@ export default function MultiViewPage() {
 
             {/* Center layered clocks with optimized rendering */}
             <motion.div 
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[30%] aspect-square" 
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] aspect-square" 
               style={{ 
                 zIndex: 40
               }}
@@ -402,7 +402,7 @@ export default function MultiViewPage() {
 
             {/* Outer ring clocks */}
             <motion.div 
-              className="absolute w-[95%] h-[95%] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+              className="absolute w-full h-full left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
               style={{ zIndex: 30 }}
             >
               {clockSettings.slice(0, 9).map((clock, index) => {
@@ -422,7 +422,7 @@ export default function MultiViewPage() {
                 
                 // Calculate position for outer clock
                 const angle = 270 + 20 + (360 / 9) * positionIndex;
-                const radius = 72;
+                const radius = 65; // Adjusted radius to match grid
                 const radians = angle * (Math.PI / 180);
                 const x = 50 + radius * Math.cos(radians);
                 const y = 50 + radius * Math.sin(radians);
@@ -432,7 +432,7 @@ export default function MultiViewPage() {
                     key={index}
                     className="absolute aspect-square transition-transform duration-200"
                     style={{
-                      width: '28%',
+                      width: '25%', // Slightly smaller outer clocks
                       left: `${x}%`,
                       top: `${y}%`,
                       transform: 'translate(-50%, -50%)',
