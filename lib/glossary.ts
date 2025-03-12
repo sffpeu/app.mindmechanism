@@ -60,8 +60,6 @@ export async function getClockWords(): Promise<GlossaryWord[]> {
     const glossaryRef = collection(db as Firestore, 'glossary');
     const q = firestoreQuery(
       glossaryRef,
-      where('grade', '>=', 4),
-      orderBy('grade'),
       orderBy('word')
     );
     const querySnapshot = await getDocs(q);
