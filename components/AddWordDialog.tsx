@@ -39,7 +39,7 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded }: AddWordDialog
         phonetic_spelling: phoneticSpelling.trim(),
         rating,
         grade,
-        source: 'user',
+        source: 'user' as const,
         version: 'User',
         user_id: user.uid
       };
