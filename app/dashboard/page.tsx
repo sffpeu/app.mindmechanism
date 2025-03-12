@@ -409,36 +409,50 @@ export default function DashboardPage() {
     };
   }, [user?.uid]); // Only depend on user.uid
 
-  // Show loading state
-  if (isInitializing || authLoading) {
+  // Show loading state while authentication is initializing
+  if (authLoading || !mounted) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="min-h-screen bg-gray-50 dark:bg-black/95 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading your dashboard...</p>
+          <div className="w-16 h-16 border-4 border-gray-200 dark:border-gray-700 border-t-black dark:border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
       </div>
-    )
+    );
   }
 
-  // Show error state
+  // Show error state if there's an auth error
   if (authError) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="min-h-screen bg-gray-50 dark:bg-black/95 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-red-500 mb-4">
-            <XCircle className="h-12 w-12 mx-auto" />
-          </div>
-          <p className="text-gray-600 dark:text-gray-300">{authError}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          <p className="text-red-600 dark:text-red-400 mb-4">{authError}</p>
+          <button 
+            onClick={() => router.push('/auth/signin')}
+            className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-black/90 dark:hover:bg-white/90 transition-colors"
           >
-            Retry
+            Sign In
           </button>
         </div>
       </div>
-    )
+    );
+  }
+
+  // Show sign in prompt if user is not authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-black/95 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600 dark:text-gray-400 mb-4">Please sign in to access the dashboard</p>
+          <button 
+            onClick={() => router.push('/auth/signin')}
+            className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-black/90 dark:hover:bg-white/90 transition-colors"
+          >
+            Sign In
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (!mounted) {

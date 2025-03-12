@@ -74,10 +74,39 @@ export default function SessionsPage() {
   const [selectedClockColor, setSelectedClockColor] = useState<string>('')
   const [isDurationDialogOpen, setIsDurationDialogOpen] = useState(false)
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   
   // Add time tracking
   useTimeTracking(user?.uid, 'sessions')
+
+  // Show loading state while authentication is initializing
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-black/95 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-gray-200 dark:border-gray-700 border-t-black dark:border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show sign in prompt if user is not authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-black/95 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600 dark:text-gray-400 mb-4">Please sign in to access sessions</p>
+          <button 
+            onClick={() => router.push('/auth/signin')}
+            className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-black/90 dark:hover:bg-white/90 transition-colors"
+          >
+            Sign In
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Function to calculate elapsed time
   const getElapsedTime = (startDate: Date): string => {

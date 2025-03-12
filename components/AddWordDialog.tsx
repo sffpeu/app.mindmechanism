@@ -40,7 +40,7 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded }: AddWordDialog
         rating,
         grade,
         source: 'user' as const,
-        version: 'User',
+        version: 'User' as const,
         user_id: user.uid
       };
 
