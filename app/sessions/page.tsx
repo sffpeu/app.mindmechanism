@@ -76,7 +76,7 @@ export default function SessionsPage() {
   const router = useRouter()
   const { user } = useAuth()
   const { theme } = useTheme()
-  const { timeTracking } = useTimeTracking()
+  useTimeTracking(user?.uid, 'sessions')  // Start time tracking for sessions page
   
   // Function to calculate elapsed time
   const getElapsedTime = (startDate: Date): string => {
