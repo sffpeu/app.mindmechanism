@@ -72,12 +72,11 @@ export default function GlossaryPage() {
     if (showOnlyMyWords && (word.source !== 'user' || word.user_id !== user?.uid)) {
       return false
     }
-    // Then apply other filters
+    // Then apply rating filters
     if (selectedFilter === 'All') return true
     if (selectedFilter === 'Positive') return word.rating === '+'
     if (selectedFilter === 'Neutral') return word.rating === '~'
     if (selectedFilter === 'Negative') return word.rating === '-'
-    if (selectedFilter === 'Default') return word.version === 'Default'
     return true
   }).filter(word => {
     if (!selectedLetter) return true
@@ -127,9 +126,11 @@ export default function GlossaryPage() {
               <button
                 onClick={() => {
                   setShowOnlyMyWords(false)
+                  if (selectedFilter === 'All') return;
+                  setSelectedFilter('All')
                 }}
                 className={`px-4 py-2 rounded-lg transition-all ${
-                  !showOnlyMyWords
+                  !showOnlyMyWords && selectedFilter === 'All'
                     ? 'bg-black text-white dark:bg-white dark:text-black'
                     : 'bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 text-gray-900 dark:text-white'
                 }`}
@@ -139,9 +140,11 @@ export default function GlossaryPage() {
               <button
                 onClick={() => {
                   setShowOnlyMyWords(!showOnlyMyWords)
+                  if (selectedFilter === 'All') return;
+                  setSelectedFilter('All')
                 }}
                 className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${
-                  showOnlyMyWords
+                  showOnlyMyWords && selectedFilter === 'All'
                     ? 'bg-purple-600 text-white dark:bg-purple-500 dark:text-white'
                     : 'bg-white hover:bg-purple-50 dark:bg-black/40 dark:hover:bg-purple-900/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-purple-200 dark:hover:border-purple-500/30 text-gray-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400'
                 }`}
