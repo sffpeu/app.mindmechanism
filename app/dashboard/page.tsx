@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { Card } from '@/components/ui/card'
-import { Calendar, Clock, Cloud, Droplets, Gauge, Wind, Moon, ClipboardList, BookOpen, Sun, MapPin, Mountain, Waves, User, BarChart2, Pencil, Trash2, Globe, RefreshCw, CheckCircle2, Pause, XCircle, Users, Share2, Cpu, Wifi, Battery, Eye } from 'lucide-react'
+import { Calendar, Clock, Cloud, Droplets, Gauge, Wind, Moon, ClipboardList, BookOpen, Sun, MapPin, Mountain, Waves, User, BarChart2, Pencil, Trash2, Globe, RefreshCw, CheckCircle2, Pause, XCircle, Users, Share2, Cpu, Wifi, Battery, Eye, Timer } from 'lucide-react'
 import { useTheme } from '@/app/ThemeContext'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/FirebaseAuthContext'
@@ -152,6 +152,38 @@ const formatDuration = (ms: number) => {
   return `${hours}h ${minutes}m`
 }
 
+interface WeatherInfoCardProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}
+
+const WeatherInfoCard = ({ icon, label, value }: WeatherInfoCardProps) => (
+  <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5">
+    <div className="flex items-center gap-2 mb-1">
+      {icon}
+      <span className="text-xs text-gray-600 dark:text-gray-400">{label}</span>
+    </div>
+    <span className="text-sm font-medium text-gray-900 dark:text-white">{value}</span>
+  </div>
+);
+
+interface StatsCardProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}
+
+const StatsCard = ({ icon, label, value }: StatsCardProps) => (
+  <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5">
+    <div className="flex items-center gap-2 mb-1">
+      {icon}
+      <span className="text-xs text-gray-600 dark:text-gray-400">{label}</span>
+    </div>
+    <span className="text-sm font-medium text-gray-900 dark:text-white">{value}</span>
+  </div>
+);
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const { notes, addNote, editNote } = useNotes();
@@ -164,27 +196,67 @@ export default function DashboardPage() {
   const [showNotes, setShowNotes] = useState(true);
   const [showWeather, setShowWeather] = useState(true);
   const [showInfoCards, setShowInfoCards] = useState(true);
-  const [moon, setMoon] = useState<MoonData | null>(null)
-  const [currentTime, setCurrentTime] = useState<Date | null>(null)
-  const [isWeatherLoading, setIsWeatherLoading] = useState(false)
-  const [weatherError, setWeatherError] = useState<string | null>(null)
-  const { location, error: locationError, isLoading: isLocationLoading } = useLocation()
-  const router = useRouter()
-  const [isAddNoteOpen, setIsAddNoteOpen] = useState(false)
-  const [isEditNoteOpen, setIsEditNoteOpen] = useState(false)
-  const [selectedNote, setSelectedNote] = useState<Note | null>(null)
-  const [noteTitle, setNoteTitle] = useState('')
-  const [noteContent, setNoteContent] = useState('')
-  const [recentSessions, setRecentSessions] = useState<Session[]>([])
-  const [timeStats, setTimeStats] = useState<TimeStats>({ 
-    totalTime: 0, 
-    monthlyTime: 0, 
-    lastSignInTime: null 
-  })
-  const [timeEntryId, setTimeEntryId] = useState<string | null>(null)
-  const [isRefreshing, setIsRefreshing] = useState(false)
-  const [isInitializing, setIsInitializing] = useState(true)
-  const [authError, setAuthError] = useState<string | null>(null)
+  const [moon, setMoon] = useState<MoonData | null>(null);
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
+  const [isWeatherLoading, setIsWeatherLoading] = useState(false);
+  const [weatherError, setWeatherError] = useState<string | null>(null);
+  const { location, error: locationError, isLoading: isLocationLoading } = useLocation();
+  const router = useRouter();
+  const [isAddNoteOpen, setIsAddNoteOpen] = useState(false);
+  const [isEditNoteOpen, setIsEditNoteOpen] = useState(false);
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+  const [noteTitle, setNoteTitle] = useState('');
+  const [noteContent, setNoteContent] = useState('');
+  const [recentSessions, setRecentSessions] = useState<Session[]>([]);
+  const [timeStats, setTimeStats] = useState<TimeStats>({
+    totalTime: 0,
+    monthlyTime: 0,
+    lastSignInTime: null
+  });
+  const [timeEntryId, setTimeEntryId] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  // Define fetchData function before its usage
+  const fetchData = async () => {
+    if (!location?.coords) return;
+
+    try {
+      setIsWeatherLoading(true);
+      setWeatherError(null);
+
+      // Fetch weather data
+      const weatherRes = await fetch(
+        `https://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q=${location.coords.lat},${location.coords.lon}&aqi=yes`
+      );
+
+      if (!weatherRes.ok) {
+        throw new Error('Failed to fetch weather data');
+      }
+
+      const weatherData = await weatherRes.json();
+      setWeatherData(weatherData);
+
+      // Fetch moon data
+      const moonRes = await fetch(
+        `https://api.weatherapi.com/v1/astronomy.json?key=${WEATHER_API_KEY}&q=${location.coords.lat},${location.coords.lon}`
+      );
+
+      if (!moonRes.ok) {
+        throw new Error('Failed to fetch moon data');
+      }
+
+      const moonData = await moonRes.json();
+      setMoon(moonData.astronomy.astro);
+
+    } catch (error) {
+      console.error('Error fetching weather data:', error);
+      setWeatherError('Failed to load weather data');
+    } finally {
+      setIsWeatherLoading(false);
+    }
+  };
 
   const getAQIDescription = (index: number) => {
     const descriptions = {
@@ -369,8 +441,7 @@ export default function DashboardPage() {
       console.error('Error loading stats:', error);
       toast({
         title: 'Error loading data',
-        description: 'Please try refreshing the page.',
-        variant: 'destructive',
+        description: 'Please try refreshing the page.'
       });
     } finally {
       setIsRefreshing(false);
@@ -532,14 +603,13 @@ export default function DashboardPage() {
       ]);
       toast({
         title: 'Dashboard refreshed',
-        description: 'Your data has been updated.',
+        description: 'Your data has been updated.'
       });
     } catch (error) {
       console.error('Error refreshing dashboard:', error);
       toast({
         title: 'Error refreshing data',
-        description: 'Please try again.',
-        variant: 'destructive',
+        description: 'Please try again.'
       });
     } finally {
       setIsRefreshing(false);
