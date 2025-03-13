@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Menu as MenuIcon, X, Settings, Sun, Moon, BookOpen, ClipboardList, LogOut, LayoutDashboard, Clock } from 'lucide-react'
+import { Menu as MenuIcon, X, Settings, Sun, Moon, BookOpen, ClipboardList, LogOut, LayoutDashboard, Clock, Home } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -120,8 +120,11 @@ export function Menu({
     return (
       <Link
         href={href}
-        className={`group flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation relative ${
-          isActive ? 'bg-black/5 dark:bg-white/10 text-black dark:text-white font-medium' : ''
+        className={`group flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 
+          hover:bg-gradient-to-r hover:from-black/5 hover:to-transparent dark:hover:from-white/5 dark:hover:to-transparent
+          hover:border-black/10 dark:hover:border-white/10 border border-transparent
+          transition-all touch-manipulation relative ${
+          isActive ? 'bg-black/5 dark:bg-white/10 text-black dark:text-white font-medium border-black/10 dark:border-white/10' : ''
         }`}
       >
         <Icon className="h-4 w-4 group-hover:scale-110 transition-transform" />
@@ -157,6 +160,7 @@ export function Menu({
               variants={menuContainerVariants}
             >
               <MenuCategory title="Navigation">
+                <NavLink href="/" icon={Home}>Home</NavLink>
                 <NavLink href="/dashboard" icon={LayoutDashboard}>Dashboard</NavLink>
                 <NavLink href="/sessions" icon={Clock}>Sessions</NavLink>
                 <NavLink href="/notes" icon={ClipboardList}>Notes</NavLink>
