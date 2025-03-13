@@ -580,7 +580,8 @@ export default function Clock({
                 >
                   <div 
                     className={`px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
-                    ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all`}
+                    ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
+                    outline outline-1 outline-black/10 dark:outline-white/20`}
                   >
                     <span className="text-black/90 dark:text-white/90">{word}</span>
                   </div>
