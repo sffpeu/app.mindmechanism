@@ -20,12 +20,16 @@ export function TimeTrackingProvider({ children }: { children: React.ReactNode }
   const { user } = useAuth();
 
   useEffect(() => {
-    if (user) {
+    if (user && db) {
       const loadTimeTracking = async () => {
-        const docRef = doc(db, 'timeTracking', user.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setTimeTracking(docSnap.data() as Record<string, number>);
+        try {
+          const docRef = doc(db, 'timeTracking', user.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            setTimeTracking(docSnap.data() as Record<string, number>);
+          }
+        } catch (error) {
+          console.error('Error loading time tracking:', error);
         }
       };
       loadTimeTracking();
@@ -33,15 +37,19 @@ export function TimeTrackingProvider({ children }: { children: React.ReactNode }
   }, [user]);
 
   const updateTimeSpent = async (page: string) => {
-    if (!user) return;
+    if (!user || !db) return;
 
-    const updatedTracking = {
-      ...timeTracking,
-      [page]: (timeTracking[page] || 0) + 1,
-    };
+    try {
+      const updatedTracking = {
+        ...timeTracking,
+        [page]: (timeTracking[page] || 0) + 1,
+      };
 
-    setTimeTracking(updatedTracking);
-    await setDoc(doc(db, 'timeTracking', user.uid), updatedTracking);
+      setTimeTracking(updatedTracking);
+      await setDoc(doc(db, 'timeTracking', user.uid), updatedTracking);
+    } catch (error) {
+      console.error('Error updating time tracking:', error);
+    }
   };
 
   return (
