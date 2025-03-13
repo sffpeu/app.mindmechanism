@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ThumbsUp, ThumbsDown, Minus, Wand2, Mic, Volume2 } from 'lucide-react';
 import { addUserWord } from '@/lib/glossary';
-import { useAuth } from '@/app/AuthContext';
+import { useAuth } from '@/lib/FirebaseAuthContext';
 import { toast } from 'sonner';
 
 interface AddWordDialogProps {

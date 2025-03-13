@@ -7,7 +7,7 @@ import { Search, Plus, ThumbsUp, ThumbsDown, Minus, Tag, LayoutGrid, List, Home,
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords, searchWords } from '@/lib/glossary'
 import { AddWordDialog } from '@/components/AddWordDialog'
-import { useAuth } from '@/app/AuthContext'
+import { useAuth } from '@/lib/FirebaseAuthContext'
 
 export default function GlossaryPage() {
   const { isDarkMode } = useTheme()
