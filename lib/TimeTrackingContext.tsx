@@ -23,6 +23,7 @@ export function TimeTrackingProvider({ children }: { children: React.ReactNode }
     if (user && db) {
       const loadTimeTracking = async () => {
         try {
+          if (!db) return;
           const docRef = doc(db, 'timeTracking', user.uid);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
