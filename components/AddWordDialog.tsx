@@ -21,7 +21,7 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded }: AddWordDialog
   const [definition, setDefinition] = useState('');
   const [phoneticSpelling, setPhoneticSpelling] = useState('');
   const [rating, setRating] = useState<'+' | '-' | '~'>('~');
-  const [grade, setGrade] = useState<number>(1);
+  const [grade, setGrade] = useState<number>(3);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,7 +66,7 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded }: AddWordDialog
     setDefinition('');
     setPhoneticSpelling('');
     setRating('~');
-    setGrade(1);
+    setGrade(3);
   };
 
   const handleGeneratePhonetic = () => {
@@ -180,38 +180,38 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded }: AddWordDialog
             </div>
 
             <div className="space-y-4">
-              <Label htmlFor="grade" className="text-gray-700 dark:text-gray-300">Grade (1-10)</Label>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-gray-900 dark:text-white">{grade}</span>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setGrade(prev => Math.max(1, prev - 1))}
-                      className="h-8 w-8 rounded-full flex items-center justify-center bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
-                    >
-                      -
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setGrade(prev => Math.min(10, prev + 1))}
-                      className="h-8 w-8 rounded-full flex items-center justify-center bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
-                    >
-                      +
-                    </button>
-                  </div>
+              <Label htmlFor="grade" className="text-gray-700 dark:text-gray-300">Grade (1-5)</Label>
+              <div className="space-y-6">
+                <div className="flex items-center justify-center">
+                  <span className="text-4xl font-bold text-gray-900 dark:text-white">{grade}</span>
                 </div>
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={grade}
-                  onChange={(e) => setGrade(parseInt(e.target.value))}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
-                  <span>Easy</span>
-                  <span>Hard</span>
+                <div className="flex justify-between items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setGrade(prev => Math.max(1, prev - 1))}
+                    className="h-10 w-10 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors text-lg font-medium"
+                  >
+                    -
+                  </button>
+                  <input
+                    type="range"
+                    min="1"
+                    max="5"
+                    value={grade}
+                    onChange={(e) => setGrade(parseInt(e.target.value))}
+                    className="flex-1 h-2 bg-gray-200 dark:bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-black [&::-webkit-slider-thumb]:dark:bg-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setGrade(prev => Math.min(5, prev + 1))}
+                    className="h-10 w-10 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors text-lg font-medium"
+                  >
+                    +
+                  </button>
+                </div>
+                <div className="flex justify-between text-sm font-medium">
+                  <span className="text-green-600 dark:text-green-400">Positive</span>
+                  <span className="text-red-600 dark:text-red-400">Negative</span>
                 </div>
               </div>
             </div>
