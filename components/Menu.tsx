@@ -121,13 +121,13 @@ export function Menu({
       <Link
         href={href}
         className={`group flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 
-          hover:bg-gradient-to-r hover:from-black/5 hover:to-transparent dark:hover:from-white/5 dark:hover:to-transparent
-          hover:border-black/10 dark:hover:border-white/10 border border-transparent
+          hover:bg-black/[0.02] dark:hover:bg-white/[0.02]
+          hover:border-black/5 dark:hover:border-white/5 border border-transparent
           transition-all touch-manipulation relative ${
-          isActive ? 'bg-black/5 dark:bg-white/10 text-black dark:text-white font-medium border-black/10 dark:border-white/10' : ''
+          isActive ? 'bg-black/[0.03] dark:bg-white/[0.03] text-black dark:text-white font-medium border-black/5 dark:border-white/5' : ''
         }`}
       >
-        <Icon className="h-4 w-4 group-hover:scale-110 transition-transform" />
+        <Icon className="h-4 w-4 group-hover:scale-105 transition-transform" />
         <span className="text-sm">{children}</span>
         {isActive && (
           <div className="absolute left-0 w-1 h-5 bg-gradient-to-b from-black to-gray-700 dark:from-white dark:to-white/70 rounded-full my-auto top-0 bottom-0" />
@@ -160,7 +160,7 @@ export function Menu({
               variants={menuContainerVariants}
             >
               <MenuCategory title="Navigation">
-                <NavLink href="/" icon={Home}>Home</NavLink>
+                <NavLink href="/home" icon={Home}>Home</NavLink>
                 <NavLink href="/dashboard" icon={LayoutDashboard}>Dashboard</NavLink>
                 <NavLink href="/sessions" icon={Clock}>Sessions</NavLink>
                 <NavLink href="/notes" icon={ClipboardList}>Notes</NavLink>
