@@ -85,154 +85,148 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded }: AddWordDialog
           <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white">Add New Word</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="word" className="text-gray-700 dark:text-gray-300">
-              Word
-            </Label>
-            <div className="relative">
-              <Input
-                id="word"
-                value={word}
-                onChange={(e) => setWord(e.target.value)}
-                className="w-full bg-gray-50 dark:bg-white/5"
-                placeholder="Enter a word"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="definition" className="text-gray-700 dark:text-gray-300">
-              Definition
-            </Label>
-            <Textarea
-              id="definition"
-              value={definition}
-              onChange={(e) => setDefinition(e.target.value)}
-              className="w-full bg-gray-50 dark:bg-white/5 min-h-[100px]"
-              placeholder="Enter the word's definition"
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="phonetic" className="text-gray-700 dark:text-gray-300 flex items-center justify-between">
-              <span>Phonetic Spelling</span>
-              <button
-                type="button"
-                onClick={handleGeneratePhonetic}
-                className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 dark:text-gray-400"
-                title="Generate phonetic spelling"
-              >
-                <Wand2 className="w-4 h-4" />
-              </button>
-            </Label>
-            <Input
-              id="phonetic"
-              value={phoneticSpelling}
-              onChange={(e) => setPhoneticSpelling(e.target.value)}
-              className="w-full bg-gray-50 dark:bg-white/5"
-              placeholder="e.g., /ˈfəʊniːm/"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <Label className="text-gray-700 dark:text-gray-300">Rating</Label>
-              <div className="flex flex-col gap-2">
-                <button
-                  type="button"
-                  onClick={() => setRating('+')}
-                  className={`py-3 px-4 rounded-lg flex items-center gap-3 transition-all ${
-                    rating === '+' 
-                      ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-2 border-green-500' 
-                      : 'bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 border border-gray-200 dark:border-white/10'
-                  }`}
-                >
-                  <ThumbsUp className="w-5 h-5" />
-                  <span className="font-medium">Positive</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRating('~')}
-                  className={`py-3 px-4 rounded-lg flex items-center gap-3 transition-all ${
-                    rating === '~'
-                      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-2 border-blue-500'
-                      : 'bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 border border-gray-200 dark:border-white/10'
-                  }`}
-                >
-                  <Minus className="w-5 h-5" />
-                  <span className="font-medium">Neutral</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRating('-')}
-                  className={`py-3 px-4 rounded-lg flex items-center gap-3 transition-all ${
-                    rating === '-'
-                      ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-2 border-red-500'
-                      : 'bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 border border-gray-200 dark:border-white/10'
-                  }`}
-                >
-                  <ThumbsDown className="w-5 h-5" />
-                  <span className="font-medium">Negative</span>
-                </button>
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="word" className="text-gray-700 dark:text-gray-300">
+                Word
+              </Label>
+              <div className="relative">
+                <Input
+                  id="word"
+                  value={word}
+                  onChange={(e) => setWord(e.target.value)}
+                  className="w-full bg-gray-50 dark:bg-white/5"
+                  placeholder="Enter a word"
+                  required
+                />
               </div>
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="definition" className="text-gray-700 dark:text-gray-300">
+                Definition
+              </Label>
+              <Textarea
+                id="definition"
+                value={definition}
+                onChange={(e) => setDefinition(e.target.value)}
+                className="w-full bg-gray-50 dark:bg-white/5 min-h-[100px]"
+                placeholder="Enter the word's definition"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phonetic" className="text-gray-700 dark:text-gray-300 flex items-center justify-between">
+                <span>Phonetic Spelling</span>
+                <button
+                  type="button"
+                  onClick={handleGeneratePhonetic}
+                  className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 dark:text-gray-400"
+                  title="Generate phonetic spelling"
+                >
+                  <Wand2 className="w-4 h-4" />
+                </button>
+              </Label>
+              <Input
+                id="phonetic"
+                value={phoneticSpelling}
+                onChange={(e) => setPhoneticSpelling(e.target.value)}
+                className="w-full bg-gray-50 dark:bg-white/5"
+                placeholder="e.g., /ˈfəʊniːm/"
+              />
+            </div>
+
             <div className="space-y-4">
-              <Label htmlFor="grade" className="text-gray-700 dark:text-gray-300">Grade (1-5)</Label>
-              <div className="space-y-6">
-                <div className="flex items-center justify-center">
-                  <span className="text-4xl font-bold text-gray-900 dark:text-white">{grade}</span>
-                </div>
-                <div className="flex justify-between items-center gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setGrade(prev => Math.max(1, prev - 1))}
-                    className="h-10 w-10 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors text-lg font-medium"
-                  >
-                    -
-                  </button>
+              <Label className="text-gray-700 dark:text-gray-300">Word Assessment</Label>
+              <div className="bg-gray-50 dark:bg-white/5 rounded-xl p-4">
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setRating('+')}
+                        className={`h-10 px-4 rounded-lg flex items-center gap-2 transition-all ${
+                          rating === '+' 
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-2 border-green-500' 
+                            : 'bg-white dark:bg-black/40 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-black/60 border border-gray-200 dark:border-white/10'
+                        }`}
+                      >
+                        <ThumbsUp className="w-4 h-4" />
+                        <span className="font-medium">+</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRating('~')}
+                        className={`h-10 px-4 rounded-lg flex items-center gap-2 transition-all ${
+                          rating === '~'
+                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-2 border-blue-500'
+                            : 'bg-white dark:bg-black/40 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-black/60 border border-gray-200 dark:border-white/10'
+                        }`}
+                      >
+                        <Minus className="w-4 h-4" />
+                        <span className="font-medium">~</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRating('-')}
+                        className={`h-10 px-4 rounded-lg flex items-center gap-2 transition-all ${
+                          rating === '-'
+                            ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-2 border-red-500'
+                            : 'bg-white dark:bg-black/40 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-black/60 border border-gray-200 dark:border-white/10'
+                        }`}
+                      >
+                        <ThumbsDown className="w-4 h-4" />
+                        <span className="font-medium">-</span>
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setGrade(prev => Math.max(1, prev - 1))}
+                        className="h-10 w-10 rounded-lg flex items-center justify-center bg-white dark:bg-black/40 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-black/60 border border-gray-200 dark:border-white/10 transition-colors text-lg font-medium"
+                      >
+                        -
+                      </button>
+                      <span className="text-2xl font-bold text-gray-900 dark:text-white w-5 text-center">{grade}</span>
+                      <button
+                        type="button"
+                        onClick={() => setGrade(prev => Math.min(5, prev + 1))}
+                        className="h-10 w-10 rounded-lg flex items-center justify-center bg-white dark:bg-black/40 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-black/60 border border-gray-200 dark:border-white/10 transition-colors text-lg font-medium"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
                   <input
                     type="range"
                     min="1"
                     max="5"
                     value={grade}
                     onChange={(e) => setGrade(parseInt(e.target.value))}
-                    className="flex-1 h-2 bg-gray-200 dark:bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-black [&::-webkit-slider-thumb]:dark:bg-white"
+                    className="w-full h-1.5 bg-gray-200 dark:bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-black [&::-webkit-slider-thumb]:dark:bg-white"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setGrade(prev => Math.min(5, prev + 1))}
-                    className="h-10 w-10 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors text-lg font-medium"
-                  >
-                    +
-                  </button>
-                </div>
-                <div className="flex justify-between text-sm font-medium">
-                  <span className="text-green-600 dark:text-green-400">Positive</span>
-                  <span className="text-red-600 dark:text-red-400">Negative</span>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex justify-end gap-3 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="bg-gray-50 dark:bg-white/5"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90"
-            >
-              {isLoading ? 'Adding...' : 'Add Word'}
-            </Button>
+            <div className="flex justify-end gap-3 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                className="bg-gray-50 dark:bg-white/5"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90"
+              >
+                {isLoading ? 'Adding...' : 'Add Word'}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>
