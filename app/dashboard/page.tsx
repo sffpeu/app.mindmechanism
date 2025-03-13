@@ -158,11 +158,11 @@ export default function DashboardPage() {
   const { theme } = useTheme();
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [weatherData, setWeatherData] = useState<WeatherResponse | null>(null);
-  const [showElements, setShowElements] = useState(false);
-  const [showSatellites, setShowSatellites] = useState(false);
-  const [showRecentSessions, setShowRecentSessions] = useState(false);
-  const [showNotes, setShowNotes] = useState(false);
-  const [showWeather, setShowWeather] = useState(false);
+  const [showElements, setShowElements] = useState(true);
+  const [showSatellites, setShowSatellites] = useState(true);
+  const [showRecentSessions, setShowRecentSessions] = useState(true);
+  const [showNotes, setShowNotes] = useState(true);
+  const [showWeather, setShowWeather] = useState(true);
   const [showInfoCards, setShowInfoCards] = useState(true);
   const [moon, setMoon] = useState<MoonData | null>(null)
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
@@ -241,33 +241,39 @@ export default function DashboardPage() {
   // Fetch weather and moon data
   useEffect(() => {
     const fetchData = async () => {
-      setIsWeatherLoading(true);
+      if (!location?.coords) return;
+
       try {
-        const weatherRes = await fetch(
-          `https://api.weatherapi.com/v1/current.json?key=6cb652a81cb64a19a84103447252001&q=${
-            location?.coords ? `${location.coords.lat},${location.coords.lon}` : 'auto:ip'
-          }&aqi=yes`
-        );
-        if (!weatherRes.ok) {
-          throw new Error('Weather API request failed');
-        }
-        const weatherData = await weatherRes.json();
-        setWeatherData(weatherData);
+        setIsWeatherLoading(true);
         setWeatherError(null);
 
-        const astronomyRes = await fetch(
-          `https://api.weatherapi.com/v1/astronomy.json?key=6cb652a81cb64a19a84103447252001&q=${
-            location?.coords ? `${location.coords.lat},${location.coords.lon}` : 'auto:ip'
-          }`
+        // Fetch weather data
+        const weatherRes = await fetch(
+          `https://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q=${location.coords.lat},${location.coords.lon}&aqi=yes`
         );
-        if (!astronomyRes.ok) {
-          throw new Error('Astronomy API request failed');
+
+        if (!weatherRes.ok) {
+          throw new Error('Failed to fetch weather data');
         }
-        const astronomyData = await astronomyRes.json();
-        setMoon(astronomyData.astronomy.astro);
+
+        const weatherData = await weatherRes.json();
+        setWeatherData(weatherData);
+
+        // Fetch moon data
+        const moonRes = await fetch(
+          `https://api.weatherapi.com/v1/astronomy.json?key=${WEATHER_API_KEY}&q=${location.coords.lat},${location.coords.lon}`
+        );
+
+        if (!moonRes.ok) {
+          throw new Error('Failed to fetch moon data');
+        }
+
+        const moonData = await moonRes.json();
+        setMoon(moonData.astronomy.astro);
+
       } catch (error) {
         console.error('Error fetching weather data:', error);
-        setWeatherError(error instanceof Error ? error.message : 'Failed to load weather data');
+        setWeatherError('Failed to load weather data');
       } finally {
         setIsWeatherLoading(false);
       }
@@ -336,31 +342,30 @@ export default function DashboardPage() {
 
   // Keep the refresh function for manual updates
   const loadAllStats = async () => {
-    if (!user?.uid) return;
-    
-    setIsRefreshing(true);
+    if (!user) return;
+
     try {
-      console.log('Manually refreshing dashboard stats...');
-      const [stats, baseSessions, timeStatsData] = await Promise.all([
-        getUserStats(user.uid),
-        getUserSessions(user.uid),
-        calculateUserTimeStats(user.uid)
-      ]);
-
-      // Add elapsed_time to sessions
-      const sessions = baseSessions.map(session => ({
-        ...session,
-        elapsed_time: session.end_time 
-          ? session.end_time.toDate().getTime() - session.start_time.toDate().getTime()
-          : Date.now() - session.start_time.toDate().getTime()
-      }));
-
+      setIsRefreshing(true);
+      
+      // Load user stats
+      const stats = await getUserStats(user.uid);
       setUserStats(stats);
+
+      // Load recent sessions
+      const sessions = await getUserSessions(user.uid);
       setRecentSessions(sessions);
-      setTimeStats(timeStatsData);
-      console.log('Manual refresh complete');
+
+      // Load time tracking stats
+      const timeTrackingStats = await calculateUserTimeStats(user.uid);
+      setTimeStats(timeTrackingStats);
+
     } catch (error) {
-      console.error('Error refreshing stats:', error);
+      console.error('Error loading stats:', error);
+      toast({
+        title: 'Error loading data',
+        description: 'Please try refreshing the page.',
+        variant: 'destructive',
+      });
     } finally {
       setIsRefreshing(false);
     }
@@ -393,44 +398,52 @@ export default function DashboardPage() {
     };
   }, [user?.uid]); // Only depend on user.uid
 
-  // Show loading state while authentication is initializing
+  // Initialize data on mount
+  useEffect(() => {
+    const initializeData = async () => {
+      if (!user) {
+        setAuthError('Please sign in to view your dashboard');
+        setIsInitializing(false);
+        return;
+      }
+
+      try {
+        setIsInitializing(true);
+        await Promise.all([
+          loadAllStats(),
+          fetchData()
+        ]);
+      } catch (error) {
+        console.error('Error initializing dashboard:', error);
+      } finally {
+        setIsInitializing(false);
+      }
+    };
+
+    initializeData();
+  }, [user]);
+
+  // Show loading state while initializing
   if (isInitializing) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-black/95 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-gray-200 dark:border-gray-700 border-t-black dark:border-t-white rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Loading your dashboard...</p>
         </div>
       </div>
     );
   }
 
-  // Show error state if there's an auth error
+  // Show auth error if not signed in
   if (authError) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-black/95 flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <p className="text-red-600 dark:text-red-400 mb-4">{authError}</p>
-          <button 
-            onClick={() => router.push('/auth/signin')}
-            className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-black/90 dark:hover:bg-white/90 transition-colors"
-          >
-            Sign In
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Show sign in prompt if user is not authenticated
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-black/95 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600 dark:text-gray-400 mb-4">Please sign in to access the dashboard</p>
-          <button 
-            onClick={() => router.push('/auth/signin')}
-            className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-black/90 dark:hover:bg-white/90 transition-colors"
+          <button
+            onClick={() => router.push('/login')}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             Sign In
           </button>
@@ -503,14 +516,148 @@ export default function DashboardPage() {
     }
   };
 
+  // Add refresh functionality
+  const handleRefresh = async () => {
+    try {
+      setIsRefreshing(true);
+      await Promise.all([
+        loadAllStats(),
+        fetchData()
+      ]);
+      toast({
+        title: 'Dashboard refreshed',
+        description: 'Your data has been updated.',
+      });
+    } catch (error) {
+      console.error('Error refreshing dashboard:', error);
+      toast({
+        title: 'Error refreshing data',
+        description: 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black/95 p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">Dashboard</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Your existing dashboard components */}
+    <div className="min-h-screen bg-gray-50 dark:bg-black/95">
+      <Menu />
+      <main className="container mx-auto px-4 py-8">
+        {/* Header with refresh button */}
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Dashboard</h1>
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+          </button>
         </div>
-      </div>
+
+        {/* Main content grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Weather section */}
+          {showWeather && (
+            <Card className="col-span-1 p-6">
+              <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
+                <Cloud className="h-5 w-5" />
+                Weather
+              </h2>
+              {isWeatherLoading ? (
+                <div className="flex items-center justify-center h-32">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 dark:border-white"></div>
+                </div>
+              ) : weatherError ? (
+                <div className="text-center text-red-600 dark:text-red-400">{weatherError}</div>
+              ) : weatherData && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-2xl font-semibold">{weatherData.current.temp_c}°C</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{weatherData.location.name}</p>
+                    </div>
+                    <img
+                      src={weatherData.current.condition.icon}
+                      alt={weatherData.current.condition.text}
+                      className="h-12 w-12"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <WeatherInfoCard
+                      icon={<Droplets className="h-4 w-4" />}
+                      label="Humidity"
+                      value={`${weatherData.current.humidity}%`}
+                    />
+                    <WeatherInfoCard
+                      icon={<Gauge className="h-4 w-4" />}
+                      label="Pressure"
+                      value={`${weatherData.current.pressure_mb} mb`}
+                    />
+                    <WeatherInfoCard
+                      icon={<Wind className="h-4 w-4" />}
+                      label="Wind"
+                      value={`${weatherData.current.wind_kph} km/h`}
+                    />
+                    <WeatherInfoCard
+                      icon={<Sun className="h-4 w-4" />}
+                      label="UV Index"
+                      value={weatherData.current.uv.toString()}
+                    />
+                  </div>
+                </div>
+              )}
+            </Card>
+          )}
+
+          {/* Recent Sessions section */}
+          {showRecentSessions && (
+            <Card className="col-span-1 md:col-span-2 p-6">
+              <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
+                <ClockIcon className="h-5 w-5" />
+                Recent Sessions
+              </h2>
+              <DashboardRecentSessions sessions={recentSessions} />
+            </Card>
+          )}
+
+          {/* User Stats section */}
+          {showInfoCards && userStats && (
+            <Card className="col-span-1 p-6">
+              <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
+                <BarChart2 className="h-5 w-5" />
+                Statistics
+              </h2>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <StatsCard
+                    icon={<Clock className="h-4 w-4" />}
+                    label="Total Time"
+                    value={formatDuration(timeStats.totalTime)}
+                  />
+                  <StatsCard
+                    icon={<CheckCircle2 className="h-4 w-4" />}
+                    label="Completion Rate"
+                    value={`${Math.round(userStats.completionRate)}%`}
+                  />
+                  <StatsCard
+                    icon={<Calendar className="h-4 w-4" />}
+                    label="Monthly Sessions"
+                    value={userStats.monthlyProgress.totalSessions.toString()}
+                  />
+                  <StatsCard
+                    icon={<Timer className="h-4 w-4" />}
+                    label="Monthly Time"
+                    value={formatDuration(timeStats.monthlyTime)}
+                  />
+                </div>
+              </div>
+            </Card>
+          )}
+        </div>
+      </main>
     </div>
   )
 } 
