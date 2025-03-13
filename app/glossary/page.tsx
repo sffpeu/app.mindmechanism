@@ -126,11 +126,10 @@ export default function GlossaryPage() {
             <div className="flex space-x-2">
               <button
                 onClick={() => {
-                  setSelectedFilter('All')
                   setShowOnlyMyWords(false)
                 }}
                 className={`px-4 py-2 rounded-lg transition-all ${
-                  selectedFilter === 'All' && !showOnlyMyWords
+                  !showOnlyMyWords
                     ? 'bg-black text-white dark:bg-white dark:text-black'
                     : 'bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 text-gray-900 dark:text-white'
                 }`}
@@ -139,7 +138,6 @@ export default function GlossaryPage() {
               </button>
               <button
                 onClick={() => {
-                  setSelectedFilter('All')
                   setShowOnlyMyWords(!showOnlyMyWords)
                 }}
                 className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${
@@ -151,33 +149,29 @@ export default function GlossaryPage() {
                 <UserCircle2 className="w-4 h-4" />
                 My Words
               </button>
-              {!showOnlyMyWords && (
-                <>
-                  {['Positive', 'Neutral', 'Negative'].map(filter => (
-                    <button
-                      key={filter}
-                      onClick={() => setSelectedFilter(filter)}
-                      className={`px-4 py-2 rounded-lg transition-all ${
-                        selectedFilter === filter
-                          ? filter === 'Positive' 
-                            ? 'bg-green-600 text-white dark:bg-green-500'
+              {['Positive', 'Neutral', 'Negative'].map(filter => (
+                <button
+                  key={filter}
+                  onClick={() => setSelectedFilter(filter)}
+                  className={`px-4 py-2 rounded-lg transition-all ${
+                    selectedFilter === filter
+                      ? filter === 'Positive' 
+                        ? 'bg-green-600 text-white dark:bg-green-500'
+                        : filter === 'Negative'
+                          ? 'bg-red-600 text-white dark:bg-red-500'
+                          : 'bg-blue-600 text-white dark:bg-blue-500'
+                      : `bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 text-gray-900 dark:text-white ${
+                          filter === 'Positive'
+                            ? 'hover:bg-green-50 dark:hover:bg-green-900/20 hover:border-green-200 dark:hover:border-green-500/30 hover:text-green-600 dark:hover:text-green-400'
                             : filter === 'Negative'
-                              ? 'bg-red-600 text-white dark:bg-red-500'
-                              : 'bg-blue-600 text-white dark:bg-blue-500'
-                          : `bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 text-gray-900 dark:text-white ${
-                              filter === 'Positive'
-                                ? 'hover:bg-green-50 dark:hover:bg-green-900/20 hover:border-green-200 dark:hover:border-green-500/30 hover:text-green-600 dark:hover:text-green-400'
-                                : filter === 'Negative'
-                                  ? 'hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-200 dark:hover:border-red-500/30 hover:text-red-600 dark:hover:text-red-400'
-                                  : 'hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-200 dark:hover:border-blue-500/30 hover:text-blue-600 dark:hover:text-blue-400'
-                              }`
-                      }`}
-                    >
-                      {filter}
-                    </button>
-                  ))}
-                </>
-              )}
+                              ? 'hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-200 dark:hover:border-red-500/30 hover:text-red-600 dark:hover:text-red-400'
+                              : 'hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-200 dark:hover:border-blue-500/30 hover:text-blue-600 dark:hover:text-blue-400'
+                          }`
+                  }`}
+                >
+                  {filter}
+                </button>
+              ))}
               <button 
                 onClick={() => setIsAddWordOpen(true)}
                 className="px-4 py-2 rounded-lg bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all text-gray-900 dark:text-white"
