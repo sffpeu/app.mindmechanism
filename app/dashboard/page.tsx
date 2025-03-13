@@ -309,7 +309,7 @@ export default function DashboardPage() {
         if (!mounted) return;
 
         // Add elapsed_time to sessions
-        const sessions = baseSessions.map(session => ({
+        const sessionsWithElapsedTime = baseSessions.map(session => ({
           ...session,
           elapsed_time: session.end_time 
             ? session.end_time.toDate().getTime() - session.start_time.toDate().getTime()
@@ -317,7 +317,7 @@ export default function DashboardPage() {
         }));
 
         setUserStats(stats);
-        setRecentSessions(sessions);
+        setRecentSessions(sessionsWithElapsedTime);
         setTimeStats(timeStatsData);
         
         console.log('Dashboard initialization complete');
@@ -351,9 +351,15 @@ export default function DashboardPage() {
       const stats = await getUserStats(user.uid);
       setUserStats(stats);
 
-      // Load recent sessions
-      const sessions = await getUserSessions(user.uid);
-      setRecentSessions(sessions);
+      // Load recent sessions and add elapsed_time
+      const baseSessions = await getUserSessions(user.uid);
+      const sessionsWithElapsedTime = baseSessions.map(session => ({
+        ...session,
+        elapsed_time: session.end_time 
+          ? session.end_time.toDate().getTime() - session.start_time.toDate().getTime()
+          : Date.now() - session.start_time.toDate().getTime()
+      }));
+      setRecentSessions(sessionsWithElapsedTime);
 
       // Load time tracking stats
       const timeTrackingStats = await calculateUserTimeStats(user.uid);
