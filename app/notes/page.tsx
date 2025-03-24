@@ -350,12 +350,19 @@ export default function NotesPage() {
                   sortedNotes.map((note) => (
                     <div
                       key={note.id}
-                      onClick={() => handleNoteClick(note)}
-                      className={`p-3 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer border-2 ${
-                        selectedNote?.id === note.id 
-                          ? 'border-blue-500 dark:border-blue-400 bg-black/5 dark:bg-white/10' 
-                          : 'border-transparent hover:border-blue-500/50 dark:hover:border-blue-400/50'
-                      }`}
+                      onClick={() => {
+                        if (!isEditing) {
+                          setSelectedNote(note);
+                          setNoteTitle(note.title);
+                          setNoteContent(note.content);
+                          setSelectedSessionId(note.sessionId || 'none');
+                        }
+                      }}
+                      className={`note-item group p-3 rounded-lg ${
+                        selectedNote?.id === note.id
+                          ? 'bg-black/5 dark:bg-white/10'
+                          : 'bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20'
+                      } backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all cursor-pointer mb-2`}
                     >
                       <div className="flex items-center justify-between">
                         <h3 className="font-medium text-black dark:text-white">{note.title}</h3>

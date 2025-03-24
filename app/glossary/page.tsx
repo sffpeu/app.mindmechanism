@@ -216,7 +216,7 @@ export default function GlossaryPage() {
               filteredWords.map((word) => (
                 <div
                   key={word.id}
-                  className={`${isListView ? 'py-2 px-4' : 'p-4'} rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all ${
+                  className={`glossary-item ${isListView ? 'py-2 px-4' : 'p-4'} rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all ${
                     isListView ? 'grid grid-cols-[2fr,3fr,4rem,4rem,4rem] gap-4 items-center' : ''
                   }`}
                 >

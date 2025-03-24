@@ -115,7 +115,7 @@ export function Menu({
     await signOut()
   }
 
-  const NavLink = ({ href, icon: Icon, children }: { href: string; icon: any; children: React.ReactNode }) => {
+  const NavLink = ({ href, icon: Icon, children, className }: { href: string; icon: any; children: React.ReactNode; className?: string }) => {
     const isActive = pathname === href
     return (
       <Link
@@ -125,7 +125,7 @@ export function Menu({
           hover:border-black/5 dark:hover:border-white/5 border border-transparent
           transition-all touch-manipulation relative ${
           isActive ? 'bg-black/[0.03] dark:bg-white/[0.03] text-black dark:text-white font-medium border-black/5 dark:border-white/5' : ''
-        }`}
+        } ${className || ''}`}
       >
         <Icon className="h-4 w-4 group-hover:scale-105 transition-transform" />
         <span className="text-sm">{children}</span>
@@ -160,11 +160,11 @@ export function Menu({
               variants={menuContainerVariants}
             >
               <MenuCategory title="Navigation">
-                <NavLink href="/home" icon={Home}>Home</NavLink>
-                <NavLink href="/dashboard" icon={LayoutDashboard}>Dashboard</NavLink>
-                <NavLink href="/sessions" icon={Clock}>Sessions</NavLink>
-                <NavLink href="/notes" icon={ClipboardList}>Notes</NavLink>
-                <NavLink href="/glossary" icon={BookOpen}>Glossary</NavLink>
+                <NavLink href="/home" icon={Home} className="sidebar-item">Home</NavLink>
+                <NavLink href="/dashboard" icon={LayoutDashboard} className="sidebar-item">Dashboard</NavLink>
+                <NavLink href="/sessions" icon={Clock} className="sidebar-item">Sessions</NavLink>
+                <NavLink href="/notes" icon={ClipboardList} className="sidebar-item">Notes</NavLink>
+                <NavLink href="/glossary" icon={BookOpen} className="sidebar-item">Glossary</NavLink>
               </MenuCategory>
 
               <Separator className="my-6 bg-black/5 dark:bg-white/10" />

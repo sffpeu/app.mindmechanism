@@ -818,7 +818,7 @@ export default function DashboardPage() {
           {/* Notes and Sessions Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Recent Notes Card */}
-            <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+            <Card className="card p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="text-sm font-semibold dark:text-white">Recent Notes</h2>
                 <div className="flex items-center gap-1.5">
@@ -874,7 +874,7 @@ export default function DashboardPage() {
             </Card>
 
             {/* Sessions Card */}
-            <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+            <Card className="card p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="text-sm font-semibold dark:text-white">Sessions</h2>
                 <div className="flex items-center gap-2">
