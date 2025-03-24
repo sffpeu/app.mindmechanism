@@ -2,10 +2,10 @@ import useSound from 'use-sound';
 
 // Volume levels for different sound types
 const VOLUMES = {
-  click: 0.2,    // Subtle click for buttons
-  start: 0.3,    // Slightly more noticeable for session start
-  success: 0.3,  // Success sounds
-  dialog: 0.2,   // Dialog interactions
+  click: 0.15,    // Subtle click for buttons
+  start: 0.25,    // Slightly more noticeable for session start
+  success: 0.25,  // Success sounds
+  dialog: 0.15,   // Dialog interactions
 };
 
 export const useSoundEffects = () => {
@@ -13,8 +13,8 @@ export const useSoundEffects = () => {
   const [playClick] = useSound('/sounds/click.mp3', { 
     volume: VOLUMES.click,
     sprite: {
-      short: [0, 100], // Short version for rapid clicks
-      normal: [0, 200] // Normal version for regular clicks
+      short: [0, 50],  // Very short version for rapid clicks
+      normal: [0, 100] // Normal version for regular clicks
     }
   });
 
@@ -32,8 +32,8 @@ export const useSoundEffects = () => {
   const [playDialog] = useSound('/sounds/dialog.mp3', { 
     volume: VOLUMES.dialog,
     sprite: {
-      open: [0, 200],
-      close: [200, 400]
+      open: [0, 150],
+      close: [150, 300]
     }
   });
 
