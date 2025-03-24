@@ -12,6 +12,7 @@ import { updateSession, updateSessionActivity, pauseSession } from '@/lib/sessio
 import { toast } from 'react-hot-toast';
 import { useLocation } from '@/lib/hooks/useLocation';
 import { Timestamp } from 'firebase/firestore';
+import { useSoundEffects } from '@/lib/sounds';
 
 const dotColors = [
   'bg-[#fd290a]', // 1. Red
@@ -221,6 +222,8 @@ export default function Clock({
   // Add new state for auto-save
   const [lastAutoSave, setLastAutoSave] = useState<number>(Date.now());
 
+  const { playSuccess, playClick } = useSoundEffects();
+
   // Initialize session
   useEffect(() => {
     if (duration) {
@@ -260,14 +263,16 @@ export default function Clock({
         setLastAutoSave(now);
       }
       
+      // Play success sound and handle completion when timer reaches zero
       if (remaining <= 0) {
         clearInterval(timer);
+        playSuccess(); // Play success sound immediately when timer hits zero
         handleSessionComplete();
       }
     }, 1000);
     
     return () => clearInterval(timer);
-  }, [initialDuration, isPaused, sessionStartTime, lastAutoSave, sessionId]);
+  }, [initialDuration, isPaused, sessionStartTime, lastAutoSave, sessionId, playSuccess]);
 
   const handleSessionComplete = async () => {
     if (!sessionId || !user?.uid) return;
@@ -290,6 +295,7 @@ export default function Clock({
   // Enhanced handlePauseResume with better state persistence
   const handlePauseResume = async () => {
     if (!sessionId) return;
+    playClick();
 
     try {
       const now = Date.now();

@@ -10,6 +10,7 @@ import { clockSettings } from '@/lib/clockSettings'
 import { GlossaryWord } from '@/types/Glossary'
 import { getClockWords } from '@/lib/glossary'
 import { HintPopup } from '@/components/ui/hint-popup'
+import { useSoundEffects } from '@/lib/sounds'
 
 interface SessionDurationDialogProps {
   open: boolean
@@ -49,6 +50,7 @@ export function SessionDurationDialog({
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false)
   const [selectedWordIndex, setSelectedWordIndex] = useState<number | null>(null)
   const [filteredWords, setFilteredWords] = useState<GlossaryWord[]>([])
+  const { playClick, playDialog, playStart, playSuccess } = useSoundEffects()
 
   const textColorClass = clockColor?.split(' ')?.[0] || 'text-gray-500'
   const bgColorClass = clockColor?.split(' ')?.[1] || 'bg-gray-500'
@@ -82,6 +84,12 @@ export function SessionDurationDialog({
     }
   }, [step, clockId])
 
+  useEffect(() => {
+    if (open) {
+      playDialog('open')
+    }
+  }, [open, playDialog])
+
   const loadGlossaryWords = async () => {
     try {
       const words = await getClockWords();
@@ -114,15 +122,20 @@ export function SessionDurationDialog({
 
   const handleCustomSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    const value = Number(customDuration)
-    if (value > 0 && value <= 120) {
+    if (customDuration && parseInt(customDuration) > 0) {
+      playSuccess()
       setIsCustomConfirmed(true)
-      setIsCustom(true)
       setSelectedPreset(null)
+      setIsEndless(false)
     }
   }
 
   const handleNext = () => {
+    if (step === 'words') {
+      playStart()
+    } else {
+      playClick()
+    }
     if (step === 'duration') {
       setStep('words')
     } else if (step === 'words') {
@@ -142,6 +155,7 @@ export function SessionDurationDialog({
   }
 
   const handleBack = () => {
+    playClick()
     if (step === 'words') {
       setStep('duration')
     }
@@ -817,6 +831,7 @@ export function SessionDurationDialog({
                           <motion.button
                             key={preset}
                             onClick={() => {
+                              playClick()
                               setSelectedPreset(preset)
                               setIsCustom(false)
                               setIsCustomConfirmed(false)
