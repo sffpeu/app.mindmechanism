@@ -1,4 +1,5 @@
 import useSound from 'use-sound';
+import { useSettings } from '@/lib/hooks/useSettings';
 
 // Volume levels for different sound types
 const VOLUMES = {
@@ -10,33 +11,41 @@ const VOLUMES = {
 };
 
 export const useSoundEffects = () => {
+  const { soundEnabled } = useSettings();
+
   // Button click sound
-  const [playClick] = useSound('/click.wav', { 
-    volume: VOLUMES.click
+  const [playClick] = useSound('/sounds/click.wav', { 
+    volume: VOLUMES.click,
+    enabled: soundEnabled
   });
 
   // Session start sound
-  const [playStart] = useSound('/startsession.ogg', { 
-    volume: VOLUMES.start 
+  const [playStart] = useSound('/sounds/startsession.ogg', { 
+    volume: VOLUMES.start,
+    enabled: soundEnabled
   });
 
   // Step sounds
-  const [playStep1] = useSound('/step1.wav', { 
-    volume: VOLUMES.step 
+  const [playStep1] = useSound('/sounds/step1.wav', { 
+    volume: VOLUMES.step,
+    enabled: soundEnabled
   });
 
-  const [playStep2] = useSound('/step2.wav', { 
-    volume: VOLUMES.step 
+  const [playStep2] = useSound('/sounds/step2.wav', { 
+    volume: VOLUMES.step,
+    enabled: soundEnabled
   });
 
   // Success sound (for completing actions)
-  const [playSuccess] = useSound('/sounds/success.mp3', { 
-    volume: VOLUMES.success 
+  const [playSuccess] = useSound('/sounds/step2.wav', { 
+    volume: VOLUMES.success,
+    enabled: soundEnabled
   });
 
   // Dialog open/close sound
-  const [playDialog] = useSound('/sounds/dialog.mp3', { 
+  const [playDialog] = useSound('/sounds/step1.wav', { 
     volume: VOLUMES.dialog,
+    enabled: soundEnabled,
     sprite: {
       open: [0, 150],
       close: [150, 300]
