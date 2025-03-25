@@ -1,101 +1,115 @@
 "use client";
 import React from "react";
 import { HeroParallax } from "./components/ui/hero-parallax";
+import Link from "next/link";
 
 export default function Home() {
   const products = [
     {
-      title: "Moonbeam",
-      link: "https://gomoonbeam.com",
+      title: "Mind Mapping",
+      link: "/features/mindmap",
       thumbnail:
-        "https://aceternity.com/images/products/thumbnails/new/moonbeam.png",
+        "https://images.unsplash.com/photo-1557426272-fc759fdf7a8d?q=80&w=2070&auto=format&fit=crop",
     },
     {
-      title: "Cursor",
-      link: "https://cursor.so",
+      title: "Task Management",
+      link: "/features/tasks",
       thumbnail:
-        "https://aceternity.com/images/products/thumbnails/new/cursor.png",
+        "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?q=80&w=2072&auto=format&fit=crop",
     },
     {
-      title: "Rogue",
-      link: "https://userogue.com",
+      title: "Note Taking",
+      link: "/features/notes",
       thumbnail:
-        "https://aceternity.com/images/products/thumbnails/new/rogue.png",
+        "https://images.unsplash.com/photo-1501504905252-473c47e087f8?q=80&w=2074&auto=format&fit=crop",
     },
     {
-      title: "Editorially",
-      link: "https://editorially.org",
+      title: "Project Planning",
+      link: "/features/projects",
       thumbnail:
-        "https://aceternity.com/images/products/thumbnails/new/editorially.png",
+        "https://images.unsplash.com/photo-1572177812156-58036aae439c?q=80&w=2070&auto=format&fit=crop",
     },
     {
-      title: "Editrix AI",
-      link: "https://editrix.ai",
+      title: "Goal Setting",
+      link: "/features/goals",
       thumbnail:
-        "https://aceternity.com/images/products/thumbnails/new/editrix.png",
+        "https://images.unsplash.com/photo-1553034545-32d1a66e769b?q=80&w=2070&auto=format&fit=crop",
     },
     {
-      title: "Pixel Perfect",
-      link: "https://app.pixelperfect.quest",
+      title: "Time Management",
+      link: "/features/time",
       thumbnail:
-        "https://aceternity.com/images/products/thumbnails/new/pixelperfect.png",
+        "https://images.unsplash.com/photo-1584208124888-3a20b9c799e5?q=80&w=2070&auto=format&fit=crop",
     },
     {
-      title: "Algochurn",
-      link: "https://algochurn.com",
+      title: "Focus Mode",
+      link: "/features/focus",
       thumbnail:
-        "https://aceternity.com/images/products/thumbnails/new/algochurn.png",
+        "https://images.unsplash.com/photo-1489533119213-66a5cd877091?q=80&w=2071&auto=format&fit=crop",
     },
     {
-      title: "Aceternity UI",
-      link: "https://ui.aceternity.com",
+      title: "Analytics",
+      link: "/features/analytics",
       thumbnail:
-        "https://aceternity.com/images/products/thumbnails/new/aceternityui.png",
+        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop",
     },
     {
-      title: "Tailwind Master Kit",
-      link: "https://tailwindmasterkit.com",
+      title: "Collaboration",
+      link: "/features/collaboration",
       thumbnail:
-        "https://aceternity.com/images/products/thumbnails/new/tailwindmasterkit.png",
+        "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?q=80&w=2070&auto=format&fit=crop",
     },
     {
-      title: "SmartBridge",
-      link: "https://smartbridgetech.com",
+      title: "Knowledge Base",
+      link: "/features/knowledge",
       thumbnail:
-        "https://aceternity.com/images/products/thumbnails/new/smartbridge.png",
+        "https://images.unsplash.com/photo-1456406644174-8ddd4cd52a06?q=80&w=2068&auto=format&fit=crop",
     },
     {
-      title: "Renderwork Studio",
-      link: "https://renderwork.studio",
+      title: "AI Assistant",
+      link: "/features/ai",
       thumbnail:
-        "https://aceternity.com/images/products/thumbnails/new/renderwork.png",
+        "https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=2070&auto=format&fit=crop",
     },
     {
-      title: "Creme Digital",
-      link: "https://cremedigital.com",
+      title: "Integrations",
+      link: "/features/integrations",
       thumbnail:
-        "https://aceternity.com/images/products/thumbnails/new/cremedigital.png",
-    },
-    {
-      title: "Golden Bells Academy",
-      link: "https://goldenbellsacademy.com",
-      thumbnail:
-        "https://aceternity.com/images/products/thumbnails/new/goldenbellsacademy.png",
-    },
-    {
-      title: "Invoker Labs",
-      link: "https://invoker.lol",
-      thumbnail:
-        "https://aceternity.com/images/products/thumbnails/new/invoker.png",
-    },
-    {
-      title: "E Free Invoice",
-      link: "https://efreeinvoice.com",
-      thumbnail:
-        "https://aceternity.com/images/products/thumbnails/new/efreeinvoice.png",
-    },
+        "https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=2070&auto=format&fit=crop",
+    }
   ];
 
-  return <HeroParallax products={products} />;
+  return (
+    <div className="min-h-screen">
+      {/* Navigation Bar */}
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-black/50 backdrop-blur-md">
+        <button className="text-white hover:text-gray-300">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <Link href="/signin" className="px-6 py-2 rounded-full bg-white text-black hover:bg-gray-200 transition-colors">
+          Sign In
+        </Link>
+      </nav>
+
+      {/* Hero Section */}
+      <div className="relative">
+        <HeroParallax products={products} />
+        
+        {/* Custom Header Override */}
+        <div className="absolute top-0 left-0 right-0 z-10 pt-32 px-4">
+          <div className="max-w-7xl mx-auto">
+            <h1 className="text-4xl md:text-7xl font-bold text-white mb-4">
+              1M3 Mindmechanism
+            </h1>
+            <p className="text-xl md:text-2xl text-white/90 max-w-2xl">
+              Your mind. Your mechanism.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
