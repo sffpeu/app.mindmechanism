@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/popover"
 import { Session as BaseSession } from '@/lib/sessions'
 import { useLocation } from '@/lib/hooks/useLocation'
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
 
 interface WeatherResponse {
   location: {
@@ -413,10 +414,7 @@ export default function DashboardPage() {
   if (isInitializing || authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading your dashboard...</p>
-        </div>
+        <LoadingSpinner size="lg" text="Loading your dashboard..." />
       </div>
     )
   }

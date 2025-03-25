@@ -18,6 +18,7 @@ import { useTimeTracking } from '@/lib/hooks/useTimeTracking'
 import { RecentSessions } from '@/components/RecentSessions'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { useSoundEffects } from '@/lib/sounds'
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
 
 // Update satellites count for each clock
 const clockSatellites: Record<number, number> = {
@@ -74,6 +75,8 @@ export default function SessionsPage() {
   const [selectedClockId, setSelectedClockId] = useState<number | null>(null)
   const [selectedClockColor, setSelectedClockColor] = useState<string>('')
   const [isDurationDialogOpen, setIsDurationDialogOpen] = useState(false)
+  const [imagesLoaded, setImagesLoaded] = useState(false)
+  const [loadedImagesCount, setLoadedImagesCount] = useState(0)
   const router = useRouter()
   const { user } = useAuth()
   const { theme } = useTheme()
@@ -210,6 +213,17 @@ export default function SessionsPage() {
     setIsDurationDialogOpen(false);
   };
 
+  // Handle image loading
+  const handleImageLoad = () => {
+    setLoadedImagesCount(prev => {
+      const newCount = prev + 1
+      if (newCount === 9) { // All 9 clock images loaded
+        setImagesLoaded(true)
+      }
+      return newCount
+    })
+  }
+
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50 dark:bg-black/95">
@@ -278,181 +292,188 @@ export default function SessionsPage() {
                   Choose from nine unique clock designs to begin your meditation practice.
                 </p>
               </div>
-              <div className={isCreateListView ? "space-y-4" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-1"}>
-                {clockData.map((clock, i) => (
-                  <div key={i} className={`p-6 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border transition-all group relative ${
-                    clock.color.includes('red') ? 'border-black/5 dark:border-white/10 hover:border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.3)]' :
-                    clock.color.includes('orange') ? 'border-black/5 dark:border-white/10 hover:border-orange-500/50 hover:shadow-[0_0_15px_rgba(249,115,22,0.3)]' :
-                    clock.color.includes('yellow') ? 'border-black/5 dark:border-white/10 hover:border-yellow-500/50 hover:shadow-[0_0_15px_rgba(234,179,8,0.3)]' :
-                    clock.color.includes('green') ? 'border-black/5 dark:border-white/10 hover:border-green-500/50 hover:shadow-[0_0_15px_rgba(34,197,94,0.3)]' :
-                    clock.color.includes('blue') ? 'border-black/5 dark:border-white/10 hover:border-blue-500/50 hover:shadow-[0_0_15px_rgba(59,130,246,0.3)]' :
-                    clock.color.includes('pink') ? 'border-black/5 dark:border-white/10 hover:border-pink-500/50 hover:shadow-[0_0_15px_rgba(236,72,153,0.3)]' :
-                    clock.color.includes('purple') ? 'border-black/5 dark:border-white/10 hover:border-purple-500/50 hover:shadow-[0_0_15px_rgba(147,51,234,0.3)]' :
-                    clock.color.includes('indigo') ? 'border-black/5 dark:border-white/10 hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.3)]' :
-                    'border-black/5 dark:border-white/10 hover:border-cyan-500/50 hover:shadow-[0_0_15px_rgba(6,182,212,0.3)]'
-                  } ${isCreateListView ? 'flex gap-8 items-start' : 'flex flex-col'}`}>
-                    <div className={`aspect-square relative flex items-center justify-center ${isCreateListView ? 'w-28 shrink-0' : ''}`}>
-                      <div className="w-[75%] h-[75%] relative rounded-full overflow-hidden">
-                        <div
-                          className="absolute inset-0"
-                          style={{
-                            transform: `rotate(${clock.imageOrientation}deg)`,
-                          }}
-                        >
+              {!imagesLoaded ? (
+                <div className="flex items-center justify-center min-h-[400px]">
+                  <LoadingSpinner size="lg" text={`Loading clock designs... ${loadedImagesCount}/9`} />
+                </div>
+              ) : (
+                <div className={isCreateListView ? "space-y-4" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-1"}>
+                  {clockData.map((clock, i) => (
+                    <div key={i} className={`p-6 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border transition-all group relative ${
+                      clock.color.includes('red') ? 'border-black/5 dark:border-white/10 hover:border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.3)]' :
+                      clock.color.includes('orange') ? 'border-black/5 dark:border-white/10 hover:border-orange-500/50 hover:shadow-[0_0_15px_rgba(249,115,22,0.3)]' :
+                      clock.color.includes('yellow') ? 'border-black/5 dark:border-white/10 hover:border-yellow-500/50 hover:shadow-[0_0_15px_rgba(234,179,8,0.3)]' :
+                      clock.color.includes('green') ? 'border-black/5 dark:border-white/10 hover:border-green-500/50 hover:shadow-[0_0_15px_rgba(34,197,94,0.3)]' :
+                      clock.color.includes('blue') ? 'border-black/5 dark:border-white/10 hover:border-blue-500/50 hover:shadow-[0_0_15px_rgba(59,130,246,0.3)]' :
+                      clock.color.includes('pink') ? 'border-black/5 dark:border-white/10 hover:border-pink-500/50 hover:shadow-[0_0_15px_rgba(236,72,153,0.3)]' :
+                      clock.color.includes('purple') ? 'border-black/5 dark:border-white/10 hover:border-purple-500/50 hover:shadow-[0_0_15px_rgba(147,51,234,0.3)]' :
+                      clock.color.includes('indigo') ? 'border-black/5 dark:border-white/10 hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.3)]' :
+                      'border-black/5 dark:border-white/10 hover:border-cyan-500/50 hover:shadow-[0_0_15px_rgba(6,182,212,0.3)]'
+                    } ${isCreateListView ? 'flex gap-8 items-start' : 'flex flex-col'}`}>
+                      <div className={`aspect-square relative flex items-center justify-center ${isCreateListView ? 'w-28 shrink-0' : ''}`}>
+                        <div className="w-[75%] h-[75%] relative rounded-full overflow-hidden">
                           <div
                             className="absolute inset-0"
                             style={{
-                              transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) scale(${clock.imageScale})`,
-                              transformOrigin: 'center',
+                              transform: `rotate(${clock.imageOrientation}deg)`,
                             }}
                           >
-                            <Image
-                              src={clock.imageUrl}
-                              alt={`Clock ${i + 1}`}
-                              fill
-                              className="object-cover rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none"
-                              priority
-                              loading="eager"
-                            />
+                            <div
+                              className="absolute inset-0"
+                              style={{
+                                transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) scale(${clock.imageScale})`,
+                                transformOrigin: 'center',
+                              }}
+                            >
+                              <Image
+                                src={clock.imageUrl}
+                                alt={`Clock ${i + 1}`}
+                                fill
+                                className="object-cover rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none"
+                                priority
+                                loading="eager"
+                                onLoad={handleImageLoad}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-[90%] h-[90%] rounded-full relative">
+                            {Array.from({ length: clock.focusNodes }).map((_, index) => {
+                              const angle = (index * 360) / clock.focusNodes
+                              const radius = 48
+                              const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
+                              const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
+                              return (
+                                <div
+                                  key={index}
+                                  className={`absolute w-2 h-2 rounded-full ${clock.color.split(' ')[1]}`}
+                                  style={{
+                                    left: `${x}%`,
+                                    top: `${y}%`,
+                                    transform: 'translate(-50%, -50%)'
+                                  }}
+                                />
+                              )
+                            })}
                           </div>
                         </div>
                       </div>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-[90%] h-[90%] rounded-full relative">
-                          {Array.from({ length: clock.focusNodes }).map((_, index) => {
-                            const angle = (index * 360) / clock.focusNodes
-                            const radius = 48
-                            const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
-                            const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
-                            return (
-                              <div
-                                key={index}
-                                className={`absolute w-2 h-2 rounded-full ${clock.color.split(' ')[1]}`}
-                                style={{
-                                  left: `${x}%`,
-                                  top: `${y}%`,
-                                  transform: 'translate(-50%, -50%)'
-                                }}
-                              />
-                            )
-                          })}
+
+                      <div className={`flex-1 min-w-0 ${isCreateListView ? '' : 'flex flex-col h-full'}`}>
+                        <div>
+                          <h3 className={`text-lg font-medium ${clock.color.split(' ')[0]}`}>
+                            {clock.title}
+                          </h3>
+                          {isCreateListView && (
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                              {clock.description}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-2">
+                            <Calendar className="h-4 w-4" />
+                            {clock.startDate}
+                          </div>
+                        </div>
+
+                        <div className={`${isCreateListView ? "grid grid-cols-3 gap-4 mb-4" : "grid grid-cols-3 gap-1.5 my-4"}`}>
+                          <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
+                            <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+                              <Clock className="h-3 w-3 text-gray-400 dark:text-gray-500" />
+                              Elapsed
+                            </span>
+                            <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
+                              {clock.timeElapsed}
+                            </span>
+                          </div>
+                          <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
+                            <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+                              <RotateCw className={`h-3 w-3 text-gray-400 dark:text-gray-500 ${clock.rotationDirection === 'counterclockwise' ? 'transform -scale-x-100' : ''}`} />
+                              Rotations
+                            </span>
+                            <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
+                              {clock.totalRotations.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
+                            <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+                              <Timer className="h-3 w-3 text-gray-400 dark:text-gray-500" />
+                              Rot. Time
+                            </span>
+                            <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
+                              {(clock.rotationTime / 1000).toFixed(0)}s
+                            </span>
+                          </div>
+                          <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
+                            <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+                              <div className={`w-1 h-1 rounded-full ${clock.color.split(' ')[1]}`} />
+                              Focus Nodes
+                            </span>
+                            <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
+                              {clock.focusNodes}
+                            </span>
+                          </div>
+                          <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
+                            <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+                              <div className="w-1 h-1 rounded-full border border-gray-900 dark:border-white/40" />
+                              Satellites
+                            </span>
+                            <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
+                              {clock.satellites.length}
+                            </span>
+                          </div>
+                          <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
+                            <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+                              <Compass className="h-3 w-3 text-gray-400 dark:text-gray-500" />
+                              Start °
+                            </span>
+                            <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
+                              {clock.startingDegree}°
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className={`flex gap-3 mt-auto items-center`}>
+                          <Button
+                            onClick={() => handleStartSession(clock.id, clock.color)}
+                            className={`flex-1 flex items-center justify-center px-6 py-4 rounded-lg text-center transition-all bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:bg-white dark:hover:bg-white/10 ${
+                              clock.color.includes('red') ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]' :
+                              clock.color.includes('orange') ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]' :
+                              clock.color.includes('yellow') ? 'hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]' :
+                              clock.color.includes('green') ? 'hover:shadow-[0_0_15px_rgba(34,197,94,0.1)]' :
+                              clock.color.includes('blue') ? 'hover:shadow-[0_0_15px_rgba(59,130,246,0.1)]' :
+                              clock.color.includes('pink') ? 'hover:shadow-[0_0_15px_rgba(236,72,153,0.1)]' :
+                              clock.color.includes('purple') ? 'hover:shadow-[0_0_15px_rgba(147,51,234,0.1)]' :
+                              clock.color.includes('indigo') ? 'hover:shadow-[0_0_15px_rgba(99,102,241,0.1)]' :
+                              'hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
+                            }`}
+                          >
+                            <span className={`text-base font-medium ${clock.color.split(' ')[0]}`}>
+                              Start Session
+                            </span>
+                          </Button>
+                          <Link
+                            href={`/clock/${clock.id}`}
+                            className={`h-[45px] w-[45px] flex items-center justify-center rounded-full transition-all bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:bg-white dark:hover:bg-white/10 ${
+                              clock.color.includes('red') ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]' :
+                              clock.color.includes('orange') ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]' :
+                              clock.color.includes('yellow') ? 'hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]' :
+                              clock.color.includes('green') ? 'hover:shadow-[0_0_15px_rgba(34,197,94,0.1)]' :
+                              clock.color.includes('blue') ? 'hover:shadow-[0_0_15px_rgba(59,130,246,0.1)]' :
+                              clock.color.includes('pink') ? 'hover:shadow-[0_0_15px_rgba(236,72,153,0.1)]' :
+                              clock.color.includes('purple') ? 'hover:shadow-[0_0_15px_rgba(147,51,234,0.1)]' :
+                              clock.color.includes('indigo') ? 'hover:shadow-[0_0_15px_rgba(99,102,241,0.1)]' :
+                              'hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
+                            }`}
+                          >
+                            <Play className={`h-4 w-4 ${clock.color.split(' ')[0]}`} />
+                          </Link>
                         </div>
                       </div>
                     </div>
-
-                    <div className={`flex-1 min-w-0 ${isCreateListView ? '' : 'flex flex-col h-full'}`}>
-                      <div>
-                        <h3 className={`text-lg font-medium ${clock.color.split(' ')[0]}`}>
-                          {clock.title}
-                        </h3>
-                        {isCreateListView && (
-                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
-                            {clock.description}
-                          </p>
-                        )}
-                        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-2">
-                          <Calendar className="h-4 w-4" />
-                          {clock.startDate}
-                        </div>
-                      </div>
-
-                      <div className={`${isCreateListView ? "grid grid-cols-3 gap-4 mb-4" : "grid grid-cols-3 gap-1.5 my-4"}`}>
-                        <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
-                          <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                            <Clock className="h-3 w-3 text-gray-400 dark:text-gray-500" />
-                            Elapsed
-                          </span>
-                          <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                            {clock.timeElapsed}
-                          </span>
-                        </div>
-                        <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
-                          <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                            <RotateCw className={`h-3 w-3 text-gray-400 dark:text-gray-500 ${clock.rotationDirection === 'counterclockwise' ? 'transform -scale-x-100' : ''}`} />
-                            Rotations
-                          </span>
-                          <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                            {clock.totalRotations.toLocaleString()}
-                          </span>
-                        </div>
-                        <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
-                          <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                            <Timer className="h-3 w-3 text-gray-400 dark:text-gray-500" />
-                            Rot. Time
-                          </span>
-                          <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                            {(clock.rotationTime / 1000).toFixed(0)}s
-                          </span>
-                        </div>
-                        <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
-                          <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                            <div className={`w-1 h-1 rounded-full ${clock.color.split(' ')[1]}`} />
-                            Focus Nodes
-                          </span>
-                          <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                            {clock.focusNodes}
-                          </span>
-                        </div>
-                        <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
-                          <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                            <div className="w-1 h-1 rounded-full border border-gray-900 dark:border-white/40" />
-                            Satellites
-                          </span>
-                          <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                            {clock.satellites.length}
-                          </span>
-                        </div>
-                        <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
-                          <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                            <Compass className="h-3 w-3 text-gray-400 dark:text-gray-500" />
-                            Start °
-                          </span>
-                          <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                            {clock.startingDegree}°
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className={`flex gap-3 mt-auto items-center`}>
-                        <Button
-                          onClick={() => handleStartSession(clock.id, clock.color)}
-                          className={`flex-1 flex items-center justify-center px-6 py-4 rounded-lg text-center transition-all bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:bg-white dark:hover:bg-white/10 ${
-                            clock.color.includes('red') ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]' :
-                            clock.color.includes('orange') ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]' :
-                            clock.color.includes('yellow') ? 'hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]' :
-                            clock.color.includes('green') ? 'hover:shadow-[0_0_15px_rgba(34,197,94,0.1)]' :
-                            clock.color.includes('blue') ? 'hover:shadow-[0_0_15px_rgba(59,130,246,0.1)]' :
-                            clock.color.includes('pink') ? 'hover:shadow-[0_0_15px_rgba(236,72,153,0.1)]' :
-                            clock.color.includes('purple') ? 'hover:shadow-[0_0_15px_rgba(147,51,234,0.1)]' :
-                            clock.color.includes('indigo') ? 'hover:shadow-[0_0_15px_rgba(99,102,241,0.1)]' :
-                            'hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
-                          }`}
-                        >
-                          <span className={`text-base font-medium ${clock.color.split(' ')[0]}`}>
-                            Start Session
-                          </span>
-                        </Button>
-                        <Link
-                          href={`/clock/${clock.id}`}
-                          className={`h-[45px] w-[45px] flex items-center justify-center rounded-full transition-all bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:bg-white dark:hover:bg-white/10 ${
-                            clock.color.includes('red') ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]' :
-                            clock.color.includes('orange') ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]' :
-                            clock.color.includes('yellow') ? 'hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]' :
-                            clock.color.includes('green') ? 'hover:shadow-[0_0_15px_rgba(34,197,94,0.1)]' :
-                            clock.color.includes('blue') ? 'hover:shadow-[0_0_15px_rgba(59,130,246,0.1)]' :
-                            clock.color.includes('pink') ? 'hover:shadow-[0_0_15px_rgba(236,72,153,0.1)]' :
-                            clock.color.includes('purple') ? 'hover:shadow-[0_0_15px_rgba(147,51,234,0.1)]' :
-                            clock.color.includes('indigo') ? 'hover:shadow-[0_0_15px_rgba(99,102,241,0.1)]' :
-                            'hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
-                          }`}
-                        >
-                          <Play className={`h-4 w-4 ${clock.color.split(' ')[0]}`} />
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

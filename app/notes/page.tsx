@@ -23,6 +23,7 @@ import {
 import { getUserSessions } from '@/lib/sessions'
 import { Session } from '@/lib/sessions'
 import { useLocation } from '@/lib/hooks/useLocation'
+import { useSoundEffects } from '@/lib/sounds'
 
 interface WeatherResponse {
   location: {
@@ -94,6 +95,7 @@ export default function NotesPage() {
   const [moon, setMoon] = useState<MoonData | null>(null)
   const [recentSessions, setRecentSessions] = useState<Session[]>([])
   const [selectedSessionId, setSelectedSessionId] = useState<string>('none')
+  const { playSuccess } = useSoundEffects()
 
   const clockTitles = [
     "Galileo's First Observation",
@@ -212,6 +214,7 @@ export default function NotesPage() {
           console.log('Created note with ID:', noteId)
         }
       }
+      playSuccess();
       clearForm()
       toast({
         title: "Success",

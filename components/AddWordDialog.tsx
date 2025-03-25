@@ -8,6 +8,7 @@ import { ThumbsUp, ThumbsDown, Minus, Wand2 } from 'lucide-react';
 import { addUserWord } from '@/lib/glossary';
 import { useAuth } from '@/lib/FirebaseAuthContext';
 import { toast } from 'sonner';
+import { useSoundEffects } from '@/lib/sounds';
 
 interface AddWordDialogProps {
   open: boolean;
@@ -17,6 +18,7 @@ interface AddWordDialogProps {
 
 export function AddWordDialog({ open, onOpenChange, onWordAdded }: AddWordDialogProps) {
   const { user } = useAuth();
+  const { playSuccess } = useSoundEffects();
   const [word, setWord] = useState('');
   const [definition, setDefinition] = useState('');
   const [phoneticSpelling, setPhoneticSpelling] = useState('');
@@ -46,6 +48,7 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded }: AddWordDialog
 
       const result = await addUserWord(newWord);
       if (result) {
+        playSuccess();
         toast.success('Word added successfully');
         onWordAdded();
         onOpenChange(false);
