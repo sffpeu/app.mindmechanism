@@ -76,7 +76,6 @@ export default function SessionsPage() {
   const [selectedClockColor, setSelectedClockColor] = useState<string>('')
   const [isDurationDialogOpen, setIsDurationDialogOpen] = useState(false)
   const [imagesLoaded, setImagesLoaded] = useState(false)
-  const [loadedImagesCount, setLoadedImagesCount] = useState(0)
   const router = useRouter()
   const { user } = useAuth()
   const { theme } = useTheme()
@@ -215,13 +214,15 @@ export default function SessionsPage() {
 
   // Handle image loading
   const handleImageLoad = () => {
-    setLoadedImagesCount(prev => {
-      const newCount = prev + 1
-      if (newCount === 9) { // All 9 clock images loaded
-        setImagesLoaded(true)
-      }
-      return newCount
-    })
+    setImagesLoaded(true)
+  }
+
+  if (!imagesLoaded) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
   }
 
   return (
@@ -294,7 +295,7 @@ export default function SessionsPage() {
               </div>
               {!imagesLoaded ? (
                 <div className="flex items-center justify-center min-h-[400px]">
-                  <LoadingSpinner size="lg" text={`Loading clock designs... ${loadedImagesCount}/9`} />
+                  <LoadingSpinner size="lg" />
                 </div>
               ) : (
                 <div className={isCreateListView ? "space-y-4" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-1"}>
