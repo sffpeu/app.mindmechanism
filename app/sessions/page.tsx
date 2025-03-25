@@ -17,6 +17,7 @@ import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useTimeTracking } from '@/lib/hooks/useTimeTracking'
 import { RecentSessions } from '@/components/RecentSessions'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { useSoundEffects } from '@/lib/sounds'
 
 // Update satellites count for each clock
 const clockSatellites: Record<number, number> = {
@@ -76,6 +77,7 @@ export default function SessionsPage() {
   const router = useRouter()
   const { user } = useAuth()
   const { theme } = useTheme()
+  const { playStart } = useSoundEffects()
   useTimeTracking(user?.uid, 'sessions')  // Start time tracking for sessions page
   
   // Function to calculate elapsed time
@@ -160,6 +162,7 @@ export default function SessionsPage() {
     setSelectedClockId(clockId)
     setSelectedClockColor(clockColor)
     setIsDurationDialogOpen(true)
+    playStart()
   }
 
   const handleDurationSelected = async (duration: number | null, words: string[]) => {
