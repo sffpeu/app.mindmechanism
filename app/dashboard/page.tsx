@@ -414,7 +414,7 @@ export default function DashboardPage() {
   if (isInitializing || authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpinner size="lg" text="Loading your dashboard..." />
+        <LoadingSpinner size="lg" isLoading={isInitializing || authLoading} />
       </div>
     )
   }

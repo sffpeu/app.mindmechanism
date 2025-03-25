@@ -76,7 +76,7 @@ export function DashboardRecentSessions({ sessions: propSessions }: DashboardRec
   if (loading) {
     return (
       <div className="flex items-center justify-center p-6">
-        <LoadingSpinner size="md" />
+        <LoadingSpinner size="md" isLoading={loading} />
       </div>
     );
   }

@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils"
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg'
   className?: string
+  isLoading?: boolean
 }
 
 const sizeClasses = {
@@ -12,25 +13,35 @@ const sizeClasses = {
   lg: 'h-12 w-12'
 }
 
-export function LoadingSpinner({ size = 'md', className = '' }: LoadingSpinnerProps) {
+export function LoadingSpinner({ size = 'md', className = '', isLoading = true }: LoadingSpinnerProps) {
   const [progress, setProgress] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
+    if (!isLoading) {
+      setIsComplete(true);
+      return;
+    }
+
     const startTime = Date.now();
-    const duration = 5000; // 5 seconds
+    const duration = 10000; // 10 seconds
 
     const updateProgress = () => {
       const elapsed = Date.now() - startTime;
       const newProgress = Math.min(Math.floor((elapsed / duration) * 100), 99);
       setProgress(newProgress);
 
-      if (elapsed < duration) {
+      if (elapsed < duration && isLoading) {
         requestAnimationFrame(updateProgress);
       }
     };
 
     requestAnimationFrame(updateProgress);
-  }, []);
+  }, [isLoading]);
+
+  if (!isLoading && isComplete) {
+    return null;
+  }
 
   return (
     <div className={`flex flex-col items-center justify-center ${className}`}>
