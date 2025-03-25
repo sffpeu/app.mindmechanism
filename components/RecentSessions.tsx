@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
+import { useRouter } from 'next/navigation';
 
 // Clock titles mapping
 const clockTitles = [
@@ -56,6 +57,7 @@ export function RecentSessions() {
   const [showAllSessions, setShowAllSessions] = useState(false);
   const [isListView, setIsListView] = useState(false);
   const { user } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     async function loadSessions() {
@@ -105,14 +107,30 @@ export function RecentSessions() {
   };
 
   const handleContinueSession = (session: Session) => {
-    const remainingTime = session.duration - (session.actual_duration || 0);
-    if (remainingTime <= 0) {
-      toast.error('Session already completed');
-      return;
-    }
+    const now = new Date().getTime();
+    const startTime = session.start_time.toDate().getTime();
+    const lastActiveTime = session.last_active_time?.toDate().getTime() || startTime;
+    const pausedDuration = session.paused_duration || 0;
     
-    // Navigate to clock page with remaining time
-    window.location.href = `/clock/${session.clock_id}?duration=${remainingTime}&sessionId=${session.id}&words=${encodeURIComponent(JSON.stringify(session.words || []))}`;
+    // Calculate actual time spent excluding paused duration
+    const timeSpent = session.status === 'aborted' ?
+      session.actual_duration || 0 :
+      lastActiveTime - startTime - pausedDuration;
+
+    // Calculate remaining time and check session expiry
+    const remainingTime = Math.max(0, session.duration - timeSpent);
+    const sessionAge = now - lastActiveTime;
+    
+    if (remainingTime > 0 && sessionAge < 24 * 60 * 60 * 1000) { // 24h expiry
+      const encodedWords = encodeURIComponent(JSON.stringify(session.words || []));
+      router.push(`/clock/${session.clock_id}?duration=${remainingTime}&sessionId=${session.id}&words=${encodedWords}`);
+      
+      // Clean up any existing pending session
+      localStorage.removeItem('pendingSession');
+    } else {
+      // Session expired - create a new one
+      router.push(`/clock/${session.clock_id}?duration=${session.duration}&words=${encodeURIComponent(JSON.stringify(session.words || []))}`);
+    }
   };
 
   const displayedSessions = showAllSessions ? sessions : sessions.slice(0, 3);

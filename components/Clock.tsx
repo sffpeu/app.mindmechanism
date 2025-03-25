@@ -235,9 +235,29 @@ export default function Clock({
         setSessionStartTime(now);
         setIsPaused(false);
         setLastAutoSave(now);
+
+        // If this is a continued session, check for pending state
+        if (sessionId) {
+          const savedSession = localStorage.getItem('pendingSession');
+          if (savedSession) {
+            try {
+              const { sessionId: savedId, remaining, timestamp } = JSON.parse(savedSession);
+              if (savedId === sessionId && Date.now() - timestamp < 24 * 60 * 60 * 1000) {
+                setRemainingTime(remaining);
+                setPausedTimeRemaining(remaining);
+                setIsPaused(true);
+              } else {
+                localStorage.removeItem('pendingSession');
+              }
+            } catch (error) {
+              console.error('Error recovering session:', error);
+              localStorage.removeItem('pendingSession');
+            }
+          }
+        }
       }
     }
-  }, [duration]);
+  }, [duration, sessionId]);
 
   // Timer effect with auto-save
   useEffect(() => {
@@ -266,7 +286,7 @@ export default function Clock({
       // Play success sound and handle completion when timer reaches zero
       if (remaining <= 0) {
         clearInterval(timer);
-        playSuccess(); // Play success sound immediately when timer hits zero
+        playSuccess();
         handleSessionComplete();
       }
     }, 1000);
