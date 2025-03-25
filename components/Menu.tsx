@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Menu as MenuIcon, X, Settings, Sun, Moon, BookOpen, ClipboardList, LogOut, LayoutDashboard, Clock, Home } from 'lucide-react'
+import { Menu as MenuIcon, X, Settings, Sun, Moon, BookOpen, ClipboardList, LogOut, LayoutDashboard, Clock, Home, Volume2, VolumeX } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -12,6 +12,7 @@ import { SettingsDialog } from './settings/SettingsDialog'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { useSettings } from '@/lib/hooks/useSettings'
 
 interface MenuProps {
   showElements?: boolean
@@ -109,6 +110,7 @@ export function Menu({
   const pathname = usePathname()
   const isClockPage = pathname?.includes('/clock/')
   const { isDarkMode, setIsDarkMode } = useTheme()
+  const { soundEnabled, setSoundEnabled } = useSettings()
   const { user, signOut } = useAuth()
 
   const handleSignOut = async () => {
@@ -186,6 +188,26 @@ export function Menu({
                   <Switch
                     checked={isDarkMode}
                     onCheckedChange={setIsDarkMode}
+                    className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-white data-[state=unchecked]:bg-black/20 dark:data-[state=unchecked]:bg-white/20 h-5 w-9"
+                  />
+                </button>
+
+                <button
+                  onClick={() => setSoundEnabled(!soundEnabled)}
+                  className="group flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation"
+                >
+                  <div className="flex items-center gap-3">
+                    {soundEnabled ? 
+                      <Volume2 className="h-4 w-4 group-hover:scale-110 transition-transform" /> : 
+                      <VolumeX className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                    }
+                    <span className="text-sm">
+                      {soundEnabled ? 'Sound On' : 'Sound Off'}
+                    </span>
+                  </div>
+                  <Switch
+                    checked={soundEnabled}
+                    onCheckedChange={setSoundEnabled}
                     className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-white data-[state=unchecked]:bg-black/20 dark:data-[state=unchecked]:bg-white/20 h-5 w-9"
                   />
                 </button>
