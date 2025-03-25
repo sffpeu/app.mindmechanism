@@ -11,7 +11,7 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (soundEnabled) {
-        playClick('short');
+        playClick();
       }
     };
 
