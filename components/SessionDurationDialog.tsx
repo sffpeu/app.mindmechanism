@@ -50,7 +50,8 @@ export function SessionDurationDialog({
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false)
   const [selectedWordIndex, setSelectedWordIndex] = useState<number | null>(null)
   const [filteredWords, setFilteredWords] = useState<GlossaryWord[]>([])
-  const { playClick, playDialog, playStart, playSuccess } = useSoundEffects()
+  const { playClick, playStep1, playStep2, playStart } = useSoundEffects()
+  const [hasInteracted, setHasInteracted] = useState(false)
 
   const textColorClass = clockColor?.split(' ')?.[0] || 'text-gray-500'
   const bgColorClass = clockColor?.split(' ')?.[1] || 'bg-gray-500'
@@ -58,18 +59,26 @@ export function SessionDurationDialog({
   const presets = [5, 10, 15, 20, 25, 30]
 
   useEffect(() => {
-    if (step === 'duration') {
-      const hasSeenDurationHint = localStorage.getItem('hasSeenDurationHint')
-      if (!hasSeenDurationHint) {
+    if (!open) {
+      setHasInteracted(false)
+      setShowDurationHint(false)
+      setShowWordsHint(false)
+    }
+  }, [open])
+
+  useEffect(() => {
+    if (step === 'duration' && hasInteracted) {
+      const hasSeenAnyDurationHint = localStorage.getItem('hasSeenAnyDurationHint')
+      if (!hasSeenAnyDurationHint) {
         setShowDurationHint(true)
       }
-    } else if (step === 'words') {
-      const hasSeenWordsHint = localStorage.getItem('hasSeenWordsHint')
-      if (!hasSeenWordsHint) {
+    } else if (step === 'words' && hasInteracted) {
+      const hasSeenAnyWordsHint = localStorage.getItem('hasSeenAnyWordsHint')
+      if (!hasSeenAnyWordsHint) {
         setShowWordsHint(true)
       }
     }
-  }, [step])
+  }, [step, hasInteracted])
 
   useEffect(() => {
     if (step === 'words') {
@@ -86,9 +95,9 @@ export function SessionDurationDialog({
 
   useEffect(() => {
     if (open) {
-      playDialog('open')
+      playStep1()
     }
-  }, [open, playDialog])
+  }, [open, playStep1])
 
   const loadGlossaryWords = async () => {
     try {
@@ -120,36 +129,46 @@ export function SessionDurationDialog({
     setRotationDegrees(calculateRotation(duration))
   }, [selectedPreset, customDuration, isCustom, hoveredPreset, clockId])
 
+  const handlePresetClick = (preset: number) => {
+    playClick()
+    setSelectedPreset(preset)
+    setIsCustom(false)
+    setIsCustomConfirmed(false)
+    setIsEndless(false)
+    setHasInteracted(true)
+  }
+
   const handleCustomSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (customDuration && parseInt(customDuration) > 0) {
-      playSuccess()
       setIsCustomConfirmed(true)
       setSelectedPreset(null)
       setIsEndless(false)
+      setHasInteracted(true)
     }
   }
 
-  const handleNext = () => {
-    if (step === 'words') {
-      playStart()
-    } else {
-      playClick()
+  const handleEndlessToggle = (checked: boolean) => {
+    setIsEndless(checked)
+    if (checked) {
+      setSelectedPreset(null)
+      setIsCustom(false)
+      setIsCustomConfirmed(false)
     }
+    setHasInteracted(true)
+  }
+
+  const handleNext = () => {
     if (step === 'duration') {
+      playStep1()
       setStep('words')
     } else if (step === 'words') {
-      const hasAnyWord = words.some(word => word.trim() !== '')
-      if (!hasAnyWord) {
-        setWords(Array(words.length).fill(''))
-      }
-      if (isEndless) {
-        onNext(null, words)
-      } else if (isCustom && isCustomConfirmed) {
-        onNext(Number(customDuration), words)
-      } else if (selectedPreset !== null) {
-        onNext(selectedPreset, words)
-      }
+      playStep2()
+      onNext(
+        isEndless ? null : (isCustom ? parseInt(customDuration) : selectedPreset),
+        words
+      )
+      playStart()
       onOpenChange(false)
     }
   }
@@ -609,12 +628,12 @@ export function SessionDurationDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(
         "bg-white dark:bg-black border-white/20 dark:border-white/10 overflow-hidden",
-        step === 'words' ? "sm:max-w-[1200px] sm:h-[800px]" : "sm:max-w-[800px]",
+        step === 'words' ? "max-w-[90vw] w-[1200px] h-[90vh] max-h-[800px]" : "sm:max-w-[800px]",
         step === 'duration' && "sm:h-[500px]",
         step === 'confirm' && "sm:h-[500px]"
       )}>
         <div className={cn(
-          "relative w-full h-full flex flex-col max-h-[800px]",
+          "relative w-full h-full flex flex-col",
           step === 'duration' && "justify-center"
         )}>
           {/* Step indicator - Moved inside the dialog */}
@@ -813,14 +832,7 @@ export function SessionDurationDialog({
                         </div>
                         <Switch
                           checked={isEndless}
-                          onCheckedChange={(checked) => {
-                            setIsEndless(checked)
-                            if (checked) {
-                              setSelectedPreset(null)
-                              setIsCustom(false)
-                              setIsCustomConfirmed(false)
-                            }
-                          }}
+                          onCheckedChange={handleEndlessToggle}
                           className={isEndless ? bgColorClass : ''}
                         />
                       </div>
@@ -830,13 +842,7 @@ export function SessionDurationDialog({
                         {timePresets.map((preset) => (
                           <motion.button
                             key={preset}
-                            onClick={() => {
-                              playClick()
-                              setSelectedPreset(preset)
-                              setIsCustom(false)
-                              setIsCustomConfirmed(false)
-                              setIsEndless(false)
-                            }}
+                            onClick={() => handlePresetClick(preset)}
                             onHoverStart={() => setHoveredPreset(preset)}
                             onHoverEnd={() => setHoveredPreset(null)}
                             className={cn(
@@ -910,7 +916,7 @@ export function SessionDurationDialog({
         <HintPopup
           title="Set Your Session Duration"
           description="Setting the right duration for your session is crucial. A focused session typically lasts between 15-60 minutes. Choose a duration that matches your energy levels and the complexity of your task."
-          storageKey="hasSeenDurationHint"
+          storageKey="hasSeenAnyDurationHint"
           open={showDurationHint}
           onOpenChange={setShowDurationHint}
         />
@@ -918,7 +924,7 @@ export function SessionDurationDialog({
         <HintPopup
           title="Assign Words to Focus Nodes"
           description="Words help you maintain focus during your session. Each focus node represents a key concept or task you want to concentrate on. You can skip this step, but assigning words can make your session more meaningful and structured."
-          storageKey="hasSeenWordsHint"
+          storageKey="hasSeenAnyWordsHint"
           open={showWordsHint}
           onOpenChange={setShowWordsHint}
         />

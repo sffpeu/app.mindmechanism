@@ -6,21 +6,27 @@ const VOLUMES = {
   start: 0.25,    // Slightly more noticeable for session start
   success: 0.25,  // Success sounds
   dialog: 0.15,   // Dialog interactions
+  step: 0.25,     // Step sounds
 };
 
 export const useSoundEffects = () => {
   // Button click sound
-  const [playClick] = useSound('/sounds/click.mp3', { 
-    volume: VOLUMES.click,
-    sprite: {
-      short: [0, 50],  // Very short version for rapid clicks
-      normal: [0, 100] // Normal version for regular clicks
-    }
+  const [playClick] = useSound('/click.wav', { 
+    volume: VOLUMES.click
   });
 
   // Session start sound
-  const [playStart] = useSound('/sounds/start.mp3', { 
+  const [playStart] = useSound('/startsession.ogg', { 
     volume: VOLUMES.start 
+  });
+
+  // Step sounds
+  const [playStep1] = useSound('/step1.wav', { 
+    volume: VOLUMES.step 
+  });
+
+  const [playStep2] = useSound('/step2.wav', { 
+    volume: VOLUMES.step 
   });
 
   // Success sound (for completing actions)
@@ -38,8 +44,10 @@ export const useSoundEffects = () => {
   });
 
   return {
-    playClick: (type: 'short' | 'normal' = 'normal') => playClick({ id: type }),
+    playClick,
     playStart,
+    playStep1,
+    playStep2,
     playSuccess,
     playDialog: (action: 'open' | 'close') => playDialog({ id: action }),
   };
