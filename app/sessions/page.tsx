@@ -220,7 +220,7 @@ export default function SessionsPage() {
   if (!imagesLoaded) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpinner size="lg" isLoading={!imagesLoaded} />
+        <div className="text-gray-900 dark:text-white">Loading...</div>
       </div>
     );
   }
