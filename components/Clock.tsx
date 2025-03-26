@@ -555,74 +555,69 @@ export default function Clock({
     setHoveredNodeIndex(null); // Reset hover state on click
   };
 
-  const renderFocusNodes = () => {
-    return focusNodes.map((node, index) => {
-      const angle = (node.startingDegree + (currentRotation || 0)) % 360;
-      const radians = (angle * Math.PI) / 180;
-      const radius = 0.85; // Slightly smaller than the clock radius
-      const x = Math.sin(radians) * radius;
-      const y = -Math.cos(radians) * radius;
+  const renderFocusNodes = (clockRotation: number, clockFocusNodes: number, clockStartingDegree: number, clockId: number) => {
+    return (
+      <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
+        {Array.from({ length: Math.max(0, clockFocusNodes || 0) }).map((_, index) => {
+          const angle = ((360 / Math.max(1, clockFocusNodes || 1)) * index + clockStartingDegree) % 360;
+          const radians = angle * (Math.PI / 180);
+          
+          // Calculate node position
+          const nodeRadius = isMultiView ? 53 : 55;
+          const x = 50 + nodeRadius * Math.cos(radians);
+          const y = 50 + nodeRadius * Math.sin(radians);
 
-      // Calculate word label position
-      const wordAngle = (node.startingDegree + (currentRotation || 0)) % 360;
-      const wordRadians = (wordAngle * Math.PI) / 180;
-      const wordRadius = 0.95; // Slightly larger than the focus node radius
-      const wordX = Math.sin(wordRadians) * wordRadius;
-      const wordY = -Math.cos(wordRadians) * wordRadius;
+          // Calculate word label position (slightly outside the node)
+          const labelRadius = nodeRadius + 8;
+          const labelX = 50 + labelRadius * Math.cos(radians);
+          const labelY = 50 + labelRadius * Math.sin(radians);
 
-      // Calculate rotation for the word label to align with the focus node
-      const wordRotation = (wordAngle + 90) % 360;
+          const isSelected = selectedNodeIndex === index;
+          const word = customWords?.[index];
 
-      return (
-        <g key={index}>
-          {/* Focus Node */}
-          <circle
-            cx={x}
-            cy={y}
-            r="0.02"
-            fill={node.color}
-            stroke="black"
-            strokeWidth="0.002"
-            style={{
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              filter: hoveredNodeIndex === index ? 'brightness(1.2)' : 'none',
-              strokeWidth: hoveredNodeIndex === index ? '0.003' : '0.002',
-            }}
-            onMouseEnter={() => setHoveredNodeIndex(index)}
-            onMouseLeave={() => setHoveredNodeIndex(null)}
-            onClick={() => handleNodeClick(index)}
-          />
-          {/* Word Label */}
-          <g
-            transform={`translate(${wordX}, ${wordY}) rotate(${wordRotation})`}
-            style={{
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              filter: hoveredNodeIndex === index ? 'brightness(1.2)' : 'none',
-            }}
-            onMouseEnter={() => setHoveredNodeIndex(index)}
-            onMouseLeave={() => setHoveredNodeIndex(null)}
-            onClick={() => handleNodeClick(index)}
-          >
-            <text
-              x="0"
-              y="0"
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fill="white"
-              fontSize="0.02"
-              style={{
-                textShadow: '0.001em 0.001em 0.002em rgba(0,0,0,0.5)',
-                pointerEvents: 'none',
-              }}
-            >
-              {customWords?.[index] || ''}
-            </text>
-          </g>
-        </g>
-      );
-    });
+          return (
+            <div key={`${clockId}-${index}`} className="absolute">
+              {/* Focus Node */}
+              <motion.div
+                className={`absolute ${isMultiView ? 'w-2 h-2' : 'w-3 h-3'} rounded-full cursor-pointer`}
+                style={{
+                  left: `${x}%`,
+                  top: `${y}%`,
+                  ...getFocusNodeStyle(index, isMultiView),
+                }}
+                onClick={() => handleNodeClick(index)}
+                whileHover={{ scale: 1.2 }}
+              />
+               
+              {/* Word Label */}
+              {word && (
+                <motion.div
+                  className="absolute whitespace-nowrap pointer-events-none"
+                  style={{
+                    left: `${labelX}%`,
+                    top: `${labelY}%`,
+                    transform: `translate(-50%, -50%) rotate(${angle > 90 && angle < 270 ? angle + 180 : angle}deg)`,
+                    transformOrigin: 'center',
+                    zIndex: isSelected ? 401 : 201,
+                  }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: isSelected ? 1 : 0.7 }}
+                  whileHover={{ opacity: 1 }}
+                >
+                  <div 
+                    className={`px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
+                    ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
+                    outline outline-1 outline-black/10 dark:outline-white/20`}
+                  >
+                    <span className="text-black/90 dark:text-white/90">{word}</span>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
   };
 
   const renderWordDisplay = () => {
@@ -680,7 +675,7 @@ export default function Clock({
               />
             </div>
             {/* Render focus nodes directly in the rotating container */}
-            {renderFocusNodes()}
+            {renderFocusNodes(clockRotation, clock.focusNodes, clock.startingDegree, clock.id)}
           </motion.div>
         </div>
       </div>
@@ -838,74 +833,9 @@ export default function Clock({
           transition={transitionConfig}
         >
           <div className="absolute inset-0" style={{ transform: `rotate(${imageOrientation}deg)`, pointerEvents: 'auto' }}>
-            <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
-              {Array.from({ length: Math.max(0, focusNodes || 0) }).map((_, index) => {
-                const angle = ((360 / Math.max(1, focusNodes || 1)) * index + adjustedStartingDegree) % 360;
-                const radians = angle * (Math.PI / 180);
-                const radius = isMultiView ? 53 : 55;
-                const x = 50 + radius * Math.cos(radians);
-                const y = 50 + radius * Math.sin(radians);
-
-                const isSelected = selectedNodeIndex === index;
-
-                return (
-                  <motion.div
-                    key={`${id}-${index}`}
-                    className="absolute rounded-full cursor-pointer"
-                    style={{
-                      left: `${x}%`,
-                      top: `${y}%`,
-                      ...getFocusNodeStyle(index, isMultiView),
-                    }}
-                    onClick={() => handleNodeClick(index)}
-                  />
-                );
-              })}
-            </div>
+            {renderFocusNodes(rotation, focusNodes, startingDegree, id)}
           </div>
         </motion.div>
-
-        {/* Word labels layer - always on top */}
-        <div className="absolute inset-0" style={{ pointerEvents: 'auto', zIndex: 1000 }}>
-          {Array.from({ length: Math.max(0, focusNodes || 0) }).map((_, index) => {
-            const angle = ((360 / Math.max(1, focusNodes || 1)) * index + adjustedStartingDegree) % 360;
-            const radians = angle * (Math.PI / 180);
-            const radius = isMultiView ? 53 : 55;
-            const labelRadius = radius + 8;
-            const x = 50 + labelRadius * Math.cos(radians);
-            const y = 50 + labelRadius * Math.sin(radians);
-            const word = customWords?.[index];
-            const isSelected = selectedNodeIndex === index;
-
-            if (!word) return null;
-
-            return (
-              <motion.div
-                key={`word-${id}-${index}`}
-                className="absolute whitespace-nowrap"
-                style={{
-                  left: `${x}%`,
-                  top: `${y}%`,
-                  transform: `translate(-50%, -50%) rotate(${angle > 90 && angle < 270 ? angle + 180 : angle}deg)`,
-                  transformOrigin: 'center',
-                }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                whileHover={{ scale: 1.05 }}
-                onClick={() => handleNodeClick(index)}
-              >
-                <div 
-                  className={`px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
-                  ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
-                  outline outline-1 outline-black/10 dark:outline-white/20 cursor-pointer
-                  hover:outline-2 hover:outline-black/20 dark:hover:outline-white/40`}
-                >
-                  <span className="text-black/90 dark:text-white/90">{word}</span>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
 
         {/* Satellites layer */}
         <div className="absolute inset-[-20%]" style={{ pointerEvents: 'auto', zIndex: 1000 }}>
