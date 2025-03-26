@@ -167,6 +167,52 @@ const getClockRotation = (clock: ClockSettings) => {
     : (clock.startingDegree - calculatedRotation + 360) % 360;
 };
 
+// Helper function to get node radius based on clock ID
+const getNodeRadius = (clockId: number, isMultiView: boolean) => {
+  if (isMultiView) return 53;
+  
+  switch (clockId) {
+    case 0: return 52; // Clock 1
+    case 1: return 54; // Clock 2
+    case 2: return 53; // Clock 3
+    case 3: return 55; // Clock 4
+    case 4: return 54; // Clock 5
+    case 5: return 53; // Clock 6
+    case 6: return 54; // Clock 7
+    case 7: return 55; // Clock 8
+    case 8: return 53; // Clock 9
+    default: return 55;
+  }
+};
+
+// Helper function to get label distance based on word length
+const getLabelDistance = (word: string) => {
+  if (!word) return 8;
+  if (word.length > 10) return 12;
+  if (word.length > 5) return 10;
+  return 8;
+};
+
+// Helper function to get label rotation for better readability
+const getLabelRotation = (angle: number) => {
+  // Normalize angle to 0-360 range
+  const normalizedAngle = angle % 360;
+  
+  // For angles near the top (315-45 degrees), keep text upright
+  if (normalizedAngle > 315 || normalizedAngle < 45) {
+    return angle;
+  }
+  
+  // For angles near the bottom (135-225 degrees), flip text
+  if (normalizedAngle > 135 && normalizedAngle < 225) {
+    return angle + 180;
+  }
+  
+  // For angles in between, rotate to minimize text overlap
+  // If on the right side, rotate clockwise, if on the left side, rotate counterclockwise
+  return angle + (normalizedAngle > 180 ? 90 : -90);
+};
+
 export default function Clock({ 
   id, 
   startDateTime = new Date('2024-01-01T00:00:00Z'),
@@ -573,18 +619,19 @@ export default function Clock({
           const angle = ((360 / Math.max(1, clockFocusNodes || 1)) * index + adjustedStartingDegree) % 360;
           const radians = angle * (Math.PI / 180);
           
-          // Calculate node position
-          const nodeRadius = isMultiView ? 53 : 55;
+          // Calculate node position using dynamic radius
+          const nodeRadius = getNodeRadius(clockId, isMultiView);
           const x = 50 + nodeRadius * Math.cos(radians);
           const y = 50 + nodeRadius * Math.sin(radians);
           
-          // Calculate word label position (slightly outside the node)
-          const labelRadius = nodeRadius + 8;
-          const labelX = 50 + labelRadius * Math.cos(radians);
-          const labelY = 50 + labelRadius * Math.sin(radians);
-          
           const isSelected = selectedNodeIndex === index;
           const word = customWords?.[index];
+          
+          // Calculate label position with dynamic distance
+          const labelDistance = getLabelDistance(word);
+          const labelRadius = nodeRadius + labelDistance;
+          const labelX = 50 + labelRadius * Math.cos(radians);
+          const labelY = 50 + labelRadius * Math.sin(radians);
 
           return (
             <div key={`${clockId}-${index}`} className="absolute">
@@ -607,7 +654,7 @@ export default function Clock({
                   style={{
                     left: `${labelX}%`,
                     top: `${labelY}%`,
-                    transform: `translate(-50%, -50%) rotate(${angle > 90 && angle < 270 ? angle + 180 : angle}deg)`,
+                    transform: `translate(-50%, -50%) rotate(${getLabelRotation(angle)}deg)`,
                     transformOrigin: 'center',
                     zIndex: isSelected ? 401 : 201,
                   }}
@@ -848,7 +895,7 @@ export default function Clock({
               {Array.from({ length: Math.max(0, focusNodes || 0) }).map((_, index) => {
                 const angle = ((360 / Math.max(1, focusNodes || 1)) * index + adjustedStartingDegree) % 360;
                 const radians = angle * (Math.PI / 180);
-                const radius = isMultiView ? 53 : 55;
+                const radius = getNodeRadius(id, isMultiView);
                 const x = 50 + radius * Math.cos(radians);
                 const y = 50 + radius * Math.sin(radians);
 
@@ -876,14 +923,17 @@ export default function Clock({
           {Array.from({ length: Math.max(0, focusNodes || 0) }).map((_, index) => {
             const angle = ((360 / Math.max(1, focusNodes || 1)) * index + adjustedStartingDegree) % 360;
             const radians = angle * (Math.PI / 180);
-            const radius = isMultiView ? 53 : 55;
-            const labelRadius = radius + 8;
-            const x = 50 + labelRadius * Math.cos(radians);
-            const y = 50 + labelRadius * Math.sin(radians);
+            const nodeRadius = getNodeRadius(id, isMultiView);
             const word = customWords?.[index];
             const isSelected = selectedNodeIndex === index;
 
             if (!word) return null;
+
+            // Calculate label position with dynamic distance
+            const labelDistance = getLabelDistance(word);
+            const labelRadius = nodeRadius + labelDistance;
+            const x = 50 + labelRadius * Math.cos(radians);
+            const y = 50 + labelRadius * Math.sin(radians);
 
             return (
               <motion.div
@@ -892,7 +942,7 @@ export default function Clock({
                 style={{
                   left: `${x}%`,
                   top: `${y}%`,
-                  transform: `translate(-50%, -50%) rotate(${angle > 90 && angle < 270 ? angle + 180 : angle}deg)`,
+                  transform: `translate(-50%, -50%) rotate(${getLabelRotation(angle)}deg)`,
                   transformOrigin: 'center',
                 }}
                 initial={{ opacity: 0 }}
