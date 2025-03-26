@@ -556,10 +556,21 @@ export default function Clock({
   };
 
   const renderFocusNodes = (clockRotation: number, clockFocusNodes: number, clockStartingDegree: number, clockId: number) => {
+    // Adjust starting degree for specific clocks to align with their SVGs
+    const adjustedStartingDegree = (() => {
+      switch (clockId) {
+        case 0: return clockStartingDegree + 45; // Clock 1
+        case 1: return clockStartingDegree + 90; // Clock 2
+        case 3: return clockStartingDegree + 180; // Clock 4
+        case 7: return clockStartingDegree + 270; // Clock 8
+        default: return clockStartingDegree;
+      }
+    })();
+
     return (
       <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
         {Array.from({ length: Math.max(0, clockFocusNodes || 0) }).map((_, index) => {
-          const angle = ((360 / Math.max(1, clockFocusNodes || 1)) * index + clockStartingDegree) % 360;
+          const angle = ((360 / Math.max(1, clockFocusNodes || 1)) * index + adjustedStartingDegree) % 360;
           const radians = angle * (Math.PI / 180);
           
           // Calculate node position
