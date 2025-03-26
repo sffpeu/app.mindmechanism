@@ -603,8 +603,8 @@ export default function Clock({
                     zIndex: isSelected ? 401 : 201,
                   }}
                   initial={{ opacity: 0 }}
-                  animate={{ opacity: isSelected ? 1 : 0.7 }}
-                  whileHover={{ opacity: 1 }}
+                  animate={{ opacity: 1 }}
+                  whileHover={{ opacity: 1, scale: 1.05 }}
                   onClick={() => handleNodeClick(index)}
                 >
                   <div 
