@@ -187,10 +187,10 @@ const getNodeRadius = (clockId: number, isMultiView: boolean) => {
 
 // Helper function to get label distance based on word length
 const getLabelDistance = (word: string) => {
-  if (!word) return 8;
-  if (word.length > 10) return 12;
-  if (word.length > 5) return 10;
-  return 8;
+  if (!word) return 4;
+  if (word.length > 10) return 6;
+  if (word.length > 5) return 5;
+  return 4;
 };
 
 // Helper function to get label rotation for better readability
@@ -954,7 +954,8 @@ export default function Clock({
                   className={`px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
                   ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
                   outline outline-1 outline-black/10 dark:outline-white/20 cursor-pointer
-                  hover:outline-2 hover:outline-black/20 dark:hover:outline-white/40`}
+                  hover:outline-2 hover:outline-black/20 dark:hover:outline-white/40
+                  transform -translate-y-1/2`}
                 >
                   <span className="text-black/90 dark:text-white/90">{word}</span>
                 </div>
