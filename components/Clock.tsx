@@ -635,7 +635,7 @@ export default function Clock({
 
           return (
             <div key={`${clockId}-${index}`} className="absolute">
-              {/* Focus Node */}
+              {/* Focus Node with Word */}
               <motion.div
                 className={`absolute ${isMultiView ? 'w-2 h-2' : 'w-3 h-3'} rounded-full cursor-pointer`}
                 style={{
@@ -645,32 +645,17 @@ export default function Clock({
                 }}
                 onClick={() => handleNodeClick(index)}
                 whileHover={{ scale: 1.2 }}
-              />
-              
-              {/* Word Label */}
-              {word && (
-                <motion.div
-                  className="absolute whitespace-nowrap pointer-events-none"
-                  style={{
-                    left: `${labelX}%`,
-                    top: `${labelY}%`,
-                    transform: `translate(-50%, -50%) rotate(${getLabelRotation(angle)}deg)`,
-                    transformOrigin: 'center',
-                    zIndex: isSelected ? 401 : 201,
-                  }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: isSelected ? 1 : 0.7 }}
-                  whileHover={{ opacity: 1 }}
-                >
+              >
+                {word && (
                   <div 
-                    className={`px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
+                    className={`absolute whitespace-nowrap pointer-events-none -translate-y-full -translate-x-1/2 left-1/2 -top-1 px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
                     ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
                     outline outline-1 outline-black/10 dark:outline-white/20`}
                   >
                     <span className="text-black/90 dark:text-white/90">{word}</span>
                   </div>
-                </motion.div>
-              )}
+                )}
+              </motion.div>
             </div>
           );
         })}
@@ -911,7 +896,17 @@ export default function Clock({
                       ...getFocusNodeStyle(index, isMultiView),
                     }}
                     onClick={() => handleNodeClick(index)}
-                  />
+                  >
+                    {customWords?.[index] && (
+                      <div 
+                        className={`absolute whitespace-nowrap pointer-events-none -translate-y-full -translate-x-1/2 left-1/2 -top-1 px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
+                        ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
+                        outline outline-1 outline-black/10 dark:outline-white/20`}
+                      >
+                        <span className="text-black/90 dark:text-white/90">{customWords[index]}</span>
+                      </div>
+                    )}
+                  </motion.div>
                 );
               })}
             </div>
