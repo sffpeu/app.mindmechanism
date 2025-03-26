@@ -544,9 +544,11 @@ export default function Clock({
   };
 
   const handleNodeClick = (index: number) => {
+    playClick(); // Add sound effect for feedback
     if (selectedNodeIndex === index) {
       setSelectedNodeIndex(null);
       setInfoCardsHiddenByNode(false);
+      setShowInfoCards(true);
     } else {
       setSelectedNodeIndex(index);
       setInfoCardsHiddenByNode(true);
