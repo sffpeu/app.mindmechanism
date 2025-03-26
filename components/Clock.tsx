@@ -619,12 +619,6 @@ export default function Clock({
           const isSelected = selectedNodeIndex === index;
           const word = customWords?.[index];
           
-          // Calculate label position with dynamic distance
-          const labelDistance = getLabelDistance(word);
-          const labelRadius = nodeRadius + labelDistance;
-          const labelX = 50 + labelRadius * Math.cos(radians);
-          const labelY = 50 + labelRadius * Math.sin(radians);
-
           return (
             <div key={`${clockId}-${index}`} className="absolute">
               {/* Focus Node with Word */}
