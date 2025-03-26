@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { Play, BookOpen, ClipboardList, ArrowRight, LogIn, LogOut } from 'lucide-react'
@@ -16,84 +16,59 @@ export default function HomePage() {
   const [showSatellites, setShowSatellites] = useState(false)
   const router = useRouter()
   const { user, signOut } = useAuth()
+  const featuresRef = useRef<HTMLDivElement>(null)
 
   const handleSignOut = async () => {
     await signOut()
     router.push('/auth/signin')
   }
 
+  const scrollToFeatures = () => {
+    featuresRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
   const products = [
     {
-      title: "Mind Mapping",
+      title: "Mindmechanism",
+      description: "Your personal meditation companion. Track your journey and unlock your mind's potential.",
       link: "/features/mindmap",
-      thumbnail:
-        "https://images.unsplash.com/photo-1557426272-fc759fdf7a8d?q=80&w=2070&auto=format&fit=crop",
+      thumbnail: theme === 'dark' ? "rgb(75, 75, 75)" : "rgb(200, 200, 200)",
     },
     {
-      title: "Task Management",
-      link: "/features/tasks",
-      thumbnail:
-        "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?q=80&w=2072&auto=format&fit=crop",
+      title: "Create Sessions",
+      description: "Design your perfect meditation experience. Customize duration, sounds, and guidance.",
+      link: "/features/sessions",
+      thumbnail: theme === 'dark' ? "rgb(75, 75, 75)" : "rgb(200, 200, 200)",
     },
     {
-      title: "Note Taking",
+      title: "Notetaking",
+      description: "Capture your thoughts and insights. Build a personal library of meditation experiences.",
       link: "/features/notes",
-      thumbnail:
-        "https://images.unsplash.com/photo-1501504905252-473c47e087f8?q=80&w=2074&auto=format&fit=crop",
+      thumbnail: theme === 'dark' ? "rgb(75, 75, 75)" : "rgb(200, 200, 200)",
     },
     {
-      title: "Project Planning",
-      link: "/features/projects",
-      thumbnail:
-        "https://images.unsplash.com/photo-1572177812156-58036aae439c?q=80&w=2070&auto=format&fit=crop",
+      title: "Glossary",
+      description: "Explore meditation terms and concepts. Deepen your understanding of mindfulness.",
+      link: "/features/glossary",
+      thumbnail: theme === 'dark' ? "rgb(75, 75, 75)" : "rgb(200, 200, 200)",
     },
     {
-      title: "Goal Setting",
-      link: "/features/goals",
-      thumbnail:
-        "https://images.unsplash.com/photo-1553034545-32d1a66e769b?q=80&w=2070&auto=format&fit=crop",
+      title: "Dashboard",
+      description: "Visualize your progress and achievements. Track your meditation journey over time.",
+      link: "/features/dashboard",
+      thumbnail: theme === 'dark' ? "rgb(75, 75, 75)" : "rgb(200, 200, 200)",
     },
     {
-      title: "Time Management",
-      link: "/features/time",
-      thumbnail:
-        "https://images.unsplash.com/photo-1584208124888-3a20b9c799e5?q=80&w=2070&auto=format&fit=crop",
+      title: "Connect",
+      description: "Join a community of mindful individuals. Share experiences and learn together.",
+      link: "/features/connect",
+      thumbnail: theme === 'dark' ? "rgb(75, 75, 75)" : "rgb(200, 200, 200)",
     },
     {
-      title: "Focus Mode",
-      link: "/features/focus",
-      thumbnail:
-        "https://images.unsplash.com/photo-1489533119213-66a5cd877091?q=80&w=2071&auto=format&fit=crop",
-    },
-    {
-      title: "Analytics",
-      link: "/features/analytics",
-      thumbnail:
-        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop",
-    },
-    {
-      title: "Collaboration",
-      link: "/features/collaboration",
-      thumbnail:
-        "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?q=80&w=2070&auto=format&fit=crop",
-    },
-    {
-      title: "Knowledge Base",
-      link: "/features/knowledge",
-      thumbnail:
-        "https://images.unsplash.com/photo-1456406644174-8ddd4cd52a06?q=80&w=2068&auto=format&fit=crop",
-    },
-    {
-      title: "AI Assistant",
-      link: "/features/ai",
-      thumbnail:
-        "https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=2070&auto=format&fit=crop",
-    },
-    {
-      title: "Integrations",
-      link: "/features/integrations",
-      thumbnail:
-        "https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=2070&auto=format&fit=crop",
+      title: "Devices",
+      description: "Sync across all your devices. Access your practice anywhere, anytime.",
+      link: "/features/devices",
+      thumbnail: theme === 'dark' ? "rgb(75, 75, 75)" : "rgb(200, 200, 200)",
     }
   ];
 
@@ -109,43 +84,6 @@ export default function HomePage() {
           />
         </div>
 
-        {/* Hero Section */}
-        <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 p-8 mb-8">
-          <div className="relative z-10">
-            <h1 className="text-4xl font-bold text-black dark:text-white mb-4">
-              Welcome to M13 Mechanism
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-2xl">
-              Explore a unique meditation experience with our innovative clock interface. Track your progress, discover insights, and enhance your practice.
-            </p>
-            <div className="flex items-center gap-3">
-              <button 
-                onClick={() => router.push('/sessions')}
-                className="px-6 py-2.5 rounded-lg bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 transition-all text-sm"
-              >
-                Explore
-              </button>
-              {user ? (
-                <button
-                  onClick={handleSignOut}
-                  className="px-6 py-2.5 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all flex items-center gap-2 text-sm text-black dark:text-white"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Sign Out
-                </button>
-              ) : (
-                <button
-                  onClick={() => router.push('/auth/signin')}
-                  className="px-6 py-2.5 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all flex items-center gap-2 text-sm text-black dark:text-white"
-                >
-                  <LogIn className="h-4 w-4" />
-                  Sign In
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-
         {/* Parallax Hero Section */}
         <div className="relative">
           <HeroParallax products={products} />
@@ -153,18 +91,43 @@ export default function HomePage() {
           {/* Custom Header Override */}
           <div className="absolute top-0 left-0 right-0 z-10 pt-32 px-4">
             <div className="max-w-7xl mx-auto">
-              <h1 className="text-4xl md:text-7xl font-bold text-white mb-4">
+              <h1 className="text-4xl md:text-7xl font-bold text-black dark:text-white mb-4">
                 1M3 Mindmechanism
               </h1>
-              <p className="text-xl md:text-2xl text-white/90 max-w-2xl">
+              <p className="text-xl md:text-2xl text-black/90 dark:text-white/90 max-w-2xl mb-8">
                 Your mind. Your mechanism.
               </p>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={scrollToFeatures}
+                  className="px-6 py-2.5 rounded-lg bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 transition-all text-sm"
+                >
+                  Explore
+                </button>
+                {user ? (
+                  <button
+                    onClick={handleSignOut}
+                    className="px-6 py-2.5 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all flex items-center gap-2 text-sm text-black dark:text-white"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sign Out
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => router.push('/auth/signin')}
+                    className="px-6 py-2.5 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all flex items-center gap-2 text-sm text-black dark:text-white"
+                  >
+                    <LogIn className="h-4 w-4" />
+                    Sign In
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
         {/* Features Section */}
-        <div className="space-y-8 mt-32">
+        <div ref={featuresRef} className="space-y-8 mt-32">
           <h2 className="text-lg font-semibold text-black dark:text-white">Key Features</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

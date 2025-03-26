@@ -7,7 +7,6 @@ import {
   useSpring,
   MotionValue,
 } from "framer-motion";
-import Image from "next/image";
 import Link from "next/link";
 
 export const HeroParallax = ({
@@ -17,11 +16,12 @@ export const HeroParallax = ({
     title: string;
     link: string;
     thumbnail: string;
+    description: string;
   }[];
 }) => {
-  const firstRow = products.slice(0, 4);
-  const secondRow = products.slice(4, 8);
-  const thirdRow = products.slice(8, 12);
+  const firstRow = products.slice(0, 3);
+  const secondRow = products.slice(3, 5);
+  const thirdRow = products.slice(5, 7);
   const ref = React.useRef(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -109,6 +109,7 @@ export const ProductCard = ({
     title: string;
     link: string;
     thumbnail: string;
+    description: string;
   };
   translate: MotionValue<number>;
 }) => {
@@ -127,18 +128,16 @@ export const ProductCard = ({
         href={product.link}
         className="block group-hover/product:shadow-2xl"
       >
-        <Image
-          src={product.thumbnail}
-          height="600"
-          width="600"
-          className="object-cover object-left-top absolute h-full w-full inset-0 rounded-xl"
-          alt={product.title}
+        <div 
+          className="absolute h-full w-full inset-0 rounded-xl"
+          style={{ backgroundColor: product.thumbnail }}
         />
       </Link>
       <div className="absolute inset-0 h-full w-full opacity-0 group-hover/product:opacity-80 bg-black pointer-events-none rounded-xl" />
-      <h2 className="absolute bottom-4 left-4 opacity-0 group-hover/product:opacity-100 text-white text-2xl font-bold">
-        {product.title}
-      </h2>
+      <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover/product:opacity-100 text-white">
+        <h2 className="text-2xl font-bold mb-2">{product.title}</h2>
+        <p className="text-sm opacity-90">{product.description}</p>
+      </div>
     </motion.div>
   );
 }; 
