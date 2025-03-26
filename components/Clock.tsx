@@ -594,24 +594,23 @@ export default function Clock({
               {/* Word Label */}
               {word && (
                 <motion.div
-                  className="absolute whitespace-nowrap pointer-events-auto"
+                  className="absolute whitespace-nowrap"
                   style={{
                     left: `${labelX}%`,
                     top: `${labelY}%`,
-                    transform: `translate(-50%, -50%) rotate(${angle > 90 && angle < 270 ? angle + 180 : angle}deg)`,
+                    transform: `translate(-50%, -50%) rotate(${angle > 180 ? angle - 180 : angle}deg)`,
                     transformOrigin: 'center',
-                    zIndex: isSelected ? 401 : 201,
+                    zIndex: 201,
                   }}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  whileHover={{ opacity: 1, scale: 1.05 }}
-                  onClick={() => handleNodeClick(index)}
+                  whileHover={{ scale: 1.05 }}
                 >
                   <div 
-                    className={`px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
-                    ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
-                    outline outline-1 outline-black/10 dark:outline-white/20 cursor-pointer
-                    hover:outline-2 hover:outline-black/20 dark:hover:outline-white/40`}
+                    className="px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
+                    shadow-sm transition-all
+                    outline outline-1 outline-black/10 dark:outline-white/20
+                    hover:outline-2 hover:outline-black/20 dark:hover:outline-white/40"
                   >
                     <span className="text-black/90 dark:text-white/90">{word}</span>
                   </div>
@@ -883,7 +882,7 @@ export default function Clock({
                 style={{
                   left: `${x}%`,
                   top: `${y}%`,
-                  transform: `translate(-50%, -50%) rotate(${angle > 90 && angle < 270 ? angle + 180 : angle}deg)`,
+                  transform: `translate(-50%, -50%) rotate(${angle > 180 ? angle - 180 : angle}deg)`,
                   transformOrigin: 'center',
                 }}
                 initial={{ opacity: 0 }}
