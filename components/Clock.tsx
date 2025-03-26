@@ -561,7 +561,7 @@ export default function Clock({
     return (
       <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
         {Array.from({ length: Math.max(0, clockFocusNodes || 0) }).map((_, index) => {
-          const angle = ((360 / Math.max(1, clockFocusNodes || 1)) * index + clockStartingDegree + imageOrientation) % 360;
+          const angle = ((360 / Math.max(1, clockFocusNodes || 1)) * index + clockStartingDegree) % 360;
           const radians = angle * (Math.PI / 180);
           
           // Calculate node position
@@ -757,6 +757,14 @@ export default function Clock({
     const shadowStyle = clockColor ? {
       '--shadow-color': `${clockColor.r}, ${clockColor.g}, ${clockColor.b}`,
     } as React.CSSProperties : {};
+
+    // Add rotation offset for specific clocks
+    const focusNodeRotationOffset = {
+      1: 0,    // Clock 1 - no offset needed
+      2: 0,    // Clock 2 - no offset needed
+      4: 0,    // Clock 4 - no offset needed
+      8: 0,    // Clock 8 - no offset needed
+    }[id] || 0;
     
     return (
       <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px]">
@@ -822,7 +830,7 @@ export default function Clock({
             zIndex: 200,
             pointerEvents: 'none',
           }}
-          animate={{ rotate: rotation }}
+          animate={{ rotate: rotation + focusNodeRotationOffset }}
           transition={transitionConfig}
         >
           <div className="absolute inset-0" style={{ transform: `rotate(${imageOrientation}deg)`, pointerEvents: 'auto' }}>
@@ -857,7 +865,7 @@ export default function Clock({
         {/* Word labels layer - always on top */}
         <div className="absolute inset-0" style={{ pointerEvents: 'auto', zIndex: 1000 }}>
           {Array.from({ length: Math.max(0, focusNodes || 0) }).map((_, index) => {
-            const angle = ((360 / Math.max(1, focusNodes || 1)) * index + startingDegree) % 360;
+            const angle = ((360 / Math.max(1, focusNodes || 1)) * index + startingDegree + focusNodeRotationOffset) % 360;
             const radians = angle * (Math.PI / 180);
             const radius = isMultiView ? 53 : 55;
             const labelRadius = radius + 8;
