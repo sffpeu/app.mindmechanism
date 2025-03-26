@@ -268,7 +268,7 @@ export default function SessionsPage() {
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="w-[90%] h-[90%] rounded-full relative">
                         {Array.from({ length: clock.focusNodes }).map((_, index) => {
-                          const angle = (index * 360) / clock.focusNodes
+                          const angle = ((index * 360) / clock.focusNodes) + clock.startingDegree
                           const radius = 48
                           const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
                           const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))

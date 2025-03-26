@@ -187,10 +187,10 @@ const getNodeRadius = (clockId: number, isMultiView: boolean) => {
 
 // Helper function to get label distance based on word length
 const getLabelDistance = (word: string) => {
-  if (!word) return 4;
-  if (word.length > 10) return 6;
-  if (word.length > 5) return 5;
-  return 4;
+  if (!word) return 2;
+  if (word.length > 10) return 3;
+  if (word.length > 5) return 2.5;
+  return 2;
 };
 
 // Helper function to get label rotation for better readability
