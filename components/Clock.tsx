@@ -544,11 +544,9 @@ export default function Clock({
   };
 
   const handleNodeClick = (index: number) => {
-    playClick(); // Add sound effect for feedback
     if (selectedNodeIndex === index) {
       setSelectedNodeIndex(null);
       setInfoCardsHiddenByNode(false);
-      setShowInfoCards(true);
     } else {
       setSelectedNodeIndex(index);
       setInfoCardsHiddenByNode(true);
@@ -594,23 +592,22 @@ export default function Clock({
               {/* Word Label */}
               {word && (
                 <motion.div
-                  className="absolute whitespace-nowrap"
+                  className="absolute whitespace-nowrap pointer-events-none"
                   style={{
                     left: `${labelX}%`,
                     top: `${labelY}%`,
-                    transform: `translate(-50%, -50%) rotate(${angle > 180 ? angle - 180 : angle}deg)`,
+                    transform: `translate(-50%, -50%) rotate(${angle > 90 && angle < 270 ? angle + 180 : angle}deg)`,
                     transformOrigin: 'center',
-                    zIndex: 201,
+                    zIndex: isSelected ? 401 : 201,
                   }}
                   initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  whileHover={{ scale: 1.05 }}
+                  animate={{ opacity: isSelected ? 1 : 0.7 }}
+                  whileHover={{ opacity: 1 }}
                 >
                   <div 
-                    className="px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
-                    shadow-sm transition-all
-                    outline outline-1 outline-black/10 dark:outline-white/20
-                    hover:outline-2 hover:outline-black/20 dark:hover:outline-white/40"
+                    className={`px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
+                    ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
+                    outline outline-1 outline-black/10 dark:outline-white/20`}
                   >
                     <span className="text-black/90 dark:text-white/90">{word}</span>
                   </div>
@@ -757,13 +754,16 @@ export default function Clock({
       '--shadow-color': `${clockColor.r}, ${clockColor.g}, ${clockColor.b}`,
     } as React.CSSProperties : {};
 
-    // Add rotation offset for specific clocks
-    const focusNodeRotationOffset = {
-      1: 0,    // Clock 1 - no offset needed
-      2: 0,    // Clock 2 - no offset needed
-      4: 0,    // Clock 4 - no offset needed
-      8: 0,    // Clock 8 - no offset needed
-    }[id] || 0;
+    // Adjust starting degree for specific clocks to align with their SVGs
+    const adjustedStartingDegree = (() => {
+      switch (id) {
+        case 0: return startingDegree + 45; // Clock 1
+        case 1: return startingDegree + 90; // Clock 2
+        case 3: return startingDegree + 180; // Clock 4
+        case 7: return startingDegree + 270; // Clock 8
+        default: return startingDegree;
+      }
+    })();
     
     return (
       <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px]">
@@ -829,13 +829,13 @@ export default function Clock({
             zIndex: 200,
             pointerEvents: 'none',
           }}
-          animate={{ rotate: rotation + focusNodeRotationOffset }}
+          animate={{ rotate: rotation }}
           transition={transitionConfig}
         >
           <div className="absolute inset-0" style={{ transform: `rotate(${imageOrientation}deg)`, pointerEvents: 'auto' }}>
             <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
               {Array.from({ length: Math.max(0, focusNodes || 0) }).map((_, index) => {
-                const angle = ((360 / Math.max(1, focusNodes || 1)) * index + startingDegree) % 360;
+                const angle = ((360 / Math.max(1, focusNodes || 1)) * index + adjustedStartingDegree) % 360;
                 const radians = angle * (Math.PI / 180);
                 const radius = isMultiView ? 53 : 55;
                 const x = 50 + radius * Math.cos(radians);
@@ -853,7 +853,6 @@ export default function Clock({
                       ...getFocusNodeStyle(index, isMultiView),
                     }}
                     onClick={() => handleNodeClick(index)}
-                    whileHover={{ scale: 1.2 }}
                   />
                 );
               })}
@@ -864,7 +863,7 @@ export default function Clock({
         {/* Word labels layer - always on top */}
         <div className="absolute inset-0" style={{ pointerEvents: 'auto', zIndex: 1000 }}>
           {Array.from({ length: Math.max(0, focusNodes || 0) }).map((_, index) => {
-            const angle = ((360 / Math.max(1, focusNodes || 1)) * index + startingDegree + focusNodeRotationOffset) % 360;
+            const angle = ((360 / Math.max(1, focusNodes || 1)) * index + adjustedStartingDegree) % 360;
             const radians = angle * (Math.PI / 180);
             const radius = isMultiView ? 53 : 55;
             const labelRadius = radius + 8;
@@ -882,7 +881,7 @@ export default function Clock({
                 style={{
                   left: `${x}%`,
                   top: `${y}%`,
-                  transform: `translate(-50%, -50%) rotate(${angle > 180 ? angle - 180 : angle}deg)`,
+                  transform: `translate(-50%, -50%) rotate(${angle > 90 && angle < 270 ? angle + 180 : angle}deg)`,
                   transformOrigin: 'center',
                 }}
                 initial={{ opacity: 0 }}
