@@ -559,22 +559,19 @@ export default function Clock({
     return (
       <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
         {Array.from({ length: Math.max(0, clockFocusNodes || 0) }).map((_, index) => {
-          // Calculate the base angle for this node
-          const baseAngle = ((360 / Math.max(1, clockFocusNodes || 1)) * index + clockStartingDegree) % 360;
-          // Add the current clock rotation to get the actual angle
-          const angle = (baseAngle + clockRotation) % 360;
+          const angle = ((360 / Math.max(1, clockFocusNodes || 1)) * index + clockStartingDegree) % 360;
           const radians = angle * (Math.PI / 180);
           
           // Calculate node position
           const nodeRadius = isMultiView ? 53 : 55;
           const x = 50 + nodeRadius * Math.cos(radians);
           const y = 50 + nodeRadius * Math.sin(radians);
-
+          
           // Calculate word label position (slightly outside the node)
           const labelRadius = nodeRadius + 8;
           const labelX = 50 + labelRadius * Math.cos(radians);
           const labelY = 50 + labelRadius * Math.sin(radians);
-
+          
           const isSelected = selectedNodeIndex === index;
           const word = customWords?.[index];
 
@@ -591,7 +588,7 @@ export default function Clock({
                 onClick={() => handleNodeClick(index)}
                 whileHover={{ scale: 1.2 }}
               />
-               
+              
               {/* Word Label */}
               {word && (
                 <motion.div
@@ -836,9 +833,77 @@ export default function Clock({
           transition={transitionConfig}
         >
           <div className="absolute inset-0" style={{ transform: `rotate(${imageOrientation}deg)`, pointerEvents: 'auto' }}>
-            {renderFocusNodes(rotation, focusNodes, startingDegree, id)}
+            <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
+              {Array.from({ length: Math.max(0, focusNodes || 0) }).map((_, index) => {
+                const angle = ((360 / Math.max(1, focusNodes || 1)) * index + adjustedStartingDegree) % 360;
+                const radians = angle * (Math.PI / 180);
+                const radius = isMultiView ? 53 : 55;
+                const x = 50 + radius * Math.cos(radians);
+                const y = 50 + radius * Math.sin(radians);
+
+                const isSelected = selectedNodeIndex === index;
+
+                return (
+                  <motion.div
+                    key={`${id}-${index}`}
+                    className="absolute rounded-full cursor-pointer"
+                    style={{
+                      left: `${x}%`,
+                      top: `${y}%`,
+                      ...getFocusNodeStyle(index, isMultiView),
+                    }}
+                    onClick={() => handleNodeClick(index)}
+                  />
+                );
+              })}
+            </div>
           </div>
         </motion.div>
+
+        {/* Word labels layer - always on top */}
+        <div className="absolute inset-0" style={{ pointerEvents: 'auto', zIndex: 1000 }}>
+          {Array.from({ length: Math.max(0, focusNodes || 0) }).map((_, index) => {
+            const angle = ((360 / Math.max(1, focusNodes || 1)) * index + adjustedStartingDegree) % 360;
+            const radians = angle * (Math.PI / 180);
+            const radius = isMultiView ? 53 : 55;
+            const labelRadius = radius + 8;
+            const x = 50 + labelRadius * Math.cos(radians);
+            const y = 50 + labelRadius * Math.sin(radians);
+            const word = customWords?.[index];
+            const isSelected = selectedNodeIndex === index;
+
+            if (!word) return null;
+
+            return (
+              <div
+                key={`word-${index}`}
+                className="absolute text-[#1a1a1a] font-medium text-[0.8rem] cursor-pointer select-none"
+                style={{
+                  left: `${x}px`,
+                  top: `${y}px`,
+                  transform: `translate(-50%, -50%) rotate(${angle}deg)`,
+                  transformOrigin: 'center',
+                  zIndex: 100,
+                  opacity: 1,
+                  pointerEvents: 'auto',
+                  textAlign: 'center',
+                  whiteSpace: 'nowrap',
+                  textShadow: '0 0 2px rgba(255, 255, 255, 0.8)',
+                  transition: 'all 0.2s ease',
+                  animation: 'fadeIn 0.3s ease forwards',
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleNodeClick(index);
+                }}
+                onMouseEnter={() => handleNodeHover(index)}
+                onMouseLeave={() => handleNodeHover(null)}
+              >
+                {word}
+              </div>
+            );
+          })}
+        </div>
 
         {/* Satellites layer */}
         <div className="absolute inset-[-20%]" style={{ pointerEvents: 'auto', zIndex: 1000 }}>
