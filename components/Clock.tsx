@@ -846,6 +846,7 @@ export default function Clock({
                       ...getFocusNodeStyle(index, isMultiView),
                     }}
                     onClick={() => handleNodeClick(index)}
+                    whileHover={{ scale: 1.2 }}
                   />
                 );
               })}
@@ -853,8 +854,47 @@ export default function Clock({
           </div>
         </motion.div>
 
-        {/* Word display */}
-        {renderWordDisplay()}
+        {/* Word labels layer - always on top */}
+        <div className="absolute inset-0" style={{ pointerEvents: 'auto', zIndex: 1000 }}>
+          {Array.from({ length: Math.max(0, focusNodes || 0) }).map((_, index) => {
+            const angle = ((360 / Math.max(1, focusNodes || 1)) * index + startingDegree) % 360;
+            const radians = angle * (Math.PI / 180);
+            const radius = isMultiView ? 53 : 55;
+            const labelRadius = radius + 8;
+            const x = 50 + labelRadius * Math.cos(radians);
+            const y = 50 + labelRadius * Math.sin(radians);
+            const word = customWords?.[index];
+            const isSelected = selectedNodeIndex === index;
+
+            if (!word) return null;
+
+            return (
+              <motion.div
+                key={`word-${id}-${index}`}
+                className="absolute whitespace-nowrap"
+                style={{
+                  left: `${x}%`,
+                  top: `${y}%`,
+                  transform: `translate(-50%, -50%) rotate(${angle > 90 && angle < 270 ? angle + 180 : angle}deg)`,
+                  transformOrigin: 'center',
+                }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                whileHover={{ scale: 1.05 }}
+                onClick={() => handleNodeClick(index)}
+              >
+                <div 
+                  className={`px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
+                  ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
+                  outline outline-1 outline-black/10 dark:outline-white/20 cursor-pointer
+                  hover:outline-2 hover:outline-black/20 dark:hover:outline-white/40`}
+                >
+                  <span className="text-black/90 dark:text-white/90">{word}</span>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
 
         {/* Satellites layer */}
         <div className="absolute inset-[-20%]" style={{ pointerEvents: 'auto', zIndex: 1000 }}>
