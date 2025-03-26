@@ -634,7 +634,7 @@ export default function Clock({
               >
                 {word && (
                   <div 
-                    className={`absolute whitespace-nowrap pointer-events-none -translate-y-full -translate-x-1/2 left-1/2 -top-1 px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
+                    className={`absolute whitespace-nowrap pointer-events-none -translate-y-1/2 -translate-x-full left-0 top-1/2 px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
                     ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
                     outline outline-1 outline-black/10 dark:outline-white/20`}
                   >
@@ -885,7 +885,7 @@ export default function Clock({
                   >
                     {customWords?.[index] && (
                       <div 
-                        className={`absolute whitespace-nowrap pointer-events-none -translate-y-full -translate-x-1/2 left-1/2 -top-1 px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
+                        className={`absolute whitespace-nowrap pointer-events-none -translate-y-1/2 -translate-x-full left-0 top-1/2 px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
                         ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
                         outline outline-1 outline-black/10 dark:outline-white/20`}
                       >
