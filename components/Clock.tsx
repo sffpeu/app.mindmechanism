@@ -185,14 +185,6 @@ const getNodeRadius = (clockId: number, isMultiView: boolean) => {
   }
 };
 
-// Helper function to get label distance based on word length
-const getLabelDistance = (word: string) => {
-  if (!word) return 0.5;
-  if (word.length > 10) return 1;
-  if (word.length > 5) return 0.75;
-  return 0.5;
-};
-
 // Helper function to get label rotation for better readability
 const getLabelRotation = (angle: number) => {
   // Normalize angle to 0-360 range
@@ -912,52 +904,6 @@ export default function Clock({
             </div>
           </div>
         </motion.div>
-
-        {/* Word labels layer - always on top */}
-        <div className="absolute inset-0" style={{ pointerEvents: 'auto', zIndex: 1000 }}>
-          {Array.from({ length: Math.max(0, focusNodes || 0) }).map((_, index) => {
-            const angle = ((360 / Math.max(1, focusNodes || 1)) * index + adjustedStartingDegree) % 360;
-            const radians = angle * (Math.PI / 180);
-            const nodeRadius = getNodeRadius(id, isMultiView);
-            const word = customWords?.[index];
-            const isSelected = selectedNodeIndex === index;
-
-            if (!word) return null;
-
-            // Calculate label position with dynamic distance
-            const labelDistance = getLabelDistance(word);
-            const labelRadius = nodeRadius + labelDistance;
-            const x = 50 + labelRadius * Math.cos(radians);
-            const y = 50 + labelRadius * Math.sin(radians);
-
-            return (
-              <motion.div
-                key={`word-${id}-${index}`}
-                className="absolute whitespace-nowrap"
-                style={{
-                  left: `${x}%`,
-                  top: `${y}%`,
-                  transform: `translate(-50%, -50%) rotate(${getLabelRotation(angle)}deg)`,
-                  transformOrigin: 'center',
-                }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                whileHover={{ scale: 1.05 }}
-                onClick={() => handleNodeClick(index)}
-              >
-                <div 
-                  className={`px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
-                  ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
-                  outline outline-1 outline-black/10 dark:outline-white/20 cursor-pointer
-                  hover:outline-2 hover:outline-black/20 dark:hover:outline-white/40
-                  transform -translate-y-1/2`}
-                >
-                  <span className="text-black/90 dark:text-white/90">{word}</span>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
 
         {/* Satellites layer */}
         <div className="absolute inset-[-20%]" style={{ pointerEvents: 'auto', zIndex: 1000 }}>
