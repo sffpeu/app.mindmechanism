@@ -561,7 +561,7 @@ export default function Clock({
     return (
       <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
         {Array.from({ length: Math.max(0, clockFocusNodes || 0) }).map((_, index) => {
-          const angle = ((360 / Math.max(1, clockFocusNodes || 1)) * index + clockStartingDegree) % 360;
+          const angle = ((360 / Math.max(1, clockFocusNodes || 1)) * index + clockStartingDegree + imageOrientation) % 360;
           const radians = angle * (Math.PI / 180);
           
           // Calculate node position
