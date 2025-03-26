@@ -592,7 +592,7 @@ export default function Clock({
               {/* Word Label */}
               {word && (
                 <motion.div
-                  className="absolute whitespace-nowrap pointer-events-none"
+                  className="absolute whitespace-nowrap pointer-events-auto"
                   style={{
                     left: `${labelX}%`,
                     top: `${labelY}%`,
@@ -603,11 +603,13 @@ export default function Clock({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: isSelected ? 1 : 0.7 }}
                   whileHover={{ opacity: 1 }}
+                  onClick={() => handleNodeClick(index)}
                 >
                   <div 
                     className={`px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
                     ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
-                    outline outline-1 outline-black/10 dark:outline-white/20`}
+                    outline outline-1 outline-black/10 dark:outline-white/20 cursor-pointer
+                    hover:outline-2 hover:outline-black/20 dark:hover:outline-white/40`}
                   >
                     <span className="text-black/90 dark:text-white/90">{word}</span>
                   </div>
