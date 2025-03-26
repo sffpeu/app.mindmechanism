@@ -875,32 +875,29 @@ export default function Clock({
             if (!word) return null;
 
             return (
-              <div
-                key={`word-${index}`}
-                className="absolute text-[#1a1a1a] font-medium text-[0.8rem] cursor-pointer select-none"
+              <motion.div
+                key={`word-${id}-${index}`}
+                className="absolute whitespace-nowrap"
                 style={{
-                  left: `${x}px`,
-                  top: `${y}px`,
-                  transform: `translate(-50%, -50%) rotate(${angle}deg)`,
+                  left: `${x}%`,
+                  top: `${y}%`,
+                  transform: `translate(-50%, -50%) rotate(${angle > 90 && angle < 270 ? angle + 180 : angle}deg)`,
                   transformOrigin: 'center',
-                  zIndex: 100,
-                  opacity: 1,
-                  pointerEvents: 'auto',
-                  textAlign: 'center',
-                  whiteSpace: 'nowrap',
-                  textShadow: '0 0 2px rgba(255, 255, 255, 0.8)',
-                  transition: 'all 0.2s ease',
-                  animation: 'fadeIn 0.3s ease forwards',
                 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleNodeClick(index);
-                }}
-                onMouseEnter={() => handleNodeHover(index)}
-                onMouseLeave={() => handleNodeHover(null)}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                whileHover={{ scale: 1.05 }}
+                onClick={() => handleNodeClick(index)}
               >
-                {word}
-              </div>
+                <div 
+                  className={`px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
+                  ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
+                  outline outline-1 outline-black/10 dark:outline-white/20 cursor-pointer
+                  hover:outline-2 hover:outline-black/20 dark:hover:outline-white/40`}
+                >
+                  <span className="text-black/90 dark:text-white/90">{word}</span>
+                </div>
+              </motion.div>
             );
           })}
         </div>
