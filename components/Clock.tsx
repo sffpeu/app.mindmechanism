@@ -205,50 +205,23 @@ const getLabelRotation = (angle: number) => {
   return angle + (normalizedAngle > 180 ? 90 : -90);
 };
 
-const getWordContainerStyle = (angle: number, isSelected: boolean): React.CSSProperties => {
-  // Normalize angle to 0-360 range
-  const normalizedAngle = angle % 360;
+const getWordContainerStyle = (angle: number, isSelected: boolean) => {
+  const radians = angle * (Math.PI / 180);
+  const radius = getNodeRadius(id, isMultiView);
+  const x = 50 + radius * Math.cos(radians);
+  const y = 50 + radius * Math.sin(radians);
   
-  // Calculate base position and rotation
-  let position = '';
-  let rotation = 0;
+  // Calculate the position for the text container
+  const textOffset = 20; // Distance from the node
+  const textX = 50 + (radius + textOffset) * Math.cos(radians);
+  const textY = 50 + (radius + textOffset) * Math.sin(radians);
   
-  // Top half (0-180 degrees)
-  if (normalizedAngle < 180) {
-    if (normalizedAngle < 45 || normalizedAngle > 315) {
-      // Top center - dock to bottom
-      position = 'translate-y-[calc(100%+12px)] left-1/2 -translate-x-1/2';
-      rotation = 0; // Keep text upright
-    } else if (normalizedAngle < 135) {
-      // Top right - dock to left
-      position = 'translate-x-[calc(-100%-12px)] -translate-y-1/2 left-0';
-      rotation = 0; // Keep text upright
-    } else {
-      // Top left - dock to right
-      position = 'translate-x-[calc(100%+12px)] -translate-y-1/2 right-0';
-      rotation = 0; // Keep text upright
-    }
-  } else {
-    // Bottom half (180-360 degrees)
-    if (normalizedAngle < 225) {
-      // Bottom right - dock to left
-      position = 'translate-x-[calc(-100%-12px)] translate-y-1/2 left-0';
-      rotation = 0; // Keep text upright
-    } else if (normalizedAngle < 315) {
-      // Bottom left - dock to right
-      position = 'translate-x-[calc(100%+12px)] translate-y-1/2 right-0';
-      rotation = 0; // Keep text upright
-    } else {
-      // Bottom center - dock to top
-      position = 'translate-y-[calc(-100%-12px)] left-1/2 -translate-x-1/2';
-      rotation = 0; // Keep text upright
-    }
-  }
-
   return {
-    transform: `${position} rotate(${rotation}deg)`,
+    left: `${textX}%`,
+    top: `${textY}%`,
+    transform: `translate(-50%, -50%)`,
     transformOrigin: 'center',
-    willChange: 'transform',
+    zIndex: isSelected ? 1000 : 100,
   };
 };
 
