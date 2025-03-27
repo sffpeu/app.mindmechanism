@@ -216,32 +216,32 @@ const getWordContainerStyle = (angle: number, isSelected: boolean): React.CSSPro
   // Top half (0-180 degrees)
   if (normalizedAngle < 180) {
     if (normalizedAngle < 45 || normalizedAngle > 315) {
-      // Top center
-      position = '-translate-y-full left-1/2 -translate-x-1/2';
+      // Top center - dock to bottom
+      position = 'translate-y-[calc(100%+8px)] left-1/2 -translate-x-1/2';
       rotation = 0;
     } else if (normalizedAngle < 135) {
-      // Top right
-      position = '-translate-y-1/2 left-full ml-1';
-      rotation = 90;
+      // Top right - dock to left
+      position = 'translate-x-[calc(-100%-8px)] -translate-y-1/2 left-0';
+      rotation = 0;
     } else {
-      // Top left
-      position = '-translate-y-1/2 right-full mr-1';
-      rotation = -90;
+      // Top left - dock to right
+      position = 'translate-x-[calc(100%+8px)] -translate-y-1/2 right-0';
+      rotation = 0;
     }
   } else {
     // Bottom half (180-360 degrees)
     if (normalizedAngle < 225) {
-      // Bottom right
-      position = 'translate-y-1/2 left-full ml-1';
-      rotation = 90;
+      // Bottom right - dock to left
+      position = 'translate-x-[calc(-100%-8px)] translate-y-1/2 left-0';
+      rotation = 0;
     } else if (normalizedAngle < 315) {
-      // Bottom left
-      position = 'translate-y-1/2 right-full mr-1';
-      rotation = -90;
+      // Bottom left - dock to right
+      position = 'translate-x-[calc(100%+8px)] translate-y-1/2 right-0';
+      rotation = 0;
     } else {
-      // Bottom center
-      position = 'translate-y-full left-1/2 -translate-x-1/2';
-      rotation = 180;
+      // Bottom center - dock to top
+      position = 'translate-y-[calc(-100%-8px)] left-1/2 -translate-x-1/2';
+      rotation = 0;
     }
   }
 
