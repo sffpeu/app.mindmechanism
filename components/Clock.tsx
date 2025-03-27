@@ -205,9 +205,9 @@ const getLabelRotation = (angle: number) => {
   return angle + (normalizedAngle > 180 ? 90 : -90);
 };
 
-const getWordContainerStyle = (angle: number, isSelected: boolean) => {
+const getWordContainerStyle = (angle: number, isSelected: boolean, clockId: number, isMultiView: boolean) => {
   const radians = angle * (Math.PI / 180);
-  const radius = getNodeRadius(id, isMultiView);
+  const radius = getNodeRadius(clockId, isMultiView);
   const x = 50 + radius * Math.cos(radians);
   const y = 50 + radius * Math.sin(radians);
   
@@ -658,8 +658,8 @@ export default function Clock({
                     ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
                     outline outline-1 outline-black/10 dark:outline-white/20`}
                     style={{
-                      ...getWordContainerStyle(angle, isSelected),
-                      transform: `${getWordContainerStyle(angle, isSelected).transform} rotate(${-rotation}deg)`,
+                      ...getWordContainerStyle(angle, isSelected, clockId, isMultiView),
+                      transform: `${getWordContainerStyle(angle, isSelected, clockId, isMultiView).transform} rotate(${-rotation}deg)`,
                     }}
                   >
                     <span className="text-black/90 dark:text-white/90">{word}</span>
@@ -913,8 +913,8 @@ export default function Clock({
                         ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
                         outline outline-1 outline-black/10 dark:outline-white/20`}
                         style={{
-                          ...getWordContainerStyle(angle, isSelected),
-                          transform: `${getWordContainerStyle(angle, isSelected).transform} rotate(${-rotation}deg)`,
+                          ...getWordContainerStyle(angle, isSelected, id, isMultiView),
+                          transform: `${getWordContainerStyle(angle, isSelected, id, isMultiView).transform} rotate(${-rotation}deg)`,
                         }}
                       >
                         <span className="text-black/90 dark:text-white/90">{customWords[index]}</span>
