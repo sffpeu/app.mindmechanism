@@ -205,7 +205,7 @@ const getLabelRotation = (angle: number) => {
   return angle + (normalizedAngle > 180 ? 90 : -90);
 };
 
-const getWordContainerStyle = (angle: number, isSelected: boolean) => {
+const getWordContainerStyle = (angle: number, isSelected: boolean): React.CSSProperties => {
   // Normalize angle to 0-360 range
   const normalizedAngle = angle % 360;
   
@@ -246,8 +246,6 @@ const getWordContainerStyle = (angle: number, isSelected: boolean) => {
   }
 
   return {
-    position,
-    rotation,
     transform: `${position} rotate(${rotation}deg)`,
   };
 };
