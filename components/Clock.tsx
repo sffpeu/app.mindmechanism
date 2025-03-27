@@ -217,31 +217,31 @@ const getWordContainerStyle = (angle: number, isSelected: boolean): React.CSSPro
   if (normalizedAngle < 180) {
     if (normalizedAngle < 45 || normalizedAngle > 315) {
       // Top center - dock to bottom
-      position = 'translate-y-[calc(100%+8px)] left-1/2 -translate-x-1/2';
-      rotation = -angle; // Counter-rotate to keep text upright
+      position = 'translate-y-[calc(100%+12px)] left-1/2 -translate-x-1/2';
+      rotation = 0; // Keep text upright
     } else if (normalizedAngle < 135) {
       // Top right - dock to left
-      position = 'translate-x-[calc(-100%-8px)] -translate-y-1/2 left-0';
-      rotation = -angle; // Counter-rotate to keep text upright
+      position = 'translate-x-[calc(-100%-12px)] -translate-y-1/2 left-0';
+      rotation = 0; // Keep text upright
     } else {
       // Top left - dock to right
-      position = 'translate-x-[calc(100%+8px)] -translate-y-1/2 right-0';
-      rotation = -angle; // Counter-rotate to keep text upright
+      position = 'translate-x-[calc(100%+12px)] -translate-y-1/2 right-0';
+      rotation = 0; // Keep text upright
     }
   } else {
     // Bottom half (180-360 degrees)
     if (normalizedAngle < 225) {
       // Bottom right - dock to left
-      position = 'translate-x-[calc(-100%-8px)] translate-y-1/2 left-0';
-      rotation = -angle; // Counter-rotate to keep text upright
+      position = 'translate-x-[calc(-100%-12px)] translate-y-1/2 left-0';
+      rotation = 0; // Keep text upright
     } else if (normalizedAngle < 315) {
       // Bottom left - dock to right
-      position = 'translate-x-[calc(100%+8px)] translate-y-1/2 right-0';
-      rotation = -angle; // Counter-rotate to keep text upright
+      position = 'translate-x-[calc(100%+12px)] translate-y-1/2 right-0';
+      rotation = 0; // Keep text upright
     } else {
       // Bottom center - dock to top
-      position = 'translate-y-[calc(-100%-8px)] left-1/2 -translate-x-1/2';
-      rotation = -angle; // Counter-rotate to keep text upright
+      position = 'translate-y-[calc(-100%-12px)] left-1/2 -translate-x-1/2';
+      rotation = 0; // Keep text upright
     }
   }
 
@@ -684,7 +684,10 @@ export default function Clock({
                     className={`absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
                     ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
                     outline outline-1 outline-black/10 dark:outline-white/20`}
-                    style={getWordContainerStyle(angle, isSelected)}
+                    style={{
+                      ...getWordContainerStyle(angle, isSelected),
+                      transform: `${getWordContainerStyle(angle, isSelected).transform} rotate(${-angle}deg)`,
+                    }}
                   >
                     <span className="text-black/90 dark:text-white/90">{word}</span>
                   </div>
@@ -936,7 +939,10 @@ export default function Clock({
                         className={`absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
                         ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
                         outline outline-1 outline-black/10 dark:outline-white/20`}
-                        style={getWordContainerStyle(angle, isSelected)}
+                        style={{
+                          ...getWordContainerStyle(angle, isSelected),
+                          transform: `${getWordContainerStyle(angle, isSelected).transform} rotate(${-angle}deg)`,
+                        }}
                       >
                         <span className="text-black/90 dark:text-white/90">{customWords[index]}</span>
                       </div>
