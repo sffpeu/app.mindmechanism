@@ -218,30 +218,30 @@ const getWordContainerStyle = (angle: number, isSelected: boolean): React.CSSPro
     if (normalizedAngle < 45 || normalizedAngle > 315) {
       // Top center - dock to bottom
       position = 'translate-y-[calc(100%+8px)] left-1/2 -translate-x-1/2';
-      rotation = 0;
+      rotation = -angle; // Counter-rotate to keep text upright
     } else if (normalizedAngle < 135) {
       // Top right - dock to left
       position = 'translate-x-[calc(-100%-8px)] -translate-y-1/2 left-0';
-      rotation = 0;
+      rotation = -angle; // Counter-rotate to keep text upright
     } else {
       // Top left - dock to right
       position = 'translate-x-[calc(100%+8px)] -translate-y-1/2 right-0';
-      rotation = 0;
+      rotation = -angle; // Counter-rotate to keep text upright
     }
   } else {
     // Bottom half (180-360 degrees)
     if (normalizedAngle < 225) {
       // Bottom right - dock to left
       position = 'translate-x-[calc(-100%-8px)] translate-y-1/2 left-0';
-      rotation = 0;
+      rotation = -angle; // Counter-rotate to keep text upright
     } else if (normalizedAngle < 315) {
       // Bottom left - dock to right
       position = 'translate-x-[calc(100%+8px)] translate-y-1/2 right-0';
-      rotation = 0;
+      rotation = -angle; // Counter-rotate to keep text upright
     } else {
       // Bottom center - dock to top
       position = 'translate-y-[calc(-100%-8px)] left-1/2 -translate-x-1/2';
-      rotation = 0;
+      rotation = -angle; // Counter-rotate to keep text upright
     }
   }
 
