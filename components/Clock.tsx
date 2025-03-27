@@ -686,7 +686,7 @@ export default function Clock({
                     outline outline-1 outline-black/10 dark:outline-white/20`}
                     style={{
                       ...getWordContainerStyle(angle, isSelected),
-                      transform: `${getWordContainerStyle(angle, isSelected).transform} rotate(${-angle}deg)`,
+                      transform: `${getWordContainerStyle(angle, isSelected).transform} rotate(${-rotation}deg)`,
                     }}
                   >
                     <span className="text-black/90 dark:text-white/90">{word}</span>
@@ -941,7 +941,7 @@ export default function Clock({
                         outline outline-1 outline-black/10 dark:outline-white/20`}
                         style={{
                           ...getWordContainerStyle(angle, isSelected),
-                          transform: `${getWordContainerStyle(angle, isSelected).transform} rotate(${-angle}deg)`,
+                          transform: `${getWordContainerStyle(angle, isSelected).transform} rotate(${-rotation}deg)`,
                         }}
                       >
                         <span className="text-black/90 dark:text-white/90">{customWords[index]}</span>
