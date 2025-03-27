@@ -205,6 +205,53 @@ const getLabelRotation = (angle: number) => {
   return angle + (normalizedAngle > 180 ? 90 : -90);
 };
 
+const getWordContainerStyle = (angle: number, isSelected: boolean) => {
+  // Normalize angle to 0-360 range
+  const normalizedAngle = angle % 360;
+  
+  // Calculate base position and rotation
+  let position = '';
+  let rotation = 0;
+  
+  // Top half (0-180 degrees)
+  if (normalizedAngle < 180) {
+    if (normalizedAngle < 45 || normalizedAngle > 315) {
+      // Top center
+      position = '-translate-y-full left-1/2 -translate-x-1/2';
+      rotation = 0;
+    } else if (normalizedAngle < 135) {
+      // Top right
+      position = '-translate-y-1/2 left-full ml-1';
+      rotation = 90;
+    } else {
+      // Top left
+      position = '-translate-y-1/2 right-full mr-1';
+      rotation = -90;
+    }
+  } else {
+    // Bottom half (180-360 degrees)
+    if (normalizedAngle < 225) {
+      // Bottom right
+      position = 'translate-y-1/2 left-full ml-1';
+      rotation = 90;
+    } else if (normalizedAngle < 315) {
+      // Bottom left
+      position = 'translate-y-1/2 right-full mr-1';
+      rotation = -90;
+    } else {
+      // Bottom center
+      position = 'translate-y-full left-1/2 -translate-x-1/2';
+      rotation = 180;
+    }
+  }
+
+  return {
+    position,
+    rotation,
+    transform: `${position} rotate(${rotation}deg)`,
+  };
+};
+
 export default function Clock({ 
   id, 
   startDateTime = new Date('2024-01-01T00:00:00Z'),
@@ -634,12 +681,10 @@ export default function Clock({
               >
                 {word && (
                   <div 
-                    className={`absolute whitespace-nowrap pointer-events-none -translate-y-full -translate-x-1/2 left-1/2 -top-1 px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
+                    className={`absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
                     ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
                     outline outline-1 outline-black/10 dark:outline-white/20`}
-                    style={{
-                      transform: `rotate(${-angle}deg)`, // Counter-rotate to keep text horizontal
-                    }}
+                    style={getWordContainerStyle(angle, isSelected)}
                   >
                     <span className="text-black/90 dark:text-white/90">{word}</span>
                   </div>
@@ -888,12 +933,10 @@ export default function Clock({
                   >
                     {customWords?.[index] && (
                       <div 
-                        className={`absolute whitespace-nowrap pointer-events-none -translate-y-full -translate-x-1/2 left-1/2 -top-1 px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
+                        className={`absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
                         ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
                         outline outline-1 outline-black/10 dark:outline-white/20`}
-                        style={{
-                          transform: `rotate(${-angle}deg)`, // Counter-rotate to keep text horizontal
-                        }}
+                        style={getWordContainerStyle(angle, isSelected)}
                       >
                         <span className="text-black/90 dark:text-white/90">{customWords[index]}</span>
                       </div>
