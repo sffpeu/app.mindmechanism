@@ -650,9 +650,11 @@ export default function Clock({
                   ...getFocusNodeStyle(index, isMultiView),
                 }}
                 onClick={() => handleNodeClick(index)}
+                onMouseEnter={() => setHoveredNodeIndex(index)}
+                onMouseLeave={() => setHoveredNodeIndex(null)}
                 whileHover={{ scale: 1.2 }}
               >
-                {word && (
+                {word && (hoveredNodeIndex === index || selectedNodeIndex === index) && (
                   <div 
                     className={`absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
                     ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
