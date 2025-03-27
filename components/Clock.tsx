@@ -212,7 +212,7 @@ const getWordContainerStyle = (angle: number, isSelected: boolean, clockId: numb
   const y = 50 + radius * Math.sin(radians);
   
   // Calculate the position for the text container
-  const textOffset = 20; // Distance from the node
+  const textOffset = 35; // Increased from 20 to 35 to move text further outside
   const textX = 50 + (radius + textOffset) * Math.cos(radians);
   const textY = 50 + (radius + textOffset) * Math.sin(radians);
   
