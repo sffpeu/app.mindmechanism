@@ -212,7 +212,7 @@ const getWordContainerStyle = (angle: number, isSelected: boolean, clockId: numb
   const y = 50 + radius * Math.sin(radians);
   
   // Calculate the position for the text container
-  const textOffset = isMultiView ? 35 : 65; // Increased from 50 to 65 for individual clocks
+  const textOffset = isMultiView ? 35 : 70; // Use larger offset for individual clock pages
   const textX = 50 + (radius + textOffset) * Math.cos(radians);
   const textY = 50 + (radius + textOffset) * Math.sin(radians);
   
