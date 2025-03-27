@@ -247,6 +247,8 @@ const getWordContainerStyle = (angle: number, isSelected: boolean): React.CSSPro
 
   return {
     transform: `${position} rotate(${rotation}deg)`,
+    transformOrigin: 'center',
+    willChange: 'transform',
   };
 };
 
