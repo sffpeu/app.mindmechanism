@@ -214,9 +214,6 @@ const getWordContainerStyle = (angle: number, isSelected: boolean, clockId: numb
   // Calculate the position for the text container
   const textOffset = isMultiView ? 35 : 240; // Doubled from 120 to 240 for individual clock pages
   
-  // Determine if the word is on the left or right half of the clock
-  const isRightHalf = angle > 180;
-  
   // Calculate text position
   const textX = 50 + (radius + textOffset) * Math.cos(radians);
   const textY = 50 + (radius + textOffset) * Math.sin(radians);
@@ -224,7 +221,7 @@ const getWordContainerStyle = (angle: number, isSelected: boolean, clockId: numb
   return {
     left: `${textX}%`,
     top: `${textY}%`,
-    transform: `translate(-50%, -50%)`,
+    transform: `translate(-50%, -50%) rotate(${-angle}deg)`,
     transformOrigin: 'center',
     zIndex: isSelected ? 1000 : 100,
   };
@@ -666,7 +663,6 @@ export default function Clock({
                     outline outline-1 outline-black/10 dark:outline-white/20`}
                     style={{
                       ...getWordContainerStyle(angle, isSelected, clockId, isMultiView),
-                      transform: `${getWordContainerStyle(angle, isSelected, clockId, isMultiView).transform} rotate(${-rotation}deg)`,
                     }}
                   >
                     <span className="text-black/90 dark:text-white/90">{word}</span>
