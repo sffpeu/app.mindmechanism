@@ -208,21 +208,26 @@ const getLabelRotation = (angle: number) => {
 const getWordContainerStyle = (angle: number, isSelected: boolean, clockId: number, isMultiView: boolean) => {
   const radians = angle * (Math.PI / 180);
   const radius = getNodeRadius(clockId, isMultiView);
-  const x = 50 + radius * Math.cos(radians);
-  const y = 50 + radius * Math.sin(radians);
+  
+  // Determine if the word is on the left or right half of the clock
+  const isRightHalf = angle > 90 && angle < 270;
   
   // Calculate the position for the text container
-  const textOffset = isMultiView ? 35 : 240; // Doubled from 120 to 240 for individual clock pages
+  const textOffset = isMultiView ? 35 : 40; // Reduced offset to match image example
   
-  // Calculate text position
-  const textX = 50 + (radius + textOffset) * Math.cos(radians);
-  const textY = 50 + (radius + textOffset) * Math.sin(radians);
+  // Calculate node position (where the red dot is)
+  const nodeX = 50 + radius * Math.cos(radians);
+  const nodeY = 50 + radius * Math.sin(radians);
+  
+  // Position text to the left or right of the node
+  const textX = nodeX + (isRightHalf ? -textOffset : textOffset);
   
   return {
     left: `${textX}%`,
-    top: `${textY}%`,
-    transform: `translate(-50%, -50%) rotate(${-angle}deg)`,
-    transformOrigin: 'center',
+    top: `${nodeY}%`,
+    transform: 'translate(0, -50%)',
+    transformOrigin: isRightHalf ? 'right center' : 'left center',
+    textAlign: isRightHalf ? 'right' : 'left',
     zIndex: isSelected ? 1000 : 100,
   };
 };
