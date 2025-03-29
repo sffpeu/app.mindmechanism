@@ -482,6 +482,7 @@ export default function ClockPage() {
             isMultiView2={false}
             allClocks={clockSettings}
             customWords={words}
+            wordDefinitions={wordDefinitions}
             onInfoUpdate={setClockInfo}
           />
         </div>

@@ -109,6 +109,7 @@ interface ClockProps extends Partial<ClockSettings> {
   imageX?: number;
   imageY?: number;
   customWords?: string[];
+  wordDefinitions?: Record<string, string>;
   hideControls?: boolean;
   showSatellites?: boolean;
   showWords?: boolean;
@@ -259,6 +260,7 @@ export default function Clock({
   showWords = true,
   showInfo = true,
   customWords = [],
+  wordDefinitions = {},
   onInfoUpdate
 }: ClockProps) {
   if (!(startDateTime instanceof Date) || isNaN(startDateTime.getTime())) {
@@ -700,12 +702,12 @@ export default function Clock({
           
           return words.map((word, wordIndex) => {
             const wordAngle = nodeAngle + (wordIndex * (360 / focusNodes / wordsPerNode));
-            const isSelected = false; // You can implement selection logic if needed
+            const isSelected = false;
             
             return (
               <div
                 key={`${nodeIndex}-${wordIndex}`}
-                className="absolute transform -translate-x-1/2 -translate-y-1/2"
+                className="absolute transform -translate-x-1/2 -translate-y-1/2 group"
                 style={getWordContainerStyle(wordAngle, isSelected, id, isMultiView)}
               >
                 <div className="relative">
@@ -716,6 +718,11 @@ export default function Clock({
                       </span>
                     </div>
                   </div>
+                  {wordDefinitions[word] && (
+                    <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-64 p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                      <p className="text-xs leading-relaxed text-gray-600 dark:text-gray-300">{wordDefinitions[word]}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             );
