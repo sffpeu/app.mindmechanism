@@ -111,6 +111,7 @@ interface ClockProps extends Partial<ClockSettings> {
   customWords?: string[];
   hideControls?: boolean;
   showSatellites?: boolean;
+  showWords?: boolean;
   showInfo?: boolean;
   onInfoUpdate?: (info: {
     rotation: number;
@@ -255,6 +256,7 @@ export default function Clock({
   onToggleShow, 
   hideControls = false,
   showSatellites = true,
+  showWords = true,
   showInfo = true,
   customWords = [],
   onInfoUpdate
@@ -684,7 +686,43 @@ export default function Clock({
   };
 
   const renderWordDisplay = () => {
-    return null;
+    if (!showWords || !customWords || customWords.length === 0) return null;
+
+    const clockRotation = getClockRotation(clockSettings);
+    const nodeRadius = getNodeRadius(id, isMultiView);
+    const wordsPerNode = Math.ceil(customWords.length / focusNodes);
+
+    return (
+      <div className="absolute inset-0 pointer-events-none">
+        {Array.from({ length: focusNodes }).map((_, nodeIndex) => {
+          const nodeAngle = (nodeIndex * (360 / focusNodes) + startingDegree) % 360;
+          const words = customWords.slice(nodeIndex * wordsPerNode, (nodeIndex + 1) * wordsPerNode);
+          
+          return words.map((word, wordIndex) => {
+            const wordAngle = nodeAngle + (wordIndex * (360 / focusNodes / wordsPerNode));
+            const isSelected = false; // You can implement selection logic if needed
+            
+            return (
+              <div
+                key={`${nodeIndex}-${wordIndex}`}
+                className="absolute transform -translate-x-1/2 -translate-y-1/2"
+                style={getWordContainerStyle(wordAngle, isSelected, id, isMultiView)}
+              >
+                <div className="relative">
+                  <div className="absolute inset-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm rounded-lg shadow-lg border border-black/10 dark:border-white/10 transform rotate-0">
+                    <div className="p-2 text-center">
+                      <span className="text-sm font-medium text-black/90 dark:text-white/90">
+                        {word}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          });
+        })}
+      </div>
+    );
   };
 
   const getTransitionConfig = () => ({

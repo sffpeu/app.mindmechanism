@@ -111,6 +111,14 @@ export default function ClockPage() {
     }
     return false
   })
+  const [showWords, setShowWords] = useState(() => {
+    // Initialize from localStorage if available, otherwise default to true
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('showWords')
+      return saved ? JSON.parse(saved) : true
+    }
+    return true
+  })
   const [showInfoCards, setShowInfoCards] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
@@ -308,6 +316,17 @@ export default function ClockPage() {
     localStorage.setItem('showSatellites', JSON.stringify(value))
   }
 
+  // Add effect to persist words visibility state
+  useEffect(() => {
+    localStorage.setItem('showWords', JSON.stringify(showWords))
+  }, [showWords])
+
+  // Update the words toggle handler
+  const handleWordsChange = (value: boolean) => {
+    setShowWords(value)
+    localStorage.setItem('showWords', JSON.stringify(value))
+  }
+
   const handleSettingsSave = (newSettings: Partial<ClockSettingsType>) => {
     setLocalClockSettings({ ...localClockSettings, ...newSettings })
     setShowSettings(false)
@@ -457,6 +476,7 @@ export default function ClockPage() {
             syncTrigger={syncTrigger}
             hideControls={false}
             showSatellites={showSatellites}
+            showWords={showWords}
             showInfo={showInfoCards && !isFullscreen}
             isMultiView={false}
             isMultiView2={false}
@@ -631,6 +651,16 @@ export default function ClockPage() {
                 <Switch
                   checked={showSatellites}
                   onCheckedChange={handleSatellitesChange}
+                />
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
+                <div className="flex items-center gap-2">
+                  <List className="h-4 w-4" />
+                  <span>Focus Words</span>
+                </div>
+                <Switch
+                  checked={showWords}
+                  onCheckedChange={handleWordsChange}
                 />
               </DropdownMenuItem>
               <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
