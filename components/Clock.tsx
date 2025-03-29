@@ -809,7 +809,7 @@ export default function Clock({
     });
   };
 
-  // Update renderSingleClock to separate the words from the rotating container and apply counter-rotation to keep them level.
+  // Update renderSingleClock to make background transparent
   const renderSingleClock = () => {
     const transitionConfig = getTransitionConfig();
     const clockColor = id === 9 ? null : hexToRgb(dotColors[id].replace('bg-[', '').replace(']', ''));
@@ -916,40 +916,25 @@ export default function Clock({
                       ...getFocusNodeStyle(index, isMultiView),
                     }}
                     onClick={() => handleNodeClick(index)}
-                  />
+                  >
+                    {customWords?.[index] && (
+                      <div 
+                        className={`absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
+                        ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
+                        outline outline-1 outline-black/10 dark:outline-white/20`}
+                        style={{
+                          ...getWordContainerStyle(angle, isSelected, id, isMultiView),
+                        }}
+                      >
+                        <span className="text-black/90 dark:text-white/90">{customWords[index]}</span>
+                      </div>
+                    )}
+                  </motion.div>
                 );
               })}
             </div>
           </div>
         </motion.div>
-
-        {/* Words layer - outside of rotating container */}
-        <div className="absolute inset-0" style={{ pointerEvents: 'none', zIndex: 300 }}>
-          {Array.from({ length: Math.max(0, focusNodes || 0) }).map((_, index) => {
-            const angle = ((360 / Math.max(1, focusNodes || 1)) * index + adjustedStartingDegree) % 360;
-            const radians = angle * (Math.PI / 180);
-            const radius = getNodeRadius(id, isMultiView);
-            const x = 50 + radius * Math.cos(radians);
-            const y = 50 + radius * Math.sin(radians);
-
-            const isSelected = selectedNodeIndex === index;
-            const word = customWords?.[index];
-
-            return word ? (
-              <motion.div
-                key={`word-${id}-${index}`}
-                className="absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm shadow-sm transition-all outline outline-1 outline-black/10 dark:outline-white/20"
-                style={{
-                  left: `${x}%`,
-                  top: `${y}%`,
-                  transform: `translate(-50%, -50%) rotate(${-rotation}deg)`,
-                }}
-              >
-                <span className="text-black/90 dark:text-white/90">{word}</span>
-              </motion.div>
-            ) : null;
-          })}
-        </div>
 
         {/* Satellites layer */}
         <div className="absolute inset-[-20%]" style={{ pointerEvents: 'auto', zIndex: 1000 }}>
