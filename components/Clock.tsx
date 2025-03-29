@@ -690,7 +690,12 @@ export default function Clock({
   const renderWordDisplay = () => {
     if (!showWords || !customWords || customWords.length === 0) return null;
 
-    const clockRotation = getClockRotation(clockSettings);
+    const clockRotation = getClockRotation({
+      startDateTime,
+      rotationTime,
+      startingDegree,
+      rotationDirection
+    });
     const nodeRadius = getNodeRadius(id, isMultiView);
     const wordsPerNode = Math.ceil(customWords.length / focusNodes);
 
