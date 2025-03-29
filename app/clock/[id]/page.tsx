@@ -136,7 +136,6 @@ export default function ClockPage() {
     rotationsCompleted: 0,
     elapsedTime: '0y 0d 0h 0m 0s'
   });
-  const [words, setWords] = useState<string[]>([])
   const [wordDefinitions, setWordDefinitions] = useState<Record<string, string>>({})
 
   // Add time tracking
