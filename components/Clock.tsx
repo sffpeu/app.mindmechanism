@@ -159,14 +159,21 @@ function hexToRgb(hex: string) {
   } : null;
 }
 
+interface ClockRotationParams {
+  startDateTime: Date;
+  rotationTime: number;
+  startingDegree: number;
+  rotationDirection: 'clockwise' | 'counterclockwise';
+}
+
 // Helper function to calculate clock rotation
-const getClockRotation = (clock: ClockSettings) => {
+const getClockRotation = (params: ClockRotationParams | ClockSettings) => {
   const now = Date.now();
-  const elapsedMilliseconds = now - clock.startDateTime.getTime();
-  const calculatedRotation = (elapsedMilliseconds / clock.rotationTime) * 360;
-  return clock.rotationDirection === 'clockwise'
-    ? (clock.startingDegree + calculatedRotation) % 360
-    : (clock.startingDegree - calculatedRotation + 360) % 360;
+  const elapsedMilliseconds = now - params.startDateTime.getTime();
+  const calculatedRotation = (elapsedMilliseconds / params.rotationTime) * 360;
+  return params.rotationDirection === 'clockwise'
+    ? (params.startingDegree + calculatedRotation) % 360
+    : (params.startingDegree - calculatedRotation + 360) % 360;
 };
 
 // Helper function to get node radius based on clock ID
