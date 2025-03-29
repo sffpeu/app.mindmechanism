@@ -209,25 +209,27 @@ const getWordContainerStyle = (angle: number, isSelected: boolean, clockId: numb
   const radians = angle * (Math.PI / 180);
   const radius = getNodeRadius(clockId, isMultiView);
   
-  // Determine if the word is on the left or right half of the clock
-  const isRightHalf = angle > 90 && angle < 270;
-  
-  // Calculate the position for the text container
-  const textOffset = isMultiView ? 35 : 40; // Reduced offset to match image example
-  
   // Calculate node position (where the red dot is)
   const nodeX = 50 + radius * Math.cos(radians);
   const nodeY = 50 + radius * Math.sin(radians);
   
-  // Position text to the left or right of the node
+  // Determine if the word should be on the left or right side of the node
+  const isRightHalf = angle > 90 && angle < 270;
+  
+  // Calculate text offset (distance from node)
+  const textOffset = isMultiView ? 35 : 40;
+  
+  // Position text horizontally relative to the node
   const textX = nodeX + (isRightHalf ? -textOffset : textOffset);
   
   return {
+    position: 'absolute',
     left: `${textX}%`,
     top: `${nodeY}%`,
     transform: 'translate(0, -50%)',
     transformOrigin: isRightHalf ? 'right center' : 'left center',
     textAlign: isRightHalf ? 'right' : 'left',
+    whiteSpace: 'nowrap',
     zIndex: isSelected ? 1000 : 100,
   };
 };
