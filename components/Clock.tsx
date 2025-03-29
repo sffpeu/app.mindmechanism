@@ -213,14 +213,22 @@ const getWordContainerStyle = (angle: number, isSelected: boolean, clockId: numb
   
   // Calculate the position for the text container
   const textOffset = isMultiView ? 35 : 240; // Doubled from 120 to 240 for individual clock pages
-  const textX = 50 + (radius + textOffset) * Math.cos(radians);
-  const textY = 50 + (radius + textOffset) * Math.sin(radians);
+  
+  // Determine if the word is on the left or right half of the clock
+  const isRightHalf = angle > 180;
+  
+  // Adjust the offset based on which half of the clock the word is on
+  const adjustedOffset = isRightHalf ? -textOffset : textOffset;
+  
+  // Calculate text position
+  const textX = 50 + (radius + adjustedOffset) * Math.cos(radians);
+  const textY = 50 + (radius + adjustedOffset) * Math.sin(radians);
   
   return {
     left: `${textX}%`,
     top: `${textY}%`,
-    transform: `translate(-50%, -50%)`,
-    transformOrigin: 'center',
+    transform: `translate(${isRightHalf ? '0%' : '-100%'}, -50%)`,
+    transformOrigin: isRightHalf ? 'left center' : 'right center',
     zIndex: isSelected ? 1000 : 100,
   };
 };
@@ -916,7 +924,6 @@ export default function Clock({
                         outline outline-1 outline-black/10 dark:outline-white/20`}
                         style={{
                           ...getWordContainerStyle(angle, isSelected, id, isMultiView),
-                          transform: `${getWordContainerStyle(angle, isSelected, id, isMultiView).transform} rotate(${-rotation}deg)`,
                         }}
                       >
                         <span className="text-black/90 dark:text-white/90">{customWords[index]}</span>
