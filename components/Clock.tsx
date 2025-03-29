@@ -205,7 +205,7 @@ const getLabelRotation = (angle: number) => {
   return angle + (normalizedAngle > 180 ? 90 : -90);
 };
 
-const getWordContainerStyle = (angle: number, isSelected: boolean, clockId: number, isMultiView: boolean) => {
+const getWordContainerStyle = (angle: number, isSelected: boolean, clockId: number, isMultiView: boolean): React.CSSProperties => {
   const radians = angle * (Math.PI / 180);
   const radius = getNodeRadius(clockId, isMultiView);
   
