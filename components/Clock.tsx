@@ -217,18 +217,15 @@ const getWordContainerStyle = (angle: number, isSelected: boolean, clockId: numb
   // Determine if the word is on the left or right half of the clock
   const isRightHalf = angle > 180;
   
-  // Adjust the offset based on which half of the clock the word is on
-  const adjustedOffset = isRightHalf ? -textOffset : textOffset;
-  
   // Calculate text position
-  const textX = 50 + (radius + adjustedOffset) * Math.cos(radians);
-  const textY = 50 + (radius + adjustedOffset) * Math.sin(radians);
+  const textX = 50 + (radius + textOffset) * Math.cos(radians);
+  const textY = 50 + (radius + textOffset) * Math.sin(radians);
   
   return {
     left: `${textX}%`,
     top: `${textY}%`,
-    transform: `translate(${isRightHalf ? '0%' : '-100%'}, -50%)`,
-    transformOrigin: isRightHalf ? 'left center' : 'right center',
+    transform: `translate(-50%, -50%)`,
+    transformOrigin: 'center',
     zIndex: isSelected ? 1000 : 100,
   };
 };
