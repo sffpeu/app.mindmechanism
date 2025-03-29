@@ -674,7 +674,7 @@ export default function Clock({
                 onMouseLeave={() => setHoveredNodeIndex(null)}
                 whileHover={{ scale: 1.2 }}
               >
-                {word && hoveredNodeIndex === index && (
+                {showWords && word && hoveredNodeIndex === index && (
                   <div 
                     className={`absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
                     ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
@@ -974,7 +974,7 @@ export default function Clock({
                     }}
                     onClick={() => handleNodeClick(index)}
                   >
-                    {customWords?.[index] && (
+                    {showWords && customWords?.[index] && (
                       <div 
                         className={`absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
                         ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
