@@ -335,7 +335,38 @@ export default function ClockPage() {
     }
   };
 
-  // Add word list component
+  // Add this effect to fetch word definitions when words change
+  useEffect(() => {
+    const fetchWordDefinitions = async () => {
+      const newDefinitions: Record<string, string> = {};
+      for (const word of words) {
+        if (word) {
+          try {
+            // Fetch exact word match
+            const response = await fetch(`/api/words?search=${encodeURIComponent(word.toLowerCase())}`);
+            const data = await response.json();
+            if (data.success && data.words && data.words.length > 0) {
+              // Find exact match (case-insensitive)
+              const matchingWord = data.words.find((w: any) => 
+                w.word.toLowerCase() === word.toLowerCase()
+              );
+              if (matchingWord) {
+                newDefinitions[word] = matchingWord.definition;
+              }
+            }
+          } catch (error) {
+            console.error('Error fetching word definition:', error);
+          }
+        }
+      }
+      setWordDefinitions(newDefinitions);
+    };
+
+    if (words.length > 0) {
+      fetchWordDefinitions();
+    }
+  }, [words]);
+
   const WordList = () => {
     if (!words.length || !showWordList) return null;
 
@@ -365,15 +396,15 @@ export default function ClockPage() {
             {words.map((word: string, index: number) => (
               <div
                 key={index}
-                className="group relative flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                className="group relative flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-help"
               >
                 <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-medium ${clockColors[id].split(' ')[1]} text-white`}>
                   {index + 1}
                 </div>
                 <span className="text-xs font-medium text-black/90 dark:text-white/90">{word}</span>
                 {wordDefinitions[word] && (
-                  <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-64 p-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                    <p className="text-xs text-gray-600 dark:text-gray-300">{wordDefinitions[word]}</p>
+                  <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-64 p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                    <p className="text-xs leading-relaxed text-gray-600 dark:text-gray-300">{wordDefinitions[word]}</p>
                   </div>
                 )}
               </div>
@@ -383,32 +414,6 @@ export default function ClockPage() {
       </div>
     );
   };
-
-  // Add this effect to fetch word definitions when words change
-  useEffect(() => {
-    const fetchWordDefinitions = async () => {
-      const newDefinitions: Record<string, string> = {};
-      for (const word of words) {
-        if (word) {
-          try {
-            const response = await fetch(`/api/words?search=${encodeURIComponent(word)}`);
-            const data = await response.json();
-            if (data.words && data.words.length > 0) {
-              const matchingWord = data.words.find((w: any) => w.word.toLowerCase() === word.toLowerCase());
-              if (matchingWord) {
-                newDefinitions[word] = matchingWord.definition;
-              }
-            }
-          } catch (error) {
-            console.error('Error fetching word definition:', error);
-          }
-        }
-      }
-      setWordDefinitions(newDefinitions);
-    };
-
-    fetchWordDefinitions();
-  }, [words]);
 
   // Don't render clock until we have client-side time
   if (!currentTime) {
