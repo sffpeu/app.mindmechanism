@@ -243,6 +243,138 @@ const getWordContainerStyle = (angle: number, isSelected: boolean, clockId: numb
   };
 };
 
+// Move getFocusNodeStyle before the component definitions
+const getFocusNodeStyle = (index: number, isMultiView: boolean, selectedNodeIndex: number | null, clockId: number) => {
+  const isSelected = selectedNodeIndex === index;
+  const color = dotColors[clockId % dotColors.length].replace('bg-[', '').replace(']', '');
+  
+  return {
+    backgroundColor: color,
+    width: isMultiView ? '6px' : '8px',
+    height: isMultiView ? '6px' : '8px',
+    opacity: isSelected ? 1 : 0.9,
+    transform: `translate(-50%, -50%)`,
+    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+    zIndex: isSelected ? 400 : 200,
+  };
+};
+
+// Add these new components before the main Clock component
+const WordNode = ({ word, angle, nodeAngle, nodeRadius, isSelected, clockId, isMultiView }: {
+  word: string;
+  angle: number;
+  nodeAngle: number;
+  nodeRadius: number;
+  isSelected: boolean;
+  clockId: number;
+  isMultiView: boolean;
+}) => {
+  const radians = angle * (Math.PI / 180);
+  const x = 50 + nodeRadius * Math.cos(radians);
+  const y = 50 + nodeRadius * Math.sin(radians);
+
+  return (
+    <div
+      className="absolute"
+      style={{
+        left: `${x}%`,
+        top: `${y}%`,
+        transform: 'translate(-50%, -50%)',
+      }}
+    >
+      <div 
+        className={`whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
+        ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
+        outline outline-1 outline-black/10 dark:outline-white/20`}
+        style={{
+          ...getWordContainerStyle(nodeAngle, isSelected, clockId, isMultiView),
+        }}
+      >
+        <span className="text-black/90 dark:text-white/90">{word}</span>
+      </div>
+    </div>
+  );
+};
+
+const Satellite = ({ satellite, index, clockId, x, y, isMultiView }: {
+  satellite: any;
+  index: number;
+  clockId: number;
+  x: number;
+  y: number;
+  isMultiView: boolean;
+}) => {
+  return (
+    <motion.div
+      key={`satellite-${clockId}-${index}`}
+      className="absolute cursor-pointer"
+      initial={{ opacity: 0, scale: 0 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{
+        delay: 1 + (index * 0.1),
+        duration: 0.5,
+        ease: "easeOut"
+      }}
+      style={{
+        left: `${x}%`,
+        top: `${y}%`,
+        transform: 'translate(-50%, -50%)',
+        zIndex: 1000,
+      }}
+      whileHover={{ scale: 1.5 }}
+    >
+      <div 
+        className={`${isMultiView ? 'w-3 h-3' : 'w-4 h-4'} rounded-full bg-black dark:bg-white`}
+        style={{
+          boxShadow: isMultiView ? 'none' : '0 0 12px rgba(0, 0, 0, 0.4)',
+        }}
+      />
+    </motion.div>
+  );
+};
+
+const FocusNode = ({ index, angle, nodeRadius, isSelected, word, clockId, isMultiView, onClick, selectedNodeIndex }: {
+  index: number;
+  angle: number;
+  nodeRadius: number;
+  isSelected: boolean;
+  word?: string;
+  clockId: number;
+  isMultiView: boolean;
+  onClick: () => void;
+  selectedNodeIndex: number | null;
+}) => {
+  const radians = angle * (Math.PI / 180);
+  const x = 50 + nodeRadius * Math.cos(radians);
+  const y = 50 + nodeRadius * Math.sin(radians);
+
+  return (
+    <motion.div
+      key={`${clockId}-${index}`}
+      className="absolute rounded-full cursor-pointer"
+      style={{
+        left: `${x}%`,
+        top: `${y}%`,
+        ...getFocusNodeStyle(index, isMultiView, selectedNodeIndex, clockId),
+      }}
+      onClick={onClick}
+    >
+      {word && (
+        <div 
+          className={`absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
+          ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
+          outline outline-1 outline-black/10 dark:outline-white/20`}
+          style={{
+            ...getWordContainerStyle(angle, isSelected, clockId, isMultiView),
+          }}
+        >
+          <span className="text-black/90 dark:text-white/90">{word}</span>
+        </div>
+      )}
+    </motion.div>
+  );
+};
+
 export default function Clock({ 
   id, 
   startDateTime = new Date('2024-01-01T00:00:00Z'),
@@ -606,21 +738,6 @@ export default function Clock({
 
   const [hoveredNodeIndex, setHoveredNodeIndex] = useState<number | null>(null);
 
-  const getFocusNodeStyle = (index: number, isMultiView: boolean) => {
-    const isSelected = selectedNodeIndex === index;
-    const color = dotColors[id % dotColors.length].replace('bg-[', '').replace(']', '');
-    
-    return {
-      backgroundColor: color,
-      width: isMultiView ? '6px' : '8px',
-      height: isMultiView ? '6px' : '8px',
-      opacity: isSelected ? 1 : 0.9,
-      transform: `translate(-50%, -50%)`,
-      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-      zIndex: isSelected ? 400 : 200,
-    };
-  };
-
   const handleNodeClick = (index: number) => {
     if (selectedNodeIndex === index) {
       setSelectedNodeIndex(null);
@@ -667,7 +784,7 @@ export default function Clock({
                 style={{
                   left: `${x}%`,
                   top: `${y}%`,
-                  ...getFocusNodeStyle(index, isMultiView),
+                  ...getFocusNodeStyle(index, isMultiView, selectedNodeIndex, clockId),
                 }}
                 onClick={() => handleNodeClick(index)}
                 onMouseEnter={() => setHoveredNodeIndex(index)}
@@ -714,29 +831,17 @@ export default function Clock({
           
           return words.map((word, wordIndex) => {
             const wordAngle = nodeAngle + (wordIndex * (360 / focusNodes / wordsPerNode));
-            const isSelected = false;
-            
             return (
-              <div
+              <WordNode
                 key={`${nodeIndex}-${wordIndex}`}
-                className="absolute transform -translate-x-1/2 -translate-y-1/2 group"
-                style={getWordContainerStyle(wordAngle, isSelected, id, isMultiView)}
-              >
-                <div className="relative">
-                  <div className="absolute inset-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm rounded-lg shadow-lg border border-black/10 dark:border-white/10 transform rotate-0">
-                    <div className="p-2 text-center">
-                      <span className="text-sm font-medium text-black/90 dark:text-white/90">
-                        {word}
-                      </span>
-                    </div>
-                  </div>
-                  {wordDefinitions[word] && (
-                    <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-64 p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                      <p className="text-xs leading-relaxed text-gray-600 dark:text-gray-300">{wordDefinitions[word]}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
+                word={word}
+                angle={wordAngle}
+                nodeAngle={nodeAngle}
+                nodeRadius={nodeRadius}
+                isSelected={false}
+                clockId={id}
+                isMultiView={isMultiView}
+              />
             );
           });
         })}
@@ -804,18 +909,16 @@ export default function Clock({
 
   // Update renderSatellites function
   const renderSatellites = (clockRotation: number, clockId: number) => {
-    if (!showSatellites) return null;
-    const satelliteCount = clockSatellites[clockId] || 0;
     const clockSatelliteSettings = allClocks?.find(c => c.id === clockId)?.satellites || 
       defaultSatelliteConfigs[clockId] || 
-      Array.from({ length: satelliteCount }).map((_, index) => ({
+      Array.from({ length: clockSatellites[clockId] || 0 }).map((_, index) => ({
         rotationTime: 60000, // fallback default 60 seconds
         rotationDirection: 'clockwise' as const,
       }));
     
     return clockSatelliteSettings.map((satellite, index) => {
       // Calculate base position
-      const angle = ((360 / Math.max(1, satelliteCount)) * index) % 360;
+      const angle = ((360 / Math.max(1, clockSatellites[clockId] || 1)) * index) % 360;
       const radians = angle * (Math.PI / 180);
       
       // Different radius for multiview vs single clock view
@@ -837,31 +940,15 @@ export default function Clock({
       const y = 50 + radius * Math.sin(rotatedRadians);
       
       return (
-        <motion.div
+        <Satellite
           key={`satellite-${clockId}-${index}`}
-          className="absolute cursor-pointer"
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{
-            delay: 1 + (index * 0.1), // Stagger the satellites appearance
-            duration: 0.5,
-            ease: "easeOut"
-          }}
-          style={{
-            left: `${x}%`,
-            top: `${y}%`,
-            transform: 'translate(-50%, -50%)',
-            zIndex: 1000,
-          }}
-          whileHover={{ scale: 1.5 }}
-        >
-          <div 
-            className={`${isMultiView ? 'w-3 h-3' : 'w-4 h-4'} rounded-full bg-black dark:bg-white`}
-            style={{
-              boxShadow: isMultiView ? 'none' : '0 0 12px rgba(0, 0, 0, 0.4)',
-            }}
-          />
-        </motion.div>
+          satellite={satellite}
+          index={index}
+          clockId={clockId}
+          x={x}
+          y={y}
+          isMultiView={isMultiView}
+        />
       );
     });
   };
@@ -956,37 +1043,19 @@ export default function Clock({
             <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
               {Array.from({ length: Math.max(0, focusNodes || 0) }).map((_, index) => {
                 const angle = ((360 / Math.max(1, focusNodes || 1)) * index + adjustedStartingDegree) % 360;
-                const radians = angle * (Math.PI / 180);
-                const radius = getNodeRadius(id, isMultiView);
-                const x = 50 + radius * Math.cos(radians);
-                const y = 50 + radius * Math.sin(radians);
-
-                const isSelected = selectedNodeIndex === index;
-
                 return (
-                  <motion.div
+                  <FocusNode
                     key={`${id}-${index}`}
-                    className="absolute rounded-full cursor-pointer"
-                    style={{
-                      left: `${x}%`,
-                      top: `${y}%`,
-                      ...getFocusNodeStyle(index, isMultiView),
-                    }}
+                    index={index}
+                    angle={angle}
+                    nodeRadius={getNodeRadius(id, isMultiView)}
+                    isSelected={selectedNodeIndex === index}
+                    word={showWords ? customWords?.[index] : undefined}
+                    clockId={id}
+                    isMultiView={isMultiView}
                     onClick={() => handleNodeClick(index)}
-                  >
-                    {showWords && customWords?.[index] && (
-                      <div 
-                        className={`absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
-                        ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
-                        outline outline-1 outline-black/10 dark:outline-white/20`}
-                        style={{
-                          ...getWordContainerStyle(angle, isSelected, id, isMultiView),
-                        }}
-                      >
-                        <span className="text-black/90 dark:text-white/90">{customWords[index]}</span>
-                      </div>
-                    )}
-                  </motion.div>
+                    selectedNodeIndex={selectedNodeIndex}
+                  />
                 );
               })}
             </div>
