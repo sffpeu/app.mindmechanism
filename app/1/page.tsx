@@ -457,7 +457,7 @@ function NodesPageContent() {
                           Current °
                         </span>
                         <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                          {currentDegree.toFixed(1)}°
+                          {currentDegree.toFixed(3)}°
                         </span>
                       </div>
                     </div>
@@ -469,7 +469,7 @@ function NodesPageContent() {
                         Rotation
                       </span>
                       <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                        {clockInfo.direction === 'clockwise' ? 'Clockwise' : 'Counter-Clockwise'} · {currentDegree.toFixed(1)}°
+                        {clockInfo.direction === 'clockwise' ? 'Clockwise' : 'Counter-Clockwise'} · {currentDegree.toFixed(3)}°
                       </span>
                     </div>
                   </div>
