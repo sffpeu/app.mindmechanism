@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
@@ -52,7 +52,7 @@ const hexToRgb = (hex: string) => {
   } : null;
 };
 
-export default function NodesPage() {
+function NodesPageContent() {
   const searchParams = useSearchParams()
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(() => {
@@ -487,5 +487,13 @@ export default function NodesPage() {
         </div>
       </div>
     </ProtectedRoute>
+  )
+}
+
+export default function NodesPage() {
+  return (
+    <Suspense fallback={null}>
+      <NodesPageContent />
+    </Suspense>
   )
 } 
