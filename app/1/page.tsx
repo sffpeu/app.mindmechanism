@@ -82,7 +82,9 @@ function NodesPageContent() {
   const [clockInfo, setClockInfo] = useState({
     rotation: 0,
     rotationsCompleted: 0,
-    elapsedTime: '0y 0d 0h 0m 0s'
+    elapsedTime: '0y 0d 0h 0m 0s',
+    currentRotation: 0,
+    direction: 'clockwise'
   })
 
   // Get clock 0 settings
@@ -167,9 +169,11 @@ function NodesPageContent() {
     setClockInfo({
       rotation: currentRotation,
       rotationsCompleted: rotations,
-      elapsedTime: getElapsedTime(startDateTime)
+      elapsedTime: getElapsedTime(startDateTime),
+      currentRotation: rotation, // Current actual rotation from animation
+      direction: rotationDirection
     })
-  }, [currentTime, rotationTime])
+  }, [currentTime, rotationTime, rotation, rotationDirection])
 
   const handleNodeClick = (index: number) => {
     setSelectedNodeIndex(selectedNodeIndex === index ? null : index)
@@ -452,9 +456,20 @@ function NodesPageContent() {
                           Current °
                         </span>
                         <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                          {clockInfo.rotation.toFixed(1)}°
+                          {clockInfo.currentRotation.toFixed(1)}°
                         </span>
                       </div>
+                    </div>
+
+                    {/* Rotation Direction */}
+                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                      <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+                        <RotateCw className={`h-3 w-3 text-gray-400 dark:text-gray-500 ${clockInfo.direction === 'counterclockwise' ? 'scale-x-[-1]' : ''}`} />
+                        Rotation
+                      </span>
+                      <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
+                        {clockInfo.direction === 'clockwise' ? 'Clockwise' : 'Counter-Clockwise'} · {clockInfo.currentRotation.toFixed(1)}°
+                      </span>
                     </div>
                   </div>
                 </CardContent>
