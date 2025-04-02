@@ -28,6 +28,18 @@ const testWords = [
   'Infinity'
 ]
 
+// M1 satellite configuration (from clock 0)
+const satelliteConfig = [
+  { rotationTime: 300 * 1000, rotationDirection: 'clockwise' },
+  { rotationTime: 600 * 1000, rotationDirection: 'counterclockwise' },
+  { rotationTime: 900 * 1000, rotationDirection: 'clockwise' },
+  { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' },
+  { rotationTime: 2700 * 1000, rotationDirection: 'clockwise' },
+  { rotationTime: 5400 * 1000, rotationDirection: 'counterclockwise' },
+  { rotationTime: 5400 * 1000, rotationDirection: 'clockwise' },
+  { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' }
+];
+
 export default function NodesPage() {
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(false)
@@ -38,12 +50,12 @@ export default function NodesPage() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const { isDarkMode } = useTheme()
 
-  // Get clock 0 settings
-  const clock0 = clockSettings[0]
-  const focusNodes = clock0.focusNodes
-  const startingDegree = clock0.startingDegree
-  const rotationTime = clock0.rotationTime
-  const rotationDirection = clock0.rotationDirection
+  // Get M1 settings (clock 0)
+  const m1Settings = clockSettings[0]
+  const focusNodes = m1Settings.focusNodes
+  const startingDegree = m1Settings.startingDegree
+  const rotationTime = m1Settings.rotationTime
+  const rotationDirection = m1Settings.rotationDirection
 
   // Calculate rotation
   const [rotation, setRotation] = useState(startingDegree)
@@ -85,7 +97,7 @@ export default function NodesPage() {
   }
 
   const getFocusNodeStyle = (index: number, isSelected: boolean) => {
-    const color = '#fd290a' // Color from clock 0
+    const color = '#fd290a' // Color from M1 (clock 0)
     return {
       backgroundColor: isSelected ? color : 'transparent',
       border: `2px solid ${color}`,
@@ -111,6 +123,58 @@ export default function NodesPage() {
     if (typeof window !== 'undefined') {
       localStorage.setItem('showWords', JSON.stringify(checked))
     }
+  }
+
+  // Render satellites
+  const renderSatellites = () => {
+    return satelliteConfig.map((satellite, index) => {
+      // Calculate base position
+      const angle = ((360 / satelliteConfig.length) * index) % 360
+      const radians = angle * (Math.PI / 180)
+      const radius = 43 // Single view radius
+
+      // Calculate satellite rotation
+      const now = Date.now()
+      const startDateTime = new Date('1610-12-21T03:00:00')
+      const elapsedMilliseconds = now - startDateTime.getTime()
+      const satelliteRotation = (elapsedMilliseconds / satellite.rotationTime) * 360
+      const totalRotation = satellite.rotationDirection === 'clockwise'
+        ? satelliteRotation
+        : -satelliteRotation
+
+      // Apply both base position and rotation
+      const rotatedRadians = (angle + totalRotation) * (Math.PI / 180)
+      const x = 50 + radius * Math.cos(rotatedRadians)
+      const y = 50 + radius * Math.sin(rotatedRadians)
+
+      return (
+        <motion.div
+          key={`satellite-${index}`}
+          className="absolute cursor-pointer"
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{
+            delay: 1 + (index * 0.1),
+            duration: 0.5,
+            ease: "easeOut"
+          }}
+          style={{
+            left: `${x}%`,
+            top: `${y}%`,
+            transform: 'translate(-50%, -50%)',
+            zIndex: 1000,
+          }}
+          whileHover={{ scale: 1.5 }}
+        >
+          <div 
+            className="w-4 h-4 rounded-full bg-black dark:bg-white"
+            style={{
+              boxShadow: '0 0 12px rgba(0, 0, 0, 0.4)',
+            }}
+          />
+        </motion.div>
+      )
+    })
   }
 
   return (
@@ -168,6 +232,44 @@ export default function NodesPage() {
 
         <div className="flex-grow flex items-center justify-center min-h-screen">
           <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px]">
+            {/* Glow effect */}
+            <motion.div
+              className="absolute inset-0 rounded-full block dark:hidden"
+              animate={{
+                boxShadow: [
+                  "0 0 50px rgba(0, 0, 0, 0)",
+                  "0 0 100px rgba(0, 0, 0, 0.15)",
+                  "0 0 150px rgba(0, 0, 0, 0.3)",
+                  "0 0 100px rgba(0, 0, 0, 0.15)",
+                  "0 0 50px rgba(0, 0, 0, 0)"
+                ]
+              }}
+              transition={{
+                duration: 60,
+                ease: [0.4, 0, 0.6, 1],
+                repeat: Infinity,
+                times: [0, 0.25, 0.5, 0.75, 1]
+              }}
+            />
+            <motion.div
+              className="absolute inset-0 rounded-full hidden dark:block"
+              animate={{
+                boxShadow: [
+                  "0 0 50px rgba(255, 255, 255, 0)",
+                  "0 0 100px rgba(255, 255, 255, 0.15)",
+                  "0 0 150px rgba(255, 255, 255, 0.3)",
+                  "0 0 100px rgba(255, 255, 255, 0.15)",
+                  "0 0 50px rgba(255, 255, 255, 0)"
+                ]
+              }}
+              transition={{
+                duration: 60,
+                ease: [0.4, 0, 0.6, 1],
+                repeat: Infinity,
+                times: [0, 0.25, 0.5, 0.75, 1]
+              }}
+            />
+
             {/* Clock face */}
             <div className="absolute inset-0 rounded-full overflow-hidden">
               <motion.div 
@@ -185,13 +287,13 @@ export default function NodesPage() {
                 <div
                   className="absolute inset-0"
                   style={{
-                    transform: `translate(${clock0.imageX}%, ${clock0.imageY}%) rotate(${clock0.imageOrientation}deg) scale(${clock0.imageScale})`,
+                    transform: `translate(${m1Settings.imageX}%, ${m1Settings.imageY}%) rotate(${m1Settings.imageOrientation}deg) scale(${m1Settings.imageScale})`,
                     willChange: 'transform',
                     transformOrigin: 'center',
                   }}
                 >
                   <Image 
-                    src={clock0.imageUrl}
+                    src={m1Settings.imageUrl}
                     alt="Clock Face 1"
                     layout="fill"
                     objectFit="cover"
@@ -218,12 +320,12 @@ export default function NodesPage() {
                 ease: 'linear'
               }}
             >
-              <div className="absolute inset-0" style={{ transform: `rotate(${clock0.imageOrientation}deg)`, pointerEvents: 'auto' }}>
+              <div className="absolute inset-0" style={{ transform: `rotate(${m1Settings.imageOrientation}deg)`, pointerEvents: 'auto' }}>
                 <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
                   {Array.from({ length: focusNodes }).map((_, index) => {
                     const angle = ((360 / focusNodes) * index + startingDegree + 45) % 360
                     const radians = angle * (Math.PI / 180)
-                    const nodeRadius = 55 // Increased from 48 to move nodes further out
+                    const nodeRadius = 55
                     const x = 50 + nodeRadius * Math.cos(radians)
                     const y = 50 + nodeRadius * Math.sin(radians)
                     const isSelected = selectedNodeIndex === index
@@ -241,7 +343,7 @@ export default function NodesPage() {
                         onClick={() => handleNodeClick(index)}
                         onMouseEnter={() => setHoveredNodeIndex(index)}
                         onMouseLeave={() => setHoveredNodeIndex(null)}
-                        whileHover={{ scale: 1.5 }} // Increased from 1.2
+                        whileHover={{ scale: 1.5 }}
                       >
                         {showWords && (hoveredNodeIndex === index || isSelected) && word && (
                           <div 
@@ -258,6 +360,13 @@ export default function NodesPage() {
                 </div>
               </div>
             </motion.div>
+
+            {/* Satellites layer */}
+            {showSatellites && (
+              <div className="absolute inset-[-20%]" style={{ pointerEvents: 'auto', zIndex: 1000 }}>
+                {renderSatellites()}
+              </div>
+            )}
           </div>
         </div>
       </div>
