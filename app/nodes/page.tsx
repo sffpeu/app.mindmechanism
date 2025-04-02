@@ -1,14 +1,65 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { motion } from 'framer-motion'
+import { clockSettings } from '@/lib/clockSettings'
+import Image from 'next/image'
 
 export default function NodesPage() {
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(false)
+  const [selectedNodeIndex, setSelectedNodeIndex] = useState<number | null>(null)
   const { isDarkMode } = useTheme()
+
+  // Get clock 0 settings
+  const clock0 = clockSettings[0]
+  const focusNodes = clock0.focusNodes
+  const startingDegree = clock0.startingDegree
+  const rotationTime = clock0.rotationTime
+  const rotationDirection = clock0.rotationDirection
+
+  // Calculate rotation
+  const [rotation, setRotation] = useState(startingDegree)
+
+  useEffect(() => {
+    const startDateTime = new Date('1610-12-21T03:00:00')
+    const animate = () => {
+      const now = Date.now()
+      const elapsedMilliseconds = now - startDateTime.getTime()
+      const calculatedRotation = (elapsedMilliseconds / rotationTime) * 360
+      const newRotation = rotationDirection === 'clockwise'
+        ? (startingDegree + calculatedRotation) % 360
+        : (startingDegree - calculatedRotation + 360) % 360
+
+      setRotation(newRotation)
+      requestAnimationFrame(animate)
+    }
+
+    const animationId = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(animationId)
+  }, [startingDegree, rotationTime, rotationDirection])
+
+  const handleNodeClick = (index: number) => {
+    setSelectedNodeIndex(selectedNodeIndex === index ? null : index)
+  }
+
+  const getFocusNodeStyle = (index: number, isSelected: boolean) => {
+    const color = '#fd290a' // Color from clock 0
+    return {
+      backgroundColor: isSelected ? color : 'transparent',
+      border: `2px solid ${color}`,
+      width: '8px',
+      height: '8px',
+      opacity: isSelected ? 1 : 0.9,
+      transform: 'translate(-50%, -50%)',
+      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+      zIndex: isSelected ? 400 : 200,
+      boxShadow: isSelected ? `0 0 16px ${color}60` : '0 0 8px rgba(0, 0, 0, 0.2)',
+    }
+  }
 
   return (
     <ProtectedRoute>
@@ -20,14 +71,85 @@ export default function NodesPage() {
           onSatellitesChange={setShowSatellites}
         />
         
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-xl font-medium text-gray-900 dark:text-white">Nodes</h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400 max-w-lg">
-                Manage your nodes here.
-              </p>
+        <div className="flex-grow flex items-center justify-center min-h-screen">
+          <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px]">
+            {/* Clock face */}
+            <div className="absolute inset-0 rounded-full overflow-hidden">
+              <motion.div 
+                className="absolute inset-0"
+                style={{ 
+                  willChange: 'transform',
+                }}
+                animate={{ rotate: rotation }}
+                transition={{
+                  type: 'tween',
+                  duration: 0.016,
+                  ease: 'linear'
+                }}
+              >
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    transform: `translate(${clock0.imageX}%, ${clock0.imageY}%) rotate(${clock0.imageOrientation}deg) scale(${clock0.imageScale})`,
+                    willChange: 'transform',
+                    transformOrigin: 'center',
+                  }}
+                >
+                  <Image 
+                    src={clock0.imageUrl}
+                    alt="Clock Face 1"
+                    layout="fill"
+                    objectFit="cover"
+                    className="rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none"
+                    priority
+                    loading="eager"
+                  />
+                </div>
+              </motion.div>
             </div>
+
+            {/* Focus nodes layer */}
+            <motion.div 
+              className="absolute inset-0"
+              style={{ 
+                willChange: 'transform',
+                zIndex: 200,
+                pointerEvents: 'none',
+              }}
+              animate={{ rotate: rotation }}
+              transition={{
+                type: 'tween',
+                duration: 0.016,
+                ease: 'linear'
+              }}
+            >
+              <div className="absolute inset-0" style={{ transform: `rotate(${clock0.imageOrientation}deg)`, pointerEvents: 'auto' }}>
+                <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
+                  {Array.from({ length: focusNodes }).map((_, index) => {
+                    const angle = ((360 / focusNodes) * index + startingDegree + 45) % 360
+                    const radians = angle * (Math.PI / 180)
+                    const nodeRadius = 48
+                    const x = 50 + nodeRadius * Math.cos(radians)
+                    const y = 50 + nodeRadius * Math.sin(radians)
+                    const isSelected = selectedNodeIndex === index
+
+                    return (
+                      <motion.div
+                        key={index}
+                        className="absolute rounded-full cursor-pointer"
+                        style={{
+                          left: `${x}%`,
+                          top: `${y}%`,
+                          ...getFocusNodeStyle(index, isSelected),
+                        }}
+                        onClick={() => handleNodeClick(index)}
+                        whileHover={{ scale: 1.2 }}
+                      />
+                    )
+                  })}
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </div>
