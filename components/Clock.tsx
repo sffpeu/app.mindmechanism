@@ -214,48 +214,34 @@ const getLabelRotation = (angle: number) => {
   return angle + (normalizedAngle > 180 ? 90 : -90);
 };
 
-const getWordContainerStyle = (angle: number, isSelected: boolean, clockId: number, isMultiView: boolean): React.CSSProperties => {
-  const radians = angle * (Math.PI / 180);
-  const radius = getNodeRadius(clockId, isMultiView);
-  
-  // Calculate node position (where the red dot is)
-  const nodeX = 50 + radius * Math.cos(radians);
-  const nodeY = 50 + radius * Math.sin(radians);
-  
-  // Determine if the word should be on the left or right side of the node
-  const isRightHalf = angle > 90 && angle < 270;
-  
-  // Calculate text offset (distance from node)
-  const textOffset = isMultiView ? 35 : 40;
-  
-  // Position text horizontally relative to the node
-  const textX = nodeX + (isRightHalf ? -textOffset : textOffset);
-  
-  return {
-    position: 'absolute',
-    left: `${textX}%`,
-    top: `${nodeY}%`,
-    transform: 'translate(0, -50%)',
-    transformOrigin: isRightHalf ? 'right center' : 'left center',
-    textAlign: isRightHalf ? 'right' : 'left',
-    whiteSpace: 'nowrap',
-    zIndex: isSelected ? 1000 : 100,
-  };
-};
-
-// Move getFocusNodeStyle before the component definitions
 const getFocusNodeStyle = (index: number, isMultiView: boolean, selectedNodeIndex: number | null, clockId: number) => {
   const isSelected = selectedNodeIndex === index;
   const color = dotColors[clockId % dotColors.length].replace('bg-[', '').replace(']', '');
   
   return {
-    backgroundColor: color,
-    width: isMultiView ? '6px' : '8px',
-    height: isMultiView ? '6px' : '8px',
+    backgroundColor: isSelected ? color : 'transparent',
+    border: `2px solid ${color}`,
+    width: isMultiView ? '8px' : '12px',
+    height: isMultiView ? '8px' : '12px',
     opacity: isSelected ? 1 : 0.9,
-    transform: `translate(-50%, -50%)`,
+    transform: 'translate(-50%, -50%)',
     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
     zIndex: isSelected ? 400 : 200,
+    boxShadow: isSelected ? `0 0 16px ${color}60` : '0 0 8px rgba(0, 0, 0, 0.2)',
+  };
+};
+
+const getWordContainerStyle = (angle: number, isSelected: boolean, clockId: number, isMultiView: boolean) => {
+  const isLeftSide = angle > 90 && angle < 270;
+  return {
+    position: 'absolute' as const,
+    left: isLeftSide ? 'auto' : '100%',
+    right: isLeftSide ? '100%' : 'auto',
+    top: '50%',
+    marginLeft: isLeftSide ? '-0.75rem' : '0.75rem',
+    marginRight: isLeftSide ? '0.75rem' : '-0.75rem',
+    transform: `translateY(-50%) scale(${isSelected ? 1.1 : 1})`,
+    transformOrigin: isLeftSide ? 'right' : 'left',
   };
 };
 
@@ -344,6 +330,7 @@ const FocusNode = ({ index, angle, nodeRadius, isSelected, word, clockId, isMult
   onClick: () => void;
   selectedNodeIndex: number | null;
 }) => {
+  const [isHovered, setIsHovered] = useState(false);
   const radians = angle * (Math.PI / 180);
   const x = 50 + nodeRadius * Math.cos(radians);
   const y = 50 + nodeRadius * Math.sin(radians);
@@ -358,15 +345,15 @@ const FocusNode = ({ index, angle, nodeRadius, isSelected, word, clockId, isMult
         ...getFocusNodeStyle(index, isMultiView, selectedNodeIndex, clockId),
       }}
       onClick={onClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      whileHover={{ scale: 1.5 }}
     >
-      {word && (
+      {word && (isHovered || isSelected) && (
         <div 
-          className={`absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
-          ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
-          outline outline-1 outline-black/10 dark:outline-white/20`}
-          style={{
-            ...getWordContainerStyle(angle, isSelected, clockId, isMultiView),
-          }}
+          className="absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
+          shadow-sm transition-all outline outline-1 outline-black/10 dark:outline-white/20"
+          style={getWordContainerStyle(angle, isSelected, clockId, isMultiView)}
         >
           <span className="text-black/90 dark:text-white/90">{word}</span>
         </div>
@@ -739,7 +726,15 @@ export default function Clock({
   const [hoveredNodeIndex, setHoveredNodeIndex] = useState<number | null>(null);
 
   const handleNodeClick = (index: number) => {
-    setSelectedNodeIndex(selectedNodeIndex === index ? null : index);
+    if (selectedNodeIndex === index) {
+      setSelectedNodeIndex(null);
+      setInfoCardsHiddenByNode(false);
+    } else {
+      setSelectedNodeIndex(index);
+      setInfoCardsHiddenByNode(true);
+      setShowInfoCards(false);
+    }
+    setHoveredNodeIndex(null); // Reset hover state on click
   };
 
   const renderFocusNodes = (clockRotation: number, clockFocusNodes: number, clockStartingDegree: number, clockId: number) => {
@@ -758,41 +753,19 @@ export default function Clock({
       <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
         {Array.from({ length: Math.max(0, clockFocusNodes || 0) }).map((_, index) => {
           const angle = ((360 / Math.max(1, clockFocusNodes || 1)) * index + adjustedStartingDegree) % 360;
-          const radians = angle * (Math.PI / 180);
-          const nodeRadius = getNodeRadius(clockId, isMultiView);
-          const x = 50 + nodeRadius * Math.cos(radians);
-          const y = 50 + nodeRadius * Math.sin(radians);
-          const isSelected = selectedNodeIndex === index;
-          const word = showWords ? customWords?.[index] : undefined;
-
           return (
-            <div key={`${clockId}-${index}`} className="absolute">
-              <motion.div
-                className={`absolute ${isMultiView ? 'w-2 h-2' : 'w-3 h-3'} rounded-full cursor-pointer`}
-                style={{
-                  left: `${x}%`,
-                  top: `${y}%`,
-                  ...getFocusNodeStyle(index, isMultiView, selectedNodeIndex, clockId),
-                }}
-                onClick={() => handleNodeClick(index)}
-                onMouseEnter={() => setHoveredNodeIndex(index)}
-                onMouseLeave={() => setHoveredNodeIndex(null)}
-                whileHover={{ scale: 1.5 }}
-              >
-                {showWords && word && (hoveredNodeIndex === index || isSelected) && (
-                  <div 
-                    className={`absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
-                    ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
-                    outline outline-1 outline-black/10 dark:outline-white/20`}
-                    style={{
-                      ...getWordContainerStyle(angle, isSelected, clockId, isMultiView),
-                    }}
-                  >
-                    <span className="text-black/90 dark:text-white/90">{word}</span>
-                  </div>
-                )}
-              </motion.div>
-            </div>
+            <FocusNode
+              key={`${clockId}-${index}`}
+              index={index}
+              angle={angle}
+              nodeRadius={55} // Increased from 48 to move nodes further out
+              isSelected={selectedNodeIndex === index}
+              word={showWords ? customWords?.[index] : undefined}
+              clockId={clockId}
+              isMultiView={isMultiView}
+              onClick={() => handleNodeClick(index)}
+              selectedNodeIndex={selectedNodeIndex}
+            />
           );
         })}
       </div>
