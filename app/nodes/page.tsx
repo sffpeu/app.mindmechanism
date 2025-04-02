@@ -78,8 +78,8 @@ export default function NodesPage() {
     return {
       backgroundColor: isSelected ? color : 'transparent',
       border: `2px solid ${color}`,
-      width: '8px',
-      height: '8px',
+      width: '12px',
+      height: '12px',
       opacity: isSelected ? 1 : 0.9,
       transform: 'translate(-50%, -50%)',
       transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -155,7 +155,7 @@ export default function NodesPage() {
                   {Array.from({ length: focusNodes }).map((_, index) => {
                     const angle = ((360 / focusNodes) * index + startingDegree + 45) % 360
                     const radians = angle * (Math.PI / 180)
-                    const nodeRadius = 48
+                    const nodeRadius = 55
                     const x = 50 + nodeRadius * Math.cos(radians)
                     const y = 50 + nodeRadius * Math.sin(radians)
                     const isSelected = selectedNodeIndex === index
