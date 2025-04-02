@@ -240,8 +240,9 @@ const getWordContainerStyle = (angle: number, isSelected: boolean, clockId: numb
     top: '50%',
     marginLeft: isLeftSide ? '-0.75rem' : '0.75rem',
     marginRight: isLeftSide ? '0.75rem' : '-0.75rem',
-    transform: `translateY(-50%) scale(${isSelected ? 1.1 : 1})`,
+    transform: `translateY(-50%) scale(${isSelected ? 1.1 : 1}) rotate(0deg)`,
     transformOrigin: isLeftSide ? 'right' : 'left',
+    textAlign: isLeftSide ? 'right' : 'left',
   };
 };
 
@@ -319,7 +320,18 @@ const Satellite = ({ satellite, index, clockId, x, y, isMultiView }: {
   );
 };
 
-const FocusNode = ({ index, angle, nodeRadius, isSelected, word, clockId, isMultiView, onClick, selectedNodeIndex }: {
+const FocusNode = ({ 
+  index, 
+  angle, 
+  nodeRadius, 
+  isSelected, 
+  word, 
+  clockId, 
+  isMultiView, 
+  onClick, 
+  selectedNodeIndex,
+  rotation 
+}: {
   index: number;
   angle: number;
   nodeRadius: number;
@@ -329,6 +341,7 @@ const FocusNode = ({ index, angle, nodeRadius, isSelected, word, clockId, isMult
   isMultiView: boolean;
   onClick: () => void;
   selectedNodeIndex: number | null;
+  rotation: number;
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const radians = angle * (Math.PI / 180);
@@ -353,7 +366,10 @@ const FocusNode = ({ index, angle, nodeRadius, isSelected, word, clockId, isMult
         <div 
           className="absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
           shadow-sm transition-all outline outline-1 outline-black/10 dark:outline-white/20"
-          style={getWordContainerStyle(angle, isSelected, clockId, isMultiView)}
+          style={{
+            ...getWordContainerStyle(angle, isSelected, clockId, isMultiView),
+            transform: `translateY(-50%) scale(${isSelected ? 1.1 : 1}) rotate(${-rotation}deg)`,
+          }}
         >
           <span className="text-black/90 dark:text-white/90">{word}</span>
         </div>
@@ -758,13 +774,14 @@ export default function Clock({
               key={`${clockId}-${index}`}
               index={index}
               angle={angle}
-              nodeRadius={55} // Increased from 48 to move nodes further out
+              nodeRadius={55}
               isSelected={selectedNodeIndex === index}
               word={showWords ? customWords?.[index] : undefined}
               clockId={clockId}
               isMultiView={isMultiView}
               onClick={() => handleNodeClick(index)}
               selectedNodeIndex={selectedNodeIndex}
+              rotation={rotation}
             />
           );
         })}
@@ -1024,6 +1041,7 @@ export default function Clock({
                     isMultiView={isMultiView}
                     onClick={() => handleNodeClick(index)}
                     selectedNodeIndex={selectedNodeIndex}
+                    rotation={rotation}
                   />
                 );
               })}
