@@ -40,6 +40,16 @@ const satelliteConfigs = [
   { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' }
 ]
 
+// Helper function to convert hex to rgb
+const hexToRgb = (hex: string) => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : null;
+};
+
 export default function NodesPage() {
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(() => {
@@ -147,10 +157,10 @@ export default function NodesPage() {
         ? satelliteRotation
         : -satelliteRotation
 
-      // Calculate position
+      // Calculate position with larger radius (65 instead of 43)
       const angle = ((360 / satelliteConfigs.length) * index + totalRotation) % 360
       const radians = angle * (Math.PI / 180)
-      const radius = 43 // Satellite radius
+      const radius = 65 // Increased radius to position satellites outside nodes
       const x = 50 + radius * Math.cos(radians)
       const y = 50 + radius * Math.sin(radians)
 
@@ -183,6 +193,9 @@ export default function NodesPage() {
       )
     })
   }
+
+  // Get the RGB values for the glow effect
+  const clockColor = hexToRgb('#fd290a') // Red color from clock 0
 
   return (
     <ProtectedRoute>
@@ -239,6 +252,31 @@ export default function NodesPage() {
 
         <div className="flex-grow flex items-center justify-center min-h-screen">
           <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px]">
+            {/* Red glow effect */}
+            {clockColor && (
+              <motion.div
+                className="absolute inset-0 rounded-full"
+                style={{
+                  '--shadow-color': `${clockColor.r}, ${clockColor.g}, ${clockColor.b}`,
+                } as React.CSSProperties}
+                animate={{
+                  boxShadow: [
+                    "0 0 50px rgba(var(--shadow-color), 0)",
+                    "0 0 100px rgba(var(--shadow-color), 0.15)",
+                    "0 0 150px rgba(var(--shadow-color), 0.3)",
+                    "0 0 100px rgba(var(--shadow-color), 0.15)",
+                    "0 0 50px rgba(var(--shadow-color), 0)"
+                  ]
+                }}
+                transition={{
+                  duration: 60,
+                  ease: [0.4, 0, 0.6, 1],
+                  repeat: Infinity,
+                  times: [0, 0.25, 0.5, 0.75, 1]
+                }}
+              />
+            )}
+
             {/* Satellites layer */}
             {showSatellites && (
               <motion.div 
