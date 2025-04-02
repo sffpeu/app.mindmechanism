@@ -30,8 +30,8 @@ export const config = {
     '/',
     '/dashboard',
     '/sessions',
-    '/notes',
     '/nodes',
+    '/notes',
     '/glossary',
     '/settings',
     '/clock/:path*'
