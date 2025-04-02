@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, MotionStyle } from 'framer-motion';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
@@ -48,18 +48,18 @@ const FocusNode: React.FC<FocusNodeProps> = ({
   }, [x, y, isSelected, isHovered]);
 
   // Calculate word position
-  const getWordStyle = useCallback(() => {
+  const getWordStyle = useCallback((): MotionStyle => {
     const wordAngle = angle + rotation;
     const isLeft = wordAngle > 90 && wordAngle < 270;
     return {
-      position: 'absolute',
+      position: 'absolute' as const,
       left: isLeft ? 'auto' : '100%',
       right: isLeft ? '100%' : 'auto',
       top: '50%',
-      transform: `translateY(-50%)`,
-      marginLeft: isLeft ? '' : '8px',
-      marginRight: isLeft ? '8px' : '',
-      whiteSpace: 'nowrap' as const,
+      transform: 'translateY(-50%)',
+      marginLeft: isLeft ? '0' : '8px',
+      marginRight: isLeft ? '8px' : '0',
+      whiteSpace: 'nowrap',
     };
   }, [angle, rotation]);
 
