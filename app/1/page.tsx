@@ -7,7 +7,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { motion } from 'framer-motion'
 import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
-import { Settings, List, Info, Satellite } from 'lucide-react'
+import { Settings, List, Info, Satellite, Clock as ClockIcon, Calendar, RotateCw, Timer, Compass } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useSearchParams } from 'next/navigation'
 import Timer from '@/components/Timer'
@@ -17,6 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Card, CardContent } from "@/components/ui/card"
 
 // Test words for each node
 const testWords = [
@@ -77,6 +78,12 @@ function NodesPageContent() {
   const [remainingTime, setRemainingTime] = useState<number | null>(null)
   const [isPaused, setIsPaused] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const [currentTime, setCurrentTime] = useState(new Date())
+  const [clockInfo, setClockInfo] = useState({
+    rotation: 0,
+    rotationsCompleted: 0,
+    elapsedTime: '0y 0d 0h 0m 0s'
+  })
 
   // Get clock 0 settings
   const clock0 = clockSettings[0]
@@ -140,6 +147,29 @@ function NodesPageContent() {
     const animationId = requestAnimationFrame(animate)
     return () => cancelAnimationFrame(animationId)
   }, [startingDegree, rotationTime, rotationDirection])
+
+  // Update current time every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date())
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  // Update clock info
+  useEffect(() => {
+    const startDateTime = new Date('1610-12-21T03:00:00')
+    const now = Date.now()
+    const elapsedMilliseconds = now - startDateTime.getTime()
+    const rotations = Math.floor(elapsedMilliseconds / rotationTime)
+    const currentRotation = ((elapsedMilliseconds % rotationTime) / rotationTime) * 360
+
+    setClockInfo({
+      rotation: currentRotation,
+      rotationsCompleted: rotations,
+      elapsedTime: getElapsedTime(startDateTime)
+    })
+  }, [currentTime, rotationTime])
 
   const handleNodeClick = (index: number) => {
     setSelectedNodeIndex(selectedNodeIndex === index ? null : index)
@@ -318,37 +348,117 @@ function NodesPageContent() {
             >
               <Info className="h-4 w-4 text-black/70 dark:text-white/70" />
             </button>
-            <div className="absolute bottom-full left-0 mb-2 w-64 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 origin-bottom-left">
-              <div className="p-3 rounded-lg bg-white/90 dark:bg-black/90 backdrop-blur-sm border border-black/5 dark:border-white/10 shadow-lg">
-                <div className="space-y-2">
-                  <div>
-                    <p className="text-xs font-medium text-black/60 dark:text-white/60">Started</p>
-                    <p className="text-sm font-medium text-black/90 dark:text-white/90">
-                      {new Date('1610-12-21T03:00:00').toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-black/60 dark:text-white/60">Elapsed</p>
-                    <p className="text-sm font-medium text-black/90 dark:text-white/90 font-mono">
-                      {getElapsedTime(new Date('1610-12-21T03:00:00'))}
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <p className="text-xs font-medium text-black/60 dark:text-white/60">Start °</p>
-                      <p className="text-sm font-medium text-black/90 dark:text-white/90">
-                        {startingDegree.toFixed(1)}°
+            <div className="absolute bottom-full left-0 mb-2 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 origin-bottom-left">
+              <Card className="w-[300px] bg-white/90 dark:bg-black/90 backdrop-blur-sm border-black/5 dark:border-white/10">
+                <CardContent className="p-4">
+                  <div className="space-y-3">
+                    {/* Clock Title and Description */}
+                    <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10">
+                      <h3 className="text-sm font-medium text-red-500">
+                        Galileo's First Observation
+                      </h3>
+                      <p className="text-xs text-black/60 dark:text-white/60 line-clamp-2">
+                        First telescopic observations of the night sky, marking the beginning of modern astronomy.
                       </p>
                     </div>
-                    <div>
-                      <p className="text-xs font-medium text-black/60 dark:text-white/60">Rot. Time</p>
-                      <p className="text-sm font-medium text-black/90 dark:text-white/90">
-                        {rotationTime / 1000}s
-                      </p>
+
+                    {/* Clock Information */}
+                    <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <p className="text-xs font-medium text-black/60 dark:text-white/60 flex items-center gap-1">
+                            <ClockIcon className="h-3 w-3" />
+                            Current
+                          </p>
+                          <p className="text-sm font-medium text-black/90 dark:text-white/90">
+                            {currentTime.toLocaleTimeString()}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-black/60 dark:text-white/60 flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            Started
+                          </p>
+                          <p className="text-sm font-medium text-black/90 dark:text-white/90">
+                            {new Date('1610-12-21T03:00:00').toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="text-xs font-medium text-black/60 dark:text-white/60 flex items-center gap-1">
+                          <Timer className="h-3 w-3" />
+                          Elapsed
+                        </p>
+                        <p className="text-sm font-medium text-black/90 dark:text-white/90 font-mono">
+                          {clockInfo.elapsedTime}
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <p className="text-xs font-medium text-black/60 dark:text-white/60 flex items-center gap-1">
+                            <Compass className="h-3 w-3" />
+                            Start °
+                          </p>
+                          <p className="text-sm font-medium text-black/90 dark:text-white/90">
+                            {startingDegree.toFixed(1)}°
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-black/60 dark:text-white/60 flex items-center gap-1">
+                            <RotateCw className="h-3 w-3" />
+                            Rot. Time
+                          </p>
+                          <p className="text-sm font-medium text-black/90 dark:text-white/90">
+                            {rotationTime / 1000}s
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
+                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+                          <div className="w-1 h-1 rounded-full bg-red-500" />
+                          Focus Nodes
+                        </span>
+                        <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
+                          {focusNodes}
+                        </span>
+                      </div>
+                      <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
+                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+                          <div className="w-1 h-1 rounded-full border border-gray-900 dark:border-white/40" />
+                          Satellites
+                        </span>
+                        <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
+                          {satelliteConfigs.length}
+                        </span>
+                      </div>
+                      <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
+                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+                          <RotateCw className="h-3 w-3 text-gray-400 dark:text-gray-500" />
+                          Rotations
+                        </span>
+                        <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
+                          {clockInfo.rotationsCompleted}
+                        </span>
+                      </div>
+                      <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
+                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+                          <Compass className="h-3 w-3 text-gray-400 dark:text-gray-500" />
+                          Current °
+                        </span>
+                        <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
+                          {clockInfo.rotation.toFixed(1)}°
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
