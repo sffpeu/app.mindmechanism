@@ -461,17 +461,6 @@ function NodesPageContent() {
                         </span>
                       </div>
                     </div>
-
-                    {/* Rotation Direction */}
-                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
-                      <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                        <RotateCw className={`h-3 w-3 text-gray-400 dark:text-gray-500 ${clockInfo.direction === 'counterclockwise' ? 'scale-x-[-1]' : ''}`} />
-                        Rotation
-                      </span>
-                      <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                        {clockInfo.direction === 'clockwise' ? 'Clockwise' : 'Counter-Clockwise'} · {currentDegree.toFixed(3)}°
-                      </span>
-                    </div>
                   </div>
                 </CardContent>
               </Card>
