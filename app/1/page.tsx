@@ -7,7 +7,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { motion } from 'framer-motion'
 import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
-import { Settings, List, Info, Satellite, Clock as ClockIcon, Calendar, RotateCw, Timer as TimerIcon, Compass } from 'lucide-react'
+import { Settings, List, Info, Satellite, Clock as ClockIcon, Calendar, RotateCw, Timer as TimerIcon, Compass, HelpCircle } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useSearchParams } from 'next/navigation'
 import Timer from '@/components/Timer'
@@ -18,6 +18,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Card, CardContent } from "@/components/ui/card"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { GlossaryWord } from '@/types/Glossary'
+import { getAllWords } from '@/lib/glossary'
 
 // Test words for each node
 const testWords = [
@@ -86,6 +93,8 @@ function NodesPageContent() {
     currentRotation: 0,
     direction: 'clockwise'
   })
+  const [glossaryWords, setGlossaryWords] = useState<GlossaryWord[]>([])
+  const [loadingGlossary, setLoadingGlossary] = useState(true)
 
   // Get clock 0 settings
   const clock0 = clockSettings[0]
@@ -175,6 +184,21 @@ function NodesPageContent() {
       direction: rotationDirection
     })
   }, [currentTime, rotationTime, currentDegree, rotationDirection])
+
+  // Load glossary words
+  useEffect(() => {
+    const loadGlossaryWords = async () => {
+      try {
+        const words = await getAllWords()
+        setGlossaryWords(words)
+      } catch (error) {
+        console.error('Error loading glossary words:', error)
+      } finally {
+        setLoadingGlossary(false)
+      }
+    }
+    loadGlossaryWords()
+  }, [])
 
   const handleNodeClick = (index: number) => {
     setSelectedNodeIndex(selectedNodeIndex === index ? null : index)
@@ -589,7 +613,53 @@ function NodesPageContent() {
                             shadow-sm transition-all outline outline-1 outline-black/10 dark:outline-white/20"
                             style={getWordContainerStyle(angle, isSelected)}
                           >
-                            <span className="text-black/90 dark:text-white/90">{word}</span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-black/90 dark:text-white/90">{word}</span>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <button 
+                                    className="pointer-events-auto p-0.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <HelpCircle className="h-3 w-3 text-black/60 dark:text-white/60" />
+                                  </button>
+                                </PopoverTrigger>
+                                <PopoverContent 
+                                  className="w-80 p-4 bg-white/95 dark:bg-black/95 backdrop-blur-sm border-black/10 dark:border-white/20"
+                                  side="bottom"
+                                  align="start"
+                                >
+                                  {loadingGlossary ? (
+                                    <div className="text-center py-2 text-sm text-black/60 dark:text-white/60">
+                                      Loading glossary...
+                                    </div>
+                                  ) : (
+                                    <>
+                                      {glossaryWords.find(w => w.word.toLowerCase() === word.toLowerCase()) ? (
+                                        <div className="space-y-3">
+                                          <div>
+                                            <h4 className="text-sm font-medium text-black dark:text-white mb-1">{word}</h4>
+                                            <p className="text-xs text-black/60 dark:text-white/60">
+                                              {glossaryWords.find(w => w.word.toLowerCase() === word.toLowerCase())?.definition}
+                                            </p>
+                                          </div>
+                                          <div className="pt-2 border-t border-black/10 dark:border-white/10">
+                                            <div className="flex items-center gap-2">
+                                              <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+                                              <span className="text-xs text-black/60 dark:text-white/60">Focus Word</span>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <div className="text-center py-2 text-sm text-black/60 dark:text-white/60">
+                                          No glossary entry found for "{word}"
+                                        </div>
+                                      )}
+                                    </>
+                                  )}
+                                </PopoverContent>
+                              </Popover>
+                            </div>
                           </div>
                         )}
                       </motion.div>
