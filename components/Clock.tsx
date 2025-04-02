@@ -231,10 +231,10 @@ const getFocusNodeStyle = (index: number, isMultiView: boolean, selectedNodeInde
   };
 };
 
-const getWordContainerStyle = (angle: number, isSelected: boolean, clockId: number, isMultiView: boolean) => {
+const getWordContainerStyle = (angle: number, isSelected: boolean, clockId: number, isMultiView: boolean): React.CSSProperties => {
   const isLeftSide = angle > 90 && angle < 270;
   return {
-    position: 'absolute' as const,
+    position: 'absolute',
     left: isLeftSide ? 'auto' : '100%',
     right: isLeftSide ? '100%' : 'auto',
     top: '50%',
@@ -242,7 +242,7 @@ const getWordContainerStyle = (angle: number, isSelected: boolean, clockId: numb
     marginRight: isLeftSide ? '0.75rem' : '-0.75rem',
     transform: `translateY(-50%) scale(${isSelected ? 1.1 : 1}) rotate(0deg)`,
     transformOrigin: isLeftSide ? 'right' : 'left',
-    textAlign: isLeftSide ? 'right' : 'left',
+    textAlign: isLeftSide ? 'right' as const : 'left' as const,
   };
 };
 
