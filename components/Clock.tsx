@@ -178,20 +178,10 @@ const getClockRotation = (params: ClockRotationParams | ClockSettings) => {
 
 // Helper function to get node radius based on clock ID
 const getNodeRadius = (clockId: number, isMultiView: boolean) => {
-  if (isMultiView) return 53;
-  
-  switch (clockId) {
-    case 0: return 52; // Clock 1
-    case 1: return 54; // Clock 2
-    case 2: return 53; // Clock 3
-    case 3: return 55; // Clock 4
-    case 4: return 54; // Clock 5
-    case 5: return 53; // Clock 6
-    case 6: return 54; // Clock 7
-    case 7: return 55; // Clock 8
-    case 8: return 53; // Clock 9
-    default: return 55;
+  if (isMultiView) {
+    return 48;
   }
+  return 55; // Increased from 48 to move nodes outward
 };
 
 // Helper function to get label rotation for better readability
@@ -214,32 +204,17 @@ const getLabelRotation = (angle: number) => {
   return angle + (normalizedAngle > 180 ? 90 : -90);
 };
 
-const getWordContainerStyle = (angle: number, isSelected: boolean, clockId: number, isMultiView: boolean): React.CSSProperties => {
-  const radians = angle * (Math.PI / 180);
-  const radius = getNodeRadius(clockId, isMultiView);
-  
-  // Calculate node position (where the red dot is)
-  const nodeX = 50 + radius * Math.cos(radians);
-  const nodeY = 50 + radius * Math.sin(radians);
-  
-  // Determine if the word should be on the left or right side of the node
-  const isRightHalf = angle > 90 && angle < 270;
-  
-  // Calculate text offset (distance from node)
-  const textOffset = isMultiView ? 35 : 40;
-  
-  // Position text horizontally relative to the node
-  const textX = nodeX + (isRightHalf ? -textOffset : textOffset);
-  
+const getWordContainerStyle = (angle: number, isSelected: boolean, clockId: number, isMultiView: boolean, rotation: number) => {
+  const isLeftSide = angle > 90 && angle < 270;
   return {
-    position: 'absolute',
-    left: `${textX}%`,
-    top: `${nodeY}%`,
-    transform: 'translate(0, -50%)',
-    transformOrigin: isRightHalf ? 'right center' : 'left center',
-    textAlign: isRightHalf ? 'right' : 'left',
-    whiteSpace: 'nowrap',
-    zIndex: isSelected ? 1000 : 100,
+    position: 'absolute' as const,
+    left: isLeftSide ? 'auto' : '100%',
+    right: isLeftSide ? '100%' : 'auto',
+    top: '50%',
+    marginLeft: isLeftSide ? '-0.5rem' : '0.5rem',
+    marginRight: isLeftSide ? '0.5rem' : '-0.5rem',
+    transform: `translateY(-50%) scale(${isSelected ? 1.1 : 1}) rotate(${-rotation}deg)`,
+    transformOrigin: isLeftSide ? 'right' : 'left',
   };
 };
 
@@ -249,13 +224,15 @@ const getFocusNodeStyle = (index: number, isMultiView: boolean, selectedNodeInde
   const color = dotColors[clockId % dotColors.length].replace('bg-[', '').replace(']', '');
   
   return {
-    backgroundColor: color,
-    width: isMultiView ? '6px' : '8px',
-    height: isMultiView ? '6px' : '8px',
+    backgroundColor: isSelected ? color : 'transparent',
+    border: `2px solid ${color}`,
+    width: isMultiView ? '8px' : '12px',
+    height: isMultiView ? '8px' : '12px',
     opacity: isSelected ? 1 : 0.9,
-    transform: `translate(-50%, -50%)`,
+    transform: 'translate(-50%, -50%)',
     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
     zIndex: isSelected ? 400 : 200,
+    boxShadow: isSelected ? `0 0 16px ${color}60` : '0 0 8px rgba(0, 0, 0, 0.2)',
   };
 };
 
@@ -287,7 +264,7 @@ const WordNode = ({ word, angle, nodeAngle, nodeRadius, isSelected, clockId, isM
         ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
         outline outline-1 outline-black/10 dark:outline-white/20`}
         style={{
-          ...getWordContainerStyle(nodeAngle, isSelected, clockId, isMultiView),
+          ...getWordContainerStyle(nodeAngle, isSelected, clockId, isMultiView, 0),
         }}
       >
         <span className="text-black/90 dark:text-white/90">{word}</span>
@@ -333,7 +310,7 @@ const Satellite = ({ satellite, index, clockId, x, y, isMultiView }: {
   );
 };
 
-const FocusNode = ({ index, angle, nodeRadius, isSelected, word, clockId, isMultiView, onClick, selectedNodeIndex }: {
+const FocusNode = ({ index, angle, nodeRadius, isSelected, word, clockId, isMultiView, onClick, selectedNodeIndex, rotation }: {
   index: number;
   angle: number;
   nodeRadius: number;
@@ -343,7 +320,9 @@ const FocusNode = ({ index, angle, nodeRadius, isSelected, word, clockId, isMult
   isMultiView: boolean;
   onClick: () => void;
   selectedNodeIndex: number | null;
+  rotation: number;
 }) => {
+  const [isHovered, setIsHovered] = useState(false);
   const radians = angle * (Math.PI / 180);
   const x = 50 + nodeRadius * Math.cos(radians);
   const y = 50 + nodeRadius * Math.sin(radians);
@@ -358,15 +337,15 @@ const FocusNode = ({ index, angle, nodeRadius, isSelected, word, clockId, isMult
         ...getFocusNodeStyle(index, isMultiView, selectedNodeIndex, clockId),
       }}
       onClick={onClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      whileHover={{ scale: 1.2 }}
     >
-      {word && (
+      {(isHovered || isSelected) && word && (
         <div 
-          className={`absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
-          ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
-          outline outline-1 outline-black/10 dark:outline-white/20`}
-          style={{
-            ...getWordContainerStyle(angle, isSelected, clockId, isMultiView),
-          }}
+          className="absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
+          shadow-sm transition-all outline outline-1 outline-black/10 dark:outline-white/20"
+          style={getWordContainerStyle(angle, isSelected, clockId, isMultiView, rotation)}
         >
           <span className="text-black/90 dark:text-white/90">{word}</span>
         </div>
@@ -797,7 +776,7 @@ export default function Clock({
                     ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
                     outline outline-1 outline-black/10 dark:outline-white/20`}
                     style={{
-                      ...getWordContainerStyle(angle, isSelected, clockId, isMultiView),
+                      ...getWordContainerStyle(angle, isSelected, clockId, isMultiView, clockRotation),
                     }}
                   >
                     <span className="text-black/90 dark:text-white/90">{word}</span>
@@ -1055,6 +1034,7 @@ export default function Clock({
                     isMultiView={isMultiView}
                     onClick={() => handleNodeClick(index)}
                     selectedNodeIndex={selectedNodeIndex}
+                    rotation={clockRotation}
                   />
                 );
               })}
