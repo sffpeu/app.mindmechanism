@@ -30,6 +30,7 @@ export const config = {
     '/',
     '/dashboard',
     '/sessions',
+    '/nodes',
     '/notes',
     '/glossary',
     '/settings',
