@@ -240,7 +240,7 @@ const getWordContainerStyle = (angle: number, isSelected: boolean, clockId: numb
     top: '50%',
     marginLeft: isLeftSide ? '-0.75rem' : '0.75rem',
     marginRight: isLeftSide ? '0.75rem' : '-0.75rem',
-    transform: `translateY(-50%) scale(${isSelected ? 1.1 : 1}) rotate(0deg)`,
+    transform: `translateY(-50%) scale(${isSelected ? 1.1 : 1})`,
     transformOrigin: isLeftSide ? 'right' : 'left',
     textAlign: isLeftSide ? 'right' as const : 'left' as const,
   };
