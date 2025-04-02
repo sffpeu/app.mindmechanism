@@ -739,15 +739,7 @@ export default function Clock({
   const [hoveredNodeIndex, setHoveredNodeIndex] = useState<number | null>(null);
 
   const handleNodeClick = (index: number) => {
-    if (selectedNodeIndex === index) {
-      setSelectedNodeIndex(null);
-      setInfoCardsHiddenByNode(false);
-    } else {
-      setSelectedNodeIndex(index);
-      setInfoCardsHiddenByNode(true);
-      setShowInfoCards(false);
-    }
-    setHoveredNodeIndex(null); // Reset hover state on click
+    setSelectedNodeIndex(selectedNodeIndex === index ? null : index);
   };
 
   const renderFocusNodes = (clockRotation: number, clockFocusNodes: number, clockStartingDegree: number, clockId: number) => {
@@ -767,18 +759,14 @@ export default function Clock({
         {Array.from({ length: Math.max(0, clockFocusNodes || 0) }).map((_, index) => {
           const angle = ((360 / Math.max(1, clockFocusNodes || 1)) * index + adjustedStartingDegree) % 360;
           const radians = angle * (Math.PI / 180);
-          
-          // Calculate node position using dynamic radius
           const nodeRadius = getNodeRadius(clockId, isMultiView);
           const x = 50 + nodeRadius * Math.cos(radians);
           const y = 50 + nodeRadius * Math.sin(radians);
-          
           const isSelected = selectedNodeIndex === index;
-          const word = customWords?.[index];
-          
+          const word = showWords ? customWords?.[index] : undefined;
+
           return (
             <div key={`${clockId}-${index}`} className="absolute">
-              {/* Focus Node with Word */}
               <motion.div
                 className={`absolute ${isMultiView ? 'w-2 h-2' : 'w-3 h-3'} rounded-full cursor-pointer`}
                 style={{
@@ -789,9 +777,9 @@ export default function Clock({
                 onClick={() => handleNodeClick(index)}
                 onMouseEnter={() => setHoveredNodeIndex(index)}
                 onMouseLeave={() => setHoveredNodeIndex(null)}
-                whileHover={{ scale: 1.2 }}
+                whileHover={{ scale: 1.5 }}
               >
-                {showWords && word && hoveredNodeIndex === index && (
+                {showWords && word && (hoveredNodeIndex === index || isSelected) && (
                   <div 
                     className={`absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
                     ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all
