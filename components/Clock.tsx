@@ -319,7 +319,7 @@ const Satellite = ({ satellite, index, clockId, x, y, isMultiView }: {
         left: `${x}%`,
         top: `${y}%`,
         transform: 'translate(-50%, -50%)',
-        zIndex: 1000,
+        zIndex: 50,
       }}
       whileHover={{ scale: 1.5 }}
     >
@@ -997,12 +997,20 @@ export default function Clock({
           />
         )}
 
+        {/* Satellites layer - Moved to the back */}
+        {showSatellites && (
+          <div className="absolute inset-[-20%]" style={{ pointerEvents: 'auto', zIndex: 50 }}>
+            {renderSatellites(rotation, id)}
+          </div>
+        )}
+
         {/* Clock face */}
         <div className="absolute inset-0 rounded-full overflow-hidden">
           <motion.div 
             className="absolute inset-0"
             style={{ 
               willChange: 'transform',
+              zIndex: 100,
             }}
             animate={{ rotate: rotation }}
             transition={transitionConfig}
@@ -1061,11 +1069,6 @@ export default function Clock({
             </div>
           </div>
         </motion.div>
-
-        {/* Satellites layer */}
-        <div className="absolute inset-[-20%]" style={{ pointerEvents: 'auto', zIndex: 1000 }}>
-          {renderSatellites(rotation, id)}
-        </div>
       </div>
     );
   };
