@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Menu as MenuIcon, X, Settings, Sun, Moon, BookOpen, ClipboardList, LogOut, LayoutDashboard, Clock, Home, Volume2, VolumeX } from 'lucide-react'
+import { Menu as MenuIcon, X, Settings, Sun, Moon, BookOpen, ClipboardList, LogOut, LayoutDashboard, Clock, Home, Volume2, VolumeX, Network } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -166,6 +166,7 @@ export function Menu({
                 <NavLink href="/dashboard" icon={LayoutDashboard} className="sidebar-item">Dashboard</NavLink>
                 <NavLink href="/sessions" icon={Clock} className="sidebar-item">Sessions</NavLink>
                 <NavLink href="/notes" icon={ClipboardList} className="sidebar-item">Notes</NavLink>
+                <NavLink href="/nodes" icon={Network} className="sidebar-item">Nodes</NavLink>
                 <NavLink href="/glossary" icon={BookOpen} className="sidebar-item">Glossary</NavLink>
               </MenuCategory>
 
