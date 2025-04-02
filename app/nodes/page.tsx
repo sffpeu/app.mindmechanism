@@ -8,10 +8,23 @@ import { motion } from 'framer-motion'
 import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
 
+// Test words for each node
+const testWords = [
+  'Consciousness',
+  'Quantum',
+  'Synchronicity',
+  'Emergence',
+  'Resonance',
+  'Entropy',
+  'Duality',
+  'Infinity'
+]
+
 export default function NodesPage() {
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(false)
   const [selectedNodeIndex, setSelectedNodeIndex] = useState<number | null>(null)
+  const [hoveredNodeIndex, setHoveredNodeIndex] = useState<number | null>(null)
   const { isDarkMode } = useTheme()
 
   // Get clock 0 settings
@@ -44,6 +57,20 @@ export default function NodesPage() {
 
   const handleNodeClick = (index: number) => {
     setSelectedNodeIndex(selectedNodeIndex === index ? null : index)
+  }
+
+  const getWordContainerStyle = (angle: number, isSelected: boolean) => {
+    const isLeftSide = angle > 90 && angle < 270
+    return {
+      position: 'absolute' as const,
+      left: isLeftSide ? 'auto' : '100%',
+      right: isLeftSide ? '100%' : 'auto',
+      top: '50%',
+      marginLeft: isLeftSide ? '-0.5rem' : '0.5rem',
+      marginRight: isLeftSide ? '0.5rem' : '-0.5rem',
+      transform: `translateY(-50%) scale(${isSelected ? 1.1 : 1})`,
+      transformOrigin: isLeftSide ? 'right' : 'left',
+    }
   }
 
   const getFocusNodeStyle = (index: number, isSelected: boolean) => {
@@ -132,6 +159,7 @@ export default function NodesPage() {
                     const x = 50 + nodeRadius * Math.cos(radians)
                     const y = 50 + nodeRadius * Math.sin(radians)
                     const isSelected = selectedNodeIndex === index
+                    const word = testWords[index]
 
                     return (
                       <motion.div
@@ -143,8 +171,20 @@ export default function NodesPage() {
                           ...getFocusNodeStyle(index, isSelected),
                         }}
                         onClick={() => handleNodeClick(index)}
+                        onMouseEnter={() => setHoveredNodeIndex(index)}
+                        onMouseLeave={() => setHoveredNodeIndex(null)}
                         whileHover={{ scale: 1.2 }}
-                      />
+                      >
+                        {(hoveredNodeIndex === index || isSelected) && word && (
+                          <div 
+                            className="absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
+                            shadow-sm transition-all outline outline-1 outline-black/10 dark:outline-white/20"
+                            style={getWordContainerStyle(angle, isSelected)}
+                          >
+                            <span className="text-black/90 dark:text-white/90">{word}</span>
+                          </div>
+                        )}
+                      </motion.div>
                     )
                   })}
                 </div>
