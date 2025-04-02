@@ -96,6 +96,7 @@ function NodesPageContent() {
 
   // Calculate rotation
   const [rotation, setRotation] = useState(startingDegree)
+  const [currentDegree, setCurrentDegree] = useState(startingDegree)
 
   // Initialize timer from URL parameters
   useEffect(() => {
@@ -143,6 +144,7 @@ function NodesPageContent() {
         : (startingDegree - calculatedRotation + 360) % 360
 
       setRotation(newRotation)
+      setCurrentDegree(newRotation)
       requestAnimationFrame(animate)
     }
 
@@ -164,16 +166,15 @@ function NodesPageContent() {
     const now = Date.now()
     const elapsedMilliseconds = now - startDateTime.getTime()
     const rotations = Math.floor(elapsedMilliseconds / rotationTime)
-    const currentRotation = ((elapsedMilliseconds % rotationTime) / rotationTime) * 360
 
     setClockInfo({
-      rotation: currentRotation,
+      rotation: currentDegree,
       rotationsCompleted: rotations,
       elapsedTime: getElapsedTime(startDateTime),
-      currentRotation: rotation, // Current actual rotation from animation
+      currentRotation: currentDegree,
       direction: rotationDirection
     })
-  }, [currentTime, rotationTime, rotation, rotationDirection])
+  }, [currentTime, rotationTime, currentDegree, rotationDirection])
 
   const handleNodeClick = (index: number) => {
     setSelectedNodeIndex(selectedNodeIndex === index ? null : index)
@@ -456,7 +457,7 @@ function NodesPageContent() {
                           Current °
                         </span>
                         <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                          {clockInfo.currentRotation.toFixed(1)}°
+                          {currentDegree.toFixed(1)}°
                         </span>
                       </div>
                     </div>
@@ -468,7 +469,7 @@ function NodesPageContent() {
                         Rotation
                       </span>
                       <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                        {clockInfo.direction === 'clockwise' ? 'Clockwise' : 'Counter-Clockwise'} · {clockInfo.currentRotation.toFixed(1)}°
+                        {clockInfo.direction === 'clockwise' ? 'Clockwise' : 'Counter-Clockwise'} · {currentDegree.toFixed(1)}°
                       </span>
                     </div>
                   </div>
