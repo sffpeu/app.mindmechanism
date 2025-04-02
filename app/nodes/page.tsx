@@ -68,7 +68,7 @@ export default function NodesPage() {
       top: '50%',
       marginLeft: isLeftSide ? '-0.5rem' : '0.5rem',
       marginRight: isLeftSide ? '0.5rem' : '-0.5rem',
-      transform: `translateY(-50%) scale(${isSelected ? 1.1 : 1})`,
+      transform: `translateY(-50%) scale(${isSelected ? 1.1 : 1}) rotate(${-rotation}deg)`,
       transformOrigin: isLeftSide ? 'right' : 'left',
     }
   }
