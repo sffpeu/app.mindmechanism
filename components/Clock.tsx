@@ -781,7 +781,7 @@ export default function Clock({
               isMultiView={isMultiView}
               onClick={() => handleNodeClick(index)}
               selectedNodeIndex={selectedNodeIndex}
-              rotation={rotation}
+              rotation={clockRotation}
             />
           );
         })}
@@ -939,17 +939,6 @@ export default function Clock({
       '--shadow-color': `${clockColor.r}, ${clockColor.g}, ${clockColor.b}`,
     } as React.CSSProperties : {};
 
-    // Adjust starting degree for specific clocks to align with their SVGs
-    const adjustedStartingDegree = (() => {
-      switch (id) {
-        case 0: return startingDegree + 45; // Clock 1
-        case 1: return startingDegree + 90; // Clock 2
-        case 3: return startingDegree + 180; // Clock 4
-        case 7: return startingDegree + 270; // Clock 8
-        default: return startingDegree;
-      }
-    })();
-    
     return (
       <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px]">
         {/* Glow effect */}
@@ -975,7 +964,7 @@ export default function Clock({
           />
         )}
 
-        {/* Satellites layer - Moved to the back */}
+        {/* Satellites layer */}
         {showSatellites && (
           <div className="absolute inset-[-20%]" style={{ pointerEvents: 'auto', zIndex: 50 }}>
             {renderSatellites(rotation, id)}
@@ -1026,26 +1015,7 @@ export default function Clock({
           transition={transitionConfig}
         >
           <div className="absolute inset-0" style={{ transform: `rotate(${imageOrientation}deg)`, pointerEvents: 'auto' }}>
-            <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
-              {Array.from({ length: Math.max(0, focusNodes || 0) }).map((_, index) => {
-                const angle = ((360 / Math.max(1, focusNodes || 1)) * index + adjustedStartingDegree) % 360;
-                return (
-                  <FocusNode
-                    key={`${id}-${index}`}
-                    index={index}
-                    angle={angle}
-                    nodeRadius={getNodeRadius(id, isMultiView)}
-                    isSelected={selectedNodeIndex === index}
-                    word={showWords ? customWords?.[index] : undefined}
-                    clockId={id}
-                    isMultiView={isMultiView}
-                    onClick={() => handleNodeClick(index)}
-                    selectedNodeIndex={selectedNodeIndex}
-                    rotation={rotation}
-                  />
-                );
-              })}
-            </div>
+            {renderFocusNodes(rotation, focusNodes, startingDegree, id)}
           </div>
         </motion.div>
       </div>
