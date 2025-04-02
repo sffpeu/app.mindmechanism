@@ -7,6 +7,14 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { motion } from 'framer-motion'
 import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
+import { Settings, List, Info, Satellite } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 // Test words for each node
 const testWords = [
@@ -25,6 +33,9 @@ export default function NodesPage() {
   const [showSatellites, setShowSatellites] = useState(false)
   const [selectedNodeIndex, setSelectedNodeIndex] = useState<number | null>(null)
   const [hoveredNodeIndex, setHoveredNodeIndex] = useState<number | null>(null)
+  const [showWords, setShowWords] = useState(true)
+  const [showInfoCards, setShowInfoCards] = useState(true)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const { isDarkMode } = useTheme()
 
   // Get clock 0 settings
@@ -66,8 +77,8 @@ export default function NodesPage() {
       left: isLeftSide ? 'auto' : '100%',
       right: isLeftSide ? '100%' : 'auto',
       top: '50%',
-      marginLeft: isLeftSide ? '-0.5rem' : '0.5rem',
-      marginRight: isLeftSide ? '0.5rem' : '-0.5rem',
+      marginLeft: isLeftSide ? '-0.75rem' : '0.75rem',
+      marginRight: isLeftSide ? '0.75rem' : '-0.75rem',
       transform: `translateY(-50%) scale(${isSelected ? 1.1 : 1}) rotate(${-rotation}deg)`,
       transformOrigin: isLeftSide ? 'right' : 'left',
     }
@@ -78,13 +89,27 @@ export default function NodesPage() {
     return {
       backgroundColor: isSelected ? color : 'transparent',
       border: `2px solid ${color}`,
-      width: '8px',
-      height: '8px',
+      width: '12px',
+      height: '12px',
       opacity: isSelected ? 1 : 0.9,
       transform: 'translate(-50%, -50%)',
       transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
       zIndex: isSelected ? 400 : 200,
       boxShadow: isSelected ? `0 0 16px ${color}60` : '0 0 8px rgba(0, 0, 0, 0.2)',
+    }
+  }
+
+  const handleSatellitesChange = (checked: boolean) => {
+    setShowSatellites(checked)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('showSatellites', JSON.stringify(checked))
+    }
+  }
+
+  const handleWordsChange = (checked: boolean) => {
+    setShowWords(checked)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('showWords', JSON.stringify(checked))
     }
   }
 
@@ -98,6 +123,49 @@ export default function NodesPage() {
           onSatellitesChange={setShowSatellites}
         />
         
+        {/* Settings Dropdown */}
+        <div className="fixed top-4 right-4 z-50">
+          <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+            <DropdownMenuTrigger asChild>
+              <button className="p-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors">
+                <Settings className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
+                <div className="flex items-center gap-2">
+                  <Satellite className="h-4 w-4" />
+                  <span>Satellites</span>
+                </div>
+                <Switch
+                  checked={showSatellites}
+                  onCheckedChange={handleSatellitesChange}
+                />
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
+                <div className="flex items-center gap-2">
+                  <List className="h-4 w-4" />
+                  <span>Focus Words</span>
+                </div>
+                <Switch
+                  checked={showWords}
+                  onCheckedChange={handleWordsChange}
+                />
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
+                <div className="flex items-center gap-2">
+                  <Info className="h-4 w-4" />
+                  <span>Info Cards</span>
+                </div>
+                <Switch
+                  checked={showInfoCards}
+                  onCheckedChange={setShowInfoCards}
+                />
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
         <div className="flex-grow flex items-center justify-center min-h-screen">
           <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px]">
             {/* Clock face */}
@@ -155,7 +223,7 @@ export default function NodesPage() {
                   {Array.from({ length: focusNodes }).map((_, index) => {
                     const angle = ((360 / focusNodes) * index + startingDegree + 45) % 360
                     const radians = angle * (Math.PI / 180)
-                    const nodeRadius = 48
+                    const nodeRadius = 55 // Increased from 48 to move nodes further out
                     const x = 50 + nodeRadius * Math.cos(radians)
                     const y = 50 + nodeRadius * Math.sin(radians)
                     const isSelected = selectedNodeIndex === index
@@ -173,9 +241,9 @@ export default function NodesPage() {
                         onClick={() => handleNodeClick(index)}
                         onMouseEnter={() => setHoveredNodeIndex(index)}
                         onMouseLeave={() => setHoveredNodeIndex(null)}
-                        whileHover={{ scale: 1.2 }}
+                        whileHover={{ scale: 1.5 }} // Increased from 1.2
                       >
-                        {(hoveredNodeIndex === index || isSelected) && word && (
+                        {showWords && (hoveredNodeIndex === index || isSelected) && word && (
                           <div 
                             className="absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
                             shadow-sm transition-all outline outline-1 outline-black/10 dark:outline-white/20"
