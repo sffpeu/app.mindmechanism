@@ -9,6 +9,8 @@ import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
 import { Settings, List, Info, Satellite } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
+import { useSearchParams } from 'next/navigation'
+import Timer from '@/components/Timer'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,6 +53,7 @@ const hexToRgb = (hex: string) => {
 };
 
 export default function NodesPage() {
+  const searchParams = useSearchParams()
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -71,6 +74,9 @@ export default function NodesPage() {
   const [showInfoCards, setShowInfoCards] = useState(true)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const { isDarkMode } = useTheme()
+  const [remainingTime, setRemainingTime] = useState<number | null>(null)
+  const [isPaused, setIsPaused] = useState(false)
+  const [sessionId, setSessionId] = useState<string | null>(null)
 
   // Get clock 0 settings
   const clock0 = clockSettings[0]
@@ -81,6 +87,41 @@ export default function NodesPage() {
 
   // Calculate rotation
   const [rotation, setRotation] = useState(startingDegree)
+
+  // Initialize timer from URL parameters
+  useEffect(() => {
+    const duration = searchParams.get('duration')
+    const sessionIdParam = searchParams.get('sessionId')
+    if (duration) {
+      const durationMs = parseInt(duration)
+      setRemainingTime(durationMs)
+    }
+    if (sessionIdParam) {
+      setSessionId(sessionIdParam)
+    }
+  }, [searchParams])
+
+  // Handle pause/resume
+  const handlePauseResume = () => {
+    setIsPaused(!isPaused)
+  }
+
+  // Timer countdown effect
+  useEffect(() => {
+    if (!remainingTime || isPaused) return
+
+    const timer = setInterval(() => {
+      setRemainingTime(prev => {
+        if (!prev || prev <= 0) {
+          clearInterval(timer)
+          return 0
+        }
+        return prev - 1000
+      })
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [remainingTime, isPaused])
 
   useEffect(() => {
     const startDateTime = new Date('1610-12-21T03:00:00')
@@ -157,10 +198,10 @@ export default function NodesPage() {
         ? satelliteRotation
         : -satelliteRotation
 
-      // Calculate position with larger radius (65 instead of 43)
+      // Calculate position with adjusted radius (60 instead of 65)
       const angle = ((360 / satelliteConfigs.length) * index + totalRotation) % 360
       const radians = angle * (Math.PI / 180)
-      const radius = 65 // Increased radius to position satellites outside nodes
+      const radius = 60 // Reduced from 65 to bring satellites closer
       const x = 50 + radius * Math.cos(radians)
       const y = 50 + radius * Math.sin(radians)
 
@@ -181,7 +222,7 @@ export default function NodesPage() {
             transform: 'translate(-50%, -50%)',
             zIndex: 100,
           }}
-          whileHover={{ scale: 1.5 }}
+          whileHover={{ scale: 1.25 }} // Reduced from 1.5
         >
           <div 
             className="w-4 h-4 rounded-full bg-black dark:bg-white"
@@ -196,6 +237,17 @@ export default function NodesPage() {
 
   // Get the RGB values for the glow effect
   const clockColor = hexToRgb('#fd290a') // Red color from clock 0
+
+  // Add getElapsedTime helper function
+  const getElapsedTime = (startDateTime: Date): string => {
+    const elapsed = Date.now() - startDateTime.getTime()
+    const years = Math.floor(elapsed / (365 * 24 * 60 * 60 * 1000))
+    const remainingDays = Math.floor((elapsed % (365 * 24 * 60 * 60 * 1000)) / (24 * 60 * 60 * 1000))
+    const hours = Math.floor((elapsed % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000))
+    const minutes = Math.floor((elapsed % (60 * 60 * 1000)) / (60 * 1000))
+    const seconds = Math.floor((elapsed % (60 * 1000)) / 1000)
+    return `${years}y ${remainingDays}d ${hours}h ${minutes}m ${seconds}s`
+  }
 
   return (
     <ProtectedRoute>
@@ -248,6 +300,57 @@ export default function NodesPage() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+        </div>
+
+        {/* Timer and Info Component */}
+        <div className="fixed bottom-4 left-4 z-50 flex items-center gap-2">
+          {remainingTime !== null && (
+            <Timer
+              remainingTime={remainingTime}
+              isPaused={isPaused}
+              onPauseResume={handlePauseResume}
+            />
+          )}
+          <div className="group relative">
+            <button 
+              className="p-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors"
+              aria-label="Clock Information"
+            >
+              <Info className="h-4 w-4 text-black/70 dark:text-white/70" />
+            </button>
+            <div className="absolute bottom-full left-0 mb-2 w-64 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 origin-bottom-left">
+              <div className="p-3 rounded-lg bg-white/90 dark:bg-black/90 backdrop-blur-sm border border-black/5 dark:border-white/10 shadow-lg">
+                <div className="space-y-2">
+                  <div>
+                    <p className="text-xs font-medium text-black/60 dark:text-white/60">Started</p>
+                    <p className="text-sm font-medium text-black/90 dark:text-white/90">
+                      {new Date('1610-12-21T03:00:00').toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-black/60 dark:text-white/60">Elapsed</p>
+                    <p className="text-sm font-medium text-black/90 dark:text-white/90 font-mono">
+                      {getElapsedTime(new Date('1610-12-21T03:00:00'))}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <p className="text-xs font-medium text-black/60 dark:text-white/60">Start °</p>
+                      <p className="text-sm font-medium text-black/90 dark:text-white/90">
+                        {startingDegree.toFixed(1)}°
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-black/60 dark:text-white/60">Rot. Time</p>
+                      <p className="text-sm font-medium text-black/90 dark:text-white/90">
+                        {rotationTime / 1000}s
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="flex-grow flex items-center justify-center min-h-screen">
@@ -363,7 +466,7 @@ export default function NodesPage() {
                         onClick={() => handleNodeClick(index)}
                         onMouseEnter={() => setHoveredNodeIndex(index)}
                         onMouseLeave={() => setHoveredNodeIndex(null)}
-                        whileHover={{ scale: 1.5 }}
+                        whileHover={{ scale: 1.25 }} // Reduced from 1.5
                       >
                         {showWords && (hoveredNodeIndex === index || isSelected) && word && (
                           <div 
