@@ -363,16 +363,19 @@ const FocusNode = ({
       whileHover={{ scale: 1.5 }}
     >
       {word && (isHovered || isSelected) && (
-        <div 
+        <motion.div 
           className="absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
           shadow-sm transition-all outline outline-1 outline-black/10 dark:outline-white/20"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.8 }}
           style={{
             ...getWordContainerStyle(angle, isSelected, clockId, isMultiView),
             transform: `translateY(-50%) scale(${isSelected ? 1.1 : 1}) rotate(${-rotation}deg)`,
           }}
         >
           <span className="text-black/90 dark:text-white/90">{word}</span>
-        </div>
+        </motion.div>
       )}
     </motion.div>
   );
