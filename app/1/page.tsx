@@ -7,7 +7,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { motion } from 'framer-motion'
 import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
-import { Settings, List, Info, Satellite, Clock as ClockIcon, Calendar, RotateCw, Timer, Compass } from 'lucide-react'
+import { Settings, List, Info, Satellite, Clock as ClockIcon, Calendar, RotateCw, Timer as TimerIcon, Compass } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useSearchParams } from 'next/navigation'
 import Timer from '@/components/Timer'
@@ -387,7 +387,7 @@ function NodesPageContent() {
 
                       <div>
                         <p className="text-xs font-medium text-black/60 dark:text-white/60 flex items-center gap-1">
-                          <Timer className="h-3 w-3" />
+                          <TimerIcon className="h-3 w-3" />
                           Elapsed
                         </p>
                         <p className="text-sm font-medium text-black/90 dark:text-white/90 font-mono">
