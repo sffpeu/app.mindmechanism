@@ -1034,7 +1034,7 @@ export default function Clock({
                     isMultiView={isMultiView}
                     onClick={() => handleNodeClick(index)}
                     selectedNodeIndex={selectedNodeIndex}
-                    rotation={clockRotation}
+                    rotation={rotation}
                   />
                 );
               })}
