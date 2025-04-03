@@ -26,32 +26,24 @@ import {
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords } from '@/lib/glossary'
 
-// Test words for each node (10 words for clock 2)
+// Test words for each node
 const testWords = [
-  'Mindfulness',
-  'Perception',
-  'Awareness',
-  'Presence',
-  'Intuition',
-  'Reflection',
-  'Stillness',
-  'Harmony',
-  'Balance',
-  'Serenity'
+  'Relativity',
+  'Spacetime',
+  'Gravity',
+  'Energy',
+  'Matter',
+  'Momentum',
+  'Mass',
+  'Time',
+  'Space',
+  'Force'
 ]
 
 // Satellite configurations for clock 2
 const satelliteConfigs = [
-  { rotationTime: 450 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 900 * 1000, rotationDirection: 'counterclockwise' },
-  { rotationTime: 1350 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 2700 * 1000, rotationDirection: 'counterclockwise' },
-  { rotationTime: 4050 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 8100 * 1000, rotationDirection: 'counterclockwise' },
-  { rotationTime: 8100 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 2700 * 1000, rotationDirection: 'counterclockwise' },
-  { rotationTime: 1350 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 450 * 1000, rotationDirection: 'counterclockwise' }
+  { rotationTime: 600 * 1000, rotationDirection: 'counterclockwise' },
+  { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' }
 ]
 
 // Helper function to convert hex to rgb
@@ -147,9 +139,8 @@ function NodesPageContent() {
     return () => clearInterval(timer)
   }, [remainingTime, isPaused])
 
-  // Rotation animation effect
   useEffect(() => {
-    const startDateTime = clock2.startDateTime
+    const startDateTime = new Date('1610-03-21T09:00:00')
     const animate = () => {
       const now = Date.now()
       const elapsedMilliseconds = now - startDateTime.getTime()
@@ -165,7 +156,7 @@ function NodesPageContent() {
 
     const animationId = requestAnimationFrame(animate)
     return () => cancelAnimationFrame(animationId)
-  }, [startingDegree, rotationTime, rotationDirection, clock2.startDateTime])
+  }, [startingDegree, rotationTime, rotationDirection])
 
   // Update current time every second
   useEffect(() => {
@@ -177,7 +168,7 @@ function NodesPageContent() {
 
   // Update clock info
   useEffect(() => {
-    const startDateTime = clock2.startDateTime
+    const startDateTime = new Date('1610-03-21T09:00:00')
     const now = Date.now()
     const elapsedMilliseconds = now - startDateTime.getTime()
     const rotations = Math.floor(elapsedMilliseconds / rotationTime)
@@ -189,7 +180,7 @@ function NodesPageContent() {
       currentRotation: currentDegree,
       direction: rotationDirection
     })
-  }, [currentTime, rotationTime, currentDegree, rotationDirection, clock2.startDateTime])
+  }, [currentTime, rotationTime, currentDegree, rotationDirection])
 
   // Load glossary words
   useEffect(() => {
@@ -225,7 +216,7 @@ function NodesPageContent() {
   }
 
   const getFocusNodeStyle = (index: number, isSelected: boolean) => {
-    const color = '#ff6b00' // Orange color for clock 2
+    const color = '#f7da5f' // Color for clock 2 (yellow)
     return {
       backgroundColor: isSelected ? color : 'transparent',
       border: `2px solid ${color}`,
@@ -256,14 +247,14 @@ function NodesPageContent() {
   const renderSatellites = () => {
     return satelliteConfigs.map((satellite, index) => {
       const now = Date.now()
-      const startDateTime = clock2.startDateTime
+      const startDateTime = new Date('1610-03-21T09:00:00')
       const elapsedMilliseconds = now - startDateTime.getTime()
       const satelliteRotation = (elapsedMilliseconds / satellite.rotationTime) * 360
       const totalRotation = satellite.rotationDirection === 'clockwise'
         ? satelliteRotation
         : -satelliteRotation
 
-      // Calculate position with adjusted radius
+      // Calculate position with adjusted radius (60 instead of 65)
       const angle = ((360 / satelliteConfigs.length) * index + totalRotation) % 360
       const radians = angle * (Math.PI / 180)
       const radius = 60 // Reduced from 65 to bring satellites closer
@@ -287,6 +278,7 @@ function NodesPageContent() {
             transform: 'translate(-50%, -50%)',
             zIndex: 100,
           }}
+          whileHover={{ scale: 1.25 }} // Reduced from 1.5
         >
           <div 
             className="w-4 h-4 rounded-full bg-black dark:bg-white"
@@ -300,7 +292,7 @@ function NodesPageContent() {
   }
 
   // Get the RGB values for the glow effect
-  const clockColor = hexToRgb('#ff6b00') // Orange color for clock 2
+  const clockColor = hexToRgb('#f7da5f') // Yellow color for clock 2
 
   // Add getElapsedTime helper function
   const getElapsedTime = (startDateTime: Date): string => {
@@ -388,11 +380,11 @@ function NodesPageContent() {
                   <div className="space-y-3">
                     {/* Clock Title and Description */}
                     <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10">
-                      <h3 className="text-sm font-medium text-orange-500">
-                        Spring Equinox Observation
+                      <h3 className="text-sm font-medium text-yellow-500">
+                        Galileo's Spring Observation
                       </h3>
                       <p className="text-xs text-black/60 dark:text-white/60 line-clamp-2">
-                        Observations of celestial movements during the vernal equinox, marking the transition of seasons.
+                        Detailed spring observations by Galileo, revealing new insights about planetary movements.
                       </p>
                     </div>
 
@@ -414,7 +406,7 @@ function NodesPageContent() {
                             Started
                           </p>
                           <p className="text-sm font-medium text-black/90 dark:text-white/90">
-                            {clock2.startDateTime.toLocaleDateString()}
+                            {new Date('1610-03-21T09:00:00').toLocaleDateString()}
                           </p>
                         </div>
                       </div>
@@ -455,7 +447,7 @@ function NodesPageContent() {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
                         <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                          <div className="w-1 h-1 rounded-full bg-orange-500" />
+                          <div className="w-1 h-1 rounded-full bg-yellow-500" />
                           Focus Nodes
                         </span>
                         <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
@@ -499,7 +491,7 @@ function NodesPageContent() {
 
         <div className="flex-grow flex items-center justify-center min-h-screen">
           <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px]">
-            {/* Orange glow effect */}
+            {/* Red glow effect */}
             {clockColor && (
               <motion.div
                 className="absolute inset-0 rounded-full"
@@ -630,7 +622,7 @@ function NodesPageContent() {
 
                             {/* Icons above word - only show when word is selected */}
                             {selectedWord === word && (
-                              <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex items-center gap-2">
+                              <div className="absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-2">
                                 {/* Info Icon */}
                                 <motion.div 
                                   className="group relative"
