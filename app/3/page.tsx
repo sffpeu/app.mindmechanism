@@ -52,6 +52,9 @@ const hexToRgb = (hex: string) => {
   } : null;
 };
 
+// Define clock color
+const clockColor = hexToRgb('#6dc037'); // Green color for clock 3
+
 function NodesPageContent() {
   const searchParams = useSearchParams()
   const [showElements, setShowElements] = useState(true)
