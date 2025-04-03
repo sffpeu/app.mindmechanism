@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useEffect, Suspense } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
