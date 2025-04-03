@@ -95,6 +95,7 @@ function NodesPageContent() {
   })
   const [glossaryWords, setGlossaryWords] = useState<GlossaryWord[]>([])
   const [loadingGlossary, setLoadingGlossary] = useState(true)
+  const [selectedWord, setSelectedWord] = useState<string | null>(null)
 
   // Get clock 0 settings
   const clock0 = clockSettings[0]
@@ -605,7 +606,6 @@ function NodesPageContent() {
                         onClick={() => handleNodeClick(index)}
                         onMouseEnter={() => setHoveredNodeIndex(index)}
                         onMouseLeave={() => setHoveredNodeIndex(null)}
-                        whileHover={{ scale: 1.25 }} // Reduced from 1.5
                       >
                         {showWords && (hoveredNodeIndex === index || isSelected) && word && (
                           <div 
@@ -613,67 +613,92 @@ function NodesPageContent() {
                             shadow-sm transition-all outline outline-1 outline-black/10 dark:outline-white/20"
                             style={getWordContainerStyle(angle, isSelected)}
                           >
-                            {/* Icons above word */}
-                            <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex items-center gap-2">
-                              {/* Info Icon */}
-                              <div className="group relative">
-                                <button 
-                                  className="pointer-events-auto w-6 h-6 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm border border-black/10 dark:border-white/20 
-                                  flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    // Show definition in a tooltip or modal
-                                    console.log('Show definition for:', word)
-                                  }}
-                                >
-                                  <Info className="h-3 w-3 text-black/60 dark:text-white/60" />
-                                </button>
-                                <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
-                                  opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                  Definition
-                                </div>
-                              </div>
+                            {/* Word Display with click handler */}
+                            <button
+                              className="pointer-events-auto"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setSelectedWord(selectedWord === word ? null : word)
+                              }}
+                            >
+                              <span className="text-black/90 dark:text-white/90">{word}</span>
+                            </button>
 
-                              {/* Notes Icon */}
-                              <div className="group relative">
-                                <button 
-                                  className="pointer-events-auto w-6 h-6 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm border border-black/10 dark:border-white/20 
-                                  flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    // Open notes interface
-                                    console.log('Open notes for:', word)
-                                  }}
+                            {/* Icons above word - only show when word is selected */}
+                            {selectedWord === word && (
+                              <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex items-center gap-2">
+                                {/* Info Icon */}
+                                <motion.div 
+                                  className="group relative"
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ duration: 0.2, delay: 0 }}
                                 >
-                                  <List className="h-3 w-3 text-black/60 dark:text-white/60" />
-                                </button>
-                                <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
-                                  opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                  Add Note
-                                </div>
-                              </div>
+                                  <button 
+                                    className="pointer-events-auto w-6 h-6 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm border border-black/10 dark:border-white/20 
+                                    flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      // Show definition in a tooltip or modal
+                                      console.log('Show definition for:', word)
+                                    }}
+                                  >
+                                    <Info className="h-3 w-3 text-black/60 dark:text-white/60" />
+                                  </button>
+                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
+                                    opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                    Definition
+                                  </div>
+                                </motion.div>
 
-                              {/* Dictionary Icon */}
-                              <div className="group relative">
-                                <button 
-                                  className="pointer-events-auto w-6 h-6 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm border border-black/10 dark:border-white/20 
-                                  flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    window.location.href = '/glossary'
-                                  }}
+                                {/* Notes Icon */}
+                                <motion.div 
+                                  className="group relative"
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ duration: 0.2, delay: 0.1 }}
                                 >
-                                  <Book className="h-3 w-3 text-black/60 dark:text-white/60" />
-                                </button>
-                                <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
-                                  opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                  Open Glossary
-                                </div>
-                              </div>
-                            </div>
+                                  <button 
+                                    className="pointer-events-auto w-6 h-6 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm border border-black/10 dark:border-white/20 
+                                    flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      // Open notes interface
+                                      console.log('Open notes for:', word)
+                                    }}
+                                  >
+                                    <List className="h-3 w-3 text-black/60 dark:text-white/60" />
+                                  </button>
+                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
+                                    opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                    Add Note
+                                  </div>
+                                </motion.div>
 
-                            {/* Word Display */}
-                            <span className="text-black/90 dark:text-white/90">{word}</span>
+                                {/* Dictionary Icon */}
+                                <motion.div 
+                                  className="group relative"
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ duration: 0.2, delay: 0.2 }}
+                                >
+                                  <button 
+                                    className="pointer-events-auto w-6 h-6 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm border border-black/10 dark:border-white/20 
+                                    flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      window.location.href = '/glossary'
+                                    }}
+                                  >
+                                    <Book className="h-3 w-3 text-black/60 dark:text-white/60" />
+                                  </button>
+                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
+                                    opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                    Open Glossary
+                                  </div>
+                                </motion.div>
+                              </div>
+                            )}
                           </div>
                         )}
                       </motion.div>
