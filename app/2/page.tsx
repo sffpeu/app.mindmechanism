@@ -28,22 +28,28 @@ import { getAllWords } from '@/lib/glossary'
 
 // Test words for each node
 const testWords = [
-  'Neptune',
-  'Triton',
-  'Orbit',
-  'Discovery',
-  'Telescope',
-  'Mathematics'
+  'Harmony',
+  'Balance',
+  'Rhythm',
+  'Flow',
+  'Unity',
+  'Symmetry',
+  'Cycle',
+  'Pattern',
+  'Order',
+  'Motion'
 ]
 
-// Satellite configurations for clock 1
+// Satellite configurations from clock 0
 const satelliteConfigs = [
-  { rotationTime: 450 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 900 * 1000, rotationDirection: 'counterclockwise' },
-  { rotationTime: 1350 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 2700 * 1000, rotationDirection: 'counterclockwise' },
-  { rotationTime: 4050 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 8100 * 1000, rotationDirection: 'counterclockwise' }
+  { rotationTime: 300 * 1000, rotationDirection: 'clockwise' },
+  { rotationTime: 600 * 1000, rotationDirection: 'counterclockwise' },
+  { rotationTime: 900 * 1000, rotationDirection: 'clockwise' },
+  { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' },
+  { rotationTime: 2700 * 1000, rotationDirection: 'clockwise' },
+  { rotationTime: 5400 * 1000, rotationDirection: 'counterclockwise' },
+  { rotationTime: 5400 * 1000, rotationDirection: 'clockwise' },
+  { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' }
 ]
 
 // Helper function to convert hex to rgb
@@ -93,12 +99,12 @@ function NodesPageContent() {
   const [loadingGlossary, setLoadingGlossary] = useState(true)
   const [selectedWord, setSelectedWord] = useState<string | null>(null)
 
-  // Get clock 1 settings
-  const clock1 = clockSettings[1]
-  const focusNodes = clock1.focusNodes
-  const startingDegree = clock1.startingDegree
-  const rotationTime = clock1.rotationTime
-  const rotationDirection = clock1.rotationDirection
+  // Get clock 2 settings
+  const clock2 = clockSettings[2]
+  const focusNodes = clock2.focusNodes
+  const startingDegree = clock2.startingDegree
+  const rotationTime = clock2.rotationTime
+  const rotationDirection = clock2.rotationDirection
 
   // Calculate rotation
   const [rotation, setRotation] = useState(startingDegree)
@@ -216,7 +222,7 @@ function NodesPageContent() {
   }
 
   const getFocusNodeStyle = (index: number, isSelected: boolean) => {
-    const color = '#fd290a' // Color from clock 0
+    const color = '#ff6b00' // Orange color for clock 2
     return {
       backgroundColor: isSelected ? color : 'transparent',
       border: `2px solid ${color}`,
@@ -292,7 +298,7 @@ function NodesPageContent() {
   }
 
   // Get the RGB values for the glow effect
-  const clockColor = hexToRgb('#fd290a') // Red color from clock 0
+  const clockColor = hexToRgb('#ff6b00') // Orange color for clock 2
 
   // Add getElapsedTime helper function
   const getElapsedTime = (startDateTime: Date): string => {
@@ -380,11 +386,11 @@ function NodesPageContent() {
                   <div className="space-y-3">
                     {/* Clock Title and Description */}
                     <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10">
-                      <h3 className="text-sm font-medium text-red-500">
+                      <h3 className="text-sm font-medium text-orange-500">
                         Neptune's Discovery
                       </h3>
                       <p className="text-xs text-black/60 dark:text-white/60 line-clamp-2">
-                        Mathematical prediction and telescopic confirmation of Neptune's existence, revolutionizing planetary discovery.
+                        Mathematical prediction and visual confirmation of Neptune, marking a triumph of celestial mechanics.
                       </p>
                     </div>
 
@@ -447,7 +453,7 @@ function NodesPageContent() {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
                         <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                          <div className="w-1 h-1 rounded-full bg-red-500" />
+                          <div className="w-1 h-1 rounded-full bg-orange-500" />
                           Focus Nodes
                         </span>
                         <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
@@ -546,13 +552,13 @@ function NodesPageContent() {
                 <div
                   className="absolute inset-0"
                   style={{
-                    transform: `translate(${clock1.imageX}%, ${clock1.imageY}%) rotate(${clock1.imageOrientation}deg) scale(${clock1.imageScale})`,
+                    transform: `translate(${clock2.imageX}%, ${clock2.imageY}%) rotate(${clock2.imageOrientation}deg) scale(${clock2.imageScale})`,
                     willChange: 'transform',
                     transformOrigin: 'center',
                   }}
                 >
                   <Image 
-                    src={clock1.imageUrl}
+                    src={clock2.imageUrl}
                     alt="Clock Face 2"
                     layout="fill"
                     objectFit="cover"
@@ -579,7 +585,7 @@ function NodesPageContent() {
                 ease: 'linear'
               }}
             >
-              <div className="absolute inset-0" style={{ transform: `rotate(${clock1.imageOrientation}deg)`, pointerEvents: 'auto' }}>
+              <div className="absolute inset-0" style={{ transform: `rotate(${clock2.imageOrientation}deg)`, pointerEvents: 'auto' }}>
                 <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
                   {Array.from({ length: focusNodes }).map((_, index) => {
                     const angle = ((360 / focusNodes) * index + startingDegree + 45) % 360
@@ -641,7 +647,7 @@ function NodesPageContent() {
                                   >
                                     <Info className="h-3 w-3 text-black/60 dark:text-white/60" />
                                   </button>
-                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
+                                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
                                     opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                                     Definition
                                   </div>
@@ -665,7 +671,7 @@ function NodesPageContent() {
                                   >
                                     <List className="h-3 w-3 text-black/60 dark:text-white/60" />
                                   </button>
-                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
+                                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
                                     opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                                     Add Note
                                   </div>
@@ -688,7 +694,7 @@ function NodesPageContent() {
                                   >
                                     <Book className="h-3 w-3 text-black/60 dark:text-white/60" />
                                   </button>
-                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
+                                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
                                     opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                                     Open Glossary
                                   </div>
