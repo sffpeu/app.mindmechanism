@@ -95,10 +95,10 @@ function NodesPageContent() {
 
   // Get clock 3 settings
   const clock3 = clockSettings[3]
-  const focusNodes = clock3.focusNodes
-  const startingDegree = clock3.startingDegree
-  const rotationTime = clock3.rotationTime
-  const rotationDirection = clock3.rotationDirection
+  const focusNodes = clock3.focusNodes // 12 nodes
+  const startingDegree = clock3.startingDegree // 30 degrees
+  const rotationTime = clock3.rotationTime // 20995200000ms
+  const rotationDirection = clock3.rotationDirection // counterclockwise
 
   // Calculate rotation
   const [rotation, setRotation] = useState(startingDegree)
