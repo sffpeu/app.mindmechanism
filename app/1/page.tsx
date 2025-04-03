@@ -7,7 +7,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { motion } from 'framer-motion'
 import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
-import { Settings, List, Info, Satellite, Clock as ClockIcon, Calendar, RotateCw, Timer as TimerIcon, Compass, HelpCircle } from 'lucide-react'
+import { Settings, List, Info, Satellite, Clock as ClockIcon, Calendar, RotateCw, Timer as TimerIcon, Compass, HelpCircle, Book } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useSearchParams } from 'next/navigation'
 import Timer from '@/components/Timer'
@@ -613,66 +613,67 @@ function NodesPageContent() {
                             shadow-sm transition-all outline outline-1 outline-black/10 dark:outline-white/20"
                             style={getWordContainerStyle(angle, isSelected)}
                           >
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
+                            {/* Icons above word */}
+                            <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex items-center gap-2">
+                              {/* Info Icon */}
+                              <div className="group relative">
                                 <button 
-                                  className="pointer-events-auto flex items-center gap-1.5 px-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-                                  onClick={(e) => e.stopPropagation()}
+                                  className="pointer-events-auto w-6 h-6 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm border border-black/10 dark:border-white/20 
+                                  flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    // Show definition in a tooltip or modal
+                                    console.log('Show definition for:', word)
+                                  }}
                                 >
-                                  <span className="text-black/90 dark:text-white/90">{word}</span>
+                                  <Info className="h-3 w-3 text-black/60 dark:text-white/60" />
                                 </button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent 
-                                className="w-80 p-0 bg-white/95 dark:bg-black/95 backdrop-blur-sm border-black/10 dark:border-white/20"
-                                align="start"
-                              >
-                                {loadingGlossary ? (
-                                  <div className="text-center py-4 text-sm text-black/60 dark:text-white/60">
-                                    Loading glossary...
-                                  </div>
-                                ) : (
-                                  <>
-                                    {/* Definition Section */}
-                                    <div className="p-4 border-b border-black/10 dark:border-white/10">
-                                      <div className="space-y-2">
-                                        <h4 className="text-sm font-medium text-black dark:text-white">{word}</h4>
-                                        <p className="text-xs text-black/60 dark:text-white/60">
-                                          {glossaryWords.find(w => w.word.toLowerCase() === word.toLowerCase())?.definition || 
-                                           'No definition available'}
-                                        </p>
-                                      </div>
-                                    </div>
+                                <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
+                                  opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                  Definition
+                                </div>
+                              </div>
 
-                                    {/* Quick Actions */}
-                                    <div className="p-2">
-                                      <DropdownMenuItem 
-                                        className="flex items-center gap-2 cursor-pointer"
-                                        onClick={(e) => {
-                                          e.preventDefault()
-                                          // TODO: Implement notes functionality
-                                          console.log('Open notes for:', word)
-                                        }}
-                                      >
-                                        <List className="h-4 w-4" />
-                                        <span>View Notes</span>
-                                      </DropdownMenuItem>
-                                      
-                                      <DropdownMenuItem 
-                                        className="flex items-center gap-2 cursor-pointer"
-                                        onClick={(e) => {
-                                          e.preventDefault()
-                                          // TODO: Navigate to glossary page
-                                          window.location.href = '/glossary'
-                                        }}
-                                      >
-                                        <Info className="h-4 w-4" />
-                                        <span>Open in Glossary</span>
-                                      </DropdownMenuItem>
-                                    </div>
-                                  </>
-                                )}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                              {/* Notes Icon */}
+                              <div className="group relative">
+                                <button 
+                                  className="pointer-events-auto w-6 h-6 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm border border-black/10 dark:border-white/20 
+                                  flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    // Open notes interface
+                                    console.log('Open notes for:', word)
+                                  }}
+                                >
+                                  <List className="h-3 w-3 text-black/60 dark:text-white/60" />
+                                </button>
+                                <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
+                                  opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                  Add Note
+                                </div>
+                              </div>
+
+                              {/* Dictionary Icon */}
+                              <div className="group relative">
+                                <button 
+                                  className="pointer-events-auto w-6 h-6 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm border border-black/10 dark:border-white/20 
+                                  flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    window.location.href = '/glossary'
+                                  }}
+                                >
+                                  <Book className="h-3 w-3 text-black/60 dark:text-white/60" />
+                                </button>
+                                <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
+                                  opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                  Open Glossary
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Word Display */}
+                            <span className="text-black/90 dark:text-white/90">{word}</span>
                           </div>
                         )}
                       </motion.div>
