@@ -218,7 +218,7 @@ function NodesPageContent() {
   }
 
   const getFocusNodeStyle = (index: number, isSelected: boolean) => {
-    const color = '#fd290a' // Color from clock 0
+    const color = '#fba63b' // Color for clock 1 (orange)
     return {
       backgroundColor: isSelected ? color : 'transparent',
       border: `2px solid ${color}`,
@@ -294,7 +294,7 @@ function NodesPageContent() {
   }
 
   // Get the RGB values for the glow effect
-  const clockColor = hexToRgb('#fd290a') // Red color from clock 0
+  const clockColor = hexToRgb('#fba63b') // Orange color for clock 1
 
   // Add getElapsedTime helper function
   const getElapsedTime = (startDateTime: Date): string => {
@@ -382,11 +382,11 @@ function NodesPageContent() {
                   <div className="space-y-3">
                     {/* Clock Title and Description */}
                     <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10">
-                      <h3 className="text-sm font-medium text-red-500">
-                        Galileo's First Observation
+                      <h3 className="text-sm font-medium text-orange-500">
+                        Neptune's Discovery
                       </h3>
                       <p className="text-xs text-black/60 dark:text-white/60 line-clamp-2">
-                        First telescopic observations of the night sky, marking the beginning of modern astronomy.
+                        The historic discovery of Neptune, predicted through mathematical calculations before visual confirmation.
                       </p>
                     </div>
 
@@ -408,7 +408,7 @@ function NodesPageContent() {
                             Started
                           </p>
                           <p className="text-sm font-medium text-black/90 dark:text-white/90">
-                            {new Date('1610-12-21T03:00:00').toLocaleDateString()}
+                            {new Date('1846-09-23T06:00:00').toLocaleDateString()}
                           </p>
                         </div>
                       </div>
@@ -449,7 +449,7 @@ function NodesPageContent() {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
                         <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                          <div className="w-1 h-1 rounded-full bg-red-500" />
+                          <div className="w-1 h-1 rounded-full bg-orange-500" />
                           Focus Nodes
                         </span>
                         <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
