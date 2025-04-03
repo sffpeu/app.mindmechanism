@@ -26,30 +26,32 @@ import {
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords } from '@/lib/glossary'
 
-// Test words for each node
+// Test words for each node (10 words for clock 2)
 const testWords = [
+  'Mindfulness',
+  'Perception',
+  'Awareness',
+  'Presence',
+  'Intuition',
+  'Reflection',
+  'Stillness',
   'Harmony',
   'Balance',
-  'Rhythm',
-  'Flow',
-  'Unity',
-  'Symmetry',
-  'Cycle',
-  'Pattern',
-  'Order',
-  'Motion'
+  'Serenity'
 ]
 
-// Satellite configurations from clock 0
+// Satellite configurations for clock 2
 const satelliteConfigs = [
-  { rotationTime: 300 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 600 * 1000, rotationDirection: 'counterclockwise' },
-  { rotationTime: 900 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' },
-  { rotationTime: 2700 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 5400 * 1000, rotationDirection: 'counterclockwise' },
-  { rotationTime: 5400 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' }
+  { rotationTime: 450 * 1000, rotationDirection: 'clockwise' },
+  { rotationTime: 900 * 1000, rotationDirection: 'counterclockwise' },
+  { rotationTime: 1350 * 1000, rotationDirection: 'clockwise' },
+  { rotationTime: 2700 * 1000, rotationDirection: 'counterclockwise' },
+  { rotationTime: 4050 * 1000, rotationDirection: 'clockwise' },
+  { rotationTime: 8100 * 1000, rotationDirection: 'counterclockwise' },
+  { rotationTime: 8100 * 1000, rotationDirection: 'clockwise' },
+  { rotationTime: 2700 * 1000, rotationDirection: 'counterclockwise' },
+  { rotationTime: 1350 * 1000, rotationDirection: 'clockwise' },
+  { rotationTime: 450 * 1000, rotationDirection: 'counterclockwise' }
 ]
 
 // Helper function to convert hex to rgb
@@ -145,8 +147,9 @@ function NodesPageContent() {
     return () => clearInterval(timer)
   }, [remainingTime, isPaused])
 
+  // Rotation animation effect
   useEffect(() => {
-    const startDateTime = new Date('1610-12-21T03:00:00')
+    const startDateTime = clock2.startDateTime
     const animate = () => {
       const now = Date.now()
       const elapsedMilliseconds = now - startDateTime.getTime()
@@ -162,7 +165,7 @@ function NodesPageContent() {
 
     const animationId = requestAnimationFrame(animate)
     return () => cancelAnimationFrame(animationId)
-  }, [startingDegree, rotationTime, rotationDirection])
+  }, [startingDegree, rotationTime, rotationDirection, clock2.startDateTime])
 
   // Update current time every second
   useEffect(() => {
@@ -174,7 +177,7 @@ function NodesPageContent() {
 
   // Update clock info
   useEffect(() => {
-    const startDateTime = new Date('1610-12-21T03:00:00')
+    const startDateTime = clock2.startDateTime
     const now = Date.now()
     const elapsedMilliseconds = now - startDateTime.getTime()
     const rotations = Math.floor(elapsedMilliseconds / rotationTime)
@@ -186,7 +189,7 @@ function NodesPageContent() {
       currentRotation: currentDegree,
       direction: rotationDirection
     })
-  }, [currentTime, rotationTime, currentDegree, rotationDirection])
+  }, [currentTime, rotationTime, currentDegree, rotationDirection, clock2.startDateTime])
 
   // Load glossary words
   useEffect(() => {
@@ -253,14 +256,14 @@ function NodesPageContent() {
   const renderSatellites = () => {
     return satelliteConfigs.map((satellite, index) => {
       const now = Date.now()
-      const startDateTime = new Date('1610-12-21T03:00:00')
+      const startDateTime = clock2.startDateTime
       const elapsedMilliseconds = now - startDateTime.getTime()
       const satelliteRotation = (elapsedMilliseconds / satellite.rotationTime) * 360
       const totalRotation = satellite.rotationDirection === 'clockwise'
         ? satelliteRotation
         : -satelliteRotation
 
-      // Calculate position with adjusted radius (60 instead of 65)
+      // Calculate position with adjusted radius
       const angle = ((360 / satelliteConfigs.length) * index + totalRotation) % 360
       const radians = angle * (Math.PI / 180)
       const radius = 60 // Reduced from 65 to bring satellites closer
@@ -284,7 +287,6 @@ function NodesPageContent() {
             transform: 'translate(-50%, -50%)',
             zIndex: 100,
           }}
-          whileHover={{ scale: 1.25 }} // Reduced from 1.5
         >
           <div 
             className="w-4 h-4 rounded-full bg-black dark:bg-white"
@@ -387,10 +389,10 @@ function NodesPageContent() {
                     {/* Clock Title and Description */}
                     <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10">
                       <h3 className="text-sm font-medium text-orange-500">
-                        Neptune's Discovery
+                        Spring Equinox Observation
                       </h3>
                       <p className="text-xs text-black/60 dark:text-white/60 line-clamp-2">
-                        Mathematical prediction and visual confirmation of Neptune, marking a triumph of celestial mechanics.
+                        Observations of celestial movements during the vernal equinox, marking the transition of seasons.
                       </p>
                     </div>
 
@@ -412,7 +414,7 @@ function NodesPageContent() {
                             Started
                           </p>
                           <p className="text-sm font-medium text-black/90 dark:text-white/90">
-                            {new Date('1610-12-21T03:00:00').toLocaleDateString()}
+                            {clock2.startDateTime.toLocaleDateString()}
                           </p>
                         </div>
                       </div>
@@ -497,7 +499,7 @@ function NodesPageContent() {
 
         <div className="flex-grow flex items-center justify-center min-h-screen">
           <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px]">
-            {/* Red glow effect */}
+            {/* Orange glow effect */}
             {clockColor && (
               <motion.div
                 className="absolute inset-0 rounded-full"
@@ -628,7 +630,7 @@ function NodesPageContent() {
 
                             {/* Icons above word - only show when word is selected */}
                             {selectedWord === word && (
-                              <div className="absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-2">
+                              <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex items-center gap-2">
                                 {/* Info Icon */}
                                 <motion.div 
                                   className="group relative"
@@ -647,7 +649,7 @@ function NodesPageContent() {
                                   >
                                     <Info className="h-3 w-3 text-black/60 dark:text-white/60" />
                                   </button>
-                                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
+                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
                                     opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                                     Definition
                                   </div>
@@ -671,7 +673,7 @@ function NodesPageContent() {
                                   >
                                     <List className="h-3 w-3 text-black/60 dark:text-white/60" />
                                   </button>
-                                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
+                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
                                     opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                                     Add Note
                                   </div>
@@ -694,7 +696,7 @@ function NodesPageContent() {
                                   >
                                     <Book className="h-3 w-3 text-black/60 dark:text-white/60" />
                                   </button>
-                                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
+                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
                                     opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                                     Open Glossary
                                   </div>
