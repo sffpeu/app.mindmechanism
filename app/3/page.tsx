@@ -39,7 +39,8 @@ const testWords = [
   'Planet',
   'System',
   'Motion',
-  'Discovery'
+  'Discovery',
+  'Observation'
 ]
 
 // No satellites for clock 3
