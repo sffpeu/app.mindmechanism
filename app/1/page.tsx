@@ -212,8 +212,8 @@ function NodesPageContent() {
       left: isLeftSide ? 'auto' : '100%',
       right: isLeftSide ? '100%' : 'auto',
       top: '50%',
-      marginLeft: isLeftSide ? '-0.75rem' : '0.75rem',
-      marginRight: isLeftSide ? '0.75rem' : '-0.75rem',
+      marginLeft: isLeftSide ? '-1.5rem' : '1.5rem',
+      marginRight: isLeftSide ? '1.5rem' : '-1.5rem',
       transform: `translateY(-50%) scale(${isSelected ? 1.1 : 1}) rotate(${-rotation}deg)`,
       transformOrigin: isLeftSide ? 'right' : 'left',
     }
