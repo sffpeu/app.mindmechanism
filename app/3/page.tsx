@@ -1,5 +1,3 @@
-'use client'
-
 import { useState, useEffect, Suspense } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
@@ -33,18 +31,14 @@ const testWords = [
   'Europa',
   'Ganymede',
   'Callisto',
-  'Orbit',
-  'Satellite',
-  'Moon',
-  'Planet',
-  'System',
-  'Motion',
+  'Satellites',
+  'Orbits',
+  'Telescope',
+  'Moons',
   'Discovery',
-  'Observation'
+  'Observation',
+  'Revolution'
 ]
-
-// No satellites for clock 3
-const satelliteConfigs = []
 
 // Helper function to convert hex to rgb
 const hexToRgb = (hex: string) => {
@@ -95,10 +89,10 @@ function NodesPageContent() {
 
   // Get clock 3 settings
   const clock3 = clockSettings[3]
-  const focusNodes = clock3.focusNodes // 12 nodes
-  const startingDegree = clock3.startingDegree // 30 degrees
-  const rotationTime = clock3.rotationTime // 20995200000ms
-  const rotationDirection = clock3.rotationDirection // counterclockwise
+  const focusNodes = clock3.focusNodes
+  const startingDegree = clock3.startingDegree
+  const rotationTime = clock3.rotationTime
+  const rotationDirection = clock3.rotationDirection
 
   // Calculate rotation
   const [rotation, setRotation] = useState(startingDegree)
@@ -231,68 +225,12 @@ function NodesPageContent() {
     }
   }
 
-  const handleSatellitesChange = (checked: boolean) => {
-    setShowSatellites(checked)
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('showSatellites', JSON.stringify(checked))
-    }
-  }
-
   const handleWordsChange = (checked: boolean) => {
     setShowWords(checked)
     if (typeof window !== 'undefined') {
       localStorage.setItem('showWords', JSON.stringify(checked))
     }
   }
-
-  const renderSatellites = () => {
-    return satelliteConfigs.map((satellite, index) => {
-      const now = Date.now()
-      const startDateTime = new Date('1610-05-29T15:00:00')
-      const elapsedMilliseconds = now - startDateTime.getTime()
-      const satelliteRotation = (elapsedMilliseconds / satellite.rotationTime) * 360
-      const totalRotation = satellite.rotationDirection === 'clockwise'
-        ? satelliteRotation
-        : -satelliteRotation
-
-      const angle = ((360 / satelliteConfigs.length) * index + totalRotation) % 360
-      const radians = angle * (Math.PI / 180)
-      const radius = 60
-      const x = 50 + radius * Math.cos(radians)
-      const y = 50 + radius * Math.sin(radians)
-
-      return (
-        <motion.div
-          key={`satellite-${index}`}
-          className="absolute cursor-pointer"
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{
-            delay: 1 + (index * 0.1),
-            duration: 0.5,
-            ease: "easeOut"
-          }}
-          style={{
-            left: `${x}%`,
-            top: `${y}%`,
-            transform: 'translate(-50%, -50%)',
-            zIndex: 100,
-          }}
-          whileHover={{ scale: 1.25 }}
-        >
-          <div 
-            className="w-4 h-4 rounded-full bg-black dark:bg-white"
-            style={{
-              boxShadow: '0 0 12px rgba(0, 0, 0, 0.4)',
-            }}
-          />
-        </motion.div>
-      )
-    })
-  }
-
-  // Get the RGB values for the glow effect
-  const clockColor = hexToRgb('#6dc037') // Green color for clock 3
 
   // Add getElapsedTime helper function
   const getElapsedTime = (startDateTime: Date): string => {
@@ -324,16 +262,6 @@ function NodesPageContent() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
-                <div className="flex items-center gap-2">
-                  <Satellite className="h-4 w-4" />
-                  <span>Satellites</span>
-                </div>
-                <Switch
-                  checked={showSatellites}
-                  onCheckedChange={handleSatellitesChange}
-                />
-              </DropdownMenuItem>
               <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
                 <div className="flex items-center gap-2">
                   <List className="h-4 w-4" />
@@ -456,15 +384,6 @@ function NodesPageContent() {
                       </div>
                       <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
                         <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                          <div className="w-1 h-1 rounded-full border border-gray-900 dark:border-white/40" />
-                          Satellites
-                        </span>
-                        <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                          {satelliteConfigs.length}
-                        </span>
-                      </div>
-                      <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
-                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
                           <RotateCw className="h-3 w-3 text-gray-400 dark:text-gray-500" />
                           Rotations
                         </span>
@@ -514,19 +433,6 @@ function NodesPageContent() {
                   times: [0, 0.25, 0.5, 0.75, 1]
                 }}
               />
-            )}
-
-            {/* Satellites layer */}
-            {showSatellites && (
-              <motion.div 
-                className="absolute inset-0"
-                style={{ 
-                  willChange: 'transform',
-                  zIndex: 100,
-                }}
-              >
-                {renderSatellites()}
-              </motion.div>
             )}
 
             {/* Clock face */}
@@ -584,7 +490,7 @@ function NodesPageContent() {
                   {Array.from({ length: focusNodes }).map((_, index) => {
                     const angle = ((360 / focusNodes) * index + startingDegree + 45) % 360
                     const radians = angle * (Math.PI / 180)
-                    const nodeRadius = 55
+                    const nodeRadius = 55 // Increased from 48 to move nodes further out
                     const x = 50 + nodeRadius * Math.cos(radians)
                     const y = 50 + nodeRadius * Math.sin(radians)
                     const isSelected = selectedNodeIndex === index
@@ -715,4 +621,5 @@ export default function NodesPage() {
     <Suspense fallback={null}>
       <NodesPageContent />
     </Suspense>
-  } 
+  )
+} 
