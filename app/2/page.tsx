@@ -203,6 +203,7 @@ function NodesPageContent() {
 
   const getWordContainerStyle = (angle: number, isSelected: boolean) => {
     const isLeftSide = angle > 90 && angle < 270
+    const counterRotation = -rotation - clock2.imageOrientation // Counter-rotate both current rotation and image orientation
     return {
       position: 'absolute' as const,
       left: isLeftSide ? 'auto' : '100%',
@@ -210,7 +211,7 @@ function NodesPageContent() {
       top: '50%',
       marginLeft: isLeftSide ? '-1.5rem' : '1.5rem',
       marginRight: isLeftSide ? '1.5rem' : '-1.5rem',
-      transform: `translateY(-50%) scale(${isSelected ? 1.1 : 1}) rotate(${-rotation}deg)`,
+      transform: `translateY(-50%) scale(${isSelected ? 1.1 : 1}) rotate(${counterRotation}deg)`,
       transformOrigin: isLeftSide ? 'right' : 'left',
     }
   }
