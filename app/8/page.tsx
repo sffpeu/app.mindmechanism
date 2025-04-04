@@ -28,31 +28,32 @@ import { getAllWords } from '@/lib/glossary'
 
 // Test words for each node
 const testWords = [
-  'Stars',
-  'Charts',
-  'Ancient',
-  'Mapping',
-  'Accuracy',
-  'Celestial',
-  'Navigation',
-  'Astronomy',
-  'Constellations',
-  'Observation',
-  'Tracking',
-  'Alignment',
-  'Patterns',
-  'Movement',
-  'Position',
-  'Cycles'
+  'Cosmos',
+  'Destiny',
+  'Wisdom',
+  'Journey',
+  'Balance',
+  'Mystery',
+  'Guidance',
+  'Discovery',
+  'Harmony',
+  'Vision',
+  'Insight',
+  'Reflection',
+  'Growth',
+  'Cycles',
+  'Energy',
+  'Time'
 ]
 
 // Satellite configuration
 const satelliteConfigs = [
-  { rotationTime: 900 * 1000, rotationDirection: 'clockwise' as const },
-  { rotationTime: 900 * 1000, rotationDirection: 'counterclockwise' as const },
-  { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' as const },
-  { rotationTime: 900 * 1000, rotationDirection: 'counterclockwise' as const },
-  { rotationTime: 700 * 1000, rotationDirection: 'clockwise' as const }
+  { rotationTime: 1200 * 1000, rotationDirection: 'counterclockwise' as const },
+  { rotationTime: 800 * 1000, rotationDirection: 'clockwise' as const },
+  { rotationTime: 1500 * 1000, rotationDirection: 'counterclockwise' as const },
+  { rotationTime: 1000 * 1000, rotationDirection: 'clockwise' as const },
+  { rotationTime: 600 * 1000, rotationDirection: 'counterclockwise' as const },
+  { rotationTime: 2000 * 1000, rotationDirection: 'clockwise' as const }
 ]
 
 // Helper function to convert hex to rgb
@@ -102,12 +103,13 @@ function NodesPageContent() {
   const [loadingGlossary, setLoadingGlossary] = useState(true)
   const [selectedWord, setSelectedWord] = useState<string | null>(null)
 
-  // Get clock 7 settings
-  const clock7 = clockSettings[6]
-  const focusNodes = clock7.focusNodes
-  const startingDegree = clock7.startingDegree
-  const rotationTime = clock7.rotationTime
-  const rotationDirection = clock7.rotationDirection
+  // Get clock 8 settings
+  const clock8 = clockSettings[7]
+  const focusNodesCount = clock8.focusNodes
+  const focusNodes = Array(focusNodesCount).fill(null)
+  const startingDegree = clock8.startingDegree
+  const rotationTime = clock8.rotationTime
+  const rotationDirection = clock8.rotationDirection
 
   // Calculate rotation
   const [rotation, setRotation] = useState(startingDegree)
@@ -149,7 +151,7 @@ function NodesPageContent() {
   }, [remainingTime, isPaused])
 
   useEffect(() => {
-    const startDateTime = new Date('0015-11-21T00:00:00')
+    const startDateTime = new Date('0015-12-07T02:00:00') // Clock 8's start date
     const animate = () => {
       const now = Date.now()
       const elapsedMilliseconds = now - startDateTime.getTime()
@@ -177,7 +179,7 @@ function NodesPageContent() {
 
   // Update clock info
   useEffect(() => {
-    const startDateTime = new Date('0015-11-21T00:00:00')
+    const startDateTime = new Date('0015-12-07T02:00:00') // Clock 8's start date
     const now = Date.now()
     const elapsedMilliseconds = now - startDateTime.getTime()
     const rotations = Math.floor(elapsedMilliseconds / rotationTime)
@@ -212,7 +214,7 @@ function NodesPageContent() {
 
   const getWordContainerStyle = (angle: number, isSelected: boolean) => {
     const isLeftSide = angle > 90 && angle < 270
-    const counterRotation = -rotation - clock7.imageOrientation // Counter-rotate both current rotation and image orientation
+    const counterRotation = -rotation - clock8.imageOrientation // Counter-rotate both current rotation and image orientation
     return {
       position: 'absolute' as const,
       left: isLeftSide ? 'auto' : '100%',
@@ -226,7 +228,7 @@ function NodesPageContent() {
   }
 
   const getFocusNodeStyle = (index: number, isSelected: boolean) => {
-    const color = '#541b96' // Color for clock 7 (purple)
+    const color = '#1b5496' // Color for clock 8 (blue)
     return {
       backgroundColor: isSelected ? color : 'transparent',
       border: `2px solid ${color}`,
@@ -247,57 +249,64 @@ function NodesPageContent() {
     }
   }
 
-  // Add getElapsedTime helper function
   const getElapsedTime = (startDateTime: Date): string => {
-    const elapsed = Date.now() - startDateTime.getTime()
-    const years = Math.floor(elapsed / (365 * 24 * 60 * 60 * 1000))
-    const remainingDays = Math.floor((elapsed % (365 * 24 * 60 * 60 * 1000)) / (24 * 60 * 60 * 1000))
-    const hours = Math.floor((elapsed % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000))
-    const minutes = Math.floor((elapsed % (60 * 60 * 1000)) / (60 * 1000))
-    const seconds = Math.floor((elapsed % (60 * 1000)) / 1000)
-    return `${years}y ${remainingDays}d ${hours}h ${minutes}m ${seconds}s`
+    const now = new Date()
+    const elapsedMilliseconds = now.getTime() - startDateTime.getTime()
+    const years = Math.floor(elapsedMilliseconds / (365 * 24 * 60 * 60 * 1000))
+    const days = Math.floor((elapsedMilliseconds % (365 * 24 * 60 * 60 * 1000)) / (24 * 60 * 60 * 1000))
+    const hours = Math.floor((elapsedMilliseconds % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000))
+    const minutes = Math.floor((elapsedMilliseconds % (60 * 60 * 1000)) / (60 * 1000))
+    const seconds = Math.floor((elapsedMilliseconds % (60 * 1000)) / 1000)
+    return `${years}y ${days}d ${hours}h ${minutes}m ${seconds}s`
   }
 
   const renderSatellites = () => {
-    return satelliteConfigs.map((satellite, index) => {
-      const now = Date.now()
-      const startDateTime = new Date('0015-11-21T00:00:00')
-      const elapsedMilliseconds = now - startDateTime.getTime()
-      const satelliteRotation = (elapsedMilliseconds / satellite.rotationTime) * 360
-      const totalRotation = satellite.rotationDirection === 'clockwise'
-        ? satelliteRotation
-        : -satelliteRotation
+    if (!showSatellites) return null
 
-      // Calculate position with adjusted radius
-      const angle = ((360 / satelliteConfigs.length) * index + totalRotation) % 360
-      const radians = angle * (Math.PI / 180)
-      const radius = 60
-      const x = 50 + radius * Math.cos(radians)
-      const y = 50 + radius * Math.sin(radians)
+    return satelliteConfigs.map((config, index) => {
+      const orbitRadius = 300 + index * 50 // Increasing orbit radius for each satellite
+      const startAngle = (360 / satelliteConfigs.length) * index // Distribute satellites evenly
+      const rotationDuration = config.rotationTime / 1000 // Convert to seconds
 
       return (
         <motion.div
-          key={`satellite-${index}`}
-          className="absolute cursor-pointer"
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{
-            delay: 1 + (index * 0.1),
-            duration: 0.5,
-            ease: "easeOut"
-          }}
+          key={index}
+          className="absolute"
           style={{
-            left: `${x}%`,
-            top: `${y}%`,
+            width: `${orbitRadius * 2}px`,
+            height: `${orbitRadius * 2}px`,
+            left: '50%',
+            top: '50%',
             transform: 'translate(-50%, -50%)',
-            zIndex: 100,
           }}
-          whileHover={{ scale: 1.25 }}
         >
-          <div 
-            className="w-4 h-4 rounded-full bg-black dark:bg-white"
+          <motion.div
+            className="absolute"
             style={{
-              boxShadow: '0 0 12px rgba(0, 0, 0, 0.4)',
+              width: '10px',
+              height: '10px',
+              borderRadius: '50%',
+              backgroundColor: '#1b5496',
+              left: '50%',
+              marginLeft: '-5px',
+              top: '0',
+              transformOrigin: '50% 50%',
+            }}
+            animate={{
+              rotate: config.rotationDirection === 'clockwise' ? [0, 360] : [360, 0],
+            }}
+            transition={{
+              duration: rotationDuration,
+              repeat: Infinity,
+              ease: 'linear',
+            }}
+          />
+          <div
+            className="absolute w-full h-full rounded-full border border-blue-800 opacity-10"
+            style={{
+              transform: 'translate(-50%, -50%)',
+              left: '50%',
+              top: '50%',
             }}
           />
         </motion.div>
@@ -305,42 +314,47 @@ function NodesPageContent() {
     })
   }
 
-  // Get the RGB values for the glow effect
-  const clockColor = hexToRgb('#541b96') // Purple color for clock 7
-
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50 dark:bg-black/95">
-        <Menu
-          showElements={showElements}
-          onToggleShow={() => setShowElements(!showElements)}
-          showSatellites={showSatellites}
-          onSatellitesChange={setShowSatellites}
-        />
-        
-        {/* Settings Dropdown */}
-        <div className="fixed top-4 right-4 z-50">
+      <div className="relative w-full h-screen overflow-hidden bg-white dark:bg-black">
+        <Menu />
+        <div className="absolute top-4 right-4 z-50 flex gap-4">
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
-              <button className="p-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors">
-                <Settings className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+              <button className="p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg">
+                <Settings className="w-6 h-6 text-gray-600 dark:text-gray-300" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
+            <DropdownMenuContent className="w-56">
+              <DropdownMenuItem className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <List className="h-4 w-4" />
-                  <span>Focus Words</span>
+                  <List className="w-4 h-4" />
+                  <span>Show Words</span>
                 </div>
                 <Switch
                   checked={showWords}
                   onCheckedChange={handleWordsChange}
                 />
               </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
+              <DropdownMenuItem className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Info className="h-4 w-4" />
-                  <span>Info Cards</span>
+                  <Satellite className="w-4 h-4" />
+                  <span>Show Satellites</span>
+                </div>
+                <Switch
+                  checked={showSatellites}
+                  onCheckedChange={(checked) => {
+                    setShowSatellites(checked)
+                    if (typeof window !== 'undefined') {
+                      localStorage.setItem('showSatellites', JSON.stringify(checked))
+                    }
+                  }}
+                />
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Info className="w-4 h-4" />
+                  <span>Show Info Cards</span>
                 </div>
                 <Switch
                   checked={showInfoCards}
@@ -351,344 +365,204 @@ function NodesPageContent() {
           </DropdownMenu>
         </div>
 
-        {/* Timer and Info Component */}
-        <div className="fixed bottom-4 left-4 z-50 flex items-center gap-2">
-          {remainingTime !== null && (
+        {/* Timer */}
+        {remainingTime !== null && (
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
             <Timer
               remainingTime={remainingTime}
               isPaused={isPaused}
               onPauseResume={handlePauseResume}
             />
-          )}
-          <div className="group relative">
-            <button 
-              className="p-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors"
-              aria-label="Clock Information"
-            >
-              <Info className="h-4 w-4 text-black/70 dark:text-white/70" />
+          </div>
+        )}
+
+        {/* Info Cards */}
+        {showInfoCards && (
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-50 flex gap-4">
+            <Card className="w-48">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <ClockIcon className="w-4 h-4" />
+                  <span className="font-semibold">Rotation</span>
+                </div>
+                <div className="text-sm">
+                  {Math.round(clockInfo.rotation)}°
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="w-48">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <RotateCw className="w-4 h-4" />
+                  <span className="font-semibold">Rotations</span>
+                </div>
+                <div className="text-sm">
+                  {clockInfo.rotationsCompleted}
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="w-48">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <TimerIcon className="w-4 h-4" />
+                  <span className="font-semibold">Elapsed Time</span>
+                </div>
+                <div className="text-sm">
+                  {clockInfo.elapsedTime}
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="w-48">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Compass className="w-4 h-4" />
+                  <span className="font-semibold">Direction</span>
+                </div>
+                <div className="text-sm capitalize">
+                  {clockInfo.direction}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Help Button */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="absolute bottom-4 right-4 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg">
+              <HelpCircle className="w-6 h-6 text-gray-600 dark:text-gray-300" />
             </button>
-            <div className="absolute bottom-full left-0 mb-2 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 origin-bottom-left">
-              <Card className="w-[300px] bg-white/90 dark:bg-black/90 backdrop-blur-sm border-black/5 dark:border-white/10">
-                <CardContent className="p-4">
-                  <div className="space-y-3">
-                    {/* Clock Title and Description */}
-                    <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10">
-                      <h3 className="text-sm font-medium text-purple-500">
-                        Ancient Star Charts
-                      </h3>
-                      <p className="text-xs text-black/60 dark:text-white/60 line-clamp-2">
-                        Ancient star charts from early astronomers, mapping the night sky with remarkable accuracy.
-                      </p>
-                    </div>
-
-                    {/* Clock Information */}
-                    <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10">
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <p className="text-xs font-medium text-black/60 dark:text-white/60 flex items-center gap-1">
-                            <ClockIcon className="h-3 w-3" />
-                            Current
-                          </p>
-                          <p className="text-sm font-medium text-black/90 dark:text-white/90">
-                            {currentTime.toLocaleTimeString()}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs font-medium text-black/60 dark:text-white/60 flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            Started
-                          </p>
-                          <p className="text-sm font-medium text-black/90 dark:text-white/90">
-                            {new Date('0015-11-21T00:00:00').toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div>
-                        <p className="text-xs font-medium text-black/60 dark:text-white/60 flex items-center gap-1">
-                          <TimerIcon className="h-3 w-3" />
-                          Elapsed
-                        </p>
-                        <p className="text-sm font-medium text-black/90 dark:text-white/90 font-mono">
-                          {clockInfo.elapsedTime}
-                        </p>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <p className="text-xs font-medium text-black/60 dark:text-white/60 flex items-center gap-1">
-                            <Compass className="h-3 w-3" />
-                            Start °
-                          </p>
-                          <p className="text-sm font-medium text-black/90 dark:text-white/90">
-                            {startingDegree.toFixed(1)}°
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs font-medium text-black/60 dark:text-white/60 flex items-center gap-1">
-                            <RotateCw className="h-3 w-3" />
-                            Rot. Time
-                          </p>
-                          <p className="text-sm font-medium text-black/90 dark:text-white/90">
-                            {rotationTime / 1000}s
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
-                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                          <div className="w-1 h-1 rounded-full bg-purple-500" />
-                          Focus Nodes
-                        </span>
-                        <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                          {focusNodes}
-                        </span>
-                      </div>
-                      <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
-                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                          <RotateCw className="h-3 w-3 text-gray-400 dark:text-gray-500" />
-                          Rotations
-                        </span>
-                        <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                          {clockInfo.rotationsCompleted}
-                        </span>
-                      </div>
-                      <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
-                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                          <Compass className="h-3 w-3 text-gray-400 dark:text-gray-500" />
-                          Current °
-                        </span>
-                        <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                          {clockInfo.direction === 'clockwise' ? '+' : ''}{currentDegree.toFixed(3)}°
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex-grow flex items-center justify-center min-h-screen">
-          <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px]">
-            {/* Purple glow effect */}
-            {clockColor && (
-              <motion.div
-                className="absolute inset-0 rounded-full"
-                style={{
-                  '--shadow-color': `${clockColor.r}, ${clockColor.g}, ${clockColor.b}`,
-                } as React.CSSProperties}
-                animate={{
-                  boxShadow: [
-                    "0 0 50px rgba(var(--shadow-color), 0)",
-                    "0 0 100px rgba(var(--shadow-color), 0.15)",
-                    "0 0 150px rgba(var(--shadow-color), 0.3)",
-                    "0 0 100px rgba(var(--shadow-color), 0.15)",
-                    "0 0 50px rgba(var(--shadow-color), 0)"
-                  ]
-                }}
-                transition={{
-                  duration: 60,
-                  ease: [0.4, 0, 0.6, 1],
-                  repeat: Infinity,
-                  times: [0, 0.25, 0.5, 0.75, 1]
-                }}
-              />
-            )}
-
-            {/* Satellites layer */}
-            {showSatellites && (
-              <motion.div 
-                className="absolute inset-0"
-                style={{ 
-                  willChange: 'transform',
-                  zIndex: 100,
-                }}
-              >
-                {renderSatellites()}
-              </motion.div>
-            )}
-
-            {/* Clock face */}
-            <div className="absolute inset-0 rounded-full overflow-hidden">
-              <motion.div 
-                className="absolute inset-0"
-                style={{ 
-                  willChange: 'transform',
-                }}
-                animate={{ rotate: rotation }}
-                transition={{
-                  type: 'tween',
-                  duration: 0.016,
-                  ease: 'linear'
-                }}
-              >
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    transform: `translate(${clock7.imageX}%, ${clock7.imageY}%) rotate(${clock7.imageOrientation}deg) scale(${clock7.imageScale})`,
-                    willChange: 'transform',
-                    transformOrigin: 'center',
-                  }}
-                >
-                  <Image 
-                    src={clock7.imageUrl}
-                    alt="Clock Face 7"
-                    layout="fill"
-                    objectFit="cover"
-                    className="rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none"
-                    priority
-                    loading="eager"
-                  />
-                </div>
-              </motion.div>
-            </div>
-
-            {/* Focus nodes layer */}
-            <motion.div 
-              className="absolute inset-0"
-              style={{ 
-                willChange: 'transform',
-                zIndex: 200,
-                pointerEvents: 'none',
-              }}
-              animate={{ rotate: rotation }}
-              transition={{
-                type: 'tween',
-                duration: 0.016,
-                ease: 'linear'
-              }}
-            >
-              <div className="absolute inset-0" style={{ transform: `rotate(${clock7.imageOrientation}deg)`, pointerEvents: 'auto' }}>
-                <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
-                  {Array.from({ length: focusNodes }).map((_, index) => {
-                    const angle = ((360 / focusNodes) * index + startingDegree + 45) % 360
-                    const radians = angle * (Math.PI / 180)
-                    const nodeRadius = 55
-                    const x = 50 + nodeRadius * Math.cos(radians)
-                    const y = 50 + nodeRadius * Math.sin(radians)
-                    const isSelected = selectedNodeIndex === index
-                    const word = testWords[index]
-
-                    return (
-                      <motion.div
-                        key={index}
-                        className="absolute rounded-full cursor-pointer"
-                        style={{
-                          left: `${x}%`,
-                          top: `${y}%`,
-                          ...getFocusNodeStyle(index, isSelected),
-                        }}
-                        onClick={() => handleNodeClick(index)}
-                        onMouseEnter={() => setHoveredNodeIndex(index)}
-                        onMouseLeave={() => setHoveredNodeIndex(null)}
-                      >
-                        {showWords && (hoveredNodeIndex === index || isSelected) && word && (
-                          <div 
-                            className="absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
-                            shadow-sm transition-all outline outline-1 outline-black/10 dark:outline-white/20"
-                            style={getWordContainerStyle(angle, isSelected)}
-                          >
-                            {/* Word Display with click handler */}
-                            <button
-                              className="pointer-events-auto"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                setSelectedWord(selectedWord === word ? null : word)
-                              }}
-                            >
-                              <span className="text-black/90 dark:text-white/90">{word}</span>
-                            </button>
-
-                            {/* Icons above word - only show when word is selected */}
-                            {selectedWord === word && (
-                              <div className="absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-2">
-                                {/* Info Icon */}
-                                <motion.div 
-                                  className="group relative"
-                                  initial={{ opacity: 0, y: 10 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  transition={{ duration: 0.2, delay: 0 }}
-                                >
-                                  <button 
-                                    className="pointer-events-auto w-6 h-6 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm border border-black/10 dark:border-white/20 
-                                    flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      // Show definition in a tooltip or modal
-                                      console.log('Show definition for:', word)
-                                    }}
-                                  >
-                                    <Info className="h-3 w-3 text-black/60 dark:text-white/60" />
-                                  </button>
-                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
-                                    opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                    Definition
-                                  </div>
-                                </motion.div>
-
-                                {/* Notes Icon */}
-                                <motion.div 
-                                  className="group relative"
-                                  initial={{ opacity: 0, y: 10 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  transition={{ duration: 0.2, delay: 0.1 }}
-                                >
-                                  <button 
-                                    className="pointer-events-auto w-6 h-6 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm border border-black/10 dark:border-white/20 
-                                    flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      // Open notes interface
-                                      console.log('Open notes for:', word)
-                                    }}
-                                  >
-                                    <List className="h-3 w-3 text-black/60 dark:text-white/60" />
-                                  </button>
-                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
-                                    opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                    Add Note
-                                  </div>
-                                </motion.div>
-
-                                {/* Dictionary Icon */}
-                                <motion.div 
-                                  className="group relative"
-                                  initial={{ opacity: 0, y: 10 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  transition={{ duration: 0.2, delay: 0.2 }}
-                                >
-                                  <button 
-                                    className="pointer-events-auto w-6 h-6 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm border border-black/10 dark:border-white/20 
-                                    flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      window.location.href = '/glossary'
-                                    }}
-                                  >
-                                    <Book className="h-3 w-3 text-black/60 dark:text-white/60" />
-                                  </button>
-                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
-                                    opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                    Open Glossary
-                                  </div>
-                                </motion.div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </motion.div>
-                    )
-                  })}
-                </div>
+          </PopoverTrigger>
+          <PopoverContent className="w-80">
+            <div className="space-y-2">
+              <h3 className="font-semibold">Celestial Wisdom Clock</h3>
+              <p className="text-sm text-gray-500">
+                This clock represents the ancient wisdom of celestial cycles and their influence on human consciousness.
+                The rotating elements symbolize the interconnected nature of cosmic patterns and personal growth.
+              </p>
+              <div className="flex items-center gap-2 mt-4">
+                <Book className="w-4 h-4" />
+                <span className="text-sm font-medium">Learn More</span>
               </div>
-            </motion.div>
-          </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        {/* Main Clock Container */}
+        <div
+          className="absolute inset-0 flex items-center justify-center"
+          style={{
+            perspective: '1000px',
+          }}
+        >
+          {/* Background Circle */}
+          <div
+            className="absolute w-[600px] h-[600px] rounded-full"
+            style={{
+              background: isDarkMode
+                ? 'radial-gradient(circle at center, rgba(27, 84, 150, 0.2) 0%, rgba(27, 84, 150, 0.1) 50%, rgba(27, 84, 150, 0) 70%)'
+                : 'radial-gradient(circle at center, rgba(27, 84, 150, 0.1) 0%, rgba(27, 84, 150, 0.05) 50%, rgba(27, 84, 150, 0) 70%)',
+            }}
+          />
+
+          {/* Satellites */}
+          {renderSatellites()}
+
+          {/* Clock Image */}
+          <motion.div
+            className="relative"
+            style={{
+              width: '600px',
+              height: '600px',
+              transform: `rotate(${rotation}deg)`,
+            }}
+          >
+            <Image
+              src="/images/clock8.png"
+              alt="Clock 8"
+              width={600}
+              height={600}
+              className="w-full h-full"
+              style={{
+                transform: `rotate(${clock8.imageOrientation}deg)`,
+              }}
+            />
+
+            {/* Focus Nodes */}
+            {focusNodes.map((node, index) => {
+              const isSelected = selectedNodeIndex === index
+              const isHovered = hoveredNodeIndex === index
+              const angle = (360 / focusNodesCount) * index
+              const radius = 250 // Distance from center
+              const x = radius * Math.cos((angle - 90) * (Math.PI / 180))
+              const y = radius * Math.sin((angle - 90) * (Math.PI / 180))
+
+              return (
+                <div key={index} className="absolute left-1/2 top-1/2">
+                  {/* Node */}
+                  <div
+                    className="absolute rounded-full cursor-pointer"
+                    style={{
+                      ...getFocusNodeStyle(index, isSelected || isHovered),
+                      left: x,
+                      top: y,
+                    }}
+                    onClick={() => handleNodeClick(index)}
+                    onMouseEnter={() => setHoveredNodeIndex(index)}
+                    onMouseLeave={() => setHoveredNodeIndex(null)}
+                  />
+
+                  {/* Word */}
+                  {showWords && (
+                    <div
+                      style={{
+                        ...getWordContainerStyle(angle, isSelected || isHovered),
+                        left: x,
+                        top: y,
+                      }}
+                      className={`whitespace-nowrap text-sm font-medium ${
+                        isSelected || isHovered
+                          ? 'text-blue-600 dark:text-blue-400'
+                          : 'text-gray-600 dark:text-gray-400'
+                      }`}
+                      onClick={() => {
+                        setSelectedWord(testWords[index])
+                        handleNodeClick(index)
+                      }}
+                    >
+                      {testWords[index]}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </motion.div>
         </div>
+
+        {/* Glossary Popover */}
+        {selectedWord && (
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
+            <Card className="w-96">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-2">{selectedWord}</h3>
+                {loadingGlossary ? (
+                  <p>Loading...</p>
+                ) : (
+                  <div>
+                    {glossaryWords.find(word => word.word.toLowerCase() === selectedWord.toLowerCase())?.definition || 
+                     'Definition not found in glossary.'}
+                  </div>
+                )}
+                <button
+                  className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                  onClick={() => setSelectedWord(null)}
+                >
+                  ×
+                </button>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </ProtectedRoute>
   )
