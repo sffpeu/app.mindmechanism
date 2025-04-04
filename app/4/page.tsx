@@ -95,7 +95,7 @@ function NodesPageContent() {
   const [selectedWord, setSelectedWord] = useState<string | null>(null)
 
   // Get clock 4 settings
-  const clock4 = clockSettings[3]
+  const clock4 = clockSettings[4]
   const focusNodes = clock4.focusNodes
   const startingDegree = clock4.startingDegree
   const rotationTime = clock4.rotationTime
