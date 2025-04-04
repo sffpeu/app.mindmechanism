@@ -347,7 +347,6 @@ function NodesPageContent() {
               remainingTime={remainingTime}
               isPaused={isPaused}
               onPauseResume={handlePauseResume}
-              sessionId={sessionId}
             />
           </div>
         )}
