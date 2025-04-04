@@ -102,12 +102,12 @@ function NodesPageContent() {
   const [loadingGlossary, setLoadingGlossary] = useState(true)
   const [selectedWord, setSelectedWord] = useState<string | null>(null)
 
-  // Get clock 7 settings
-  const clock7 = clockSettings[6]
-  const focusNodes = clock7.focusNodes
-  const startingDegree = clock7.startingDegree
-  const rotationTime = clock7.rotationTime
-  const rotationDirection = clock7.rotationDirection
+  // Get clock 8 settings
+  const clock8 = clockSettings[7]
+  const focusNodes = clock8.focusNodes
+  const startingDegree = clock8.startingDegree
+  const rotationTime = clock8.rotationTime
+  const rotationDirection = clock8.rotationDirection
 
   // Calculate rotation
   const [rotation, setRotation] = useState(startingDegree)
@@ -212,7 +212,7 @@ function NodesPageContent() {
 
   const getWordContainerStyle = (angle: number, isSelected: boolean) => {
     const isLeftSide = angle > 90 && angle < 270
-    const counterRotation = -rotation - clock7.imageOrientation // Counter-rotate both current rotation and image orientation
+    const counterRotation = -rotation - clock8.imageOrientation // Counter-rotate both current rotation and image orientation
     return {
       position: 'absolute' as const,
       left: isLeftSide ? 'auto' : '100%',
@@ -226,7 +226,7 @@ function NodesPageContent() {
   }
 
   const getFocusNodeStyle = (index: number, isSelected: boolean) => {
-    const color = '#541b96' // Color for clock 7 (purple)
+    const color = '#541b96' // Color for clock 8 (purple)
     return {
       backgroundColor: isSelected ? color : 'transparent',
       border: `2px solid ${color}`,
@@ -306,7 +306,7 @@ function NodesPageContent() {
   }
 
   // Get the RGB values for the glow effect
-  const clockColor = hexToRgb('#541b96') // Purple color for clock 7
+  const clockColor = hexToRgb('#541b96') // Purple color for clock 8
 
   return (
     <ProtectedRoute>
@@ -530,19 +530,20 @@ function NodesPageContent() {
                 <div
                   className="absolute inset-0"
                   style={{
-                    transform: `translate(${clock7.imageX}%, ${clock7.imageY}%) rotate(${clock7.imageOrientation}deg) scale(${clock7.imageScale})`,
+                    transform: `translate(${clock8.imageX}%, ${clock8.imageY}%) rotate(${clock8.imageOrientation}deg) scale(${clock8.imageScale})`,
                     willChange: 'transform',
                     transformOrigin: 'center',
                   }}
                 >
                   <Image 
-                    src={clock7.imageUrl}
-                    alt="Clock Face 7"
-                    layout="fill"
-                    objectFit="cover"
-                    className="rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none"
-                    priority
-                    loading="eager"
+                    src={clock8.imageUrl}
+                    alt="Clock 8"
+                    width={600}
+                    height={600}
+                    className="w-full h-full"
+                    style={{
+                      transform: `rotate(${clock8.imageOrientation}deg)`,
+                    }}
                   />
                 </div>
               </motion.div>
@@ -563,7 +564,7 @@ function NodesPageContent() {
                 ease: 'linear'
               }}
             >
-              <div className="absolute inset-0" style={{ transform: `rotate(${clock7.imageOrientation}deg)`, pointerEvents: 'auto' }}>
+              <div className="absolute inset-0" style={{ transform: `rotate(${clock8.imageOrientation}deg)`, pointerEvents: 'auto' }}>
                 <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
                   {Array.from({ length: focusNodes }).map((_, index) => {
                     const angle = ((360 / focusNodes) * index + startingDegree + 45) % 360
