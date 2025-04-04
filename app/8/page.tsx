@@ -104,12 +104,7 @@ function NodesPageContent() {
 
   // Get clock 8 settings
   const clock8 = clockSettings[7]
-  const numFocusNodes = clock8.focusNodes
-  const focusNodes = Array.from({ length: numFocusNodes }, (_, i) => ({
-    x: 50 + 35 * Math.cos((2 * Math.PI * i) / numFocusNodes),
-    y: 50 + 35 * Math.sin((2 * Math.PI * i) / numFocusNodes),
-    angle: (360 * i) / numFocusNodes
-  }))
+  const focusNodes = clock8.focusNodes
   const startingDegree = clock8.startingDegree
   const rotationTime = clock8.rotationTime
   const rotationDirection = clock8.rotationDirection
@@ -267,7 +262,7 @@ function NodesPageContent() {
     if (!showSatellites) return null
 
     return satelliteConfigs.map((config, index) => {
-      const orbitRadius = 200 + index * 30 // Increasing orbit radius for each satellite
+      const orbitRadius = 300 + index * 50 // Increasing orbit radius for each satellite
       const startAngle = (360 / satelliteConfigs.length) * index // Distribute satellites evenly
       const rotationDuration = config.rotationTime / 1000 // Convert to seconds
 
@@ -278,25 +273,38 @@ function NodesPageContent() {
           style={{
             width: `${orbitRadius * 2}px`,
             height: `${orbitRadius * 2}px`,
-            top: '50%',
             left: '50%',
+            top: '50%',
             transform: 'translate(-50%, -50%)',
           }}
         >
           <motion.div
-            className="absolute w-2 h-2 bg-purple-500 rounded-full"
+            className="absolute"
             style={{
-              top: '0%',
+              width: '10px',
+              height: '10px',
+              borderRadius: '50%',
+              backgroundColor: '#541b96',
               left: '50%',
-              transform: 'translate(-50%, -50%)',
+              marginLeft: '-5px',
+              top: '0',
+              transformOrigin: '50% 50%',
             }}
             animate={{
-              rotate: config.rotationDirection === 'clockwise' ? 360 : -360
+              rotate: config.rotationDirection === 'clockwise' ? [0, 360] : [360, 0],
             }}
             transition={{
               duration: rotationDuration,
               repeat: Infinity,
-              ease: "linear"
+              ease: 'linear',
+            }}
+          />
+          <div
+            className="absolute w-full h-full rounded-full border border-purple-800 opacity-10"
+            style={{
+              transform: 'translate(-50%, -50%)',
+              left: '50%',
+              top: '50%',
             }}
           />
         </motion.div>
@@ -306,41 +314,51 @@ function NodesPageContent() {
 
   return (
     <ProtectedRoute>
-      <div className="relative w-full h-screen overflow-hidden bg-background">
+      <div className="relative w-full h-screen overflow-hidden bg-white dark:bg-black">
         <Menu />
-        
-        {/* Settings Panel */}
-        <div className="absolute top-4 right-4 z-50">
+        <div className="absolute top-4 right-4 z-50 flex gap-4">
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
-              <button className="p-2 rounded-lg bg-background border border-border hover:bg-muted transition-colors">
-                <Settings className="w-5 h-5" />
+              <button className="p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg">
+                <Settings className="w-6 h-6 text-gray-600 dark:text-gray-300" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <div className="p-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Show Words</span>
-                  <Switch
-                    checked={showWords}
-                    onCheckedChange={handleWordsChange}
-                  />
+            <DropdownMenuContent className="w-56">
+              <DropdownMenuItem className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <List className="w-4 h-4" />
+                  <span>Show Words</span>
                 </div>
-              </div>
-              <div className="p-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Show Satellites</span>
-                  <Switch
-                    checked={showSatellites}
-                    onCheckedChange={(checked) => {
-                      setShowSatellites(checked)
-                      if (typeof window !== 'undefined') {
-                        localStorage.setItem('showSatellites', JSON.stringify(checked))
-                      }
-                    }}
-                  />
+                <Switch
+                  checked={showWords}
+                  onCheckedChange={handleWordsChange}
+                />
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Satellite className="w-4 h-4" />
+                  <span>Show Satellites</span>
                 </div>
-              </div>
+                <Switch
+                  checked={showSatellites}
+                  onCheckedChange={(checked) => {
+                    setShowSatellites(checked)
+                    if (typeof window !== 'undefined') {
+                      localStorage.setItem('showSatellites', JSON.stringify(checked))
+                    }
+                  }}
+                />
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Info className="w-4 h-4" />
+                  <span>Show Info Cards</span>
+                </div>
+                <Switch
+                  checked={showInfoCards}
+                  onCheckedChange={setShowInfoCards}
+                />
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -352,110 +370,110 @@ function NodesPageContent() {
               remainingTime={remainingTime}
               isPaused={isPaused}
               onPauseResume={handlePauseResume}
+              sessionId={sessionId}
             />
           </div>
         )}
 
-        {/* Clock Info Panel */}
-        <div className="absolute bottom-4 left-4 z-50">
-          <Popover>
-            <PopoverTrigger asChild>
-              <button className="p-2 rounded-lg bg-background border border-border hover:bg-muted transition-colors">
-                <Info className="w-5 h-5" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent side="right" align="start" className="w-64">
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
+        {/* Info Cards */}
+        {showInfoCards && (
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-50 flex gap-4">
+            <Card className="w-48">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-2">
                   <ClockIcon className="w-4 h-4" />
-                  <span className="text-sm">Rotation: {Math.round(clockInfo.currentRotation)}°</span>
+                  <span className="font-semibold">Rotation</span>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="text-sm">
+                  {Math.round(clockInfo.rotation)}°
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="w-48">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-2">
                   <RotateCw className="w-4 h-4" />
-                  <span className="text-sm">Rotations: {clockInfo.rotationsCompleted}</span>
+                  <span className="font-semibold">Rotations</span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Calendar className="w-4 h-4" />
-                  <span className="text-sm">Elapsed: {clockInfo.elapsedTime}</span>
+                <div className="text-sm">
+                  {clockInfo.rotationsCompleted}
                 </div>
-                <div className="flex items-center space-x-2">
+              </CardContent>
+            </Card>
+            <Card className="w-48">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <TimerIcon className="w-4 h-4" />
+                  <span className="font-semibold">Elapsed Time</span>
+                </div>
+                <div className="text-sm">
+                  {clockInfo.elapsedTime}
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="w-48">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-2">
                   <Compass className="w-4 h-4" />
-                  <span className="text-sm">Direction: {clockInfo.direction}</span>
+                  <span className="font-semibold">Direction</span>
                 </div>
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
-
-        {/* Glossary Panel */}
-        <div className="absolute bottom-4 right-4 z-50">
-          <Popover>
-            <PopoverTrigger asChild>
-              <button className="p-2 rounded-lg bg-background border border-border hover:bg-muted transition-colors">
-                <Book className="w-5 h-5" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent side="left" align="start" className="w-64 max-h-96 overflow-y-auto">
-              {loadingGlossary ? (
-                <div className="flex items-center justify-center p-4">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <div className="text-sm capitalize">
+                  {clockInfo.direction}
                 </div>
-              ) : (
-                <div className="space-y-2">
-                  {glossaryWords.map((word, index) => (
-                    <Card key={index} className="cursor-pointer hover:bg-muted/50 transition-colors">
-                      <CardContent className="p-4">
-                        <h3 className="font-semibold">{word.word}</h3>
-                        <p className="text-sm text-muted-foreground">{word.definition}</p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </PopoverContent>
-          </Popover>
-        </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Help Button */}
-        <div className="absolute top-4 left-4 z-50">
-          <Popover>
-            <PopoverTrigger asChild>
-              <button className="p-2 rounded-lg bg-background border border-border hover:bg-muted transition-colors">
-                <HelpCircle className="w-5 h-5" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent side="right" align="start" className="w-64">
-              <div className="space-y-2">
-                <h3 className="font-semibold">Clock 8</h3>
-                <p className="text-sm text-muted-foreground">
-                  This clock represents the Ancient Star Charts, showing celestial movements and patterns.
-                  Click on nodes to explore different astronomical concepts.
-                </p>
-                <div className="text-sm text-muted-foreground">
-                  <strong>Controls:</strong>
-                  <ul className="list-disc list-inside mt-1">
-                    <li>Click nodes to select</li>
-                    <li>Toggle words in settings</li>
-                    <li>View glossary for definitions</li>
-                  </ul>
-                </div>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="absolute bottom-4 right-4 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg">
+              <HelpCircle className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80">
+            <div className="space-y-2">
+              <h3 className="font-semibold">Ancient Star Charts</h3>
+              <p className="text-sm text-gray-500">
+                This clock represents ancient astronomical charts used for celestial navigation.
+                The rotating elements symbolize the movement of stars and constellations tracked
+                by ancient astronomers.
+              </p>
+              <div className="flex items-center gap-2 mt-4">
+                <Book className="w-4 h-4" />
+                <span className="text-sm font-medium">Learn More</span>
               </div>
-            </PopoverContent>
-          </Popover>
-        </div>
+            </div>
+          </PopoverContent>
+        </Popover>
 
         {/* Main Clock Container */}
         <div
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+          className="absolute inset-0 flex items-center justify-center"
           style={{
-            width: '600px',
-            height: '600px',
+            perspective: '1000px',
           }}
         >
-          {/* Clock Image */}
+          {/* Background Circle */}
           <div
-            className="relative w-full h-full"
+            className="absolute w-[600px] h-[600px] rounded-full"
             style={{
+              background: isDarkMode
+                ? 'radial-gradient(circle at center, rgba(84, 27, 150, 0.2) 0%, rgba(84, 27, 150, 0.1) 50%, rgba(84, 27, 150, 0) 70%)'
+                : 'radial-gradient(circle at center, rgba(84, 27, 150, 0.1) 0%, rgba(84, 27, 150, 0.05) 50%, rgba(84, 27, 150, 0) 70%)',
+            }}
+          />
+
+          {/* Satellites */}
+          {renderSatellites()}
+
+          {/* Clock Image */}
+          <motion.div
+            className="relative"
+            style={{
+              width: '600px',
+              height: '600px',
               transform: `rotate(${rotation}deg)`,
             }}
           >
@@ -469,46 +487,82 @@ function NodesPageContent() {
                 transform: `rotate(${clock8.imageOrientation}deg)`,
               }}
             />
-          </div>
 
-          {/* Focus Nodes */}
-          {focusNodes.map((node, index) => {
-            const isSelected = selectedNodeIndex === index
-            const isHovered = hoveredNodeIndex === index
-            const angle = node.angle + rotation + clock8.imageOrientation
+            {/* Focus Nodes */}
+            {focusNodes.map((node, index) => {
+              const isSelected = selectedNodeIndex === index
+              const isHovered = hoveredNodeIndex === index
+              const angle = (360 / focusNodes.length) * index
+              const radius = 250 // Distance from center
+              const x = radius * Math.cos((angle - 90) * (Math.PI / 180))
+              const y = radius * Math.sin((angle - 90) * (Math.PI / 180))
 
-            return (
-              <div key={index}>
-                {/* Node */}
-                <div
-                  className="absolute cursor-pointer rounded-full"
-                  style={{
-                    left: `${node.x}%`,
-                    top: `${node.y}%`,
-                    ...getFocusNodeStyle(index, isSelected)
-                  }}
-                  onClick={() => handleNodeClick(index)}
-                  onMouseEnter={() => setHoveredNodeIndex(index)}
-                  onMouseLeave={() => setHoveredNodeIndex(null)}
-                />
-
-                {/* Word */}
-                {showWords && (isSelected || isHovered) && (
+              return (
+                <div key={index} className="absolute left-1/2 top-1/2">
+                  {/* Node */}
                   <div
-                    style={getWordContainerStyle(angle, isSelected)}
-                  >
-                    <span className="text-sm font-medium whitespace-nowrap">
+                    className="absolute rounded-full cursor-pointer"
+                    style={{
+                      ...getFocusNodeStyle(index, isSelected || isHovered),
+                      left: x,
+                      top: y,
+                    }}
+                    onClick={() => handleNodeClick(index)}
+                    onMouseEnter={() => setHoveredNodeIndex(index)}
+                    onMouseLeave={() => setHoveredNodeIndex(null)}
+                  />
+
+                  {/* Word */}
+                  {showWords && (
+                    <div
+                      style={{
+                        ...getWordContainerStyle(angle, isSelected || isHovered),
+                        left: x,
+                        top: y,
+                      }}
+                      className={`whitespace-nowrap text-sm font-medium ${
+                        isSelected || isHovered
+                          ? 'text-purple-600 dark:text-purple-400'
+                          : 'text-gray-600 dark:text-gray-400'
+                      }`}
+                      onClick={() => {
+                        setSelectedWord(testWords[index])
+                        handleNodeClick(index)
+                      }}
+                    >
                       {testWords[index]}
-                    </span>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </motion.div>
+        </div>
+
+        {/* Glossary Popover */}
+        {selectedWord && (
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
+            <Card className="w-96">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-2">{selectedWord}</h3>
+                {loadingGlossary ? (
+                  <p>Loading...</p>
+                ) : (
+                  <div>
+                    {glossaryWords.find(word => word.term.toLowerCase() === selectedWord.toLowerCase())?.definition || 
+                     'Definition not found in glossary.'}
                   </div>
                 )}
-              </div>
-            )
-          })}
-
-          {/* Satellites */}
-          {renderSatellites()}
-        </div>
+                <button
+                  className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                  onClick={() => setSelectedWord(null)}
+                >
+                  ×
+                </button>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </ProtectedRoute>
   )
