@@ -48,11 +48,7 @@ const testWords = [
 
 // Satellite configuration
 const satelliteConfigs = [
-  { rotationTime: 900 * 1000, rotationDirection: 'clockwise' as const },
-  { rotationTime: 900 * 1000, rotationDirection: 'counterclockwise' as const },
-  { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' as const },
-  { rotationTime: 900 * 1000, rotationDirection: 'counterclockwise' as const },
-  { rotationTime: 700 * 1000, rotationDirection: 'clockwise' as const }
+  { rotationTime: 60 * 1000, rotationDirection: 'clockwise' as const }
 ]
 
 // Helper function to convert hex to rgb
@@ -226,7 +222,7 @@ function NodesPageContent() {
   }
 
   const getFocusNodeStyle = (index: number, isSelected: boolean) => {
-    const color = '#541b96' // Color for clock 8 (purple)
+    const color = '#56c1ff' // Color for clock 9 (light blue)
     return {
       backgroundColor: isSelected ? color : 'transparent',
       border: `2px solid ${color}`,
@@ -306,7 +302,7 @@ function NodesPageContent() {
   }
 
   // Get the RGB values for the glow effect
-  const clockColor = hexToRgb('#541b96') // Purple color for clock 8
+  const clockColor = hexToRgb('#56c1ff') // Light blue color for clock 9
 
   return (
     <ProtectedRoute>
