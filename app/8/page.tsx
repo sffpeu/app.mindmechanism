@@ -26,24 +26,36 @@ import {
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords } from '@/lib/glossary'
 
+// Info cards content
+const infoCards = [
+  {
+    title: 'Astronomical Time',
+    content: 'Throughout history, astronomical observations have been fundamental in measuring and tracking time, using the movement of celestial bodies as nature\'s most precise clock.'
+  },
+  {
+    title: 'Celestial Mechanics',
+    content: 'The regular motion of stars and planets provides a reliable framework for timekeeping, with each celestial cycle marking precise intervals in the cosmic dance.'
+  },
+  {
+    title: 'Time Synchronization',
+    content: 'Modern timekeeping still relies on astronomical observations, combining ancient wisdom with atomic precision to maintain accurate global time standards.'
+  }
+]
+
 // Test words for each node
 const testWords = [
-  'Stars',
-  'Charts',
-  'Ancient',
-  'Mapping',
-  'Accuracy',
+  'Time',
   'Celestial',
-  'Navigation',
   'Astronomy',
-  'Constellations',
+  'Precision',
+  'Cycles',
   'Observation',
-  'Tracking',
-  'Alignment',
-  'Patterns',
+  'Synchronization',
+  'Mechanics',
   'Movement',
-  'Position',
-  'Cycles'
+  'Accuracy',
+  'Standards',
+  'Measurement'
 ]
 
 // Satellite configuration
