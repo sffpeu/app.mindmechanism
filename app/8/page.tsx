@@ -104,7 +104,12 @@ function NodesPageContent() {
 
   // Get clock 8 settings
   const clock8 = clockSettings[7]
-  const focusNodes = clock8.focusNodes
+  const numFocusNodes = clock8.focusNodes
+  const focusNodes = Array.from({ length: numFocusNodes }, (_, i) => ({
+    x: 50 + 35 * Math.cos((2 * Math.PI * i) / numFocusNodes),
+    y: 50 + 35 * Math.sin((2 * Math.PI * i) / numFocusNodes),
+    angle: (360 * i) / numFocusNodes
+  }))
   const startingDegree = clock8.startingDegree
   const rotationTime = clock8.rotationTime
   const rotationDirection = clock8.rotationDirection
