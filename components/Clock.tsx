@@ -444,8 +444,11 @@ export default function Clock({
     if (!sessionId || !user?.uid) return;
     try {
       await updateSession(sessionId, {
+        status: 'completed',
         progress: 100,
-        completed_at: new Date().toISOString()
+        end_time: new Date().toISOString(),
+        actual_duration: initialDuration || 0,
+        last_active_time: new Date().toISOString()
       });
     } catch (error) {
       console.error('Error updating session:', error);
