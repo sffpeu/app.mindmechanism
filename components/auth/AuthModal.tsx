@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -62,6 +62,7 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-white dark:bg-black/90 border border-gray-200 dark:border-white/10">
+        <DialogTitle className="sr-only">Authentication</DialogTitle>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="email" className="text-gray-900 dark:text-gray-100">Email</Label>

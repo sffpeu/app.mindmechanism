@@ -11,7 +11,7 @@ import { GlossaryWord } from '@/types/Glossary'
 import { getClockWords } from '@/lib/glossary'
 import { HintPopup } from '@/components/ui/hint-popup'
 import { useSoundEffects } from '@/lib/sounds'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import { createSession } from '@/lib/sessions'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 
@@ -655,7 +655,7 @@ export function SessionDurationDialog({
           sea_level: 0,
           latitude: 0,
           longitude: 0,
-          progress: 0 // Initialize progress at 0
+          progress: 0
         });
 
         // Navigate to the new page structure with the session ID
