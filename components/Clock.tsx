@@ -438,7 +438,7 @@ export default function Clock({
   // Add new state for auto-save
   const [lastAutoSave, setLastAutoSave] = useState<number>(Date.now());
 
-  const { playSuccess, playClick } = useSoundEffects();
+  const { playClick } = useSoundEffects();
 
   // Initialize session
   useEffect(() => {
@@ -451,6 +451,7 @@ export default function Clock({
         setSessionStartTime(now);
         setIsPaused(false);
         setLastAutoSave(now);
+        playClick(); // Play click sound when session starts
 
         // If this is a continued session, check for pending state
         if (sessionId) {
@@ -473,7 +474,7 @@ export default function Clock({
         }
       }
     }
-  }, [duration, sessionId]);
+  }, [duration, sessionId, playClick]);
 
   // Timer effect with auto-save
   useEffect(() => {
@@ -502,13 +503,12 @@ export default function Clock({
       // Play success sound and handle completion when timer reaches zero
       if (remaining <= 0) {
         clearInterval(timer);
-        playSuccess();
         handleSessionComplete();
       }
     }, 1000);
     
     return () => clearInterval(timer);
-  }, [initialDuration, isPaused, sessionStartTime, lastAutoSave, sessionId, playSuccess]);
+  }, [initialDuration, isPaused, sessionStartTime, lastAutoSave, sessionId, handleSessionComplete]);
 
   const handleSessionComplete = async () => {
     if (!sessionId || !user?.uid) return;

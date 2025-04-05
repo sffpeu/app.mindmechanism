@@ -50,7 +50,7 @@ export function SessionDurationDialog({
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false)
   const [selectedWordIndex, setSelectedWordIndex] = useState<number | null>(null)
   const [filteredWords, setFilteredWords] = useState<GlossaryWord[]>([])
-  const { playClick, playStep1, playStep2, playStart } = useSoundEffects()
+  const { playClick } = useSoundEffects()
   const [hasInteracted, setHasInteracted] = useState(false)
 
   const textColorClass = clockColor?.split(' ')?.[0] || 'text-gray-500'
@@ -95,9 +95,9 @@ export function SessionDurationDialog({
 
   useEffect(() => {
     if (open) {
-      playStep1()
+      playClick()
     }
-  }, [open, playStep1])
+  }, [open, playClick])
 
   const loadGlossaryWords = async () => {
     try {
@@ -159,16 +159,14 @@ export function SessionDurationDialog({
   }
 
   const handleNext = () => {
+    playClick()
     if (step === 'duration') {
-      playStep1()
       setStep('words')
     } else if (step === 'words') {
-      playStep2()
       onNext(
         isEndless ? null : (isCustom ? parseInt(customDuration) : selectedPreset),
         words
       )
-      playStart()
       onOpenChange(false)
     }
   }
