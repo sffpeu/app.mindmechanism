@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Pause, Play } from 'lucide-react';
-import useSoundEffects from '../hooks/useSoundEffects';
+import { useSoundEffects } from '@/lib/sounds';
 
 interface TimerProps {
   remainingTime: number | null;
