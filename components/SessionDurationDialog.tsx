@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
@@ -680,6 +680,11 @@ export function SessionDurationDialog({
         step === 'duration' && "sm:h-[500px]",
         step === 'confirm' && "sm:h-[500px]"
       )}>
+        <DialogTitle className="sr-only">
+          {step === 'duration' && 'Set Session Duration'}
+          {step === 'words' && 'Assign Words'}
+          {step === 'confirm' && 'Confirm Session'}
+        </DialogTitle>
         <div className={cn(
           "relative w-full h-full flex flex-col",
           step === 'duration' && "justify-center"
