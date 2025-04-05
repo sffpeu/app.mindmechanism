@@ -13,6 +13,7 @@ import { HintPopup } from '@/components/ui/hint-popup'
 import { useSoundEffects } from '@/lib/sounds'
 import { useRouter } from 'next/router'
 import { createSession } from '@/lib/sessions'
+import { useAuth } from '@/lib/FirebaseAuthContext'
 
 interface SessionDurationDialogProps {
   open: boolean
@@ -33,6 +34,7 @@ export function SessionDurationDialog({
   clockColor = 'text-gray-500 bg-gray-500',
   onNext 
 }: SessionDurationDialogProps) {
+  const { user } = useAuth()
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null)
   const [customDuration, setCustomDuration] = useState('')
   const [isCustom, setIsCustom] = useState(false)
