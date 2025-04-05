@@ -440,6 +440,18 @@ export default function Clock({
 
   const { playClick } = useSoundEffects();
 
+  const handleSessionComplete = async () => {
+    if (!sessionId || !user?.uid) return;
+    try {
+      await updateSession(sessionId, {
+        progress: 100,
+        completed_at: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error updating session:', error);
+    }
+  };
+
   // Initialize session
   useEffect(() => {
     if (duration) {
@@ -481,26 +493,22 @@ export default function Clock({
     if (!initialDuration || isPaused) return;
 
     const timer = setInterval(() => {
-      const now = Date.now();
-      const startTime = sessionStartTime || now;
-      const elapsed = now - startTime;
-      const remaining = Math.max(0, initialDuration - elapsed);
-      
+      const elapsed = Date.now() - sessionStartTime;
+      const remaining = initialDuration - elapsed;
       setRemainingTime(remaining);
-      
-      // Auto-save every 5 seconds
-      if (now - lastAutoSave >= 5000 && sessionId) {
-        const progress = Math.min(100, ((initialDuration - remaining) / initialDuration) * 100);
-        updateSession(sessionId, {
-          status: 'in_progress',
-          actual_duration: initialDuration - remaining,
-          last_active_time: new Date(now).toISOString(),
-          progress: Math.round(progress)
-        });
-        setLastAutoSave(now);
+
+      // Auto-save every minute
+      if (Date.now() - lastAutoSave >= 60000) {
+        setLastAutoSave(Date.now());
+        if (sessionId) {
+          localStorage.setItem('pendingSession', JSON.stringify({
+            sessionId,
+            remaining,
+            timestamp: Date.now()
+          }));
+        }
       }
-      
-      // Play success sound and handle completion when timer reaches zero
+
       if (remaining <= 0) {
         clearInterval(timer);
         handleSessionComplete();
@@ -509,24 +517,6 @@ export default function Clock({
     
     return () => clearInterval(timer);
   }, [initialDuration, isPaused, sessionStartTime, lastAutoSave, sessionId, handleSessionComplete]);
-
-  const handleSessionComplete = async () => {
-    if (!sessionId || !user?.uid) return;
-
-    try {
-      await updateSession(sessionId, {
-        status: 'completed',
-        end_time: new Date().toISOString(),
-        actual_duration: initialDuration || 0,
-        last_active_time: new Date().toISOString(),
-        progress: 100
-      });
-      toast.success('Session completed!');
-    } catch (error) {
-      console.error('Error completing session:', error);
-      toast.error('Failed to complete session');
-    }
-  };
 
   // Enhanced handlePauseResume with better state persistence
   const handlePauseResume = async () => {
