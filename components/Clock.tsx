@@ -493,7 +493,7 @@ export default function Clock({
 
   // Timer effect with auto-save
   useEffect(() => {
-    if (!initialDuration || isPaused) return;
+    if (!initialDuration || isPaused || !sessionStartTime) return;
 
     const timer = setInterval(() => {
       const elapsed = Date.now() - sessionStartTime;
