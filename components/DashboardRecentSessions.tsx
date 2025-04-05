@@ -100,7 +100,9 @@ export function DashboardRecentSessions({ sessions: propSessions }: DashboardRec
   };
 
   const handleRestartSession = (session: Session) => {
-    window.location.href = `/session/${session.clock_id}?duration=${session.duration}`;
+    // Navigate to the new page structure
+    const encodedWords = encodeURIComponent(JSON.stringify(session.words || []));
+    router.push(`/${session.clock_id}?duration=${session.duration}&words=${encodedWords}&sessionId=${session.id}`);
   };
 
   const handleContinueSession = (session: Session) => {

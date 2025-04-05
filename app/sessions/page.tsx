@@ -77,7 +77,7 @@ export default function SessionsPage() {
   const router = useRouter()
   const { user } = useAuth()
   const { theme } = useTheme()
-  const { playStart } = useSoundEffects()
+  const { playStart, playClick } = useSoundEffects()
   useTimeTracking(user?.uid, 'sessions')  // Start time tracking for sessions page
   
   // Function to calculate elapsed time
@@ -162,7 +162,7 @@ export default function SessionsPage() {
     setSelectedClockId(clockId)
     setSelectedClockColor(clockColor)
     setIsDurationDialogOpen(true)
-    playStart()
+    playClick()
   }
 
   const handleDurationSelected = async (duration: number | null, words: string[]) => {
@@ -196,15 +196,15 @@ export default function SessionsPage() {
           progress: 0 // Initialize progress at 0
         });
 
-        // Navigate to the clock page with the session ID
+        // Navigate to the new page structure with the session ID
         const encodedWords = encodeURIComponent(JSON.stringify(words));
-        router.push(`/clock/${selectedClockId}?duration=${durationMs}&words=${encodedWords}&sessionId=${session.id}`);
+        router.push(`/${selectedClockId}?duration=${durationMs}&words=${encodedWords}&sessionId=${session.id}`);
       } catch (error) {
         console.error('Error creating session:', error);
-        // Still navigate to clock page even if session creation fails
+        // Still navigate to the page even if session creation fails
         const durationMs = duration * 60 * 1000;
         const encodedWords = encodeURIComponent(JSON.stringify(words));
-        router.push(`/clock/${selectedClockId}?duration=${durationMs}&words=${encodedWords}`);
+        router.push(`/${selectedClockId}?duration=${durationMs}&words=${encodedWords}`);
       }
     }
     setIsDurationDialogOpen(false);

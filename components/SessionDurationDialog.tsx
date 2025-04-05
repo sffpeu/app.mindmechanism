@@ -11,6 +11,8 @@ import { GlossaryWord } from '@/types/Glossary'
 import { getClockWords } from '@/lib/glossary'
 import { HintPopup } from '@/components/ui/hint-popup'
 import { useSoundEffects } from '@/lib/sounds'
+import { useRouter } from 'next/router'
+import { createSession } from '@/lib/sessions'
 
 interface SessionDurationDialogProps {
   open: boolean
@@ -52,6 +54,7 @@ export function SessionDurationDialog({
   const [filteredWords, setFilteredWords] = useState<GlossaryWord[]>([])
   const { playClick } = useSoundEffects()
   const [hasInteracted, setHasInteracted] = useState(false)
+  const router = useRouter()
 
   const textColorClass = clockColor?.split(' ')?.[0] || 'text-gray-500'
   const bgColorClass = clockColor?.split(' ')?.[1] || 'bg-gray-500'
@@ -621,6 +624,51 @@ export function SessionDurationDialog({
       </motion.div>
     )
   }
+
+  const handleDurationSelected = async (duration: number | null, words: string[]) => {
+    if (clockId !== null && duration !== null && user?.uid) {
+      try {
+        // Convert minutes to milliseconds
+        const durationMs = duration * 60 * 1000;
+        
+        // Create a new session
+        const session = await createSession({
+          user_id: user.uid,
+          clock_id: clockId,
+          duration: durationMs,
+          words: words,
+          moon_phase: '',
+          moon_illumination: 0,
+          moon_rise: '',
+          moon_set: '',
+          weather_condition: '',
+          temperature: 0,
+          humidity: 0,
+          uv_index: 0,
+          pressure: 0,
+          wind_speed: 0,
+          city: '',
+          country: '',
+          elevation: 0,
+          sea_level: 0,
+          latitude: 0,
+          longitude: 0,
+          progress: 0 // Initialize progress at 0
+        });
+
+        // Navigate to the new page structure with the session ID
+        const encodedWords = encodeURIComponent(JSON.stringify(words));
+        router.push(`/${clockId}?duration=${durationMs}&words=${encodedWords}&sessionId=${session.id}`);
+      } catch (error) {
+        console.error('Error creating session:', error);
+        // Still navigate to the page even if session creation fails
+        const durationMs = duration * 60 * 1000;
+        const encodedWords = encodeURIComponent(JSON.stringify(words));
+        router.push(`/${clockId}?duration=${durationMs}&words=${encodedWords}`);
+      }
+    }
+    onOpenChange(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
