@@ -168,9 +168,13 @@ export function SessionDurationDialog({
     if (step === 'duration') {
       setStep('words')
     } else if (step === 'words') {
+      // Get default words for the current clock if no words are selected
+      const defaultWords = clockSettings[clockId]?.defaultWords || testWords
+      const selectedWords = words.some(word => word.trim() !== '') ? words : defaultWords.slice(0, clockSettings[clockId]?.focusNodes || 0)
+      
       onNext(
         isEndless ? null : (isCustom ? parseInt(customDuration) : selectedPreset),
-        words
+        selectedWords
       )
       onOpenChange(false)
     }
@@ -188,7 +192,7 @@ export function SessionDurationDialog({
       return isEndless || selectedPreset !== null || (isCustom && isCustomConfirmed)
     } else if (step === 'words') {
       const hasAnyWord = words.some(word => word.trim() !== '')
-      return !hasAnyWord || words.every(word => word.trim() !== '')
+      return hasAnyWord
     }
     return true
   }
