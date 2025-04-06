@@ -26,6 +26,7 @@ import {
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords } from '@/lib/glossary'
 import Clock from '@/components/Clock'
+import { LeaveWarning } from '@/components/LeaveWarning'
 
 // Test words for each node
 const testWords = [
@@ -130,11 +131,29 @@ function NodesPageContent() {
     }
 
     if (durationParam) {
-      setDuration(parseInt(durationParam))
+      const duration = parseInt(durationParam)
+      setDuration(duration)
+      setRemainingTime(duration)
     }
 
     if (sessionIdParam) {
       setSessionId(sessionIdParam)
+      // Check for pending session
+      const savedSession = localStorage.getItem('pendingSession')
+      if (savedSession) {
+        try {
+          const { sessionId: savedId, remaining, timestamp } = JSON.parse(savedSession)
+          if (savedId === sessionIdParam && Date.now() - timestamp < 24 * 60 * 60 * 1000) {
+            setRemainingTime(remaining)
+            setIsPaused(true)
+          } else {
+            localStorage.removeItem('pendingSession')
+          }
+        } catch (error) {
+          console.error('Error recovering session:', error)
+          localStorage.removeItem('pendingSession')
+        }
+      }
     }
 
     setIsLoading(false)
@@ -327,6 +346,39 @@ function NodesPageContent() {
     const seconds = Math.floor((elapsed % (60 * 1000)) / 1000)
     return `${years}y ${remainingDays}d ${hours}h ${minutes}m ${seconds}s`
   }
+
+  // Save session state when leaving
+  useEffect(() => {
+    if (!sessionId || !remainingTime) return
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        localStorage.setItem('pendingSession', JSON.stringify({
+          sessionId,
+          remaining: remainingTime,
+          timestamp: Date.now()
+        }))
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [sessionId, remainingTime])
+
+  // Auto-save session state periodically
+  useEffect(() => {
+    if (!sessionId || !remainingTime || isPaused) return
+
+    const autoSaveInterval = setInterval(() => {
+      localStorage.setItem('pendingSession', JSON.stringify({
+        sessionId,
+        remaining: remainingTime,
+        timestamp: Date.now()
+      }))
+    }, 30000) // Auto-save every 30 seconds
+
+    return () => clearInterval(autoSaveInterval)
+  }, [sessionId, remainingTime, isPaused])
 
   if (isLoading) {
     return <div>Loading...</div>
@@ -734,6 +786,7 @@ function NodesPageContent() {
         </div>
 
         <div className="relative w-full h-full">
+          <LeaveWarning />
           <Clock
             id={0}
             startDateTime={clock0.startDateTime}
