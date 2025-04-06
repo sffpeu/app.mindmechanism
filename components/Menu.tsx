@@ -119,9 +119,22 @@ export function Menu({
 
   const NavLink = ({ href, icon: Icon, children, className }: { href: string; icon: any; children: React.ReactNode; className?: string }) => {
     const isActive = pathname === href
+    const handleClick = (e: React.MouseEvent) => {
+      // If there's an active session, save its state before navigating
+      const pendingSession = localStorage.getItem('pendingSession')
+      if (pendingSession) {
+        const { sessionId, remaining, timestamp } = JSON.parse(pendingSession)
+        if (Date.now() - timestamp < 24 * 60 * 60 * 1000) { // 24h expiry
+          // Session is still valid, allow navigation
+          return
+        }
+      }
+    }
+
     return (
       <Link
         href={href}
+        onClick={handleClick}
         className={`group flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 
           hover:bg-black/[0.02] dark:hover:bg-white/[0.02]
           hover:border-black/5 dark:hover:border-white/5 border border-transparent

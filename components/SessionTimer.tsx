@@ -21,6 +21,15 @@ export function SessionTimer({ duration, sessionId, onSessionComplete }: Session
       setSessionStartTime(Date.now())
       setIsPaused(false)
       playClick()
+
+      // Save initial session state
+      if (sessionId) {
+        localStorage.setItem('pendingSession', JSON.stringify({
+          sessionId,
+          remaining: duration,
+          timestamp: Date.now()
+        }))
+      }
     }
 
     // Check for saved session
