@@ -30,17 +30,16 @@ export function SessionTimer({ duration, sessionId, onSessionComplete }: Session
           timestamp: Date.now()
         }))
       }
-    }
-
-    // Check for saved session
-    if (sessionId) {
+    } else if (sessionId) {
+      // Check for saved session
       const savedSession = localStorage.getItem('pendingSession')
       if (savedSession) {
         try {
           const { sessionId: savedId, remaining, timestamp } = JSON.parse(savedSession)
           if (savedId === sessionId && Date.now() - timestamp < 24 * 60 * 60 * 1000) {
             setRemainingTime(remaining)
-            setIsPaused(true)
+            setSessionStartTime(Date.now() - (remaining - remaining))
+            setIsPaused(false)
           } else {
             localStorage.removeItem('pendingSession')
           }
@@ -60,21 +59,22 @@ export function SessionTimer({ duration, sessionId, onSessionComplete }: Session
 
   // Timer countdown effect
   useEffect(() => {
-    if (!remainingTime || isPaused) return
+    if (!remainingTime || isPaused || !sessionStartTime) return
 
     const timer = setInterval(() => {
-      setRemainingTime(prev => {
-        if (!prev || prev <= 0) {
-          clearInterval(timer)
-          onSessionComplete?.()
-          return 0
-        }
-        return prev - 1000
-      })
+      const elapsed = Date.now() - sessionStartTime
+      const remaining = Math.max(0, remainingTime - elapsed)
+      
+      setRemainingTime(remaining)
+
+      if (remaining <= 0) {
+        clearInterval(timer)
+        onSessionComplete?.()
+      }
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [remainingTime, isPaused, onSessionComplete])
+  }, [remainingTime, isPaused, sessionStartTime, onSessionComplete])
 
   // Save session state when leaving
   useEffect(() => {
