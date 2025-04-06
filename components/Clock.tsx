@@ -26,6 +26,22 @@ const dotColors = [
   'bg-[#56c1ff]', // 9. Light Blue
 ];
 
+// Default test words
+const testWords = [
+  'Time',
+  'Celestial',
+  'Astronomy',
+  'Precision',
+  'Cycles',
+  'Observation',
+  'Synchronization',
+  'Mechanics',
+  'Movement',
+  'Accuracy',
+  'Standards',
+  'Measurement'
+];
+
 // Update satellites count for each clock
 export const clockSatellites: Record<number, number> = {
   0: 8, // Clock 1
