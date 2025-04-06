@@ -49,7 +49,7 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
       router.push('/multiview/1');
       return;
     }
-    router.push(`/clock/${index}`);
+    router.push(`/${index}`);
   };
 
   const Container = isSessionsPage ? motion.div : 'div';

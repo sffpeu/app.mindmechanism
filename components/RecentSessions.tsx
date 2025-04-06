@@ -124,13 +124,13 @@ export function RecentSessions() {
     
     if (remainingTime > 0 && sessionAge < 24 * 60 * 60 * 1000) { // 24h expiry
       const encodedWords = encodeURIComponent(JSON.stringify(session.words || []));
-      router.push(`/clock/${session.clock_id}?duration=${remainingTime}&sessionId=${session.id}&words=${encodedWords}`);
+      router.push(`/${session.clock_id}?duration=${remainingTime}&sessionId=${session.id}&words=${encodedWords}`);
       
       // Clean up any existing pending session
       localStorage.removeItem('pendingSession');
     } else {
       // Session expired - create a new one
-      router.push(`/clock/${session.clock_id}?duration=${session.duration}&words=${encodeURIComponent(JSON.stringify(session.words || []))}`);
+      router.push(`/${session.clock_id}?duration=${session.duration}&words=${encodeURIComponent(JSON.stringify(session.words || []))}`);
     }
   };
 

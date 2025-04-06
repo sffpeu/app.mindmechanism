@@ -433,7 +433,7 @@ export default function SessionsPage() {
                           </span>
                         </Button>
                         <Link
-                          href={`/clock/${clock.id}`}
+                          href={`/${clock.id}`}
                           className={`h-[45px] w-[45px] flex items-center justify-center rounded-full transition-all bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:bg-white dark:hover:bg-white/10 ${
                             clock.color.includes('red') ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]' :
                             clock.color.includes('orange') ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]' :

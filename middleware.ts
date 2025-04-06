@@ -34,6 +34,6 @@ export const config = {
     '/notes',
     '/glossary',
     '/settings',
-    '/clock/:path*'
+    '/:path*'
   ]
 } 
