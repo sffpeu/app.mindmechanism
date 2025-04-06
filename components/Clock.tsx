@@ -761,18 +761,21 @@ export default function Clock({
       }
     })();
 
+    const wordsToUse = customWords.length > 0 ? customWords : testWords;
+
     return (
       <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
         {Array.from({ length: Math.max(0, clockFocusNodes || 0) }).map((_, index) => {
           const angle = ((360 / Math.max(1, clockFocusNodes || 1)) * index + adjustedStartingDegree) % 360;
+          const word = wordsToUse[index % wordsToUse.length];
           return (
             <FocusNode
               key={`${clockId}-${index}`}
               index={index}
               angle={angle}
-              nodeRadius={55}
+              nodeRadius={getNodeRadius(clockId, isMultiView)}
               isSelected={selectedNodeIndex === index}
-              word={showWords ? customWords?.[index] : undefined}
+              word={showWords ? word : undefined}
               clockId={clockId}
               isMultiView={isMultiView}
               onClick={() => handleNodeClick(index)}
