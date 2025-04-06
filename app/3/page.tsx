@@ -26,6 +26,7 @@ import {
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords } from '@/lib/glossary'
 import Clock from '@/components/Clock'
+import { SessionTimer } from '@/components/SessionTimer'
 
 // Test words for each node
 const testWords = [
@@ -107,33 +108,24 @@ function NodesPageContent() {
   const [rotation, setRotation] = useState(startingDegree)
   const [currentDegree, setCurrentDegree] = useState(startingDegree)
 
-  // Initialize timer from URL parameters
+  // Initialize session from URL parameters
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search)
-    const wordsParam = searchParams.get('words')
-    const durationParam = searchParams.get('duration')
-    const sessionIdParam = searchParams.get('sessionId')
-
-    if (wordsParam) {
-      try {
-        const decodedWords = JSON.parse(decodeURIComponent(wordsParam))
-        setCustomWords(decodedWords)
-      } catch (error) {
-        console.error('Error decoding words:', error)
-        setCustomWords([])
-      }
-    }
-
+    const params = new URLSearchParams(window.location.search)
+    const durationParam = params.get('duration')
+    const sessionIdParam = params.get('sessionId')
+    
     if (durationParam) {
-      setDuration(parseInt(durationParam))
+      setDuration(parseInt(durationParam, 10))
     }
-
     if (sessionIdParam) {
       setSessionId(sessionIdParam)
     }
-
-    setIsLoading(false)
   }, [])
+
+  // Handle session completion
+  const handleSessionComplete = () => {
+    localStorage.removeItem('pendingSession')
+  }
 
   // Handle pause/resume
   const handlePauseResume = () => {
@@ -663,6 +655,15 @@ function NodesPageContent() {
             onInfoUpdate={(info) => setClockInfo(prev => ({ ...prev, ...info }))}
             duration={duration}
             sessionId={sessionId}
+          />
+        </div>
+
+        {/* Position the timer in the bottom left corner */}
+        <div className="absolute bottom-4 left-4 z-50">
+          <SessionTimer
+            duration={duration}
+            sessionId={sessionId}
+            onSessionComplete={handleSessionComplete}
           />
         </div>
       </div>
