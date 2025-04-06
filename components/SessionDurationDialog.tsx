@@ -25,6 +25,22 @@ interface SessionDurationDialogProps {
 
 const timePresets = [15, 30, 45, 60, 120]
 
+// Default test words
+const testWords = [
+  'Time',
+  'Celestial',
+  'Astronomy',
+  'Precision',
+  'Cycles',
+  'Observation',
+  'Synchronization',
+  'Mechanics',
+  'Movement',
+  'Accuracy',
+  'Standards',
+  'Measurement'
+]
+
 type Step = 'duration' | 'words' | 'confirm'
 
 export function SessionDurationDialog({ 
