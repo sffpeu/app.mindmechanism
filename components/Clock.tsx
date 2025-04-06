@@ -451,9 +451,6 @@ export default function Clock({
   const [initialDuration, setInitialDuration] = useState<number | null>(null);
   const { user } = useAuth() as { user: { uid: string } | null }
   const { location } = useLocation();
-  const searchParams = new URLSearchParams(window.location.search);
-  const duration = searchParams.get('duration');
-  const sessionId = searchParams.get('sessionId');
 
   // Add new state for auto-save
   const [lastAutoSave, setLastAutoSave] = useState<number>(Date.now());
@@ -478,7 +475,7 @@ export default function Clock({
   // Initialize session
   useEffect(() => {
     if (duration) {
-      const durationMs = parseInt(duration);
+      const durationMs = parseInt(duration.toString());
       if (!isNaN(durationMs)) {
         const now = Date.now();
         setInitialDuration(durationMs);

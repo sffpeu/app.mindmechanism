@@ -25,10 +25,11 @@ function createDefaultGlossaryWords(): GlossaryWord[] {
     word,
     definition: word,
     phonetic_spelling: word,
-    grade: 'A',
+    grade: 1,
     rating: '+',
     version: 'Default',
-    created_at: new Date().toISOString()
+    created_at: new Date().toISOString(),
+    source: 'system'
   }));
 }
 
