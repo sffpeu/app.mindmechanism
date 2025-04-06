@@ -135,6 +135,8 @@ interface ClockProps extends Partial<ClockSettings> {
     rotationsCompleted: number;
     elapsedTime: string;
   }) => void;
+  duration?: number | null;
+  sessionId?: string | null;
 }
 
 // Update the display state type
@@ -422,7 +424,9 @@ export default function Clock({
   showInfo = true,
   customWords = [],
   wordDefinitions = {},
-  onInfoUpdate
+  onInfoUpdate,
+  duration,
+  sessionId
 }: ClockProps) {
   if (!(startDateTime instanceof Date) || isNaN(startDateTime.getTime())) {
     console.error(`Invalid startDateTime for clock ${id}:`, startDateTime);

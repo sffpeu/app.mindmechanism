@@ -14,6 +14,10 @@ import {
 // Check if we're in a browser environment
 const isBrowser = typeof window !== 'undefined';
 
+// Maximum number of retries for Firestore initialization
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 second
+
 // Debug: Log Firebase config (without sensitive values)
 const debugConfig = {
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -62,7 +66,7 @@ const validateFirebaseConfig = () => {
   return true;
 };
 
-function initializeFirebaseApp(): FirebaseApp | null {
+async function initializeFirebaseApp(retryCount = 0): Promise<FirebaseApp | null> {
   try {
     console.log('Initializing Firebase with config:', {
       authDomain: firebaseConfig.authDomain,
@@ -85,6 +89,11 @@ function initializeFirebaseApp(): FirebaseApp | null {
     }
   } catch (error) {
     console.error('Firebase initialization failed:', error);
+    if (retryCount < MAX_RETRIES) {
+      console.log(`Retrying Firebase initialization (attempt ${retryCount + 1}/${MAX_RETRIES})...`);
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+      return initializeFirebaseApp(retryCount + 1);
+    }
     if (isBrowser) {
       throw error;
     }
@@ -92,12 +101,7 @@ function initializeFirebaseApp(): FirebaseApp | null {
   }
 }
 
-// Initialize Firebase only in browser environment
-const app: FirebaseApp | null = isBrowser ? initializeFirebaseApp() : null;
-const auth: Auth | null = app ? getAuth(app) : null;
-let db: Firestore | null = null;
-
-if (isBrowser && app) {
+async function initializeFirestoreWithRetry(app: FirebaseApp, retryCount = 0): Promise<Firestore | null> {
   try {
     const firestoreSettings: FirestoreSettings = {
       localCache: persistentLocalCache({
@@ -105,13 +109,17 @@ if (isBrowser && app) {
       })
     };
 
-    if (!db) {
-      console.log('Initializing Firestore...');
-      db = initializeFirestore(app, firestoreSettings);
-      console.log('Firestore initialized with persistence enabled');
-    }
+    console.log('Initializing Firestore...');
+    const firestore = initializeFirestore(app, firestoreSettings);
+    console.log('Firestore initialized with persistence enabled');
+    return firestore;
   } catch (error) {
     console.error('Firestore initialization failed:', error);
+    if (retryCount < MAX_RETRIES) {
+      console.log(`Retrying Firestore initialization (attempt ${retryCount + 1}/${MAX_RETRIES})...`);
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+      return initializeFirestoreWithRetry(app, retryCount + 1);
+    }
     // Add more detailed error information
     if (error instanceof Error) {
       console.error('Error details:', {
@@ -120,7 +128,34 @@ if (isBrowser && app) {
         stack: error.stack
       });
     }
+    return null;
   }
+}
+
+// Initialize Firebase only in browser environment
+let app: FirebaseApp | null = null;
+let auth: Auth | null = null;
+let db: Firestore | null = null;
+
+if (isBrowser) {
+  // Initialize Firebase app
+  initializeFirebaseApp().then(firebaseApp => {
+    if (firebaseApp) {
+      app = firebaseApp;
+      auth = getAuth(app);
+      
+      // Initialize Firestore
+      if (!db) {
+        initializeFirestoreWithRetry(app).then(firestore => {
+          if (firestore) {
+            db = firestore;
+          }
+        });
+      }
+    }
+  }).catch(error => {
+    console.error('Failed to initialize Firebase:', error);
+  });
 }
 
 export { app, auth, db };

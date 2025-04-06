@@ -111,6 +111,8 @@ function NodesPageContent() {
   const [loadingGlossary, setLoadingGlossary] = useState(true)
   const [selectedWord, setSelectedWord] = useState<string | null>(null)
   const [customWords, setCustomWords] = useState<string[]>([])
+  const [duration, setDuration] = useState<number | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   // Get clock 8 settings
   const clock8 = clockSettings[8]
@@ -125,20 +127,11 @@ function NodesPageContent() {
 
   // Initialize timer from URL parameters
   useEffect(() => {
-    const duration = searchParams.get('duration')
-    const sessionIdParam = searchParams.get('sessionId')
-    if (duration) {
-      const durationMs = parseInt(duration)
-      setRemainingTime(durationMs)
-    }
-    if (sessionIdParam) {
-      setSessionId(sessionIdParam)
-    }
-  }, [searchParams])
-
-  // Initialize words from URL parameters
-  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search)
     const wordsParam = searchParams.get('words')
+    const durationParam = searchParams.get('duration')
+    const sessionIdParam = searchParams.get('sessionId')
+
     if (wordsParam) {
       try {
         const decodedWords = JSON.parse(decodeURIComponent(wordsParam))
@@ -148,7 +141,17 @@ function NodesPageContent() {
         setCustomWords([])
       }
     }
-  }, [searchParams])
+
+    if (durationParam) {
+      setDuration(parseInt(durationParam))
+    }
+
+    if (sessionIdParam) {
+      setSessionId(sessionIdParam)
+    }
+
+    setIsLoading(false)
+  }, [])
 
   // Handle pause/resume
   const handlePauseResume = () => {
@@ -331,6 +334,10 @@ function NodesPageContent() {
 
   // Get the RGB values for the glow effect
   const clockColor = hexToRgb('#56c1ff') // Light blue color for clock 9
+
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
 
   return (
     <ProtectedRoute>

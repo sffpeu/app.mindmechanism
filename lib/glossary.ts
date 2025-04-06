@@ -12,65 +12,140 @@ import {
   orderBy,
   Firestore
 } from 'firebase/firestore';
+import { testWords } from '@/lib/testWords';
+
+// Maximum number of retries for Firestore operations
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 second
+
+// Helper function to create default glossary words
+function createDefaultGlossaryWords(): GlossaryWord[] {
+  return testWords.map((word, index) => ({
+    id: `default-${index}`,
+    word,
+    definition: word,
+    phonetic_spelling: word,
+    grade: 'A',
+    rating: '+',
+    version: 'Default',
+    created_at: new Date().toISOString()
+  }));
+}
+
+// Helper function to retry Firestore operations
+async function retryOperation<T>(
+  operation: () => Promise<T>,
+  retryCount = 0
+): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    if (retryCount < MAX_RETRIES) {
+      console.log(`Retrying operation (attempt ${retryCount + 1}/${MAX_RETRIES})...`);
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+      return retryOperation(operation, retryCount + 1);
+    }
+    throw error;
+  }
+}
 
 export async function getAllWords(): Promise<GlossaryWord[]> {
   try {
-    if (!db) throw new Error('Firestore is not initialized');
+    if (!db) {
+      console.warn('Firestore is not initialized, using default words');
+      return createDefaultGlossaryWords();
+    }
 
-    const glossaryRef = collection(db as Firestore, 'glossary');
-    const q = firestoreQuery(glossaryRef, orderBy('word'));
-    const querySnapshot = await getDocs(q);
-    
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as GlossaryWord[];
+    const operation = async () => {
+      const glossaryRef = collection(db as Firestore, 'glossary');
+      const q = firestoreQuery(glossaryRef, orderBy('word'));
+      const querySnapshot = await getDocs(q);
+      const words = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as GlossaryWord[];
+
+      if (words.length === 0) {
+        console.warn('No words found in glossary, using default words');
+        return createDefaultGlossaryWords();
+      }
+
+      return words;
+    };
+
+    return await retryOperation(operation);
   } catch (error) {
     console.error('Error fetching words:', error);
-    return [];
+    return createDefaultGlossaryWords();
   }
 }
 
 export async function getWordsByRating(rating: string): Promise<GlossaryWord[]> {
   try {
-    if (!db) throw new Error('Firestore is not initialized');
+    if (!db) {
+      console.warn('Firestore is not initialized, using default words');
+      return createDefaultGlossaryWords().filter(word => word.rating === rating);
+    }
 
-    const glossaryRef = collection(db as Firestore, 'glossary');
-    const q = firestoreQuery(
-      glossaryRef,
-      where('rating', '==', rating),
-      orderBy('word')
-    );
-    const querySnapshot = await getDocs(q);
-    
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as GlossaryWord[];
+    const operation = async () => {
+      const glossaryRef = collection(db as Firestore, 'glossary');
+      const q = firestoreQuery(
+        glossaryRef,
+        where('rating', '==', rating),
+        orderBy('word')
+      );
+      const querySnapshot = await getDocs(q);
+      const words = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as GlossaryWord[];
+
+      if (words.length === 0) {
+        console.warn('No words found for rating, using filtered default words');
+        return createDefaultGlossaryWords().filter(word => word.rating === rating);
+      }
+
+      return words;
+    };
+
+    return await retryOperation(operation);
   } catch (error) {
     console.error('Error fetching words by rating:', error);
-    return [];
+    return createDefaultGlossaryWords().filter(word => word.rating === rating);
   }
 }
 
 export async function getClockWords(): Promise<GlossaryWord[]> {
   try {
-    if (!db) throw new Error('Firestore is not initialized');
+    if (!db) {
+      console.warn('Firestore is not initialized, using default words');
+      return createDefaultGlossaryWords();
+    }
 
-    const glossaryRef = collection(db as Firestore, 'glossary');
-    const q = firestoreQuery(
-      glossaryRef,
-      orderBy('word')
-    );
-    const querySnapshot = await getDocs(q);
-    
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as GlossaryWord[];
+    const operation = async () => {
+      const glossaryRef = collection(db as Firestore, 'glossary');
+      const q = firestoreQuery(
+        glossaryRef,
+        orderBy('word')
+      );
+      const querySnapshot = await getDocs(q);
+      const words = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as GlossaryWord[];
+
+      if (words.length === 0) {
+        console.warn('No words found in glossary, using default words');
+        return createDefaultGlossaryWords();
+      }
+
+      return words;
+    };
+
+    return await retryOperation(operation);
   } catch (error) {
     console.error('Error fetching clock words:', error);
-    return [];
+    return createDefaultGlossaryWords();
   }
 }
 

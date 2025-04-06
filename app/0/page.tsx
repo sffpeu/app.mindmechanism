@@ -98,6 +98,8 @@ function NodesPageContent() {
   const [loadingGlossary, setLoadingGlossary] = useState(true)
   const [selectedWord, setSelectedWord] = useState<string | null>(null)
   const [customWords, setCustomWords] = useState<string[]>([])
+  const [duration, setDuration] = useState<number | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   // Get clock 0 settings
   const clock0 = clockSettings[0]
@@ -112,20 +114,11 @@ function NodesPageContent() {
 
   // Initialize timer from URL parameters
   useEffect(() => {
-    const duration = searchParams.get('duration')
-    const sessionIdParam = searchParams.get('sessionId')
-    if (duration) {
-      const durationMs = parseInt(duration)
-      setRemainingTime(durationMs)
-    }
-    if (sessionIdParam) {
-      setSessionId(sessionIdParam)
-    }
-  }, [searchParams])
-
-  // Initialize words from URL parameters
-  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search)
     const wordsParam = searchParams.get('words')
+    const durationParam = searchParams.get('duration')
+    const sessionIdParam = searchParams.get('sessionId')
+
     if (wordsParam) {
       try {
         const decodedWords = JSON.parse(decodeURIComponent(wordsParam))
@@ -135,7 +128,17 @@ function NodesPageContent() {
         setCustomWords([])
       }
     }
-  }, [searchParams])
+
+    if (durationParam) {
+      setDuration(parseInt(durationParam))
+    }
+
+    if (sessionIdParam) {
+      setSessionId(sessionIdParam)
+    }
+
+    setIsLoading(false)
+  }, [])
 
   // Handle pause/resume
   const handlePauseResume = () => {
@@ -323,6 +326,10 @@ function NodesPageContent() {
     const minutes = Math.floor((elapsed % (60 * 60 * 1000)) / (60 * 1000))
     const seconds = Math.floor((elapsed % (60 * 1000)) / 1000)
     return `${years}y ${remainingDays}d ${hours}h ${minutes}m ${seconds}s`
+  }
+
+  if (isLoading) {
+    return <div>Loading...</div>
   }
 
   return (
@@ -573,7 +580,7 @@ function NodesPageContent() {
                 >
                   <Image 
                     src={clock0.imageUrl}
-                    alt="Clock Face 1"
+                    alt="Clock Face 0"
                     layout="fill"
                     objectFit="cover"
                     className="rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none"
@@ -608,7 +615,7 @@ function NodesPageContent() {
                     const x = 50 + nodeRadius * Math.cos(radians)
                     const y = 50 + nodeRadius * Math.sin(radians)
                     const isSelected = selectedNodeIndex === index
-                    const word = testWords[index]
+                    const word = customWords[index] || testWords[index]
 
                     return (
                       <motion.div
@@ -724,6 +731,32 @@ function NodesPageContent() {
               </div>
             </motion.div>
           </div>
+        </div>
+
+        <div className="relative w-full h-full">
+          <Clock
+            id={0}
+            startDateTime={clock0.startDateTime}
+            rotationTime={rotationTime}
+            imageUrl={clock0.imageUrl}
+            startingDegree={startingDegree}
+            focusNodes={focusNodes}
+            rotationDirection={rotationDirection}
+            imageOrientation={clock0.imageOrientation}
+            imageScale={clock0.imageScale}
+            imageX={clock0.imageX}
+            imageY={clock0.imageY}
+            showElements={showElements}
+            currentTime={currentTime}
+            syncTrigger={clockInfo.rotation}
+            onToggleShow={() => setShowElements(!showElements)}
+            showSatellites={showSatellites}
+            showWords={showWords}
+            customWords={customWords}
+            onInfoUpdate={(info) => setClockInfo(prev => ({ ...prev, ...info }))}
+            duration={duration}
+            sessionId={sessionId}
+          />
         </div>
       </div>
     </ProtectedRoute>

@@ -14,6 +14,7 @@ import { useSoundEffects } from '@/lib/sounds'
 import { useRouter } from 'next/navigation'
 import { createSession } from '@/lib/sessions'
 import { useAuth } from '@/lib/FirebaseAuthContext'
+import { testWords } from '@/lib/testWords'
 
 interface SessionDurationDialogProps {
   open: boolean
@@ -24,22 +25,6 @@ interface SessionDurationDialogProps {
 }
 
 const timePresets = [15, 30, 45, 60, 120]
-
-// Default test words
-const testWords = [
-  'Time',
-  'Celestial',
-  'Astronomy',
-  'Precision',
-  'Cycles',
-  'Observation',
-  'Synchronization',
-  'Mechanics',
-  'Movement',
-  'Accuracy',
-  'Standards',
-  'Measurement'
-]
 
 type Step = 'duration' | 'words' | 'confirm'
 
@@ -73,6 +58,8 @@ export function SessionDurationDialog({
   const { playClick } = useSoundEffects()
   const [hasInteracted, setHasInteracted] = useState(false)
   const router = useRouter()
+  const [isLoadingWords, setIsLoadingWords] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   const textColorClass = clockColor?.split(' ')?.[0] || 'text-gray-500'
   const bgColorClass = clockColor?.split(' ')?.[1] || 'bg-gray-500'
@@ -122,10 +109,22 @@ export function SessionDurationDialog({
 
   const loadGlossaryWords = async () => {
     try {
-      const words = await getClockWords();
-      setGlossaryWords(words);
+      setIsLoadingWords(true)
+      setLoadError(null)
+      const words = await getClockWords()
+      if (!words || words.length === 0) {
+        console.log('No words found in glossary')
+        setLoadError('No words found in the glossary. Please try again later.')
+        setGlossaryWords([])
+      } else {
+        setGlossaryWords(words)
+      }
     } catch (error) {
-      console.error('Error loading glossary words:', error);
+      console.error('Error loading glossary words:', error)
+      setLoadError('Failed to load words. Please try again later.')
+      setGlossaryWords([])
+    } finally {
+      setIsLoadingWords(false)
     }
   }
 
@@ -184,10 +183,14 @@ export function SessionDurationDialog({
     if (step === 'duration') {
       setStep('words')
     } else if (step === 'words') {
-      // Use testWords if no words are selected
-      const selectedWords = words.some(word => word.trim() !== '')
-        ? words
-        : testWords.slice(0, clockSettings[clockId]?.focusNodes || 0)
+      // Only proceed if at least one word is selected
+      const selectedWords = words.filter(word => word.trim() !== '')
+      
+      if (selectedWords.length === 0) {
+        // If no words are selected, show an error message
+        setLoadError('Please select at least one word to continue.')
+        return
+      }
       
       onNext(
         isEndless ? null : (isCustom ? parseInt(customDuration) : selectedPreset),
@@ -569,74 +572,45 @@ export function SessionDurationDialog({
               </div>
             </div>
 
-            {/* Word Grid */}
+            {/* Word Grid with Loading State */}
             <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
               <div className="grid grid-cols-3 gap-2 p-2">
-                {filteredWords.length === 0 ? (
+                {isLoadingWords ? (
                   <div className="col-span-3 py-6 text-center text-gray-500 dark:text-gray-400">
-                    No words found
+                    Loading words...
+                  </div>
+                ) : loadError ? (
+                  <div className="col-span-3 py-6 text-center">
+                    <p className="text-amber-500 dark:text-amber-400">{loadError}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Please try again later</p>
+                  </div>
+                ) : filteredWords.length === 0 ? (
+                  <div className="col-span-3 py-6 text-center text-gray-500 dark:text-gray-400">
+                    No words found. Try adjusting your filters or search.
                   </div>
                 ) : (
                   filteredWords.map((word) => (
                     <button
                       key={word.id}
                       onClick={() => {
-                        const emptyIndex = words.findIndex(w => !w)
-                        if (emptyIndex !== -1) {
-                          const newWords = [...words]
-                          newWords[emptyIndex] = word.word
-                          setWords(newWords)
+                        const isSelected = words.includes(word.word)
+                        if (isSelected) {
+                          setWords(words.filter(w => w !== word.word))
+                        } else if (words.length < focusNodesCount) {
+                          setWords([...words, word.word])
                         }
                       }}
-                      onMouseEnter={() => setHoveredWord(word.word)}
-                      onMouseLeave={() => setHoveredWord(null)}
-                      disabled={words.includes(word.word)}
-                      className={cn(
-                        "p-2.5 rounded-lg text-left transition-all",
+                      className={`p-2 rounded-lg text-left transition-all ${
                         words.includes(word.word)
-                          ? "opacity-50 cursor-not-allowed"
-                          : "hover:bg-gray-50 dark:hover:bg-white/5",
-                        "bg-white dark:bg-black border",
-                        hoveredWord === word.word ? `border-2 ${textColorClass}` : "border-gray-200 dark:border-gray-800"
-                      )}
-                      aria-label={`Select word ${word.word}${words.includes(word.word) ? ' (already selected)' : ''}`}
+                          ? `${clockColor.split(' ')[0]} border border-current`
+                          : 'text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                      }`}
+                      disabled={!words.includes(word.word) && words.length >= focusNodesCount}
                     >
-                      <div className="flex items-start justify-between mb-1.5">
-                        <div>
-                          <h3 className="text-sm font-medium text-black dark:text-white">
-                            {word.word}
-                          </h3>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
-                            {word.phonetic_spelling}
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <div className={cn(
-                            "w-5 h-5 rounded-full flex items-center justify-center text-xs font-medium",
-                            word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
-                            word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
-                            'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                          )}>
-                            {word.grade}
-                          </div>
-                          <div className={cn(
-                            "w-5 h-5 rounded-full flex items-center justify-center text-xs font-medium",
-                            word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
-                            word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
-                            'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                          )}>
-                            {word.rating}
-                          </div>
-                          {word.version === 'Default' && (
-                            <div className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-medium bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
-                              D
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
+                      <div className="text-sm font-medium">{word.word}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
                         {word.definition}
-                      </p>
+                      </div>
                     </button>
                   ))
                 )}

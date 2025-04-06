@@ -94,6 +94,8 @@ function NodesPageContent() {
   const [loadingGlossary, setLoadingGlossary] = useState(true)
   const [selectedWord, setSelectedWord] = useState<string | null>(null)
   const [customWords, setCustomWords] = useState<string[]>([])
+  const [duration, setDuration] = useState<number | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   // Get clock 2 settings
   const clock2 = clockSettings[2]
@@ -108,20 +110,11 @@ function NodesPageContent() {
 
   // Initialize timer from URL parameters
   useEffect(() => {
-    const duration = searchParams.get('duration')
-    const sessionIdParam = searchParams.get('sessionId')
-    if (duration) {
-      const durationMs = parseInt(duration)
-      setRemainingTime(durationMs)
-    }
-    if (sessionIdParam) {
-      setSessionId(sessionIdParam)
-    }
-  }, [searchParams])
-
-  // Initialize words from URL parameters
-  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search)
     const wordsParam = searchParams.get('words')
+    const durationParam = searchParams.get('duration')
+    const sessionIdParam = searchParams.get('sessionId')
+
     if (wordsParam) {
       try {
         const decodedWords = JSON.parse(decodeURIComponent(wordsParam))
@@ -131,7 +124,17 @@ function NodesPageContent() {
         setCustomWords([])
       }
     }
-  }, [searchParams])
+
+    if (durationParam) {
+      setDuration(parseInt(durationParam))
+    }
+
+    if (sessionIdParam) {
+      setSessionId(sessionIdParam)
+    }
+
+    setIsLoading(false)
+  }, [])
 
   // Handle pause/resume
   const handlePauseResume = () => {
@@ -320,6 +323,10 @@ function NodesPageContent() {
     const minutes = Math.floor((elapsed % (60 * 60 * 1000)) / (60 * 1000))
     const seconds = Math.floor((elapsed % (60 * 1000)) / 1000)
     return `${years}y ${remainingDays}d ${hours}h ${minutes}m ${seconds}s`
+  }
+
+  if (isLoading) {
+    return <div>Loading...</div>
   }
 
   return (
