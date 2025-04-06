@@ -28,6 +28,7 @@ import { getAllWords } from '@/lib/glossary'
 import Clock from '@/components/Clock'
 import { LeaveWarning } from '@/components/LeaveWarning'
 import { SessionTimer } from '@/components/SessionTimer'
+import { getClockColorClasses } from '@/lib/clockColors'
 
 // Test words for each node
 const testWords = [
@@ -368,6 +369,8 @@ function NodesPageContent() {
     return () => clearInterval(autoSaveInterval)
   }, [sessionId, remainingTime, isPaused])
 
+  const { textColor, bgColor, hoverBorder, hoverShadow } = getClockColorClasses(0)
+
   if (isLoading) {
     return <div>Loading...</div>
   }
@@ -447,7 +450,7 @@ function NodesPageContent() {
                   <div className="space-y-3">
                     {/* Clock Title and Description */}
                     <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10">
-                      <h3 className="text-sm font-medium text-red-500">
+                      <h3 className={`text-sm font-medium ${textColor}`}>
                         Galileo's First Observation
                       </h3>
                       <p className="text-xs text-black/60 dark:text-white/60 line-clamp-2">
@@ -672,8 +675,7 @@ function NodesPageContent() {
                       >
                         {showWords && (hoveredNodeIndex === index || isSelected) && word && (
                           <div 
-                            className="absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
-                            shadow-sm transition-all outline outline-1 outline-black/10 dark:outline-white/20"
+                            className={`absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium ${bgColor} ${hoverBorder} ${hoverShadow}`}
                             style={getWordContainerStyle(angle, isSelected)}
                           >
                             {/* Word Display with click handler */}
@@ -684,7 +686,7 @@ function NodesPageContent() {
                                 setSelectedWord(selectedWord === word ? null : word)
                               }}
                             >
-                              <span className="text-black/90 dark:text-white/90">{word}</span>
+                              <span className={`${textColor} ${hoverBorder} ${hoverShadow}`}>{word}</span>
                             </button>
 
                             {/* Icons above word - only show when word is selected */}
