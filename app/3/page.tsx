@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/popover"
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords } from '@/lib/glossary'
+import Clock from '@/components/Clock'
 
 // Test words for each node
 const testWords = [
@@ -91,6 +92,7 @@ function NodesPageContent() {
   const [glossaryWords, setGlossaryWords] = useState<GlossaryWord[]>([])
   const [loadingGlossary, setLoadingGlossary] = useState(true)
   const [selectedWord, setSelectedWord] = useState<string | null>(null)
+  const [customWords, setCustomWords] = useState<string[]>([])
 
   // Get clock 3 settings
   const clock3 = clockSettings[3]
@@ -113,6 +115,20 @@ function NodesPageContent() {
     }
     if (sessionIdParam) {
       setSessionId(sessionIdParam)
+    }
+  }, [searchParams])
+
+  // Initialize words from URL parameters
+  useEffect(() => {
+    const wordsParam = searchParams.get('words')
+    if (wordsParam) {
+      try {
+        const decodedWords = JSON.parse(decodeURIComponent(wordsParam))
+        setCustomWords(decodedWords)
+      } catch (error) {
+        console.error('Error decoding words:', error)
+        setCustomWords([])
+      }
     }
   }, [searchParams])
 
@@ -615,6 +631,30 @@ function NodesPageContent() {
               </div>
             </motion.div>
           </div>
+        </div>
+
+        <div className="relative w-full h-full">
+          <Clock
+            id={3}
+            startDateTime={clock3.startDateTime}
+            rotationTime={rotationTime}
+            imageUrl={clock3.imageUrl}
+            startingDegree={startingDegree}
+            focusNodes={focusNodes}
+            rotationDirection={rotationDirection}
+            imageOrientation={clock3.imageOrientation}
+            imageScale={clock3.imageScale}
+            imageX={clock3.imageX}
+            imageY={clock3.imageY}
+            showElements={showElements}
+            currentTime={currentTime}
+            syncTrigger={clockInfo.rotation}
+            onToggleShow={() => setShowElements(!showElements)}
+            showSatellites={showSatellites}
+            showWords={showWords}
+            customWords={customWords}
+            onInfoUpdate={(info) => setClockInfo(prev => ({ ...prev, ...info }))}
+          />
         </div>
       </div>
     </ProtectedRoute>

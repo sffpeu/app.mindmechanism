@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/popover"
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords } from '@/lib/glossary'
+import Clock from '@/components/Clock'
 
 // Test words for each node
 const testWords = [
@@ -92,6 +93,7 @@ function NodesPageContent() {
   const [glossaryWords, setGlossaryWords] = useState<GlossaryWord[]>([])
   const [loadingGlossary, setLoadingGlossary] = useState(true)
   const [selectedWord, setSelectedWord] = useState<string | null>(null)
+  const [customWords, setCustomWords] = useState<string[]>([])
 
   // Get clock 1 settings
   const clock1 = clockSettings[1]
@@ -108,12 +110,22 @@ function NodesPageContent() {
   useEffect(() => {
     const duration = searchParams.get('duration')
     const sessionIdParam = searchParams.get('sessionId')
+    const wordsParam = searchParams.get('words')
     if (duration) {
       const durationMs = parseInt(duration)
       setRemainingTime(durationMs)
     }
     if (sessionIdParam) {
       setSessionId(sessionIdParam)
+    }
+    if (wordsParam) {
+      try {
+        const decodedWords = JSON.parse(decodeURIComponent(wordsParam))
+        setCustomWords(decodedWords)
+      } catch (error) {
+        console.error('Error decoding words:', error)
+        setCustomWords([])
+      }
     }
   }, [searchParams])
 

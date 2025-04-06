@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/popover"
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords } from '@/lib/glossary'
+import Clock from '@/components/Clock'
 
 // Info cards content
 const infoCards = [
@@ -109,6 +110,7 @@ function NodesPageContent() {
   const [glossaryWords, setGlossaryWords] = useState<GlossaryWord[]>([])
   const [loadingGlossary, setLoadingGlossary] = useState(true)
   const [selectedWord, setSelectedWord] = useState<string | null>(null)
+  const [customWords, setCustomWords] = useState<string[]>([])
 
   // Get clock 8 settings
   const clock8 = clockSettings[8]
@@ -131,6 +133,20 @@ function NodesPageContent() {
     }
     if (sessionIdParam) {
       setSessionId(sessionIdParam)
+    }
+  }, [searchParams])
+
+  // Initialize words from URL parameters
+  useEffect(() => {
+    const wordsParam = searchParams.get('words')
+    if (wordsParam) {
+      try {
+        const decodedWords = JSON.parse(decodeURIComponent(wordsParam))
+        setCustomWords(decodedWords)
+      } catch (error) {
+        console.error('Error decoding words:', error)
+        setCustomWords([])
+      }
     }
   }, [searchParams])
 
