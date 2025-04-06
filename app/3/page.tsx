@@ -26,32 +26,22 @@ import {
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords } from '@/lib/glossary'
 import Clock from '@/components/Clock'
-import { LeaveWarning } from '@/components/LeaveWarning'
 import { SessionTimer } from '@/components/SessionTimer'
-import { getClockColorClasses } from '@/lib/clockColors'
 
 // Test words for each node
 const testWords = [
-  'Consciousness',
-  'Quantum',
-  'Synchronicity',
-  'Emergence',
-  'Resonance',
-  'Entropy',
-  'Duality',
-  'Infinity'
-]
-
-// Satellite configurations from clock 0
-const satelliteConfigs = [
-  { rotationTime: 300 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 600 * 1000, rotationDirection: 'counterclockwise' },
-  { rotationTime: 900 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' },
-  { rotationTime: 2700 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 5400 * 1000, rotationDirection: 'counterclockwise' },
-  { rotationTime: 5400 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' }
+  'Jupiter',
+  'Io',
+  'Europa',
+  'Ganymede',
+  'Callisto',
+  'Satellites',
+  'Orbits',
+  'Telescope',
+  'Moons',
+  'Discovery',
+  'Observation',
+  'Revolution'
 ]
 
 // Helper function to convert hex to rgb
@@ -63,6 +53,9 @@ const hexToRgb = (hex: string) => {
     b: parseInt(result[3], 16)
   } : null;
 };
+
+// Define clock color
+const clockColor = hexToRgb('#6dc037'); // Green color for clock 3
 
 function NodesPageContent() {
   const searchParams = useSearchParams()
@@ -95,7 +88,7 @@ function NodesPageContent() {
     rotationsCompleted: 0,
     elapsedTime: '0y 0d 0h 0m 0s',
     currentRotation: 0,
-    direction: 'clockwise'
+    direction: 'counterclockwise'
   })
   const [glossaryWords, setGlossaryWords] = useState<GlossaryWord[]>([])
   const [loadingGlossary, setLoadingGlossary] = useState(true)
@@ -104,12 +97,12 @@ function NodesPageContent() {
   const [duration, setDuration] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Get clock 0 settings
-  const clock0 = clockSettings[0]
-  const focusNodes = clock0.focusNodes
-  const startingDegree = clock0.startingDegree
-  const rotationTime = clock0.rotationTime
-  const rotationDirection = clock0.rotationDirection
+  // Get clock 3 settings
+  const clock3 = clockSettings[3]
+  const focusNodes = clock3.focusNodes
+  const startingDegree = clock3.startingDegree
+  const rotationTime = clock3.rotationTime
+  const rotationDirection = clock3.rotationDirection
 
   // Calculate rotation
   const [rotation, setRotation] = useState(startingDegree)
@@ -142,10 +135,7 @@ function NodesPageContent() {
 
   // Handle session completion
   const handleSessionComplete = () => {
-    // Clear saved session
     localStorage.removeItem('pendingSession')
-    // Redirect to completion page or show completion message
-    // You can implement this based on your requirements
   }
 
   // Handle pause/resume
@@ -171,7 +161,7 @@ function NodesPageContent() {
   }, [remainingTime, isPaused])
 
   useEffect(() => {
-    const startDateTime = new Date('1610-12-21T03:00:00')
+    const startDateTime = new Date('1610-05-29T15:00:00')
     const animate = () => {
       const now = Date.now()
       const elapsedMilliseconds = now - startDateTime.getTime()
@@ -199,7 +189,7 @@ function NodesPageContent() {
 
   // Update clock info
   useEffect(() => {
-    const startDateTime = new Date('1610-12-21T03:00:00')
+    const startDateTime = new Date('1610-05-29T15:00:00')
     const now = Date.now()
     const elapsedMilliseconds = now - startDateTime.getTime()
     const rotations = Math.floor(elapsedMilliseconds / rotationTime)
@@ -234,6 +224,7 @@ function NodesPageContent() {
 
   const getWordContainerStyle = (angle: number, isSelected: boolean) => {
     const isLeftSide = angle > 90 && angle < 270
+    const counterRotation = -rotation - clock3.imageOrientation // Counter-rotate both current rotation and image orientation
     return {
       position: 'absolute' as const,
       left: isLeftSide ? 'auto' : '100%',
@@ -241,13 +232,13 @@ function NodesPageContent() {
       top: '50%',
       marginLeft: isLeftSide ? '-1.5rem' : '1.5rem',
       marginRight: isLeftSide ? '1.5rem' : '-1.5rem',
-      transform: `translateY(-50%) scale(${isSelected ? 1.1 : 1}) rotate(${-rotation}deg)`,
+      transform: `translateY(-50%) scale(${isSelected ? 1.1 : 1}) rotate(${counterRotation}deg)`,
       transformOrigin: isLeftSide ? 'right' : 'left',
     }
   }
 
   const getFocusNodeStyle = (index: number, isSelected: boolean) => {
-    const color = '#fd290a' // Color from clock 0
+    const color = '#6dc037' // Color for clock 3 (green)
     return {
       backgroundColor: isSelected ? color : 'transparent',
       border: `2px solid ${color}`,
@@ -261,69 +252,12 @@ function NodesPageContent() {
     }
   }
 
-  const handleSatellitesChange = (checked: boolean) => {
-    setShowSatellites(checked)
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('showSatellites', JSON.stringify(checked))
-    }
-  }
-
   const handleWordsChange = (checked: boolean) => {
     setShowWords(checked)
     if (typeof window !== 'undefined') {
       localStorage.setItem('showWords', JSON.stringify(checked))
     }
   }
-
-  const renderSatellites = () => {
-    return satelliteConfigs.map((satellite, index) => {
-      const now = Date.now()
-      const startDateTime = new Date('1610-12-21T03:00:00')
-      const elapsedMilliseconds = now - startDateTime.getTime()
-      const satelliteRotation = (elapsedMilliseconds / satellite.rotationTime) * 360
-      const totalRotation = satellite.rotationDirection === 'clockwise'
-        ? satelliteRotation
-        : -satelliteRotation
-
-      // Calculate position with adjusted radius (60 instead of 65)
-      const angle = ((360 / satelliteConfigs.length) * index + totalRotation) % 360
-      const radians = angle * (Math.PI / 180)
-      const radius = 60 // Reduced from 65 to bring satellites closer
-      const x = 50 + radius * Math.cos(radians)
-      const y = 50 + radius * Math.sin(radians)
-
-      return (
-        <motion.div
-          key={`satellite-${index}`}
-          className="absolute cursor-pointer"
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{
-            delay: 1 + (index * 0.1),
-            duration: 0.5,
-            ease: "easeOut"
-          }}
-          style={{
-            left: `${x}%`,
-            top: `${y}%`,
-            transform: 'translate(-50%, -50%)',
-            zIndex: 100,
-          }}
-          whileHover={{ scale: 1.25 }} // Reduced from 1.5
-        >
-          <div 
-            className="w-4 h-4 rounded-full bg-black dark:bg-white"
-            style={{
-              boxShadow: '0 0 12px rgba(0, 0, 0, 0.4)',
-            }}
-          />
-        </motion.div>
-      )
-    })
-  }
-
-  // Get the RGB values for the glow effect
-  const clockColor = hexToRgb('#fd290a') // Red color from clock 0
 
   // Add getElapsedTime helper function
   const getElapsedTime = (startDateTime: Date): string => {
@@ -335,41 +269,6 @@ function NodesPageContent() {
     const seconds = Math.floor((elapsed % (60 * 1000)) / 1000)
     return `${years}y ${remainingDays}d ${hours}h ${minutes}m ${seconds}s`
   }
-
-  // Save session state when leaving
-  useEffect(() => {
-    if (!sessionId || !remainingTime) return
-
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        localStorage.setItem('pendingSession', JSON.stringify({
-          sessionId,
-          remaining: remainingTime,
-          timestamp: Date.now()
-        }))
-      }
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
-  }, [sessionId, remainingTime])
-
-  // Auto-save session state periodically
-  useEffect(() => {
-    if (!sessionId || !remainingTime || isPaused) return
-
-    const autoSaveInterval = setInterval(() => {
-      localStorage.setItem('pendingSession', JSON.stringify({
-        sessionId,
-        remaining: remainingTime,
-        timestamp: Date.now()
-      }))
-    }, 30000) // Auto-save every 30 seconds
-
-    return () => clearInterval(autoSaveInterval)
-  }, [sessionId, remainingTime, isPaused])
-
-  const { textColor, bgColor, hoverBorder, hoverShadow } = getClockColorClasses(3)
 
   if (isLoading) {
     return <div>Loading...</div>
@@ -394,16 +293,6 @@ function NodesPageContent() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
-                <div className="flex items-center gap-2">
-                  <Satellite className="h-4 w-4" />
-                  <span>Satellites</span>
-                </div>
-                <Switch
-                  checked={showSatellites}
-                  onCheckedChange={handleSatellitesChange}
-                />
-              </DropdownMenuItem>
               <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
                 <div className="flex items-center gap-2">
                   <List className="h-4 w-4" />
@@ -450,11 +339,11 @@ function NodesPageContent() {
                   <div className="space-y-3">
                     {/* Clock Title and Description */}
                     <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10">
-                      <h3 className={`text-sm font-medium ${textColor}`}>
+                      <h3 className="text-sm font-medium text-green-500">
                         Jupiter's Moons
                       </h3>
                       <p className="text-xs text-black/60 dark:text-white/60 line-clamp-2">
-                        First telescopic observations of the night sky, marking the beginning of modern astronomy.
+                        The first documented observation of Jupiter's moons, changing our understanding of the solar system.
                       </p>
                     </div>
 
@@ -476,7 +365,7 @@ function NodesPageContent() {
                             Started
                           </p>
                           <p className="text-sm font-medium text-black/90 dark:text-white/90">
-                            {new Date('1610-12-21T03:00:00').toLocaleDateString()}
+                            {new Date('1610-05-29T15:00:00').toLocaleDateString()}
                           </p>
                         </div>
                       </div>
@@ -517,20 +406,11 @@ function NodesPageContent() {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
                         <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                          <div className="w-1 h-1 rounded-full bg-red-500" />
+                          <div className="w-1 h-1 rounded-full bg-green-500" />
                           Focus Nodes
                         </span>
                         <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
                           {focusNodes}
-                        </span>
-                      </div>
-                      <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
-                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                          <div className="w-1 h-1 rounded-full border border-gray-900 dark:border-white/40" />
-                          Satellites
-                        </span>
-                        <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                          {satelliteConfigs.length}
                         </span>
                       </div>
                       <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
@@ -561,7 +441,7 @@ function NodesPageContent() {
 
         <div className="flex-grow flex items-center justify-center min-h-screen">
           <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px]">
-            {/* Red glow effect */}
+            {/* Green glow effect */}
             {clockColor && (
               <motion.div
                 className="absolute inset-0 rounded-full"
@@ -586,19 +466,6 @@ function NodesPageContent() {
               />
             )}
 
-            {/* Satellites layer */}
-            {showSatellites && (
-              <motion.div 
-                className="absolute inset-0"
-                style={{ 
-                  willChange: 'transform',
-                  zIndex: 100,
-                }}
-              >
-                {renderSatellites()}
-              </motion.div>
-            )}
-
             {/* Clock face */}
             <div className="absolute inset-0 rounded-full overflow-hidden">
               <motion.div 
@@ -616,14 +483,14 @@ function NodesPageContent() {
                 <div
                   className="absolute inset-0"
                   style={{
-                    transform: `translate(${clock0.imageX}%, ${clock0.imageY}%) rotate(${clock0.imageOrientation}deg) scale(${clock0.imageScale})`,
+                    transform: `translate(${clock3.imageX}%, ${clock3.imageY}%) rotate(${clock3.imageOrientation}deg) scale(${clock3.imageScale})`,
                     willChange: 'transform',
                     transformOrigin: 'center',
                   }}
                 >
                   <Image 
-                    src={clock0.imageUrl}
-                    alt="Clock Face 0"
+                    src={clock3.imageUrl}
+                    alt="Clock Face 3"
                     layout="fill"
                     objectFit="cover"
                     className="rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none"
@@ -649,7 +516,7 @@ function NodesPageContent() {
                 ease: 'linear'
               }}
             >
-              <div className="absolute inset-0" style={{ transform: `rotate(${clock0.imageOrientation}deg)`, pointerEvents: 'auto' }}>
+              <div className="absolute inset-0" style={{ transform: `rotate(${clock3.imageOrientation}deg)`, pointerEvents: 'auto' }}>
                 <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
                   {Array.from({ length: focusNodes }).map((_, index) => {
                     const angle = ((360 / focusNodes) * index + startingDegree + 45) % 360
@@ -658,7 +525,7 @@ function NodesPageContent() {
                     const x = 50 + nodeRadius * Math.cos(radians)
                     const y = 50 + nodeRadius * Math.sin(radians)
                     const isSelected = selectedNodeIndex === index
-                    const word = customWords[index] || testWords[index]
+                    const word = testWords[index]
 
                     return (
                       <motion.div
@@ -675,7 +542,8 @@ function NodesPageContent() {
                       >
                         {showWords && (hoveredNodeIndex === index || isSelected) && word && (
                           <div 
-                            className={`absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium ${bgColor} ${hoverBorder} ${hoverShadow}`}
+                            className="absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
+                            shadow-sm transition-all outline outline-1 outline-black/10 dark:outline-white/20"
                             style={getWordContainerStyle(angle, isSelected)}
                           >
                             {/* Word Display with click handler */}
@@ -686,12 +554,12 @@ function NodesPageContent() {
                                 setSelectedWord(selectedWord === word ? null : word)
                               }}
                             >
-                              <span className={`${textColor} ${hoverBorder} ${hoverShadow}`}>{word}</span>
+                              <span className="text-black/90 dark:text-white/90">{word}</span>
                             </button>
 
                             {/* Icons above word - only show when word is selected */}
                             {selectedWord === word && (
-                              <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex items-center gap-2">
+                              <div className="absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-2">
                                 {/* Info Icon */}
                                 <motion.div 
                                   className="group relative"
@@ -776,19 +644,18 @@ function NodesPageContent() {
         </div>
 
         <div className="relative w-full h-full">
-          <LeaveWarning />
           <Clock
-            id={0}
-            startDateTime={clock0.startDateTime}
+            id={3}
+            startDateTime={clock3.startDateTime}
             rotationTime={rotationTime}
-            imageUrl={clock0.imageUrl}
+            imageUrl={clock3.imageUrl}
             startingDegree={startingDegree}
             focusNodes={focusNodes}
             rotationDirection={rotationDirection}
-            imageOrientation={clock0.imageOrientation}
-            imageScale={clock0.imageScale}
-            imageX={clock0.imageX}
-            imageY={clock0.imageY}
+            imageOrientation={clock3.imageOrientation}
+            imageScale={clock3.imageScale}
+            imageX={clock3.imageX}
+            imageY={clock3.imageY}
             showElements={showElements}
             currentTime={currentTime}
             syncTrigger={clockInfo.rotation}

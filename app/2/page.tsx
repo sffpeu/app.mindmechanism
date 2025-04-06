@@ -26,32 +26,26 @@ import {
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords } from '@/lib/glossary'
 import Clock from '@/components/Clock'
-import { LeaveWarning } from '@/components/LeaveWarning'
 import { SessionTimer } from '@/components/SessionTimer'
-import { getClockColorClasses } from '@/lib/clockColors'
 
 // Test words for each node
 const testWords = [
-  'Consciousness',
-  'Quantum',
-  'Synchronicity',
-  'Emergence',
-  'Resonance',
-  'Entropy',
-  'Duality',
-  'Infinity'
+  'Relativity',
+  'Spacetime',
+  'Gravity',
+  'Energy',
+  'Matter',
+  'Momentum',
+  'Mass',
+  'Time',
+  'Space',
+  'Force'
 ]
 
-// Satellite configurations from clock 0
+// Satellite configurations for clock 2
 const satelliteConfigs = [
-  { rotationTime: 300 * 1000, rotationDirection: 'clockwise' },
   { rotationTime: 600 * 1000, rotationDirection: 'counterclockwise' },
-  { rotationTime: 900 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' },
-  { rotationTime: 2700 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 5400 * 1000, rotationDirection: 'counterclockwise' },
-  { rotationTime: 5400 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' }
+  { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' }
 ]
 
 // Helper function to convert hex to rgb
@@ -104,12 +98,12 @@ function NodesPageContent() {
   const [duration, setDuration] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Get clock 0 settings
-  const clock0 = clockSettings[0]
-  const focusNodes = clock0.focusNodes
-  const startingDegree = clock0.startingDegree
-  const rotationTime = clock0.rotationTime
-  const rotationDirection = clock0.rotationDirection
+  // Get clock 2 settings
+  const clock2 = clockSettings[2]
+  const focusNodes = clock2.focusNodes
+  const startingDegree = clock2.startingDegree
+  const rotationTime = clock2.rotationTime
+  const rotationDirection = clock2.rotationDirection
 
   // Calculate rotation
   const [rotation, setRotation] = useState(startingDegree)
@@ -142,10 +136,7 @@ function NodesPageContent() {
 
   // Handle session completion
   const handleSessionComplete = () => {
-    // Clear saved session
     localStorage.removeItem('pendingSession')
-    // Redirect to completion page or show completion message
-    // You can implement this based on your requirements
   }
 
   // Handle pause/resume
@@ -171,7 +162,7 @@ function NodesPageContent() {
   }, [remainingTime, isPaused])
 
   useEffect(() => {
-    const startDateTime = new Date('1610-12-21T03:00:00')
+    const startDateTime = new Date('1610-03-21T09:00:00')
     const animate = () => {
       const now = Date.now()
       const elapsedMilliseconds = now - startDateTime.getTime()
@@ -199,7 +190,7 @@ function NodesPageContent() {
 
   // Update clock info
   useEffect(() => {
-    const startDateTime = new Date('1610-12-21T03:00:00')
+    const startDateTime = new Date('1610-03-21T09:00:00')
     const now = Date.now()
     const elapsedMilliseconds = now - startDateTime.getTime()
     const rotations = Math.floor(elapsedMilliseconds / rotationTime)
@@ -234,6 +225,7 @@ function NodesPageContent() {
 
   const getWordContainerStyle = (angle: number, isSelected: boolean) => {
     const isLeftSide = angle > 90 && angle < 270
+    const counterRotation = -rotation - clock2.imageOrientation // Counter-rotate both current rotation and image orientation
     return {
       position: 'absolute' as const,
       left: isLeftSide ? 'auto' : '100%',
@@ -241,13 +233,13 @@ function NodesPageContent() {
       top: '50%',
       marginLeft: isLeftSide ? '-1.5rem' : '1.5rem',
       marginRight: isLeftSide ? '1.5rem' : '-1.5rem',
-      transform: `translateY(-50%) scale(${isSelected ? 1.1 : 1}) rotate(${-rotation}deg)`,
+      transform: `translateY(-50%) scale(${isSelected ? 1.1 : 1}) rotate(${counterRotation}deg)`,
       transformOrigin: isLeftSide ? 'right' : 'left',
     }
   }
 
   const getFocusNodeStyle = (index: number, isSelected: boolean) => {
-    const color = '#fd290a' // Color from clock 0
+    const color = '#f7da5f' // Color for clock 2 (yellow)
     return {
       backgroundColor: isSelected ? color : 'transparent',
       border: `2px solid ${color}`,
@@ -278,7 +270,7 @@ function NodesPageContent() {
   const renderSatellites = () => {
     return satelliteConfigs.map((satellite, index) => {
       const now = Date.now()
-      const startDateTime = new Date('1610-12-21T03:00:00')
+      const startDateTime = new Date('1610-03-21T09:00:00')
       const elapsedMilliseconds = now - startDateTime.getTime()
       const satelliteRotation = (elapsedMilliseconds / satellite.rotationTime) * 360
       const totalRotation = satellite.rotationDirection === 'clockwise'
@@ -323,7 +315,7 @@ function NodesPageContent() {
   }
 
   // Get the RGB values for the glow effect
-  const clockColor = hexToRgb('#fd290a') // Red color from clock 0
+  const clockColor = hexToRgb('#f7da5f') // Yellow color for clock 2
 
   // Add getElapsedTime helper function
   const getElapsedTime = (startDateTime: Date): string => {
@@ -335,41 +327,6 @@ function NodesPageContent() {
     const seconds = Math.floor((elapsed % (60 * 1000)) / 1000)
     return `${years}y ${remainingDays}d ${hours}h ${minutes}m ${seconds}s`
   }
-
-  // Save session state when leaving
-  useEffect(() => {
-    if (!sessionId || !remainingTime) return
-
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        localStorage.setItem('pendingSession', JSON.stringify({
-          sessionId,
-          remaining: remainingTime,
-          timestamp: Date.now()
-        }))
-      }
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
-  }, [sessionId, remainingTime])
-
-  // Auto-save session state periodically
-  useEffect(() => {
-    if (!sessionId || !remainingTime || isPaused) return
-
-    const autoSaveInterval = setInterval(() => {
-      localStorage.setItem('pendingSession', JSON.stringify({
-        sessionId,
-        remaining: remainingTime,
-        timestamp: Date.now()
-      }))
-    }, 30000) // Auto-save every 30 seconds
-
-    return () => clearInterval(autoSaveInterval)
-  }, [sessionId, remainingTime, isPaused])
-
-  const { textColor, bgColor, hoverBorder, hoverShadow } = getClockColorClasses(2)
 
   if (isLoading) {
     return <div>Loading...</div>
@@ -450,11 +407,11 @@ function NodesPageContent() {
                   <div className="space-y-3">
                     {/* Clock Title and Description */}
                     <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10">
-                      <h3 className={`text-sm font-medium ${textColor}`}>
+                      <h3 className="text-sm font-medium text-yellow-500">
                         Galileo's Spring Observation
                       </h3>
                       <p className="text-xs text-black/60 dark:text-white/60 line-clamp-2">
-                        First telescopic observations of the night sky, marking the beginning of modern astronomy.
+                        Detailed spring observations by Galileo, revealing new insights about planetary movements.
                       </p>
                     </div>
 
@@ -476,7 +433,7 @@ function NodesPageContent() {
                             Started
                           </p>
                           <p className="text-sm font-medium text-black/90 dark:text-white/90">
-                            {new Date('1610-12-21T03:00:00').toLocaleDateString()}
+                            {new Date('1610-03-21T09:00:00').toLocaleDateString()}
                           </p>
                         </div>
                       </div>
@@ -517,7 +474,7 @@ function NodesPageContent() {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
                         <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                          <div className="w-1 h-1 rounded-full bg-red-500" />
+                          <div className="w-1 h-1 rounded-full bg-yellow-500" />
                           Focus Nodes
                         </span>
                         <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
@@ -557,6 +514,15 @@ function NodesPageContent() {
               </Card>
             </div>
           </div>
+        </div>
+
+        {/* Position the timer in the bottom left corner */}
+        <div className="absolute bottom-4 left-4 z-50">
+          <SessionTimer
+            duration={duration}
+            sessionId={sessionId}
+            onSessionComplete={handleSessionComplete}
+          />
         </div>
 
         <div className="flex-grow flex items-center justify-center min-h-screen">
@@ -616,14 +582,14 @@ function NodesPageContent() {
                 <div
                   className="absolute inset-0"
                   style={{
-                    transform: `translate(${clock0.imageX}%, ${clock0.imageY}%) rotate(${clock0.imageOrientation}deg) scale(${clock0.imageScale})`,
+                    transform: `translate(${clock2.imageX}%, ${clock2.imageY}%) rotate(${clock2.imageOrientation}deg) scale(${clock2.imageScale})`,
                     willChange: 'transform',
                     transformOrigin: 'center',
                   }}
                 >
                   <Image 
-                    src={clock0.imageUrl}
-                    alt="Clock Face 0"
+                    src={clock2.imageUrl}
+                    alt="Clock Face 2"
                     layout="fill"
                     objectFit="cover"
                     className="rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none"
@@ -649,68 +615,131 @@ function NodesPageContent() {
                 ease: 'linear'
               }}
             >
-              <div className="absolute inset-0" style={{ transform: `rotate(${clock0.imageOrientation}deg)`, pointerEvents: 'auto' }}>
+              <div className="absolute inset-0" style={{ transform: `rotate(${clock2.imageOrientation}deg)`, pointerEvents: 'auto' }}>
                 <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
                   {Array.from({ length: focusNodes }).map((_, index) => {
-                    const angle = (index * 360) / focusNodes
-                    const radius = 48
-                    const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
-                    const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
+                    const angle = ((360 / focusNodes) * index + startingDegree + 45) % 360
+                    const radians = angle * (Math.PI / 180)
+                    const nodeRadius = 55 // Increased from 48 to move nodes further out
+                    const x = 50 + nodeRadius * Math.cos(radians)
+                    const y = 50 + nodeRadius * Math.sin(radians)
                     const isSelected = selectedNodeIndex === index
-                    const word = customWords[index] || testWords[index]
+                    const word = testWords[index]
 
                     return (
                       <motion.div
                         key={index}
-                        className={`absolute w-2 h-2 rounded-full ${bgColor}`}
+                        className="absolute rounded-full cursor-pointer"
                         style={{
                           left: `${x}%`,
                           top: `${y}%`,
-                          transform: 'translate(-50%, -50%)'
+                          ...getFocusNodeStyle(index, isSelected),
                         }}
-                      />
+                        onClick={() => handleNodeClick(index)}
+                        onMouseEnter={() => setHoveredNodeIndex(index)}
+                        onMouseLeave={() => setHoveredNodeIndex(null)}
+                      >
+                        {showWords && (hoveredNodeIndex === index || isSelected) && word && (
+                          <div 
+                            className="absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
+                            shadow-sm transition-all outline outline-1 outline-black/10 dark:outline-white/20"
+                            style={getWordContainerStyle(angle, isSelected)}
+                          >
+                            {/* Word Display with click handler */}
+                            <button
+                              className="pointer-events-auto"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setSelectedWord(selectedWord === word ? null : word)
+                              }}
+                            >
+                              <span className="text-black/90 dark:text-white/90">{word}</span>
+                            </button>
+
+                            {/* Icons above word - only show when word is selected */}
+                            {selectedWord === word && (
+                              <div className="absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-2">
+                                {/* Info Icon */}
+                                <motion.div 
+                                  className="group relative"
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ duration: 0.2, delay: 0 }}
+                                >
+                                  <button 
+                                    className="pointer-events-auto w-6 h-6 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm border border-black/10 dark:border-white/20 
+                                    flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      // Show definition in a tooltip or modal
+                                      console.log('Show definition for:', word)
+                                    }}
+                                  >
+                                    <Info className="h-3 w-3 text-black/60 dark:text-white/60" />
+                                  </button>
+                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
+                                    opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                    Definition
+                                  </div>
+                                </motion.div>
+
+                                {/* Notes Icon */}
+                                <motion.div 
+                                  className="group relative"
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ duration: 0.2, delay: 0.1 }}
+                                >
+                                  <button 
+                                    className="pointer-events-auto w-6 h-6 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm border border-black/10 dark:border-white/20 
+                                    flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      // Open notes interface
+                                      console.log('Open notes for:', word)
+                                    }}
+                                  >
+                                    <List className="h-3 w-3 text-black/60 dark:text-white/60" />
+                                  </button>
+                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
+                                    opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                    Add Note
+                                  </div>
+                                </motion.div>
+
+                                {/* Dictionary Icon */}
+                                <motion.div 
+                                  className="group relative"
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ duration: 0.2, delay: 0.2 }}
+                                >
+                                  <button 
+                                    className="pointer-events-auto w-6 h-6 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm border border-black/10 dark:border-white/20 
+                                    flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      window.location.href = '/glossary'
+                                    }}
+                                  >
+                                    <Book className="h-3 w-3 text-black/60 dark:text-white/60" />
+                                  </button>
+                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-black/90 text-white rounded whitespace-nowrap
+                                    opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                    Open Glossary
+                                  </div>
+                                </motion.div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </motion.div>
                     )
                   })}
                 </div>
               </div>
             </motion.div>
           </div>
-        </div>
-
-        <div className="relative w-full h-full">
-          <LeaveWarning />
-          <Clock
-            id={0}
-            startDateTime={clock0.startDateTime}
-            rotationTime={rotationTime}
-            imageUrl={clock0.imageUrl}
-            startingDegree={startingDegree}
-            focusNodes={focusNodes}
-            rotationDirection={rotationDirection}
-            imageOrientation={clock0.imageOrientation}
-            imageScale={clock0.imageScale}
-            imageX={clock0.imageX}
-            imageY={clock0.imageY}
-            showElements={showElements}
-            currentTime={currentTime}
-            syncTrigger={clockInfo.rotation}
-            onToggleShow={() => setShowElements(!showElements)}
-            showSatellites={showSatellites}
-            showWords={showWords}
-            customWords={customWords}
-            onInfoUpdate={(info) => setClockInfo(prev => ({ ...prev, ...info }))}
-            duration={duration}
-            sessionId={sessionId}
-          />
-        </div>
-
-        {/* Position the timer in the bottom left corner */}
-        <div className="absolute bottom-4 left-4 z-50">
-          <SessionTimer
-            duration={duration}
-            sessionId={sessionId}
-            onSessionComplete={handleSessionComplete}
-          />
         </div>
       </div>
     </ProtectedRoute>
