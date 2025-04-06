@@ -123,6 +123,7 @@ function NodesPageContent() {
     const params = new URLSearchParams(window.location.search)
     const durationParam = params.get('duration')
     const sessionIdParam = params.get('sessionId')
+    const wordsParam = params.get('words')
     
     if (durationParam) {
       setDuration(parseInt(durationParam, 10))
@@ -130,6 +131,16 @@ function NodesPageContent() {
     if (sessionIdParam) {
       setSessionId(sessionIdParam)
     }
+    if (wordsParam) {
+      try {
+        const decodedWords = JSON.parse(decodeURIComponent(wordsParam))
+        setCustomWords(decodedWords)
+      } catch (error) {
+        console.error('Error decoding words:', error)
+        setCustomWords([])
+      }
+    }
+    setIsLoading(false)
   }, [])
 
   // Handle session completion
