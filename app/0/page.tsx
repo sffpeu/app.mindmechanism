@@ -27,6 +27,7 @@ import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords } from '@/lib/glossary'
 import Clock from '@/components/Clock'
 import { LeaveWarning } from '@/components/LeaveWarning'
+import { SessionTimer } from '@/components/SessionTimer'
 
 // Test words for each node
 const testWords = [
@@ -113,51 +114,27 @@ function NodesPageContent() {
   const [rotation, setRotation] = useState(startingDegree)
   const [currentDegree, setCurrentDegree] = useState(startingDegree)
 
-  // Initialize timer from URL parameters
+  // Initialize session from URL parameters
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search)
-    const wordsParam = searchParams.get('words')
-    const durationParam = searchParams.get('duration')
-    const sessionIdParam = searchParams.get('sessionId')
-
-    if (wordsParam) {
-      try {
-        const decodedWords = JSON.parse(decodeURIComponent(wordsParam))
-        setCustomWords(decodedWords)
-      } catch (error) {
-        console.error('Error decoding words:', error)
-        setCustomWords([])
-      }
-    }
-
+    const params = new URLSearchParams(window.location.search)
+    const durationParam = params.get('duration')
+    const sessionIdParam = params.get('sessionId')
+    
     if (durationParam) {
-      const duration = parseInt(durationParam)
-      setDuration(duration)
-      setRemainingTime(duration)
+      setDuration(parseInt(durationParam, 10))
     }
-
     if (sessionIdParam) {
       setSessionId(sessionIdParam)
-      // Check for pending session
-      const savedSession = localStorage.getItem('pendingSession')
-      if (savedSession) {
-        try {
-          const { sessionId: savedId, remaining, timestamp } = JSON.parse(savedSession)
-          if (savedId === sessionIdParam && Date.now() - timestamp < 24 * 60 * 60 * 1000) {
-            setRemainingTime(remaining)
-            setIsPaused(true)
-          } else {
-            localStorage.removeItem('pendingSession')
-          }
-        } catch (error) {
-          console.error('Error recovering session:', error)
-          localStorage.removeItem('pendingSession')
-        }
-      }
     }
-
-    setIsLoading(false)
   }, [])
+
+  // Handle session completion
+  const handleSessionComplete = () => {
+    // Clear saved session
+    localStorage.removeItem('pendingSession')
+    // Redirect to completion page or show completion message
+    // You can implement this based on your requirements
+  }
 
   // Handle pause/resume
   const handlePauseResume = () => {
@@ -809,6 +786,15 @@ function NodesPageContent() {
             onInfoUpdate={(info) => setClockInfo(prev => ({ ...prev, ...info }))}
             duration={duration}
             sessionId={sessionId}
+          />
+        </div>
+
+        {/* Position the timer in the bottom left corner */}
+        <div className="absolute bottom-4 left-4 z-50">
+          <SessionTimer
+            duration={duration}
+            sessionId={sessionId}
+            onSessionComplete={handleSessionComplete}
           />
         </div>
       </div>
