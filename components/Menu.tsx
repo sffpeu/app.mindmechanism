@@ -9,10 +9,11 @@ import Link from 'next/link'
 import { useTheme } from '@/app/ThemeContext'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { SettingsDialog } from './settings/SettingsDialog'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetTrigger, SheetWrapper } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { useSettings } from '@/lib/hooks/useSettings'
+import { useMenu } from '@/app/MenuContext'
 
 interface MenuProps {
   showElements?: boolean
@@ -26,16 +27,20 @@ interface MenuProps {
 const menuContainerVariants = {
   hidden: { 
     opacity: 0,
-    x: -20,
+    x: -100,
     transition: {
-      duration: 0.2
+      type: "spring",
+      stiffness: 300,
+      damping: 30
     }
   },
   visible: { 
     opacity: 1,
     x: 0,
     transition: {
-      duration: 0.3
+      type: "spring",
+      stiffness: 300,
+      damping: 30
     }
   }
 }
@@ -104,7 +109,6 @@ export function Menu({
   showInfoCards = true,
   onInfoCardsChange,
 }: MenuProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
@@ -112,6 +116,7 @@ export function Menu({
   const { isDarkMode, setIsDarkMode } = useTheme()
   const { soundEnabled, setSoundEnabled } = useSettings()
   const { user, signOut } = useAuth()
+  const { isMenuOpen, setIsMenuOpen } = useMenu()
 
   const handleSignOut = async () => {
     await signOut()
@@ -165,7 +170,7 @@ export function Menu({
         </SheetTrigger>
         <SheetContent
           side="left"
-          className="w-80 p-0 bg-gradient-to-b from-white via-white to-gray-50 dark:from-black dark:via-black/95 dark:to-black/90 backdrop-blur-xl border-r border-black/5 dark:border-white/10 [&>button[type='button']]:hidden z-[999] pointer-events-auto"
+          className="w-80 p-0 bg-gradient-to-b from-white via-white to-gray-50 dark:from-black dark:via-black/95 dark:to-black/90 backdrop-blur-xl border-r border-black/5 dark:border-white/10 [&>button[type='button']]:hidden z-[999] pointer-events-auto rounded-r-2xl"
         >
           <div className="h-full flex flex-col">
             <motion.div

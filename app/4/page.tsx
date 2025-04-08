@@ -391,7 +391,7 @@ function NodesPageContent() {
                   <div className="space-y-3">
                     {/* Clock Title and Description */}
                     <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10">
-                      <h3 className="text-sm font-medium text-green-500">
+                      <h3 className="text-sm font-medium text-blue-500">
                         Jupiter's Moons
                       </h3>
                       <p className="text-xs text-black/60 dark:text-white/60 line-clamp-2">
@@ -458,7 +458,7 @@ function NodesPageContent() {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
                         <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                          <div className="w-1 h-1 rounded-full bg-green-500" />
+                          <div className="w-1 h-1 rounded-full bg-blue-500" />
                           Focus Nodes
                         </span>
                         <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
