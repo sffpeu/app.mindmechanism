@@ -125,6 +125,7 @@ export function Menu({
   const NavLink = ({ href, icon: Icon, children, className }: { href: string; icon: any; children: React.ReactNode; className?: string }) => {
     const isActive = pathname === href
     const handleClick = (e: React.MouseEvent) => {
+      e.preventDefault()
       // Close the menu when navigating
       setIsMenuOpen(false)
       
@@ -134,9 +135,13 @@ export function Menu({
         const { sessionId, remaining, timestamp } = JSON.parse(pendingSession)
         if (Date.now() - timestamp < 24 * 60 * 60 * 1000) { // 24h expiry
           // Session is still valid, allow navigation
+          router.push(href)
           return
         }
       }
+      
+      // Navigate to the new page
+      router.push(href)
     }
 
     return (
@@ -164,7 +169,6 @@ export function Menu({
       <Sheet open={isMenuOpen} onOpenChange={(open) => {
         setIsMenuOpen(open)
         if (!open) {
-          // Ensure menu is closed when clicking outside
           setIsMenuOpen(false)
         }
       }}>
@@ -172,14 +176,14 @@ export function Menu({
           <Button
             variant="ghost"
             size="icon"
-            className="fixed top-4 left-4 z-[999] h-9 w-9 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 shadow-sm pointer-events-auto"
+            className="fixed top-4 left-4 z-[999] h-9 w-9 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 shadow-sm"
           >
             <AnimatedMenuIcon isOpen={isMenuOpen} />
           </Button>
         </SheetTrigger>
         <SheetContent
           side="left"
-          className="w-80 p-0 bg-gradient-to-b from-white via-white to-gray-50 dark:from-black dark:via-black/95 dark:to-black/90 backdrop-blur-xl border-r border-black/5 dark:border-white/10 [&>button[type='button']]:hidden z-[999] pointer-events-auto rounded-r-2xl"
+          className="w-80 p-0 bg-gradient-to-b from-white via-white to-gray-50 dark:from-black dark:via-black/95 dark:to-black/90 backdrop-blur-xl border-r border-black/5 dark:border-white/10 [&>button[type='button']]:hidden z-[999] rounded-r-2xl"
         >
           <div className="h-full flex flex-col">
             <motion.div
@@ -189,11 +193,25 @@ export function Menu({
               variants={menuContainerVariants}
             >
               <MenuCategory title="Navigation">
-                <NavLink href="/home" icon={Home} className="sidebar-item">Home</NavLink>
-                <NavLink href="/dashboard" icon={LayoutDashboard} className="sidebar-item">Dashboard</NavLink>
-                <NavLink href="/sessions" icon={Clock} className="sidebar-item">Sessions</NavLink>
-                <NavLink href="/notes" icon={ClipboardList} className="sidebar-item">Notes</NavLink>
-                <NavLink href="/glossary" icon={BookOpen} className="sidebar-item">Glossary</NavLink>
+                <NavLink href="/home" icon={Home}>Home</NavLink>
+                <NavLink href="/dashboard" icon={LayoutDashboard}>Dashboard</NavLink>
+                <NavLink href="/sessions" icon={Clock}>Sessions</NavLink>
+                <NavLink href="/notes" icon={ClipboardList}>Notes</NavLink>
+                <NavLink href="/glossary" icon={BookOpen}>Glossary</NavLink>
+              </MenuCategory>
+
+              <Separator className="my-6 bg-black/5 dark:bg-white/10" />
+
+              <MenuCategory title="Clock Pages">
+                <NavLink href="/0" icon={Clock}>Page 0</NavLink>
+                <NavLink href="/1" icon={Clock}>Page 1</NavLink>
+                <NavLink href="/2" icon={Clock}>Page 2</NavLink>
+                <NavLink href="/3" icon={Clock}>Page 3</NavLink>
+                <NavLink href="/4" icon={Clock}>Page 4</NavLink>
+                <NavLink href="/5" icon={Clock}>Page 5</NavLink>
+                <NavLink href="/6" icon={Clock}>Page 6</NavLink>
+                <NavLink href="/7" icon={Clock}>Page 7</NavLink>
+                <NavLink href="/8" icon={Clock}>Page 8</NavLink>
               </MenuCategory>
 
               <Separator className="my-6 bg-black/5 dark:bg-white/10" />
