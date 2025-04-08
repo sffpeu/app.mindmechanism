@@ -129,17 +129,6 @@ export function Menu({
       // Close the menu when navigating
       setIsMenuOpen(false)
       
-      // If there's an active session, save its state before navigating
-      const pendingSession = localStorage.getItem('pendingSession')
-      if (pendingSession) {
-        const { sessionId, remaining, timestamp } = JSON.parse(pendingSession)
-        if (Date.now() - timestamp < 24 * 60 * 60 * 1000) { // 24h expiry
-          // Session is still valid, allow navigation
-          router.push(href)
-          return
-        }
-      }
-      
       // Navigate to the new page
       router.push(href)
     }

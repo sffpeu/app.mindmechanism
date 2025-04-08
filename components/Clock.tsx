@@ -399,6 +399,17 @@ const FocusNode = ({
   );
 };
 
+const Path = (props: any) => (
+  <motion.path
+    fill="transparent"
+    strokeWidth="2"
+    stroke="currentColor"
+    className="text-black dark:text-white"
+    strokeLinecap="round"
+    {...props}
+  />
+)
+
 export default function Clock({ 
   id, 
   startDateTime = new Date('2024-01-01T00:00:00Z'),
