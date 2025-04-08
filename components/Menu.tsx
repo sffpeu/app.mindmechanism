@@ -166,24 +166,19 @@ export function Menu({
 
   return (
     <>
-      <Sheet open={isMenuOpen} onOpenChange={(open) => {
-        setIsMenuOpen(open)
-        if (!open) {
-          setIsMenuOpen(false)
-        }
-      }}>
+      <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
         <SheetTrigger asChild>
           <Button
             variant="ghost"
             size="icon"
-            className="fixed top-4 left-4 z-[999] h-9 w-9 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 shadow-sm"
+            className="fixed top-4 left-4 z-[999] h-9 w-9 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 shadow-sm pointer-events-auto"
           >
             <AnimatedMenuIcon isOpen={isMenuOpen} />
           </Button>
         </SheetTrigger>
         <SheetContent
           side="left"
-          className="w-80 p-0 bg-white dark:bg-black border-r border-black/5 dark:border-white/10 [&>button[type='button']]:hidden z-[999] rounded-r-2xl overflow-hidden"
+          className="w-80 p-0 bg-gradient-to-b from-white via-white to-gray-50 dark:from-black dark:via-black/95 dark:to-black/90 backdrop-blur-xl border-r border-black/5 dark:border-white/10 [&>button[type='button']]:hidden z-[999] pointer-events-auto rounded-r-2xl"
         >
           <div className="h-full flex flex-col">
             <motion.div
@@ -193,25 +188,25 @@ export function Menu({
               variants={menuContainerVariants}
             >
               <MenuCategory title="Navigation">
-                <NavLink href="/home" icon={Home}>Home</NavLink>
-                <NavLink href="/dashboard" icon={LayoutDashboard}>Dashboard</NavLink>
-                <NavLink href="/sessions" icon={Clock}>Sessions</NavLink>
-                <NavLink href="/notes" icon={ClipboardList}>Notes</NavLink>
-                <NavLink href="/glossary" icon={BookOpen}>Glossary</NavLink>
+                <NavLink href="/home" icon={Home} className="sidebar-item">Home</NavLink>
+                <NavLink href="/dashboard" icon={LayoutDashboard} className="sidebar-item">Dashboard</NavLink>
+                <NavLink href="/sessions" icon={Clock} className="sidebar-item">Sessions</NavLink>
+                <NavLink href="/notes" icon={ClipboardList} className="sidebar-item">Notes</NavLink>
+                <NavLink href="/glossary" icon={BookOpen} className="sidebar-item">Glossary</NavLink>
               </MenuCategory>
 
               <Separator className="my-6 bg-black/5 dark:bg-white/10" />
 
               <MenuCategory title="Clock Pages">
-                <NavLink href="/0" icon={Clock}>Page 0</NavLink>
-                <NavLink href="/1" icon={Clock}>Page 1</NavLink>
-                <NavLink href="/2" icon={Clock}>Page 2</NavLink>
-                <NavLink href="/3" icon={Clock}>Page 3</NavLink>
-                <NavLink href="/4" icon={Clock}>Page 4</NavLink>
-                <NavLink href="/5" icon={Clock}>Page 5</NavLink>
-                <NavLink href="/6" icon={Clock}>Page 6</NavLink>
-                <NavLink href="/7" icon={Clock}>Page 7</NavLink>
-                <NavLink href="/8" icon={Clock}>Page 8</NavLink>
+                <NavLink href="/0" icon={Clock} className="sidebar-item">Page 0</NavLink>
+                <NavLink href="/1" icon={Clock} className="sidebar-item">Page 1</NavLink>
+                <NavLink href="/2" icon={Clock} className="sidebar-item">Page 2</NavLink>
+                <NavLink href="/3" icon={Clock} className="sidebar-item">Page 3</NavLink>
+                <NavLink href="/4" icon={Clock} className="sidebar-item">Page 4</NavLink>
+                <NavLink href="/5" icon={Clock} className="sidebar-item">Page 5</NavLink>
+                <NavLink href="/6" icon={Clock} className="sidebar-item">Page 6</NavLink>
+                <NavLink href="/7" icon={Clock} className="sidebar-item">Page 7</NavLink>
+                <NavLink href="/8" icon={Clock} className="sidebar-item">Page 8</NavLink>
               </MenuCategory>
 
               <Separator className="my-6 bg-black/5 dark:bg-white/10" />
@@ -219,7 +214,7 @@ export function Menu({
               <MenuCategory title="Preferences">
                 <button
                   onClick={() => setIsDarkMode(!isDarkMode)}
-                  className="group flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+                  className="group flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation"
                 >
                   <div className="flex items-center gap-3">
                     {isDarkMode ? 
@@ -239,7 +234,7 @@ export function Menu({
 
                 <button
                   onClick={() => setSoundEnabled(!soundEnabled)}
-                  className="group flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+                  className="group flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation"
                 >
                   <div className="flex items-center gap-3">
                     {soundEnabled ? 
@@ -262,7 +257,7 @@ export function Menu({
                     setIsMenuOpen(false)
                     setIsSettingsOpen(true)
                   }}
-                  className="group flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+                  className="group flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation"
                 >
                   <Settings className="h-4 w-4 group-hover:scale-110 transition-transform" />
                   <span className="text-sm">Settings</span>
