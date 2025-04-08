@@ -183,7 +183,7 @@ export function Menu({
         </SheetTrigger>
         <SheetContent
           side="left"
-          className="w-80 p-0 bg-gradient-to-b from-white via-white to-gray-50 dark:from-black dark:via-black/95 dark:to-black/90 backdrop-blur-xl border-r border-black/5 dark:border-white/10 [&>button[type='button']]:hidden z-[999] rounded-r-2xl"
+          className="w-80 p-0 bg-white dark:bg-black border-r border-black/5 dark:border-white/10 [&>button[type='button']]:hidden z-[999] rounded-r-2xl"
         >
           <div className="h-full flex flex-col">
             <motion.div
@@ -219,7 +219,7 @@ export function Menu({
               <MenuCategory title="Preferences">
                 <button
                   onClick={() => setIsDarkMode(!isDarkMode)}
-                  className="group flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation"
+                  className="group flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all"
                 >
                   <div className="flex items-center gap-3">
                     {isDarkMode ? 
@@ -239,7 +239,7 @@ export function Menu({
 
                 <button
                   onClick={() => setSoundEnabled(!soundEnabled)}
-                  className="group flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation"
+                  className="group flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all"
                 >
                   <div className="flex items-center gap-3">
                     {soundEnabled ? 
@@ -262,7 +262,7 @@ export function Menu({
                     setIsMenuOpen(false)
                     setIsSettingsOpen(true)
                   }}
-                  className="group flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all touch-manipulation"
+                  className="group flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 transition-all"
                 >
                   <Settings className="h-4 w-4 group-hover:scale-110 transition-transform" />
                   <span className="text-sm">Settings</span>
