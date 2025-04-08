@@ -125,6 +125,9 @@ export function Menu({
   const NavLink = ({ href, icon: Icon, children, className }: { href: string; icon: any; children: React.ReactNode; className?: string }) => {
     const isActive = pathname === href
     const handleClick = (e: React.MouseEvent) => {
+      // Close the menu when navigating
+      setIsMenuOpen(false)
+      
       // If there's an active session, save its state before navigating
       const pendingSession = localStorage.getItem('pendingSession')
       if (pendingSession) {
@@ -158,7 +161,13 @@ export function Menu({
 
   return (
     <>
-      <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+      <Sheet open={isMenuOpen} onOpenChange={(open) => {
+        setIsMenuOpen(open)
+        if (!open) {
+          // Ensure menu is closed when clicking outside
+          setIsMenuOpen(false)
+        }
+      }}>
         <SheetTrigger asChild>
           <Button
             variant="ghost"
