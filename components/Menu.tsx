@@ -183,7 +183,7 @@ export function Menu({
         </SheetTrigger>
         <SheetContent
           side="left"
-          className="w-80 p-0 bg-white dark:bg-black border-r border-black/5 dark:border-white/10 [&>button[type='button']]:hidden z-[999] rounded-r-2xl"
+          className="w-80 p-0 bg-white dark:bg-black border-r border-black/5 dark:border-white/10 [&>button[type='button']]:hidden z-[999] rounded-r-2xl overflow-hidden"
         >
           <div className="h-full flex flex-col">
             <motion.div
