@@ -374,7 +374,7 @@ function NodesPageContent() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50 dark:bg-black/95">
+      <div className="h-screen overflow-hidden bg-gray-50 dark:bg-black/95">
         <Menu
           showElements={showElements}
           onToggleShow={() => setShowElements(!showElements)}
@@ -771,33 +771,6 @@ function NodesPageContent() {
               </div>
             </motion.div>
           </div>
-        </div>
-
-        <div className="relative w-full h-full">
-          <LeaveWarning />
-          <Clock
-            id={0}
-            startDateTime={clock0.startDateTime}
-            rotationTime={rotationTime}
-            imageUrl={clock0.imageUrl}
-            startingDegree={startingDegree}
-            focusNodes={focusNodes}
-            rotationDirection={rotationDirection}
-            imageOrientation={clock0.imageOrientation}
-            imageScale={clock0.imageScale}
-            imageX={clock0.imageX}
-            imageY={clock0.imageY}
-            showElements={showElements}
-            currentTime={currentTime}
-            syncTrigger={clockInfo.rotation}
-            onToggleShow={() => setShowElements(!showElements)}
-            showSatellites={showSatellites}
-            showWords={showWords}
-            customWords={customWords}
-            onInfoUpdate={(info) => setClockInfo(prev => ({ ...prev, ...info }))}
-            duration={duration}
-            sessionId={sessionId}
-          />
         </div>
 
         {/* Position the timer in the bottom left corner */}

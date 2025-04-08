@@ -336,7 +336,7 @@ function NodesPageContent() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50 dark:bg-black/95">
+      <div className="h-screen overflow-hidden bg-gray-50 dark:bg-black/95">
         <Menu
           showElements={showElements}
           onToggleShow={() => setShowElements(!showElements)}
