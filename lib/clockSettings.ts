@@ -96,7 +96,7 @@ export const clockSettings: ClockSettings[] = [
     id: 7,
     startDateTime: new Date('0015-12-07T02:00:00'),
     rotationTime: 36000000,
-    imageUrl: '/@8_small.svg',
+    imageUrl: '/8_small.svg',
     startingDegree: 67.5,
     focusNodes: 16,
     rotationDirection: 'counterclockwise' as const,
