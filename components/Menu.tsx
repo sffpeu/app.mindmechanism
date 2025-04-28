@@ -129,8 +129,15 @@ export function Menu({
       // Close the menu when navigating
       setIsMenuOpen(false)
       
-      // Navigate to the new page
-      router.push(href)
+      // Use router.replace instead of push to ensure full page navigation
+      // This is especially important for clock pages which may have complex state
+      if (pathname.match(/^\/\d+$/) && href.match(/^\/\d+$/)) {
+        // For navigation between clock pages, use window.location for a full page refresh
+        window.location.href = href;
+      } else {
+        // For other navigation, use the router
+        router.replace(href);
+      }
     }
 
     return (
