@@ -18,9 +18,7 @@ const nextConfig = {
     dirs: ['app', 'components', 'lib', 'types']
   },
   experimental: {
-    serverActions: {
-      allowedOrigins: ['localhost:3000']
-    },
+    serverActions: true
   },
 }
 
