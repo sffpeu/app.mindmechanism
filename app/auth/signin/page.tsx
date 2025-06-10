@@ -7,9 +7,9 @@ import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { setCookie } from 'cookies-next'
 import { toast } from 'sonner'
-import { useEffect } from 'react'
+import { useEffect, Suspense } from 'react'
 
-export default function SignIn() {
+function SignInContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user } = useAuth()
@@ -97,5 +97,17 @@ export default function SignIn() {
         </motion.div>
       </div>
     </div>
+  )
+}
+
+export default function SignIn() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 dark:bg-black/95 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
+      </div>
+    }>
+      <SignInContent />
+    </Suspense>
   )
 } 
