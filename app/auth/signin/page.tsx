@@ -1,13 +1,26 @@
 'use client'
 
-import { useAuth } from '@/lib/FirebaseAuthContext'
-import { useRouter } from 'next/navigation'
+import { useAuth } from '@/components/AuthProvider'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
+import { setCookie } from 'cookies-next'
+import { toast } from 'sonner'
+import { useEffect } from 'react'
 
 export default function SignIn() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const { user } = useAuth()
+  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard'
+
+  // Redirect if already signed in
+  useEffect(() => {
+    if (user) {
+      router.replace(callbackUrl)
+    }
+  }, [user, router, callbackUrl])
 
   const handleGoogleSignIn = async () => {
     try {
@@ -15,10 +28,22 @@ export default function SignIn() {
         throw new Error('Firebase auth is not initialized')
       }
       const provider = new GoogleAuthProvider()
-      await signInWithPopup(auth, provider)
-      router.push('/dashboard')
+      const result = await signInWithPopup(auth, provider)
+      
+      // Set the auth token cookie
+      const token = await result.user.getIdToken()
+      setCookie('__firebase_auth_token', token, {
+        maxAge: 30 * 24 * 60 * 60, // 30 days
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax'
+      })
+      
+      toast.success('Successfully signed in!')
+      router.replace(callbackUrl)
     } catch (error) {
       console.error('Error signing in with Google:', error)
+      toast.error('Failed to sign in. Please try again.')
     }
   }
 
