@@ -32,6 +32,7 @@ import {
 import { Session as BaseSession } from '@/lib/sessions'
 import { useLocation } from '@/lib/hooks/useLocation'
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
+import { LocationSearch } from '@/components/LocationSearch'
 
 interface WeatherResponse {
   location: {
@@ -194,6 +195,7 @@ export default function DashboardPage() {
   const [showRecentSessions, setShowRecentSessions] = useState(true)
   const [isInitializing, setIsInitializing] = useState(true)
   const [authError, setAuthError] = useState<string | null>(null)
+  const [customLocation, setCustomLocation] = useState<{ lat: number; lng: number; name: string } | null>(null)
 
   const getAQIDescription = (index: number) => {
     const descriptions = {
@@ -259,7 +261,11 @@ export default function DashboardPage() {
       try {
         const weatherRes = await fetch(
           `https://api.weatherapi.com/v1/current.json?key=6cb652a81cb64a19a84103447252001&q=${
-            location?.coords ? `${location.coords.lat},${location.coords.lon}` : 'auto:ip'
+            customLocation 
+              ? `${customLocation.lat},${customLocation.lng}`
+              : location?.coords 
+                ? `${location.coords.lat},${location.coords.lon}` 
+                : 'auto:ip'
           }&aqi=yes`
         );
         if (!weatherRes.ok) {
@@ -271,7 +277,11 @@ export default function DashboardPage() {
 
         const astronomyRes = await fetch(
           `https://api.weatherapi.com/v1/astronomy.json?key=6cb652a81cb64a19a84103447252001&q=${
-            location?.coords ? `${location.coords.lat},${location.coords.lon}` : 'auto:ip'
+            customLocation 
+              ? `${customLocation.lat},${customLocation.lng}`
+              : location?.coords 
+                ? `${location.coords.lat},${location.coords.lon}` 
+                : 'auto:ip'
           }`
         );
         if (!astronomyRes.ok) {
@@ -290,7 +300,7 @@ export default function DashboardPage() {
     fetchData();
     const interval = setInterval(fetchData, 5 * 60 * 1000); // Update every 5 minutes
     return () => clearInterval(interval);
-  }, [mounted, location?.coords]);
+  }, [mounted, location?.coords, customLocation]);
 
   // Handle authentication and initialization
   useEffect(() => {
@@ -557,13 +567,19 @@ export default function DashboardPage() {
           {showInfoCards && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Location Card */}
-              {weatherData && (
-                <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-                  <div className="flex items-center justify-between mb-2">
-                    <h2 className="text-base font-semibold dark:text-white">Location</h2>
-                    <MapPin className="h-4 w-4 text-gray-500" />
-                  </div>
-                  <div className="space-y-2">
+              <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-base font-semibold dark:text-white">Location</h2>
+                  <MapPin className="h-4 w-4 text-gray-500" />
+                </div>
+                <div className="space-y-3">
+                  <LocationSearch
+                    onLocationSelect={(location) => {
+                      setCustomLocation(location);
+                    }}
+                    currentLocation={weatherData?.location.name}
+                  />
+                  {weatherData && (
                     <div className="flex items-center gap-2">
                       <div>
                         <p className="text-base font-medium dark:text-white">{weatherData.location.name}</p>
@@ -572,9 +588,9 @@ export default function DashboardPage() {
                         </p>
                       </div>
                     </div>
-                  </div>
-                </Card>
-              )}
+                  )}
+                </div>
+              </Card>
 
               {/* Connect Card */}
               <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
