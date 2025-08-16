@@ -1,4 +1,4 @@
-import { initializeApp, cert } from 'firebase-admin/app';
+import { initializeApp, cert, applicationDefault } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { parse } from 'csv-parse';
 import { readFileSync } from 'fs';
@@ -11,7 +11,7 @@ const __dirname = dirname(__filename);
 
 // Initialize Firebase Admin
 initializeApp({
-  credential: cert(join(dirname(__dirname), 'utils/data-mindmechanism-firebase-adminsdk-fbsvc-3558525fda.json'))
+  credential: applicationDefault()
 });
 
 const db = getFirestore();
