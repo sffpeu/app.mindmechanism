@@ -36,24 +36,39 @@ const MenuItem = ({
   onClick?: () => void;
   external?: boolean;
 }) => {
-  const Component = href ? Link : 'button'
-  const props = href ? { href } : { onClick, type: 'button' as const }
+  const className = `group flex items-center justify-between w-full px-6 py-4 text-left transition-all duration-200 ${
+    isActive 
+      ? 'bg-black text-white dark:bg-white dark:text-black' 
+      : 'text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black'
+  }`
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className={className}
+      >
+        <div className="flex items-center gap-4">
+          <Icon className={`h-5 w-5 ${isActive ? 'text-current' : 'text-black dark:text-white'} group-hover:text-current transition-colors`} />
+          <span className="text-lg font-medium">{children}</span>
+        </div>
+        {external && <ExternalLink className="h-4 w-4 opacity-60" />}
+      </Link>
+    )
+  }
 
   return (
-    <Component
-      {...props}
-      className={`group flex items-center justify-between w-full px-6 py-4 text-left transition-all duration-200 ${
-        isActive 
-          ? 'bg-black text-white dark:bg-white dark:text-black' 
-          : 'text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black'
-      }`}
+    <button
+      onClick={onClick}
+      type="button"
+      className={className}
     >
       <div className="flex items-center gap-4">
         <Icon className={`h-5 w-5 ${isActive ? 'text-current' : 'text-black dark:text-white'} group-hover:text-current transition-colors`} />
         <span className="text-lg font-medium">{children}</span>
       </div>
       {external && <ExternalLink className="h-4 w-4 opacity-60" />}
-    </Component>
+    </button>
   )
 }
 
