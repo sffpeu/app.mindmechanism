@@ -47,6 +47,7 @@ const MenuItem = ({
       <Link
         href={href}
         className={className}
+        onClick={onClick}
       >
         <div className="flex items-center gap-3">
           <Icon className={`h-4 w-4 ${isActive ? 'text-current' : 'text-black dark:text-white'} group-hover:text-current transition-colors`} />
@@ -140,7 +141,10 @@ export function Menu({
 
   const handleNavigation = (href: string) => {
     setIsMenuOpen(false)
-    router.push(href)
+    // Use setTimeout to ensure menu closes before navigation
+    setTimeout(() => {
+      router.push(href)
+    }, 100)
   }
 
   const isActive = (href: string) => pathname === href
