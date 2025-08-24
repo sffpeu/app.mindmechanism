@@ -26,7 +26,9 @@ import {
   Sun,
   Wifi,
   Battery,
-  Users
+  Users,
+  RotateCw,
+  Calendar
 } from 'lucide-react'
 import {
   Popover,
@@ -309,6 +311,26 @@ export default function Home1Page() {
     return descriptions[index as keyof typeof descriptions] || 'Unknown';
   };
 
+  // Format rotation speed for display
+  const formatRotationSpeed = (clock: typeof clockSettings[0]) => {
+    const speed = clock.rotationTime / 1000; // Convert to seconds
+    if (speed < 60) {
+      return `${speed}s`;
+    } else if (speed < 3600) {
+      return `${(speed / 60).toFixed(1)}m`;
+    } else {
+      return `${(speed / 3600).toFixed(1)}h`;
+    }
+  };
+
+  // Mock last session data (in real app, this would come from database)
+  const getLastSessionTime = (clockIndex: number) => {
+    const now = new Date();
+    const hoursAgo = Math.floor(Math.random() * 24) + 1;
+    const lastSession = new Date(now.getTime() - hoursAgo * 60 * 60 * 1000);
+    return lastSession;
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-black/90">
       {/* Navigation Layer */}
@@ -327,8 +349,8 @@ export default function Home1Page() {
         </div>
       </div>
 
-      {/* Widget Grid - Left Side */}
-      <div className="fixed left-6 top-6 z-20 space-y-4">
+      {/* Widget Grid - Right Side */}
+      <div className="fixed right-6 top-6 z-20 space-y-4 max-h-screen overflow-y-auto">
         {/* Profile Widget */}
         <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
           <div className="flex items-center justify-between mb-2">
@@ -398,10 +420,7 @@ export default function Home1Page() {
             </div>
           </div>
         </Card>
-      </div>
 
-      {/* Widget Grid - Right Side */}
-      <div className="fixed right-6 top-6 z-20 space-y-4">
         {/* Time/Location/Timezone Widget */}
         <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
           <div className="flex items-center justify-between mb-2">
@@ -493,6 +512,49 @@ export default function Home1Page() {
             </div>
           </Card>
         )}
+
+        {/* Clock List Widget */}
+        <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold dark:text-white">Clock Status</h2>
+            <RotateCw className="h-4 w-4 text-gray-500" />
+          </div>
+          <div className="space-y-2 max-h-64 overflow-y-auto">
+            {clockSettings.map((clock, index) => {
+              const rotation = getClockRotation(clock);
+              const lastSession = getLastSessionTime(index);
+              const hoursAgo = Math.floor((Date.now() - lastSession.getTime()) / (1000 * 60 * 60));
+              
+              return (
+                <div 
+                  key={index}
+                  className="p-2 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all"
+                  style={{ borderLeftColor: focusNodeColors[index].replace('bg-', '#').replace('[', '').replace(']', '') }}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: focusNodeColors[index].replace('bg-', '#').replace('[', '').replace(']', '') }}
+                      ></div>
+                      <span className="text-sm font-medium dark:text-white">Clock {index + 1}</span>
+                    </div>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {rotation.toFixed(1)}°
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                    <span>Speed: {formatRotationSpeed(clock)}</span>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      <span>{hoursAgo}h ago</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
       </div>
 
       {/* Content Layer - Multiview */}
