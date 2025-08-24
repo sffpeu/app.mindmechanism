@@ -372,47 +372,69 @@ export default function Home1Page() {
             </div>
           </div>
           <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
-                <User className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-              </div>
+            <div className="flex items-center gap-3">
+              {user?.photoURL ? (
+                <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-gray-200 dark:ring-gray-700">
+                  <Image
+                    src={user.photoURL}
+                    alt="Profile"
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
+                  <User className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                </div>
+              )}
               <div>
                 <p className="text-sm font-medium dark:text-white">
                   {user?.displayName || user?.email || 'Guest User'}
                 </p>
+                {user?.email && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {user.email}
+                  </p>
+                )}
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   {user ? 'Signed in' : 'Not signed in'}
                 </p>
               </div>
             </div>
-            
-            {/* Action Icons - 3x 1:1 squares */}
-            <div className="grid grid-cols-3 gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-12 w-12 p-0 aspect-square"
-                onClick={() => router.push('/sessions')}
-              >
-                <Play className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-12 w-12 p-0 aspect-square"
-                onClick={() => router.push('/notes')}
-              >
-                <BookOpen className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-12 w-12 p-0 aspect-square"
-                onClick={() => router.push('/library')}
-              >
-                <Library className="h-5 w-5" />
-              </Button>
-            </div>
+          </div>
+        </Card>
+
+        {/* App Icons Widget - Round Design */}
+        <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold dark:text-white">Quick Actions</h2>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-16 w-16 p-0 rounded-full aspect-square hover:scale-105 transition-transform"
+              onClick={() => router.push('/sessions')}
+            >
+              <Play className="h-6 w-6" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-16 w-16 p-0 rounded-full aspect-square hover:scale-105 transition-transform"
+              onClick={() => router.push('/notes')}
+            >
+              <BookOpen className="h-6 w-6" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-16 w-16 p-0 rounded-full aspect-square hover:scale-105 transition-transform"
+              onClick={() => router.push('/library')}
+            >
+              <Library className="h-6 w-6" />
+            </Button>
           </div>
         </Card>
 
