@@ -3,13 +3,36 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
-import { Play, BookOpen, ClipboardList, ArrowRight, LogIn, LogOut } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import DotNavigation from '@/components/DotNavigation'
 import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/lib/FirebaseAuthContext'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { useLocation } from '@/lib/hooks/useLocation'
+import { 
+  User, 
+  Cpu, 
+  Clock, 
+  MapPin, 
+  Globe, 
+  Cloud, 
+  Moon, 
+  Droplets, 
+  Gauge, 
+  Wind, 
+  Sun,
+  Wifi,
+  Battery,
+  Users
+} from 'lucide-react'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import type { ClockSettings } from '@/types/ClockSettings'
 
 // Default satellite configurations for all clocks
@@ -77,6 +100,42 @@ const clockSatellites: Record<number, number> = {
   8: 1, // Clock 9
 };
 
+interface WeatherResponse {
+  location: {
+    name: string
+    region: string
+    country: string
+    lat: number
+    lon: number
+    tz_id: string
+    localtime: string
+  }
+  current: {
+    temp_c: number
+    condition: {
+      text: string
+      icon: string
+    }
+    humidity: number
+    uv: number
+    pressure_mb: number
+    wind_kph: number
+    wind_dir: string
+    air_quality: {
+      'us-epa-index': number
+    }
+  }
+}
+
+interface MoonData {
+  moon_phase: string
+  moon_illumination: string
+  moonrise: string
+  moonset: string
+  next_full_moon: string
+  next_new_moon: string
+}
+
 export default function Home1Page() {
   const [showElements, setShowElements] = useState(true)
   const { isDarkMode } = useTheme()
@@ -84,17 +143,13 @@ export default function Home1Page() {
   const [rotationValues, setRotationValues] = useState<Record<number, number[]>>({})
   const animationRef = useRef<number>()
   const router = useRouter()
-  const { user, signOut } = useAuth()
-  const featuresRef = useRef<HTMLDivElement>(null)
-
-  const handleSignOut = async () => {
-    await signOut()
-    router.push('/auth/signin')
-  }
-
-  const scrollToFeatures = () => {
-    featuresRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
+  const { user } = useAuth()
+  const { location } = useLocation()
+  const [mounted, setMounted] = useState(false)
+  const [weatherData, setWeatherData] = useState<WeatherResponse | null>(null)
+  const [moon, setMoon] = useState<MoonData | null>(null)
+  const [isWeatherLoading, setIsWeatherLoading] = useState(false)
+  const [weatherError, setWeatherError] = useState<string | null>(null)
 
   // Initialize and update current time with optimized animation frame
   useEffect(() => {
@@ -176,6 +231,84 @@ export default function Home1Page() {
     'bg-[#56c1ff]', // 9. Light Blue
   ]
 
+  // Handle mounting
+  useEffect(() => {
+    setMounted(true)
+    setCurrentTime(new Date())
+  }, [])
+
+  const formatTime = (date: Date | null) => {
+    if (!date) return '--:--:--'
+    const hours = date.getHours().toString().padStart(2, '0')
+    const minutes = date.getMinutes().toString().padStart(2, '0')
+    const seconds = date.getSeconds().toString().padStart(2, '0')
+    return `${hours}:${minutes}:${seconds}`
+  }
+
+  // Fetch weather and moon data
+  useEffect(() => {
+    if (!mounted) return;
+
+    const fetchData = async () => {
+      setIsWeatherLoading(true);
+      try {
+        const weatherRes = await fetch(
+          `https://api.weatherapi.com/v1/current.json?key=6cb652a81cb64a19a84103447252001&q=${
+            location?.coords ? `${location.coords.lat},${location.coords.lon}` : 'auto:ip'
+          }&aqi=yes`
+        );
+        if (!weatherRes.ok) {
+          throw new Error('Weather API request failed');
+        }
+        const weatherData = await weatherRes.json();
+        setWeatherData(weatherData);
+        setWeatherError(null);
+
+        const astronomyRes = await fetch(
+          `https://api.weatherapi.com/v1/astronomy.json?key=6cb652a81cb64a19a84103447252001&q=${
+            location?.coords ? `${location.coords.lat},${location.coords.lon}` : 'auto:ip'
+          }`
+        );
+        if (!astronomyRes.ok) {
+          throw new Error('Astronomy API request failed');
+        }
+        const astronomyData = await astronomyRes.json();
+        setMoon(astronomyData.astronomy.astro);
+      } catch (error) {
+        console.error('Error fetching weather data:', error);
+        setWeatherError(error instanceof Error ? error.message : 'Failed to load weather data');
+      } finally {
+        setIsWeatherLoading(false);
+      }
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 5 * 60 * 1000); // Update every 5 minutes
+    return () => clearInterval(interval);
+  }, [mounted, location?.coords]);
+
+  // Update current time every second
+  useEffect(() => {
+    if (!mounted) return
+
+    const timer = setInterval(() => {
+      setCurrentTime(new Date())
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [mounted])
+
+  const getAQIDescription = (index: number) => {
+    const descriptions = {
+      1: 'Good',
+      2: 'Moderate',
+      3: 'Unhealthy for sensitive groups',
+      4: 'Unhealthy',
+      5: 'Very Unhealthy',
+      6: 'Hazardous'
+    };
+    return descriptions[index as keyof typeof descriptions] || 'Unknown';
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-black/90">
       {/* Navigation Layer */}
@@ -194,7 +327,175 @@ export default function Home1Page() {
         </div>
       </div>
 
-      {/* Content Layer - Multiview Background */}
+      {/* Widget Grid - Left Side */}
+      <div className="fixed left-6 top-6 z-20 space-y-4">
+        {/* Profile Widget */}
+        <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-sm font-semibold dark:text-white">Profile</h2>
+            <User className="h-4 w-4 text-gray-500" />
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
+                <User className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              </div>
+              <div>
+                <p className="text-sm font-medium dark:text-white">
+                  {user?.displayName || user?.email || 'Guest User'}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {user ? 'Signed in' : 'Not signed in'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Device Widget */}
+        <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-sm font-semibold dark:text-white">Device</h2>
+            <Cpu className="h-4 w-4 text-gray-500" />
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
+                <Wifi className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              </div>
+              <div>
+                <p className="text-sm font-medium dark:text-white">M13 Mechanism</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">No device connected</p>
+              </div>
+            </div>
+            <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Battery className="h-3.5 w-3.5 text-gray-500" />
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Battery</span>
+                </div>
+                <span className="text-xs font-medium text-gray-900 dark:text-white">N/A</span>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Session Widget */}
+        <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-sm font-semibold dark:text-white">Session</h2>
+            <Clock className="h-4 w-4 text-gray-500" />
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
+                <Users className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              </div>
+              <div>
+                <p className="text-sm font-medium dark:text-white">Active Session</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">No active session</p>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Widget Grid - Right Side */}
+      <div className="fixed right-6 top-6 z-20 space-y-4">
+        {/* Time/Location/Timezone Widget */}
+        <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-sm font-semibold dark:text-white">Time & Location</h2>
+            <Globe className="h-4 w-4 text-gray-500" />
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              <span className="text-sm font-medium dark:text-white">{formatTime(currentTime)}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {weatherData?.location.name || 'Loading location...'}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Globe className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {weatherData?.location.tz_id || 'Loading timezone...'}
+              </span>
+            </div>
+          </div>
+        </Card>
+
+        {/* Weather Widget */}
+        {weatherData && (
+          <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-sm font-semibold dark:text-white">Weather</h2>
+              <Cloud className="h-4 w-4 text-gray-500" />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-lg font-bold dark:text-white">{weatherData.current.temp_c}°C</span>
+                <div className="flex items-center gap-1">
+                  <Droplets className="h-3.5 w-3.5 text-gray-500" />
+                  <span className="text-xs text-gray-500 dark:text-gray-400">{weatherData.current.humidity}%</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                  <div className="flex items-center gap-1">
+                    <Sun className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
+                    <span className="text-xs text-gray-600 dark:text-gray-200">UV</span>
+                  </div>
+                  <p className="text-sm font-semibold dark:text-white">{weatherData.current.uv}</p>
+                </div>
+                <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                  <div className="flex items-center gap-1">
+                    <Wind className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
+                    <span className="text-xs text-gray-600 dark:text-gray-200">Wind</span>
+                  </div>
+                  <p className="text-sm font-semibold dark:text-white">{weatherData.current.wind_kph} km/h</p>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Moon Widget */}
+        {moon && (
+          <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-sm font-semibold dark:text-white">Moon</h2>
+              <Moon className="h-4 w-4 text-gray-500" />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full border border-black/10 dark:border-white/20 flex items-center justify-center">
+                  <Moon className="w-8 h-8 text-gray-600 dark:text-gray-200" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold dark:text-white">{moon.moon_phase}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{moon.moon_illumination}% illuminated</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Moonrise</p>
+                  <p className="text-sm font-semibold dark:text-white">{moon.moonrise}</p>
+                </div>
+                <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Moonset</p>
+                  <p className="text-sm font-semibold dark:text-white">{moon.moonset}</p>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+      </div>
+
+      {/* Content Layer - Multiview */}
       <div className="relative flex-grow flex items-center justify-center z-0">
         <div className="relative w-[600px] h-[600px]">
           {clockSettings.map((clock, index) => {
@@ -214,7 +515,7 @@ export default function Home1Page() {
                       className="absolute inset-0"
                       animate={{ rotate: rotation }}
                       transition={{
-                        duration: 0.3, // Shortened from 1 to 0.3
+                        duration: 0.3,
                         ease: "easeOut",
                       }}
                       style={{
@@ -251,7 +552,7 @@ export default function Home1Page() {
                       <div className="w-full h-full rounded-full relative">
                         {Array.from({ length: clock.focusNodes }).map((_, nodeIndex) => {
                           const angle = (nodeIndex * 360) / clock.focusNodes
-                          const radius = 53 // Reduced from 55 to move focus nodes inward
+                          const radius = 53
                           const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
                           const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
                           return (
@@ -324,105 +625,6 @@ export default function Home1Page() {
               </div>
             )
           })}
-        </div>
-      </div>
-
-      {/* Home Page Elements Overlay */}
-      <div className="absolute inset-0 z-10 pointer-events-none">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pointer-events-auto">
-          {/* Welcome Section */}
-          <div className="relative">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="text-center"
-            >
-              <h1 className="text-4xl md:text-7xl font-bold text-black dark:text-white mb-4">
-                1M3 Mindmechanism
-              </h1>
-              <p className="text-xl md:text-2xl text-black/90 dark:text-white/90 max-w-2xl mx-auto mb-8">
-                Your mind. Your mechanism.
-              </p>
-              <div className="flex items-center justify-center gap-3">
-                <button 
-                  onClick={scrollToFeatures}
-                  className="px-6 py-2.5 rounded-lg bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 transition-all text-sm"
-                >
-                  Explore
-                </button>
-                {user ? (
-                  <button
-                    onClick={handleSignOut}
-                    className="px-6 py-2.5 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all flex items-center gap-2 text-sm text-black dark:text-white"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    Sign Out
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => router.push('/auth/signin')}
-                    className="px-6 py-2.5 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all flex items-center gap-2 text-sm text-black dark:text-white"
-                  >
-                    <LogIn className="h-4 w-4" />
-                    Sign In
-                  </button>
-                )}
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Features Section */}
-          <div ref={featuresRef} className="space-y-8 mt-32">
-            <h2 className="text-lg font-semibold text-black dark:text-white">Key Features</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all group">
-                <div className="w-8 h-8 rounded-lg bg-black/5 dark:bg-white/5 flex items-center justify-center mb-3">
-                  <Play className="h-4 w-4 text-black dark:text-white" />
-                </div>
-                <h3 className="text-base font-medium text-black dark:text-white mb-2">Meditation Clock</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">A unique clock interface designed to enhance your meditation practice.</p>
-                <button 
-                  onClick={() => router.push('/sessions')}
-                  className="flex items-center gap-1.5 text-xs font-medium text-black dark:text-white group-hover:gap-2 transition-all"
-                >
-                  Learn more
-                  <ArrowRight className="h-3 w-3" />
-                </button>
-              </div>
-
-              <div className="p-4 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all group">
-                <div className="w-8 h-8 rounded-lg bg-black/5 dark:bg-white/5 flex items-center justify-center mb-3">
-                  <BookOpen className="h-4 w-4 text-black dark:text-white" />
-                </div>
-                <h3 className="text-base font-medium text-black dark:text-white mb-2">Guided Sessions</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Access a library of guided meditation sessions for all levels.</p>
-                <button 
-                  onClick={() => router.push('/sessions')}
-                  className="flex items-center gap-1.5 text-xs font-medium text-black dark:text-white group-hover:gap-2 transition-all"
-                >
-                  Learn more
-                  <ArrowRight className="h-3 w-3" />
-                </button>
-              </div>
-
-              <div className="p-4 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all group">
-                <div className="w-8 h-8 rounded-lg bg-black/5 dark:bg-white/5 flex items-center justify-center mb-3">
-                  <ClipboardList className="h-4 w-4 text-black dark:text-white" />
-                </div>
-                <h3 className="text-base font-medium text-black dark:text-white mb-2">Progress Tracking</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Monitor your meditation journey with detailed insights and statistics.</p>
-                <button 
-                  onClick={() => router.push('/sessions')}
-                  className="flex items-center gap-1.5 text-xs font-medium text-black dark:text-white group-hover:gap-2 transition-all"
-                >
-                  Learn more
-                  <ArrowRight className="h-3 w-3" />
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
