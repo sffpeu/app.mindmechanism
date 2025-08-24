@@ -347,7 +347,7 @@ export default function Home1Page() {
       </div>
 
       {/* Widget Grid - Left Side */}
-      <div className="fixed left-6 top-6 z-20 space-y-4 max-h-screen overflow-y-auto">
+      <div className="fixed left-6 top-6 z-20 space-y-4 max-h-screen overflow-y-auto scrollbar-hide">
         {/* Profile Widget */}
         <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
           <div className="flex items-center justify-between mb-3">
@@ -405,35 +405,35 @@ export default function Home1Page() {
           </div>
         </Card>
 
-        {/* App Icons Widget - Round Design */}
+        {/* App Icons Widget - Smaller with Rounded Corners */}
         <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold dark:text-white">Quick Actions</h2>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2">
             <Button
               variant="outline"
               size="sm"
-              className="h-16 w-16 p-0 rounded-full aspect-square hover:scale-105 transition-transform"
+              className="h-12 w-12 p-0 rounded-lg aspect-square hover:scale-105 transition-transform"
               onClick={() => router.push('/sessions')}
             >
-              <Play className="h-6 w-6" />
+              <Play className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"
               size="sm"
-              className="h-16 w-16 p-0 rounded-full aspect-square hover:scale-105 transition-transform"
+              className="h-12 w-12 p-0 rounded-lg aspect-square hover:scale-105 transition-transform"
               onClick={() => router.push('/notes')}
             >
-              <BookOpen className="h-6 w-6" />
+              <BookOpen className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"
               size="sm"
-              className="h-16 w-16 p-0 rounded-full aspect-square hover:scale-105 transition-transform"
+              className="h-12 w-12 p-0 rounded-lg aspect-square hover:scale-105 transition-transform"
               onClick={() => router.push('/library')}
             >
-              <Library className="h-6 w-6" />
+              <Library className="h-4 w-4" />
             </Button>
           </div>
         </Card>
@@ -476,79 +476,64 @@ export default function Home1Page() {
           </div>
         </Card>
 
-        {/* Location and Timezone Widget */}
+        {/* Weather & Moon Widget with Location */}
         <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-semibold dark:text-white">Location & Time</h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0"
-              onClick={() => setIsEditingLocation(!isEditingLocation)}
-            >
-              <Edit className="h-3 w-3" />
-            </Button>
+            <h2 className="text-sm font-semibold dark:text-white">Weather & Moon</h2>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+                onClick={() => setIsEditingLocation(!isEditingLocation)}
+              >
+                <Edit className="h-3 w-3" />
+              </Button>
+              <Cloud className="h-4 w-4 text-gray-500" />
+            </div>
           </div>
-          <div className="space-y-2">
-            {isEditingLocation ? (
-              <div className="space-y-2">
-                <Input
-                  placeholder="Enter city name..."
-                  value={customLocation}
-                  onChange={(e) => setCustomLocation(e.target.value)}
-                  className="h-8 text-xs"
-                />
-                <div className="flex gap-1">
-                  <Button
-                    size="sm"
-                    className="h-6 text-xs"
-                    onClick={handleLocationSave}
-                  >
-                    Save
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-6 text-xs"
-                    onClick={() => {
-                      setCustomLocation('');
-                      setIsEditingLocation(false);
-                    }}
-                  >
-                    Cancel
-                  </Button>
+          <div className="space-y-3">
+            {/* Location Section */}
+            <div className="space-y-2">
+              {isEditingLocation ? (
+                <div className="space-y-2">
+                  <Input
+                    placeholder="Enter city name..."
+                    value={customLocation}
+                    onChange={(e) => setCustomLocation(e.target.value)}
+                    className="h-8 text-xs"
+                  />
+                  <div className="flex gap-1">
+                    <Button
+                      size="sm"
+                      className="h-6 text-xs"
+                      onClick={handleLocationSave}
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-6 text-xs"
+                      onClick={() => {
+                        setCustomLocation('');
+                        setIsEditingLocation(false);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-                  <span className="text-sm font-medium dark:text-white">{formatTime(currentTime)}</span>
-                </div>
+              ) : (
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-gray-600 dark:text-gray-300" />
                   <span className="text-xs text-gray-500 dark:text-gray-400">
                     {weatherData?.location.name || 'Loading location...'}
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {weatherData?.location.tz_id || 'Loading timezone...'}
-                  </span>
-                </div>
-              </>
-            )}
-          </div>
-        </Card>
+              )}
+            </div>
 
-        {/* Weather & Moon Widget */}
-        <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-semibold dark:text-white">Weather & Moon</h2>
-            <Cloud className="h-4 w-4 text-gray-500" />
-          </div>
-          <div className="space-y-3">
             {weatherData && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
