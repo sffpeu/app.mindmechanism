@@ -160,6 +160,10 @@ export default function Home1Page() {
   const [hoveredClockIndex, setHoveredClockIndex] = useState<number | null>(null)
   const [customLocation, setCustomLocation] = useState('')
   const [isEditingLocation, setIsEditingLocation] = useState(false)
+  
+  // Interactive highlighting states
+  const [selectedSatellite, setSelectedSatellite] = useState<{ clockIndex: number, satelliteIndex: number } | null>(null)
+  const [selectedFocusNode, setSelectedFocusNode] = useState<{ clockIndex: number, nodeIndex: number } | null>(null)
 
   const handleSignOut = async () => {
     await signOut()
@@ -190,6 +194,28 @@ export default function Home1Page() {
     const y = 48 + radius * Math.sin(rotatedRadians - Math.PI / 2);
     return { x, y };
   }, [rotationValues]);
+
+  // Calculate satellite rotation speed in degrees per second
+  const getSatelliteRotationSpeed = useCallback((clockIndex: number, satelliteIndex: number) => {
+    const config = defaultSatelliteConfigs[clockIndex]?.[satelliteIndex];
+    if (!config) return 0;
+    return (360 / (config.rotationTime / 1000)); // degrees per second
+  }, []);
+
+  // Calculate focus node degree
+  const getFocusNodeDegree = useCallback((clockIndex: number, nodeIndex: number) => {
+    const clock = clockSettings[clockIndex];
+    if (!clock || !currentTime) return 0;
+    
+    const baseAngle = (nodeIndex * 360) / clock.focusNodes;
+    const elapsedMilliseconds = currentTime.getTime() - clock.startDateTime.getTime();
+    const calculatedRotation = (elapsedMilliseconds / clock.rotationTime) * 360;
+    const totalRotation = clock.rotationDirection === 'clockwise'
+      ? (clock.startingDegree + calculatedRotation) % 360
+      : (clock.startingDegree - calculatedRotation + 360) % 360;
+    
+    return (baseAngle + totalRotation) % 360;
+  }, [currentTime, clockSettings]);
 
   // Optimize rotation values update with batch updates
   useEffect(() => {
@@ -325,6 +351,26 @@ export default function Home1Page() {
   const handleLocationSave = () => {
     setIsEditingLocation(false);
     // The weather data will be refetched automatically due to the useEffect dependency
+  };
+
+  // Handle satellite click
+  const handleSatelliteClick = (clockIndex: number, satelliteIndex: number) => {
+    if (selectedSatellite?.clockIndex === clockIndex && selectedSatellite?.satelliteIndex === satelliteIndex) {
+      setSelectedSatellite(null);
+    } else {
+      setSelectedSatellite({ clockIndex, satelliteIndex });
+      setSelectedFocusNode(null);
+    }
+  };
+
+  // Handle focus node click
+  const handleFocusNodeClick = (clockIndex: number, nodeIndex: number) => {
+    if (selectedFocusNode?.clockIndex === clockIndex && selectedFocusNode?.nodeIndex === nodeIndex) {
+      setSelectedFocusNode(null);
+    } else {
+      setSelectedFocusNode({ clockIndex, nodeIndex });
+      setSelectedSatellite(null);
+    }
   };
 
   return (
@@ -653,18 +699,27 @@ export default function Home1Page() {
                           const radius = 53
                           const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
                           const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
+                          const isSelected = selectedFocusNode?.clockIndex === index && selectedFocusNode?.nodeIndex === nodeIndex
+                          const degree = getFocusNodeDegree(index, nodeIndex)
+                          
                           return (
                             <motion.div
                               key={nodeIndex}
-                              className={`absolute w-2 h-2 rounded-full ${focusNodeColors[index]} dark:brightness-150`}
+                              className={`absolute w-2 h-2 rounded-full ${focusNodeColors[index]} dark:brightness-150 cursor-pointer`}
                               style={{
                                 left: `${x}%`,
                                 top: `${y}%`,
                                 transform: 'translate(-50%, -50%)',
                                 mixBlendMode: isDarkMode ? 'screen' : 'multiply',
                                 boxShadow: isDarkMode 
-                                  ? '0 0 4px rgba(255, 255, 255, 0.3)' 
-                                  : '0 0 4px rgba(0, 0, 0, 0.2)'
+                                  ? isSelected 
+                                    ? '0 0 8px rgba(255, 255, 255, 0.8), 0 0 16px rgba(255, 255, 255, 0.6)' 
+                                    : '0 0 4px rgba(255, 255, 255, 0.3)' 
+                                  : isSelected 
+                                    ? '0 0 8px rgba(0, 0, 0, 0.8), 0 0 16px rgba(0, 0, 0, 0.6)' 
+                                    : '0 0 4px rgba(0, 0, 0, 0.2)',
+                                border: isSelected ? '2px solid white' : 'none',
+                                zIndex: isSelected ? 10 : 1
                               }}
                               initial={{ opacity: 0, scale: 0 }}
                               animate={{ opacity: 1, scale: 1 }}
@@ -673,7 +728,16 @@ export default function Home1Page() {
                                 delay: nodeIndex * 0.05,
                                 ease: "easeOut"
                               }}
-                            />
+                              onClick={() => handleFocusNodeClick(index, nodeIndex)}
+                              whileHover={{ scale: 1.5 }}
+                            >
+                              {/* Degree display for selected focus node */}
+                              {isSelected && (
+                                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black/80 dark:bg-white/80 text-white dark:text-black text-xs px-2 py-1 rounded whitespace-nowrap z-20">
+                                  {degree.toFixed(1)}°
+                                </div>
+                              )}
+                            </motion.div>
                           )
                         })}
                       </div>
@@ -687,18 +751,27 @@ export default function Home1Page() {
                         <div className="w-full h-full rounded-full relative">
                           {Array.from({ length: clockSatellites[index] }).map((_, satelliteIndex) => {
                             const { x, y } = getSatellitePosition(index, satelliteIndex, clockSatellites[index])
+                            const isSelected = selectedSatellite?.clockIndex === index && selectedSatellite?.satelliteIndex === satelliteIndex
+                            const rotationSpeed = getSatelliteRotationSpeed(index, satelliteIndex)
+                            
                             return (
                               <motion.div
                                 key={satelliteIndex}
-                                className="absolute w-3 h-3 rounded-full"
+                                className="absolute w-3 h-3 rounded-full cursor-pointer"
                                 style={{
                                   left: `${x}%`,
                                   top: `${y}%`,
                                   transform: 'translate(-50%, -50%)',
                                   backgroundColor: isDarkMode ? '#fff' : '#000',
                                   boxShadow: isDarkMode 
-                                    ? '0 0 6px rgba(255, 255, 255, 0.3)' 
-                                    : '0 0 6px rgba(0, 0, 0, 0.3)',
+                                    ? isSelected 
+                                      ? '0 0 12px rgba(255, 255, 255, 0.8), 0 0 24px rgba(255, 255, 255, 0.6)' 
+                                      : '0 0 6px rgba(255, 255, 255, 0.3)' 
+                                    : isSelected 
+                                      ? '0 0 12px rgba(0, 0, 0, 0.8), 0 0 24px rgba(0, 0, 0, 0.6)' 
+                                      : '0 0 6px rgba(0, 0, 0, 0.3)',
+                                  border: isSelected ? '2px solid white' : 'none',
+                                  zIndex: isSelected ? 10 : 1,
                                   willChange: 'transform'
                                 }}
                                 initial={{ opacity: 0, scale: 0 }}
@@ -712,7 +785,16 @@ export default function Home1Page() {
                                   ease: "easeOut"
                                 }}
                                 whileHover={{ scale: 1.8 }}
-                              />
+                                onClick={() => handleSatelliteClick(index, satelliteIndex)}
+                              >
+                                {/* Position and speed display for selected satellite */}
+                                {isSelected && (
+                                  <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black/80 dark:bg-white/80 text-white dark:text-black text-xs px-2 py-1 rounded whitespace-nowrap z-20">
+                                    <div>X: {x.toFixed(1)}% Y: {y.toFixed(1)}%</div>
+                                    <div>{rotationSpeed.toFixed(2)}°/s</div>
+                                  </div>
+                                )}
+                              </motion.div>
                             )
                           })}
                         </div>
