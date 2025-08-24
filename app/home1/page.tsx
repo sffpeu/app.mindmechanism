@@ -164,26 +164,10 @@ export default function Home1Page() {
   // Interactive highlighting states
   const [selectedSatellite, setSelectedSatellite] = useState<{ clockIndex: number, satelliteIndex: number } | null>(null)
   const [selectedFocusNode, setSelectedFocusNode] = useState<{ clockIndex: number, nodeIndex: number } | null>(null)
-  
-  // Single clock selection state for persistent hover
-  const [selectedClockIndex, setSelectedClockIndex] = useState<number | null>(null)
 
   const handleSignOut = async () => {
     await signOut()
     router.push('/auth/signin')
-  }
-
-  // Handle dot navigation click for persistent hover state
-  const handleDotClick = (index: number) => {
-    if (selectedClockIndex === index) {
-      // Unclick the same dot to undo selection
-      setSelectedClockIndex(null)
-      setHoveredClockIndex(null)
-    } else {
-      // Select new clock
-      setSelectedClockIndex(index)
-      setHoveredClockIndex(index)
-    }
   }
 
   // Initialize and update current time with optimized animation frame
@@ -396,10 +380,9 @@ export default function Home1Page() {
         <div className="pointer-events-auto">
           {showElements && (
             <DotNavigation
-              activeDot={selectedClockIndex !== null ? selectedClockIndex : 9}
+              activeDot={9}
               isSmallMultiView={false}
               onDotHover={setHoveredClockIndex}
-              onDotClick={handleDotClick}
             />
           )}
           <Menu
@@ -419,7 +402,7 @@ export default function Home1Page() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0"
+                className="h-6 w-6 p-0 bg-white dark:bg-black text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
                 onClick={() => router.push('/settings')}
               >
                 <Edit className="h-3 w-3" />
@@ -427,7 +410,7 @@ export default function Home1Page() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0"
+                className="h-6 w-6 p-0 bg-white dark:bg-black text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
                 onClick={handleSignOut}
               >
                 <LogOut className="h-3 w-3" />
@@ -477,7 +460,7 @@ export default function Home1Page() {
             <Button
               variant="outline"
               size="sm"
-              className="h-12 w-12 p-0 rounded-lg aspect-square hover:scale-105 transition-transform"
+              className="h-12 w-12 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
               onClick={() => router.push('/sessions')}
             >
               <Play className="h-4 w-4" />
@@ -485,7 +468,7 @@ export default function Home1Page() {
             <Button
               variant="outline"
               size="sm"
-              className="h-12 w-12 p-0 rounded-lg aspect-square hover:scale-105 transition-transform"
+              className="h-12 w-12 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
               onClick={() => router.push('/notes')}
             >
               <BookOpen className="h-4 w-4" />
@@ -493,7 +476,7 @@ export default function Home1Page() {
             <Button
               variant="outline"
               size="sm"
-              className="h-12 w-12 p-0 rounded-lg aspect-square hover:scale-105 transition-transform"
+              className="h-12 w-12 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
               onClick={() => router.push('/library')}
             >
               <Library className="h-4 w-4" />
@@ -547,7 +530,7 @@ export default function Home1Page() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0"
+                className="h-6 w-6 p-0 bg-white dark:bg-black text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
                 onClick={() => setIsEditingLocation(!isEditingLocation)}
               >
                 <Edit className="h-3 w-3" />
@@ -569,7 +552,7 @@ export default function Home1Page() {
                   <div className="flex gap-1">
                     <Button
                       size="sm"
-                      className="h-6 text-xs"
+                      className="h-6 text-xs bg-black dark:bg-white text-white dark:text-black hover:bg-black/80 dark:hover:bg-white/80 transition-colors"
                       onClick={handleLocationSave}
                     >
                       Save
@@ -577,7 +560,7 @@ export default function Home1Page() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-6 text-xs"
+                      className="h-6 text-xs bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
                       onClick={() => {
                         setCustomLocation('');
                         setIsEditingLocation(false);
@@ -658,7 +641,6 @@ export default function Home1Page() {
           {clockSettings.map((clock, index) => {
             const rotation = getClockRotation(clock)
             const isHovered = hoveredClockIndex === index
-            const isSelected = selectedClockIndex === index
             
             return (
               <div
@@ -666,7 +648,7 @@ export default function Home1Page() {
                 className="absolute inset-0 flex items-center justify-center"
                 style={{
                   mixBlendMode: isDarkMode ? 'screen' : 'multiply',
-                  opacity: selectedClockIndex === null || isSelected ? 1 : 0.3,
+                  opacity: hoveredClockIndex === null || isHovered ? 1 : 0.3,
                   transition: 'opacity 0.3s ease-in-out',
                 }}
               >

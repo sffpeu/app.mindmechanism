@@ -84,40 +84,6 @@ const MenuSection = ({ title, children }: { title: string; children: React.React
   </div>
 )
 
-const ModernMenuIcon = ({ isOpen }: { isOpen: boolean }) => (
-  <div className="relative w-5 h-5">
-    {/* Top line */}
-    <motion.div
-      className="absolute top-0 left-0 w-5 h-0.5 bg-black dark:bg-white rounded-full"
-      animate={{
-        rotate: isOpen ? 45 : 0,
-        y: isOpen ? 2 : 0,
-        width: isOpen ? 5 : 5,
-      }}
-      transition={{ duration: 0.2 }}
-    />
-    {/* Middle line */}
-    <motion.div
-      className="absolute top-2 left-0 w-5 h-0.5 bg-black dark:bg-white rounded-full"
-      animate={{
-        opacity: isOpen ? 0 : 1,
-        scale: isOpen ? 0 : 1,
-      }}
-      transition={{ duration: 0.15 }}
-    />
-    {/* Bottom line */}
-    <motion.div
-      className="absolute top-4 left-0 w-5 h-0.5 bg-black dark:bg-white rounded-full"
-      animate={{
-        rotate: isOpen ? -45 : 0,
-        y: isOpen ? -2 : 0,
-        width: isOpen ? 5 : 5,
-      }}
-      transition={{ duration: 0.2 }}
-    />
-  </div>
-)
-
 export function Menu({
   showElements = true,
   onToggleShow = () => {},
@@ -154,9 +120,9 @@ export function Menu({
       {/* Hamburger Button */}
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="fixed top-4 right-4 z-[999] w-10 h-10 rounded-lg bg-white dark:bg-black border border-black dark:border-white shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center"
+        className="fixed top-6 right-6 z-[999] w-12 h-12 bg-white dark:bg-black border border-black dark:border-white shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center rounded-full"
       >
-        <ModernMenuIcon isOpen={isMenuOpen} />
+        <MenuIcon className="h-6 w-6 text-black dark:text-white" />
       </button>
 
       {/* Mega Menu Overlay */}
@@ -189,15 +155,15 @@ export function Menu({
           >
             <div className="max-w-3xl mx-auto">
               {/* Header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-black/10 dark:border-white/10">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-black/10 dark:border-white/10">
                 <h1 className="text-xl font-bold text-black dark:text-white">
                   1M3 Mindmechanism
                 </h1>
                 <button
                   onClick={() => setIsMenuOpen(false)}
-                  className="w-8 h-8 rounded-lg bg-black dark:bg-white text-white dark:text-black flex items-center justify-center hover:bg-black/80 dark:hover:bg-white/80 transition-colors"
+                  className="w-10 h-10 bg-black dark:bg-white text-white dark:text-black flex items-center justify-center hover:bg-black/80 dark:hover:bg-white/80 transition-colors rounded-full"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-5 w-5" />
                 </button>
               </div>
 
@@ -335,7 +301,7 @@ export function Menu({
               </div>
 
               {/* Footer */}
-              <div className="px-4 py-3 border-t border-black/10 dark:border-white/10">
+              <div className="px-6 py-4 border-t border-black/10 dark:border-white/10">
                 <div className="text-center">
                   <p className="text-xs font-medium text-black dark:text-white mb-1">
                     Mindmechanism 2025
