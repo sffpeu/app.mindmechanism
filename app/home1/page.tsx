@@ -164,10 +164,26 @@ export default function Home1Page() {
   // Interactive highlighting states
   const [selectedSatellite, setSelectedSatellite] = useState<{ clockIndex: number, satelliteIndex: number } | null>(null)
   const [selectedFocusNode, setSelectedFocusNode] = useState<{ clockIndex: number, nodeIndex: number } | null>(null)
+  
+  // Single clock selection state for persistent hover
+  const [selectedClockIndex, setSelectedClockIndex] = useState<number | null>(null)
 
   const handleSignOut = async () => {
     await signOut()
     router.push('/auth/signin')
+  }
+
+  // Handle dot navigation click for persistent hover state
+  const handleDotClick = (index: number) => {
+    if (selectedClockIndex === index) {
+      // Unclick the same dot to undo selection
+      setSelectedClockIndex(null)
+      setHoveredClockIndex(null)
+    } else {
+      // Select new clock
+      setSelectedClockIndex(index)
+      setHoveredClockIndex(index)
+    }
   }
 
   // Initialize and update current time with optimized animation frame
@@ -380,9 +396,10 @@ export default function Home1Page() {
         <div className="pointer-events-auto">
           {showElements && (
             <DotNavigation
-              activeDot={9}
+              activeDot={selectedClockIndex !== null ? selectedClockIndex : 9}
               isSmallMultiView={false}
               onDotHover={setHoveredClockIndex}
+              onDotClick={handleDotClick}
             />
           )}
           <Menu
@@ -641,6 +658,7 @@ export default function Home1Page() {
           {clockSettings.map((clock, index) => {
             const rotation = getClockRotation(clock)
             const isHovered = hoveredClockIndex === index
+            const isSelected = selectedClockIndex === index
             
             return (
               <div
@@ -648,7 +666,7 @@ export default function Home1Page() {
                 className="absolute inset-0 flex items-center justify-center"
                 style={{
                   mixBlendMode: isDarkMode ? 'screen' : 'multiply',
-                  opacity: hoveredClockIndex === null || isHovered ? 1 : 0.3,
+                  opacity: selectedClockIndex === null || isSelected ? 1 : 0.3,
                   transition: 'opacity 0.3s ease-in-out',
                 }}
               >
