@@ -11,6 +11,7 @@ import { motion } from 'framer-motion'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { useLocation } from '@/lib/hooks/useLocation'
 import { 
   User, 
@@ -27,8 +28,12 @@ import {
   Wifi,
   Battery,
   Users,
-  RotateCw,
-  Calendar
+  Play,
+  BookOpen,
+  Library,
+  Edit,
+  Search,
+  LogOut
 } from 'lucide-react'
 import {
   Popover,
@@ -145,13 +150,21 @@ export default function Home1Page() {
   const [rotationValues, setRotationValues] = useState<Record<number, number[]>>({})
   const animationRef = useRef<number>()
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, signOut } = useAuth()
   const { location } = useLocation()
   const [mounted, setMounted] = useState(false)
   const [weatherData, setWeatherData] = useState<WeatherResponse | null>(null)
   const [moon, setMoon] = useState<MoonData | null>(null)
   const [isWeatherLoading, setIsWeatherLoading] = useState(false)
   const [weatherError, setWeatherError] = useState<string | null>(null)
+  const [hoveredClockIndex, setHoveredClockIndex] = useState<number | null>(null)
+  const [customLocation, setCustomLocation] = useState('')
+  const [isEditingLocation, setIsEditingLocation] = useState(false)
+
+  const handleSignOut = async () => {
+    await signOut()
+    router.push('/auth/signin')
+  }
 
   // Initialize and update current time with optimized animation frame
   useEffect(() => {
@@ -254,10 +267,10 @@ export default function Home1Page() {
     const fetchData = async () => {
       setIsWeatherLoading(true);
       try {
+        const locationQuery = customLocation || (location?.coords ? `${location.coords.lat},${location.coords.lon}` : 'auto:ip');
+        
         const weatherRes = await fetch(
-          `https://api.weatherapi.com/v1/current.json?key=6cb652a81cb64a19a84103447252001&q=${
-            location?.coords ? `${location.coords.lat},${location.coords.lon}` : 'auto:ip'
-          }&aqi=yes`
+          `https://api.weatherapi.com/v1/current.json?key=6cb652a81cb64a19a84103447252001&q=${locationQuery}&aqi=yes`
         );
         if (!weatherRes.ok) {
           throw new Error('Weather API request failed');
@@ -267,9 +280,7 @@ export default function Home1Page() {
         setWeatherError(null);
 
         const astronomyRes = await fetch(
-          `https://api.weatherapi.com/v1/astronomy.json?key=6cb652a81cb64a19a84103447252001&q=${
-            location?.coords ? `${location.coords.lat},${location.coords.lon}` : 'auto:ip'
-          }`
+          `https://api.weatherapi.com/v1/astronomy.json?key=6cb652a81cb64a19a84103447252001&q=${locationQuery}`
         );
         if (!astronomyRes.ok) {
           throw new Error('Astronomy API request failed');
@@ -287,7 +298,7 @@ export default function Home1Page() {
     fetchData();
     const interval = setInterval(fetchData, 5 * 60 * 1000); // Update every 5 minutes
     return () => clearInterval(interval);
-  }, [mounted, location?.coords]);
+  }, [mounted, location?.coords, customLocation]);
 
   // Update current time every second
   useEffect(() => {
@@ -311,24 +322,9 @@ export default function Home1Page() {
     return descriptions[index as keyof typeof descriptions] || 'Unknown';
   };
 
-  // Format rotation speed for display
-  const formatRotationSpeed = (clock: typeof clockSettings[0]) => {
-    const speed = clock.rotationTime / 1000; // Convert to seconds
-    if (speed < 60) {
-      return `${speed}s`;
-    } else if (speed < 3600) {
-      return `${(speed / 60).toFixed(1)}m`;
-    } else {
-      return `${(speed / 3600).toFixed(1)}h`;
-    }
-  };
-
-  // Mock last session data (in real app, this would come from database)
-  const getLastSessionTime = (clockIndex: number) => {
-    const now = new Date();
-    const hoursAgo = Math.floor(Math.random() * 24) + 1;
-    const lastSession = new Date(now.getTime() - hoursAgo * 60 * 60 * 1000);
-    return lastSession;
+  const handleLocationSave = () => {
+    setIsEditingLocation(false);
+    // The weather data will be refetched automatically due to the useEffect dependency
   };
 
   return (
@@ -340,6 +336,7 @@ export default function Home1Page() {
             <DotNavigation
               activeDot={9}
               isSmallMultiView={false}
+              onDotHover={setHoveredClockIndex}
             />
           )}
           <Menu
@@ -349,15 +346,32 @@ export default function Home1Page() {
         </div>
       </div>
 
-      {/* Widget Grid - Right Side */}
-      <div className="fixed right-6 top-6 z-20 space-y-4 max-h-screen overflow-y-auto">
+      {/* Widget Grid - Left Side */}
+      <div className="fixed left-6 top-6 z-20 space-y-4 max-h-screen overflow-y-auto">
         {/* Profile Widget */}
         <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold dark:text-white">Profile</h2>
-            <User className="h-4 w-4 text-gray-500" />
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+                onClick={() => router.push('/settings')}
+              >
+                <Edit className="h-3 w-3" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+                onClick={handleSignOut}
+              >
+                <LogOut className="h-3 w-3" />
+              </Button>
+            </div>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
                 <User className="h-4 w-4 text-gray-600 dark:text-gray-300" />
@@ -371,188 +385,199 @@ export default function Home1Page() {
                 </p>
               </div>
             </div>
+            
+            {/* Action Icons - 3x 1:1 squares */}
+            <div className="grid grid-cols-3 gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-12 w-12 p-0 aspect-square"
+                onClick={() => router.push('/sessions')}
+              >
+                <Play className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-12 w-12 p-0 aspect-square"
+                onClick={() => router.push('/notes')}
+              >
+                <BookOpen className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-12 w-12 p-0 aspect-square"
+                onClick={() => router.push('/library')}
+              >
+                <Library className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
         </Card>
 
-        {/* Device Widget */}
+        {/* Recent Sessions Widget */}
         <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-semibold dark:text-white">Device</h2>
-            <Cpu className="h-4 w-4 text-gray-500" />
+            <h2 className="text-sm font-semibold dark:text-white">Recent Sessions</h2>
+            <Clock className="h-4 w-4 text-gray-500" />
           </div>
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
-                <Wifi className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-              </div>
-              <div>
-                <p className="text-sm font-medium dark:text-white">M13 Mechanism</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">No device connected</p>
+            <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+                    <Clock className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium dark:text-white">Morning Session</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">25 minutes ago</p>
+                  </div>
+                </div>
+                <span className="text-xs font-medium text-gray-900 dark:text-white">15m</span>
               </div>
             </div>
             <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <Battery className="h-3.5 w-3.5 text-gray-500" />
-                  <span className="text-xs text-gray-500 dark:text-gray-400">Battery</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
+                    <Clock className="h-3 w-3 text-green-600 dark:text-green-400" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium dark:text-white">Evening Session</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">2 hours ago</p>
+                  </div>
                 </div>
-                <span className="text-xs font-medium text-gray-900 dark:text-white">N/A</span>
+                <span className="text-xs font-medium text-gray-900 dark:text-white">30m</span>
               </div>
             </div>
           </div>
         </Card>
 
-        {/* Session Widget */}
+        {/* Location and Timezone Widget */}
         <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-semibold dark:text-white">Session</h2>
-            <Clock className="h-4 w-4 text-gray-500" />
+            <h2 className="text-sm font-semibold dark:text-white">Location & Time</h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0"
+              onClick={() => setIsEditingLocation(!isEditingLocation)}
+            >
+              <Edit className="h-3 w-3" />
+            </Button>
           </div>
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
-                <Users className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+            {isEditingLocation ? (
+              <div className="space-y-2">
+                <Input
+                  placeholder="Enter city name..."
+                  value={customLocation}
+                  onChange={(e) => setCustomLocation(e.target.value)}
+                  className="h-8 text-xs"
+                />
+                <div className="flex gap-1">
+                  <Button
+                    size="sm"
+                    className="h-6 text-xs"
+                    onClick={handleLocationSave}
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-6 text-xs"
+                    onClick={() => {
+                      setCustomLocation('');
+                      setIsEditingLocation(false);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium dark:text-white">Active Session</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">No active session</p>
-              </div>
-            </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                  <span className="text-sm font-medium dark:text-white">{formatTime(currentTime)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {weatherData?.location.name || 'Loading location...'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {weatherData?.location.tz_id || 'Loading timezone...'}
+                  </span>
+                </div>
+              </>
+            )}
           </div>
         </Card>
 
-        {/* Time/Location/Timezone Widget */}
+        {/* Weather & Moon Widget */}
         <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-semibold dark:text-white">Time & Location</h2>
-            <Globe className="h-4 w-4 text-gray-500" />
+            <h2 className="text-sm font-semibold dark:text-white">Weather & Moon</h2>
+            <Cloud className="h-4 w-4 text-gray-500" />
           </div>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-              <span className="text-sm font-medium dark:text-white">{formatTime(currentTime)}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                {weatherData?.location.name || 'Loading location...'}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Globe className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                {weatherData?.location.tz_id || 'Loading timezone...'}
-              </span>
-            </div>
-          </div>
-        </Card>
-
-        {/* Weather Widget */}
-        {weatherData && (
-          <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-sm font-semibold dark:text-white">Weather</h2>
-              <Cloud className="h-4 w-4 text-gray-500" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-lg font-bold dark:text-white">{weatherData.current.temp_c}°C</span>
-                <div className="flex items-center gap-1">
-                  <Droplets className="h-3.5 w-3.5 text-gray-500" />
-                  <span className="text-xs text-gray-500 dark:text-gray-400">{weatherData.current.humidity}%</span>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+          <div className="space-y-3">
+            {weatherData && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-lg font-bold dark:text-white">{weatherData.current.temp_c}°C</span>
                   <div className="flex items-center gap-1">
-                    <Sun className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
-                    <span className="text-xs text-gray-600 dark:text-gray-200">UV</span>
+                    <Droplets className="h-3.5 w-3.5 text-gray-500" />
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{weatherData.current.humidity}%</span>
                   </div>
-                  <p className="text-sm font-semibold dark:text-white">{weatherData.current.uv}</p>
                 </div>
-                <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
-                  <div className="flex items-center gap-1">
-                    <Wind className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
-                    <span className="text-xs text-gray-600 dark:text-gray-200">Wind</span>
-                  </div>
-                  <p className="text-sm font-semibold dark:text-white">{weatherData.current.wind_kph} km/h</p>
-                </div>
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {/* Moon Widget */}
-        {moon && (
-          <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-sm font-semibold dark:text-white">Moon</h2>
-              <Moon className="h-4 w-4 text-gray-500" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full border border-black/10 dark:border-white/20 flex items-center justify-center">
-                  <Moon className="w-8 h-8 text-gray-600 dark:text-gray-200" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold dark:text-white">{moon.moon_phase}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{moon.moon_illumination}% illuminated</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Moonrise</p>
-                  <p className="text-sm font-semibold dark:text-white">{moon.moonrise}</p>
-                </div>
-                <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Moonset</p>
-                  <p className="text-sm font-semibold dark:text-white">{moon.moonset}</p>
-                </div>
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {/* Clock List Widget */}
-        <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold dark:text-white">Clock Status</h2>
-            <RotateCw className="h-4 w-4 text-gray-500" />
-          </div>
-          <div className="space-y-2 max-h-64 overflow-y-auto">
-            {clockSettings.map((clock, index) => {
-              const rotation = getClockRotation(clock);
-              const lastSession = getLastSessionTime(index);
-              const hoursAgo = Math.floor((Date.now() - lastSession.getTime()) / (1000 * 60 * 60));
-              
-              return (
-                <div 
-                  key={index}
-                  className="p-2 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all"
-                  style={{ borderLeftColor: focusNodeColors[index].replace('bg-', '#').replace('[', '').replace(']', '') }}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: focusNodeColors[index].replace('bg-', '#').replace('[', '').replace(']', '') }}
-                      ></div>
-                      <span className="text-sm font-medium dark:text-white">Clock {index + 1}</span>
-                    </div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {rotation.toFixed(1)}°
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                    <span>Speed: {formatRotationSpeed(clock)}</span>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
                     <div className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      <span>{hoursAgo}h ago</span>
+                      <Sun className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
+                      <span className="text-xs text-gray-600 dark:text-gray-200">UV</span>
                     </div>
+                    <p className="text-sm font-semibold dark:text-white">{weatherData.current.uv}</p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                    <div className="flex items-center gap-1">
+                      <Wind className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
+                      <span className="text-xs text-gray-600 dark:text-gray-200">Wind</span>
+                    </div>
+                    <p className="text-sm font-semibold dark:text-white">{weatherData.current.wind_kph} km/h</p>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            )}
+            
+            {moon && (
+              <div className="space-y-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full border border-black/10 dark:border-white/20 flex items-center justify-center">
+                    <Moon className="w-6 h-6 text-gray-600 dark:text-gray-200" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold dark:text-white">{moon.moon_phase}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{moon.moon_illumination}% illuminated</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Moonrise</p>
+                    <p className="text-sm font-semibold dark:text-white">{moon.moonrise}</p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Moonset</p>
+                    <p className="text-sm font-semibold dark:text-white">{moon.moonset}</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </Card>
       </div>
@@ -562,12 +587,16 @@ export default function Home1Page() {
         <div className="relative w-[600px] h-[600px]">
           {clockSettings.map((clock, index) => {
             const rotation = getClockRotation(clock)
+            const isHovered = hoveredClockIndex === index
+            
             return (
               <div
                 key={index}
                 className="absolute inset-0 flex items-center justify-center"
                 style={{
                   mixBlendMode: isDarkMode ? 'screen' : 'multiply',
+                  opacity: hoveredClockIndex === null || isHovered ? 1 : 0.3,
+                  transition: 'opacity 0.3s ease-in-out',
                 }}
               >
                 <div className="w-full h-full relative">

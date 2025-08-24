@@ -7,6 +7,7 @@ interface DotNavigationProps {
   activeDot: number;
   isSmallMultiView?: boolean;
   onOutlinedDotClick?: () => void;
+  onDotHover?: (index: number | null) => void;
 }
 
 const dotColors = [
@@ -24,7 +25,8 @@ const dotColors = [
 const DotNavigation: React.FC<DotNavigationProps> = ({
   activeDot, 
   isSmallMultiView = false,
-  onOutlinedDotClick 
+  onOutlinedDotClick,
+  onDotHover
 }) => {
   const [hoveredDot, setHoveredDot] = useState<number | null>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -82,10 +84,22 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
             delay: 0.1 + index * 0.05,
             ease: [0.16, 1, 0.3, 1]
           } : undefined}
-          onMouseEnter={() => setHoveredDot(index)}
-          onMouseLeave={() => setHoveredDot(null)}
-          onTouchStart={() => setHoveredDot(index)}
-          onTouchEnd={() => setHoveredDot(null)}
+          onMouseEnter={() => {
+            setHoveredDot(index);
+            onDotHover?.(index);
+          }}
+          onMouseLeave={() => {
+            setHoveredDot(null);
+            onDotHover?.(null);
+          }}
+          onTouchStart={() => {
+            setHoveredDot(index);
+            onDotHover?.(index);
+          }}
+          onTouchEnd={() => {
+            setHoveredDot(null);
+            onDotHover?.(null);
+          }}
         >
           {index === 9 && activeDot === 9 && (
             <button
