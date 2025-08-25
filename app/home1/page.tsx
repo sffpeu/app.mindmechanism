@@ -648,7 +648,7 @@ export default function Home1Page() {
                 className="absolute inset-0 flex items-center justify-center"
                 style={{
                   mixBlendMode: isDarkMode ? 'screen' : 'multiply',
-                  opacity: hoveredClockIndex === null || isHovered ? 1 : 0.05,
+                  opacity: hoveredClockIndex === null || isHovered ? 1 : 0.2,
                   transition: 'opacity 0.3s ease-in-out',
                 }}
               >

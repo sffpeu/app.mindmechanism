@@ -978,7 +978,7 @@ function NodesPageContent() {
                 <div
                   className="absolute inset-0"
                   style={{
-                    transform: `translate(${clock0.imageX}%, ${clock0.imageY}%) rotate(${clock0.imageOrientation}deg) scale(${clock0.imageScale})`,
+                    transform: `translate(${clock0.imageX || 0}%, ${clock0.imageY || 0}%) rotate(${clock0.imageOrientation}deg) scale(0.8)`,
                     willChange: 'transform',
                     transformOrigin: 'center',
                   }}
