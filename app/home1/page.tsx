@@ -457,7 +457,7 @@ export default function Home1Page() {
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold dark:text-white">Quick Actions</h2>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-4 gap-2">
             <Button
               variant="outline"
               size="sm"

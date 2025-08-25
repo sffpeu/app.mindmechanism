@@ -530,7 +530,7 @@ function NodesPageContent() {
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold dark:text-white">Quick Actions</h2>
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-4 gap-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -672,7 +672,7 @@ function NodesPageContent() {
                       <span className="text-xs text-gray-500 dark:text-gray-400">{weatherData.current.humidity}%</span>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-4 gap-2">
                     <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
                       <div className="flex items-center gap-1">
                         <Sun className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
@@ -702,7 +702,7 @@ function NodesPageContent() {
                       <p className="text-xs text-gray-500 dark:text-gray-400">{moon.moon_illumination}% illuminated</p>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-4 gap-2">
                     <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
                       <p className="text-xs text-gray-500 dark:text-gray-400">Moonrise</p>
                       <p className="text-sm font-semibold dark:text-white">{moon.moonrise}</p>
@@ -793,7 +793,7 @@ function NodesPageContent() {
 
                     {/* Clock Information */}
                     <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10">
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-4 gap-2">
                         <div>
                           <p className="text-xs font-medium text-black/60 dark:text-white/60 flex items-center gap-1">
                             <ClockIcon className="h-3 w-3" />
@@ -824,7 +824,7 @@ function NodesPageContent() {
                         </p>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-4 gap-2">
                         <div>
                           <p className="text-xs font-medium text-black/60 dark:text-white/60 flex items-center gap-1">
                             <Compass className="h-3 w-3" />
@@ -847,7 +847,7 @@ function NodesPageContent() {
                     </div>
 
                     {/* Stats */}
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-4 gap-2">
                       <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
                         <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
                           <div className="w-1 h-1 rounded-full bg-orange-500" />
