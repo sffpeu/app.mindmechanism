@@ -452,7 +452,7 @@ export default function Home1Page() {
         </Card>
 
         {/* App Icons Widget - Smaller with Rounded Corners */}
-        <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
+        <Card className="w-64 p-3 bg-white/95 dark:bg-black/95 backdrop-blur-lg border-2 border-black/20 dark:border-white/20 shadow-xl">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold dark:text-white">Quick Actions</h2>
           </div>
@@ -460,7 +460,7 @@ export default function Home1Page() {
             <Button
               variant="outline"
               size="sm"
-              className="h-12 w-12 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
+              className="h-12 w-12 p-0 bg-white dark:bg-black border-2 border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200 shadow-lg"
               onClick={() => router.push('/sessions')}
             >
               <Play className="h-4 w-4" />
@@ -468,7 +468,7 @@ export default function Home1Page() {
             <Button
               variant="outline"
               size="sm"
-              className="h-12 w-12 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
+              className="h-12 w-12 p-0 bg-white dark:bg-black border-2 border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200 shadow-lg"
               onClick={() => router.push('/notes')}
             >
               <BookOpen className="h-4 w-4" />
@@ -476,8 +476,9 @@ export default function Home1Page() {
             <Button
               variant="outline"
               size="sm"
-              className="h-12 w-12 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
+              className="h-12 w-12 p-0 bg-white dark:bg-black border-2 border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200 shadow-lg"
               onClick={() => setIsDarkMode(!isDarkMode)}
+              title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
               {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
@@ -669,144 +670,4 @@ export default function Home1Page() {
                       <div
                         className="absolute inset-0"
                         style={{
-                          transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) rotate(${clock.imageOrientation}deg) scale(${clock.imageScale})`,
-                          transformOrigin: 'center',
-                        }}
-                      >
-                        <Image
-                          src={`/${index + 1}.svg`}
-                          alt={`Clock ${index + 1}`}
-                          fill
-                          className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
-                          priority
-                          loading="eager"
-                        />
-                      </div>
-                    </motion.div>
-                  </div>
-
-                  {/* Focus nodes moved slightly inward */}
-                  <div 
-                    className="absolute inset-0"
-                    style={{
-                      transform: `rotate(${rotation}deg)`,
-                    }}
-                  >
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-full h-full rounded-full relative">
-                        {Array.from({ length: clock.focusNodes }).map((_, nodeIndex) => {
-                          const angle = (nodeIndex * 360) / clock.focusNodes
-                          const radius = 53
-                          const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
-                          const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
-                          const isSelected = selectedFocusNode?.clockIndex === index && selectedFocusNode?.nodeIndex === nodeIndex
-                          const degree = getFocusNodeDegree(index, nodeIndex)
-                          
-                          return (
-                            <motion.div
-                              key={nodeIndex}
-                              className={`absolute w-2 h-2 rounded-full ${focusNodeColors[index]} dark:brightness-150 cursor-pointer`}
-                              style={{
-                                left: `${x}%`,
-                                top: `${y}%`,
-                                transform: 'translate(-50%, -50%)',
-                                mixBlendMode: isDarkMode ? 'screen' : 'multiply',
-                                boxShadow: isDarkMode 
-                                  ? isSelected 
-                                    ? '0 0 8px rgba(255, 255, 255, 0.8), 0 0 16px rgba(255, 255, 255, 0.6)' 
-                                    : '0 0 4px rgba(255, 255, 255, 0.3)' 
-                                  : isSelected 
-                                    ? '0 0 8px rgba(0, 0, 0, 0.8), 0 0 16px rgba(0, 0, 0, 0.6)' 
-                                    : '0 0 4px rgba(0, 0, 0, 0.2)',
-                                border: isSelected ? '2px solid white' : 'none',
-                                zIndex: isSelected ? 10 : 1
-                              }}
-                              initial={{ opacity: 0, scale: 0 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{
-                                duration: 0.3,
-                                delay: nodeIndex * 0.05,
-                                ease: "easeOut"
-                              }}
-                              onClick={() => handleFocusNodeClick(index, nodeIndex)}
-                              whileHover={{ scale: 1.5 }}
-                            >
-                              {/* Degree display for selected focus node */}
-                              {isSelected && (
-                                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black/80 dark:bg-white/80 text-white dark:text-black text-xs px-2 py-1 rounded whitespace-nowrap z-20">
-                                  {degree.toFixed(1)}°
-                                </div>
-                              )}
-                            </motion.div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Satellites with reduced shadow and smoother animation */}
-                  {clockSatellites[index] > 0 && (
-                    <div className="absolute inset-0">
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-full h-full rounded-full relative">
-                          {Array.from({ length: clockSatellites[index] }).map((_, satelliteIndex) => {
-                            const { x, y } = getSatellitePosition(index, satelliteIndex, clockSatellites[index])
-                            const isSelected = selectedSatellite?.clockIndex === index && selectedSatellite?.satelliteIndex === satelliteIndex
-                            const rotationSpeed = getSatelliteRotationSpeed(index, satelliteIndex)
-                            
-                            return (
-                              <motion.div
-                                key={satelliteIndex}
-                                className="absolute w-3 h-3 rounded-full cursor-pointer"
-                                style={{
-                                  left: `${x}%`,
-                                  top: `${y}%`,
-                                  transform: 'translate(-50%, -50%)',
-                                  backgroundColor: isDarkMode ? '#fff' : '#000',
-                                  boxShadow: isDarkMode 
-                                    ? isSelected 
-                                      ? '0 0 12px rgba(255, 255, 255, 0.8), 0 0 24px rgba(255, 255, 255, 0.6)' 
-                                      : '0 0 6px rgba(255, 255, 255, 0.3)' 
-                                    : isSelected 
-                                      ? '0 0 12px rgba(0, 0, 0, 0.8), 0 0 24px rgba(0, 0, 0, 0.6)' 
-                                      : '0 0 6px rgba(0, 0, 0, 0.3)',
-                                  border: isSelected ? '2px solid white' : 'none',
-                                  zIndex: isSelected ? 10 : 1,
-                                  willChange: 'transform'
-                                }}
-                                initial={{ opacity: 0, scale: 0 }}
-                                animate={{ 
-                                  opacity: 1, 
-                                  scale: 1,
-                                }}
-                                transition={{
-                                  duration: 0.3,
-                                  delay: 0.3 + satelliteIndex * 0.05,
-                                  ease: "easeOut"
-                                }}
-                                whileHover={{ scale: 1.8 }}
-                                onClick={() => handleSatelliteClick(index, satelliteIndex)}
-                              >
-                                {/* Position and speed display for selected satellite */}
-                                {isSelected && (
-                                  <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black/80 dark:bg-white/80 text-white dark:text-black text-xs px-2 py-1 rounded whitespace-nowrap z-20">
-                                    <div>X: {x.toFixed(1)}% Y: {y.toFixed(1)}%</div>
-                                    <div>{rotationSpeed.toFixed(2)}°/s</div>
-                                  </div>
-                                )}
-                              </motion.div>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-    </div>
-  )
-}
+                          transform: `

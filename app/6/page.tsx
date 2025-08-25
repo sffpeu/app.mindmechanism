@@ -534,7 +534,7 @@ function NodesPageContent() {
               <Button
                 variant="outline"
                 size="sm"
-                className="h-12 w-12 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
+                className="h-12 w-12 p-0 bg-white dark:bg-black border-2 border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200 shadow-lg"
                 onClick={() => router.push('/sessions')}
               >
                 <Play className="h-4 w-4" />
@@ -542,7 +542,7 @@ function NodesPageContent() {
               <Button
                 variant="outline"
                 size="sm"
-                className="h-12 w-12 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
+                className="h-12 w-12 p-0 bg-white dark:bg-black border-2 border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200 shadow-lg"
                 onClick={() => router.push('/notes')}
               >
                 <BookOpen className="h-4 w-4" />
@@ -550,8 +550,9 @@ function NodesPageContent() {
               <Button
                 variant="outline"
                 size="sm"
-                className="h-12 w-12 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
+                className="h-12 w-12 p-0 bg-white dark:bg-black border-2 border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200 shadow-lg"
                 onClick={() => setIsDarkMode(!isDarkMode)}
+                title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
               >
                 {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </Button>
@@ -634,7 +635,7 @@ function NodesPageContent() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-6 text-xs bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
+                        className="h-6 text-xs bg-white dark:bg-black border-2 border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200 shadow-lg"
                         onClick={() => {
                           setCustomLocation('');
                           setIsEditingLocation(false);
