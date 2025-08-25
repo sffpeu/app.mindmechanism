@@ -120,9 +120,9 @@ export function Menu({
       {/* Hamburger Button */}
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="fixed top-6 right-6 z-[999] w-12 h-12 bg-white dark:bg-black border border-black dark:border-white shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center rounded-full"
+        className="fixed top-6 right-6 z-[999] w-10 h-10 bg-white dark:bg-black shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center rounded-full"
       >
-        <MenuIcon className="h-6 w-6 text-black dark:text-white" />
+        <MenuIcon className="h-5 w-5 text-black dark:text-white" />
       </button>
 
       {/* Mega Menu Overlay */}

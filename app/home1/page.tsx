@@ -145,7 +145,7 @@ interface MoonData {
 
 export default function Home1Page() {
   const [showElements, setShowElements] = useState(true)
-  const { isDarkMode } = useTheme()
+  const { isDarkMode, setIsDarkMode } = useTheme()
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
   const [rotationValues, setRotationValues] = useState<Record<number, number[]>>({})
   const animationRef = useRef<number>()
@@ -477,9 +477,9 @@ export default function Home1Page() {
               variant="outline"
               size="sm"
               className="h-12 w-12 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
-              onClick={() => router.push('/library')}
+              onClick={() => setIsDarkMode(!isDarkMode)}
             >
-              <Library className="h-4 w-4" />
+              {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
           </div>
         </Card>
