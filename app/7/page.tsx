@@ -152,12 +152,12 @@ function NodesPageContent() {
   const [customLocation, setCustomLocation] = useState('')
   const [isEditingLocation, setIsEditingLocation] = useState(false)
 
-  // Get clock 2 settings
-  const clock2 = clockSettings[2]
-  const focusNodes = clock2.focusNodes
-  const startingDegree = clock2.startingDegree
-  const rotationTime = clock2.rotationTime
-  const rotationDirection = clock2.rotationDirection
+  // Get clock 1 settings
+  const clock7 = clockSettings[7]
+  const focusNodes = clock7.focusNodes
+  const startingDegree = clock7.startingDegree
+  const rotationTime = clock7.rotationTime
+  const rotationDirection = clock7.rotationDirection
 
   // Calculate rotation
   const [rotation, setRotation] = useState(startingDegree)
@@ -349,7 +349,7 @@ function NodesPageContent() {
   const getWordContainerStyle = (angle: number, isSelected: boolean) => {
     const isLeftSide = angle > 90 && angle < 270
     // Calculate the total rotation needed to counter both the clock rotation and image orientation
-    const counterRotation = -rotation - clock2.imageOrientation
+    const counterRotation = -rotation - clock7.imageOrientation
     return {
       position: 'absolute' as const,
       left: isLeftSide ? 'auto' : '100%',
@@ -530,31 +530,39 @@ function NodesPageContent() {
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold dark:text-white">Quick Actions</h2>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                className="h-12 w-12 p-0 bg-white dark:bg-black border-2 border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200 shadow-lg"
+                className="h-10 w-10 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
                 onClick={() => router.push('/sessions')}
               >
-                <Play className="h-4 w-4" />
+                <Play className="h-3 w-3" />
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="h-12 w-12 p-0 bg-white dark:bg-black border-2 border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200 shadow-lg"
+                className="h-10 w-10 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
                 onClick={() => router.push('/notes')}
               >
-                <BookOpen className="h-4 w-4" />
+                <BookOpen className="h-3 w-3" />
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="h-12 w-12 p-0 bg-white dark:bg-black border-2 border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200 shadow-lg"
+                className="h-10 w-10 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
                 onClick={() => setIsDarkMode(!isDarkMode)}
                 title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
               >
-                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {isDarkMode ? <Sun className="h-3 w-3" /> : <Moon className="h-3 w-3" />}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-10 w-10 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
+                onClick={() => router.push('/settings')}
+              >
+                <Settings className="h-3 w-3" />
               </Button>
             </div>
           </Card>
@@ -941,14 +949,14 @@ function NodesPageContent() {
                 <div
                   className="absolute inset-0"
                   style={{
-                    transform: `translate(${clock2.imageX}%, ${clock2.imageY}%) rotate(${clock2.imageOrientation}deg) scale(${clock2.imageScale})`,
+                    transform: `translate(${clock7.imageX}%, ${clock7.imageY}%) rotate(${clock7.imageOrientation}deg) scale(${clock7.imageScale})`,
                     willChange: 'transform',
                     transformOrigin: 'center',
                   }}
                 >
                   <Image 
-                    src={clock2.imageUrl}
-                    alt="Clock Face 2"
+                    src={clock7.imageUrl}
+                    alt="Clock Face 7"
                     layout="fill"
                     objectFit="cover"
                     className="rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none [&_*]:stroke-[0.5]"
@@ -974,7 +982,7 @@ function NodesPageContent() {
                 ease: 'linear'
               }}
             >
-              <div className="absolute inset-0" style={{ transform: `rotate(${clock2.imageOrientation}deg)`, pointerEvents: 'auto' }}>
+              <div className="absolute inset-0" style={{ transform: `rotate(${clock7.imageOrientation}deg)`, pointerEvents: 'auto' }}>
                 <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
                   {Array.from({ length: focusNodes }).map((_, index) => {
                     const angle = ((360 / focusNodes) * index + startingDegree + 45) % 360
@@ -1106,7 +1114,7 @@ function NodesPageContent() {
           <div className="pointer-events-auto">
             {showElements && (
               <DotNavigation
-                activeDot={2}
+                activeDot={7}
                 isSmallMultiView={false}
               />
             )}

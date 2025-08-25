@@ -152,7 +152,7 @@ function NodesPageContent() {
   const [customLocation, setCustomLocation] = useState('')
   const [isEditingLocation, setIsEditingLocation] = useState(false)
 
-  // Get clock 3 settings
+  // Get clock 1 settings
   const clock3 = clockSettings[3]
   const focusNodes = clock3.focusNodes
   const startingDegree = clock3.startingDegree
@@ -530,31 +530,39 @@ function NodesPageContent() {
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold dark:text-white">Quick Actions</h2>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                className="h-12 w-12 p-0 bg-white dark:bg-black border-2 border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200 shadow-lg"
+                className="h-10 w-10 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
                 onClick={() => router.push('/sessions')}
               >
-                <Play className="h-4 w-4" />
+                <Play className="h-3 w-3" />
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="h-12 w-12 p-0 bg-white dark:bg-black border-2 border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200 shadow-lg"
+                className="h-10 w-10 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
                 onClick={() => router.push('/notes')}
               >
-                <BookOpen className="h-4 w-4" />
+                <BookOpen className="h-3 w-3" />
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="h-12 w-12 p-0 bg-white dark:bg-black border-2 border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200 shadow-lg"
+                className="h-10 w-10 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
                 onClick={() => setIsDarkMode(!isDarkMode)}
                 title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
               >
-                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {isDarkMode ? <Sun className="h-3 w-3" /> : <Moon className="h-3 w-3" />}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-10 w-10 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
+                onClick={() => router.push('/settings')}
+              >
+                <Settings className="h-3 w-3" />
               </Button>
             </div>
           </Card>
