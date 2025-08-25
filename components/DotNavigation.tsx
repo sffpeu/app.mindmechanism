@@ -8,7 +8,6 @@ interface DotNavigationProps {
   isSmallMultiView?: boolean;
   onOutlinedDotClick?: () => void;
   onDotHover?: (index: number | null) => void;
-  onDotClick?: (index: number) => void;
 }
 
 const dotColors = [
@@ -27,15 +26,13 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
   activeDot, 
   isSmallMultiView = false,
   onOutlinedDotClick,
-  onDotHover,
-  onDotClick
+  onDotHover
 }) => {
   const [hoveredDot, setHoveredDot] = useState<number | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const isSessionsPage = pathname === '/sessions';
-  const isHome1Page = pathname === '/home1';
 
   useEffect(() => {
     if (isSessionsPage) {
@@ -49,20 +46,12 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
   }, [isSessionsPage]);
 
   const handleDotClick = (index: number) => {
-    if (isHome1Page && onDotClick) {
-      // Use custom click handler for home1 page
-      onDotClick(index);
-      return;
-    }
-    
     if (index === 9) {
       // Navigate to multiview/1 when clicking the last dot
       router.push('/multiview/1');
       return;
     }
-    
-    // Navigate to individual clock page with satellites enabled and dashboard overlay
-    router.push(`/${index}?satellites=true&dashboard=true`);
+    router.push(`/${index}`);
   };
 
   const Container = isSessionsPage ? motion.div : 'div';
