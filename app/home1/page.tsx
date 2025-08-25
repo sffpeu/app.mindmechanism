@@ -170,6 +170,17 @@ export default function Home1Page() {
     router.push('/auth/signin')
   }
 
+  // Handle dot navigation click for individual clock pages
+  const handleDotClick = (index: number) => {
+    if (index === 9) {
+      // Reset to multiview when clicking the last dot
+      setHoveredClockIndex(null)
+    } else {
+      // Navigate to individual clock page with satellites enabled and dashboard overlay
+      router.push(`/${index}?satellites=true&dashboard=true`)
+    }
+  }
+
   // Initialize and update current time with optimized animation frame
   useEffect(() => {
     const updateTime = () => {
@@ -383,6 +394,7 @@ export default function Home1Page() {
               activeDot={9}
               isSmallMultiView={false}
               onDotHover={setHoveredClockIndex}
+              onDotClick={handleDotClick}
             />
           )}
           <Menu
