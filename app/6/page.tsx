@@ -1,15 +1,15 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, useRef, useCallback } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { motion } from 'framer-motion'
 import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
-import { Settings, List, Info, Satellite, Clock as ClockIcon, Calendar, RotateCw, Timer as TimerIcon, Compass, HelpCircle, Book } from 'lucide-react'
+import { Settings, List, Info, Satellite, Clock as ClockIcon, Calendar, RotateCw, Timer as TimerIcon, Compass, HelpCircle, Book, User, Edit, LogOut, Play, BookOpen, Library, Sun, Moon, MapPin, Cloud, Droplets, Wind } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Timer from '@/components/Timer'
 import {
   DropdownMenu,
@@ -18,6 +18,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   Popover,
   PopoverContent,
@@ -27,18 +29,65 @@ import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords } from '@/lib/glossary'
 import Clock from '@/components/Clock'
 import { SessionTimer } from '@/components/SessionTimer'
+import { useAuth } from '@/lib/FirebaseAuthContext'
+import { useLocation } from '@/lib/hooks/useLocation'
+import DotNavigation from '@/components/DotNavigation'
 
 // Test words for each node
 const testWords = [
-  'Saturn',
-  'Rings',
-  'Structure',
-  'Composition'
+  'Relativity',
+  'Spacetime',
+  'Gravity',
+  'Energy',
+  'Matter',
+  'Momentum'
 ]
 
-// Satellite configuration
+// Weather and Moon data interfaces
+interface WeatherResponse {
+  location: {
+    name: string
+    region: string
+    country: string
+    lat: number
+    lon: number
+    tz_id: string
+    localtime: string
+  }
+  current: {
+    temp_c: number
+    condition: {
+      text: string
+      icon: string
+    }
+    humidity: number
+    uv: number
+    pressure_mb: number
+    wind_kph: number
+    wind_dir: string
+    air_quality: {
+      'us-epa-index': number
+    }
+  }
+}
+
+interface MoonData {
+  moon_phase: string
+  moon_illumination: string
+  moonrise: string
+  moonset: string
+  next_full_moon: string
+  next_new_moon: string
+}
+
+// Satellite configurations for clock 1
 const satelliteConfigs = [
-  { rotationTime: 60 * 1000, rotationDirection: 'clockwise' as const }
+  { rotationTime: 450 * 1000, rotationDirection: 'clockwise' },
+  { rotationTime: 900 * 1000, rotationDirection: 'counterclockwise' },
+  { rotationTime: 1350 * 1000, rotationDirection: 'clockwise' },
+  { rotationTime: 2700 * 1000, rotationDirection: 'counterclockwise' },
+  { rotationTime: 4050 * 1000, rotationDirection: 'clockwise' },
+  { rotationTime: 8100 * 1000, rotationDirection: 'counterclockwise' }
 ]
 
 // Helper function to convert hex to rgb
@@ -57,9 +106,9 @@ function NodesPageContent() {
   const [showSatellites, setShowSatellites] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('showSatellites')
-      return saved ? JSON.parse(saved) : false
+      return saved ? JSON.parse(saved) : true // Default to true for individual clock pages
     }
-    return false
+    return true
   })
   const [selectedNodeIndex, setSelectedNodeIndex] = useState<number | null>(null)
   const [hoveredNodeIndex, setHoveredNodeIndex] = useState<number | null>(null)
@@ -72,7 +121,7 @@ function NodesPageContent() {
   })
   const [showInfoCards, setShowInfoCards] = useState(true)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const { isDarkMode } = useTheme()
+  const { isDarkMode, setIsDarkMode } = useTheme()
   const [remainingTime, setRemainingTime] = useState<number | null>(null)
   const [isPaused, setIsPaused] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
@@ -82,7 +131,7 @@ function NodesPageContent() {
     rotationsCompleted: 0,
     elapsedTime: '0y 0d 0h 0m 0s',
     currentRotation: 0,
-    direction: 'counterclockwise'
+    direction: 'clockwise'
   })
   const [glossaryWords, setGlossaryWords] = useState<GlossaryWord[]>([])
   const [loadingGlossary, setLoadingGlossary] = useState(true)
@@ -90,17 +139,52 @@ function NodesPageContent() {
   const [customWords, setCustomWords] = useState<string[]>([])
   const [duration, setDuration] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  
+  // Overlay state management
+  const router = useRouter()
+  const { user, signOut } = useAuth()
+  const { location } = useLocation()
+  const [mounted, setMounted] = useState(false)
+  const [weatherData, setWeatherData] = useState<WeatherResponse | null>(null)
+  const [moon, setMoon] = useState<MoonData | null>(null)
+  const [isWeatherLoading, setIsWeatherLoading] = useState(false)
+  const [weatherError, setWeatherError] = useState<string | null>(null)
+  const [customLocation, setCustomLocation] = useState('')
+  const [isEditingLocation, setIsEditingLocation] = useState(false)
 
-  // Get clock 6 settings
-  const clock6 = clockSettings[6]
-  const focusNodes = clock6.focusNodes
-  const startingDegree = clock6.startingDegree
-  const rotationTime = clock6.rotationTime
-  const rotationDirection = clock6.rotationDirection
+  // Get clock 2 settings
+  const clock2 = clockSettings[2]
+  const focusNodes = clock2.focusNodes
+  const startingDegree = clock2.startingDegree
+  const rotationTime = clock2.rotationTime
+  const rotationDirection = clock2.rotationDirection
 
   // Calculate rotation
   const [rotation, setRotation] = useState(startingDegree)
   const [currentDegree, setCurrentDegree] = useState(startingDegree)
+
+  // Helper functions
+  const handleSignOut = async () => {
+    await signOut()
+    router.push('/auth/signin')
+  }
+
+  const handleLocationSave = () => {
+    setIsEditingLocation(false)
+    // The weather data will be refetched automatically due to the useEffect dependency
+  }
+
+  const getAQIDescription = (index: number) => {
+    const descriptions = {
+      1: 'Good',
+      2: 'Moderate',
+      3: 'Unhealthy for sensitive groups',
+      4: 'Unhealthy',
+      5: 'Very Unhealthy',
+      6: 'Hazardous'
+    }
+    return descriptions[index as keyof typeof descriptions] || 'Unknown'
+  }
 
   // Initialize session from URL parameters
   useEffect(() => {
@@ -126,6 +210,52 @@ function NodesPageContent() {
     }
     setIsLoading(false)
   }, [])
+
+  // Handle mounting
+  useEffect(() => {
+    setMounted(true)
+    setCurrentTime(new Date())
+  }, [])
+
+  // Fetch weather and moon data
+  useEffect(() => {
+    if (!mounted) return
+
+    const fetchData = async () => {
+      setIsWeatherLoading(true)
+      try {
+        const locationQuery = customLocation || (location?.coords ? `${location.coords.lat},${location.coords.lon}` : 'auto:ip')
+        
+        const weatherRes = await fetch(
+          `https://api.weatherapi.com/v1/current.json?key=6cb652a81cb64a19a84103447252001&q=${locationQuery}&aqi=yes`
+        )
+        if (!weatherRes.ok) {
+          throw new Error('Weather API request failed')
+        }
+        const weatherData = await weatherRes.json()
+        setWeatherData(weatherData)
+        setWeatherError(null)
+
+        const astronomyRes = await fetch(
+          `https://api.weatherapi.com/v1/astronomy.json?key=6cb652a81cb64a19a84103447252001&q=${locationQuery}`
+        )
+        if (!astronomyRes.ok) {
+          throw new Error('Astronomy API request failed')
+        }
+        const astronomyData = await astronomyRes.json()
+        setMoon(astronomyData.astronomy.astro)
+      } catch (error) {
+        console.error('Error fetching weather data:', error)
+        setWeatherError(error instanceof Error ? error.message : 'Failed to load weather data')
+      } finally {
+        setIsWeatherLoading(false)
+      }
+    }
+
+    fetchData()
+    const interval = setInterval(fetchData, 5 * 60 * 1000) // Update every 5 minutes
+    return () => clearInterval(interval)
+  }, [mounted, location?.coords, customLocation])
 
   // Handle session completion
   const handleSessionComplete = () => {
@@ -155,7 +285,7 @@ function NodesPageContent() {
   }, [remainingTime, isPaused])
 
   useEffect(() => {
-    const startDateTime = new Date('1610-08-21T21:00:00')
+    const startDateTime = new Date('1610-12-21T03:00:00')
     const animate = () => {
       const now = Date.now()
       const elapsedMilliseconds = now - startDateTime.getTime()
@@ -183,7 +313,7 @@ function NodesPageContent() {
 
   // Update clock info
   useEffect(() => {
-    const startDateTime = new Date('1610-08-21T21:00:00')
+    const startDateTime = new Date('1610-12-21T03:00:00')
     const now = Date.now()
     const elapsedMilliseconds = now - startDateTime.getTime()
     const rotations = Math.floor(elapsedMilliseconds / rotationTime)
@@ -218,7 +348,8 @@ function NodesPageContent() {
 
   const getWordContainerStyle = (angle: number, isSelected: boolean) => {
     const isLeftSide = angle > 90 && angle < 270
-    const counterRotation = -rotation - clock6.imageOrientation // Counter-rotate both current rotation and image orientation
+    // Calculate the total rotation needed to counter both the clock rotation and image orientation
+    const counterRotation = -rotation - clock2.imageOrientation
     return {
       position: 'absolute' as const,
       left: isLeftSide ? 'auto' : '100%',
@@ -232,7 +363,7 @@ function NodesPageContent() {
   }
 
   const getFocusNodeStyle = (index: number, isSelected: boolean) => {
-    const color = '#f472b6' // Color for clock 6 (pink)
+    const color = '#fba63b' // Color for clock 1 (orange)
     return {
       backgroundColor: isSelected ? color : 'transparent',
       border: `2px solid ${color}`,
@@ -246,6 +377,13 @@ function NodesPageContent() {
     }
   }
 
+  const handleSatellitesChange = (checked: boolean) => {
+    setShowSatellites(checked)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('showSatellites', JSON.stringify(checked))
+    }
+  }
+
   const handleWordsChange = (checked: boolean) => {
     setShowWords(checked)
     if (typeof window !== 'undefined') {
@@ -253,31 +391,20 @@ function NodesPageContent() {
     }
   }
 
-  // Add getElapsedTime helper function
-  const getElapsedTime = (startDateTime: Date): string => {
-    const elapsed = Date.now() - startDateTime.getTime()
-    const years = Math.floor(elapsed / (365 * 24 * 60 * 60 * 1000))
-    const remainingDays = Math.floor((elapsed % (365 * 24 * 60 * 60 * 1000)) / (24 * 60 * 60 * 1000))
-    const hours = Math.floor((elapsed % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000))
-    const minutes = Math.floor((elapsed % (60 * 60 * 1000)) / (60 * 1000))
-    const seconds = Math.floor((elapsed % (60 * 1000)) / 1000)
-    return `${years}y ${remainingDays}d ${hours}h ${minutes}m ${seconds}s`
-  }
-
   const renderSatellites = () => {
     return satelliteConfigs.map((satellite, index) => {
       const now = Date.now()
-      const startDateTime = new Date('1610-08-21T21:00:00')
+      const startDateTime = new Date('1610-12-21T03:00:00')
       const elapsedMilliseconds = now - startDateTime.getTime()
       const satelliteRotation = (elapsedMilliseconds / satellite.rotationTime) * 360
       const totalRotation = satellite.rotationDirection === 'clockwise'
         ? satelliteRotation
         : -satelliteRotation
 
-      // Calculate position with adjusted radius
+      // Calculate position with adjusted radius (60 instead of 65)
       const angle = ((360 / satelliteConfigs.length) * index + totalRotation) % 360
       const radians = angle * (Math.PI / 180)
-      const radius = 60
+      const radius = 60 // Reduced from 65 to bring satellites closer
       const x = 50 + radius * Math.cos(radians)
       const y = 50 + radius * Math.sin(radians)
 
@@ -298,7 +425,7 @@ function NodesPageContent() {
             transform: 'translate(-50%, -50%)',
             zIndex: 100,
           }}
-          whileHover={{ scale: 1.25 }}
+          whileHover={{ scale: 1.25 }} // Reduced from 1.5
         >
           <div 
             className="w-4 h-4 rounded-full bg-black dark:bg-white"
@@ -312,7 +439,18 @@ function NodesPageContent() {
   }
 
   // Get the RGB values for the glow effect
-  const clockColor = hexToRgb('#f472b6') // Pink color for clock 6
+  const clockColor = hexToRgb('#fba63b') // Orange color for clock 1
+
+  // Add getElapsedTime helper function
+  const getElapsedTime = (startDateTime: Date): string => {
+    const elapsed = Date.now() - startDateTime.getTime()
+    const years = Math.floor(elapsed / (365 * 24 * 60 * 60 * 1000))
+    const remainingDays = Math.floor((elapsed % (365 * 24 * 60 * 60 * 1000)) / (24 * 60 * 60 * 1000))
+    const hours = Math.floor((elapsed % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000))
+    const minutes = Math.floor((elapsed % (60 * 60 * 1000)) / (60 * 1000))
+    const seconds = Math.floor((elapsed % (60 * 1000)) / 1000)
+    return `${years}y ${remainingDays}d ${hours}h ${minutes}m ${seconds}s`
+  }
 
   if (isLoading) {
     return <div>Loading...</div>
@@ -328,6 +466,249 @@ function NodesPageContent() {
           onSatellitesChange={setShowSatellites}
         />
         
+        {/* Overlay Widgets - Left Side */}
+        <div className="fixed left-6 top-6 z-20 space-y-4 max-h-screen overflow-y-auto scrollbar-hide">
+          {/* Profile Widget */}
+          <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold dark:text-white">Profile</h2>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 bg-white dark:bg-black text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
+                  onClick={() => router.push('/settings')}
+                >
+                  <Edit className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 bg-white dark:bg-black text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                {user?.photoURL ? (
+                  <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-gray-200 dark:ring-gray-700">
+                    <Image
+                      src={user.photoURL}
+                      alt="Profile"
+                      width={40}
+                      height={40}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
+                    <User className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm font-medium dark:text-white">
+                    {user?.displayName || user?.email || 'Guest User'}
+                  </p>
+                  {user?.email && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {user.email}
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {user ? 'Signed in' : 'Not signed in'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Quick Actions Widget */}
+          <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold dark:text-white">Quick Actions</h2>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-12 w-12 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
+                onClick={() => router.push('/sessions')}
+              >
+                <Play className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-12 w-12 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
+                onClick={() => router.push('/notes')}
+              >
+                <BookOpen className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-12 w-12 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
+                onClick={() => setIsDarkMode(!isDarkMode)}
+              >
+                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+            </div>
+          </Card>
+
+          {/* Recent Sessions Widget */}
+          <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-sm font-semibold dark:text-white">Recent Sessions</h2>
+              <ClockIcon className="h-4 w-4 text-gray-500" />
+            </div>
+            <div className="space-y-2">
+              <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+                      <ClockIcon className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium dark:text-white">Morning Session</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">25 minutes ago</p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-medium text-gray-900 dark:text-white">15m</span>
+                </div>
+              </div>
+              <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
+                      <ClockIcon className="h-3 w-3 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium dark:text-white">Evening Session</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">2 hours ago</p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-medium text-gray-900 dark:text-white">30m</span>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Weather & Moon Widget with Location */}
+          <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-sm font-semibold dark:text-white">Weather & Moon</h2>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 bg-white dark:bg-black text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
+                  onClick={() => setIsEditingLocation(!isEditingLocation)}
+                >
+                  <Edit className="h-3 w-3" />
+                </Button>
+                <Cloud className="h-4 w-4 text-gray-500" />
+              </div>
+            </div>
+            <div className="space-y-3">
+              {/* Location Section */}
+              <div className="space-y-2">
+                {isEditingLocation ? (
+                  <div className="space-y-2">
+                    <Input
+                      placeholder="Enter city name..."
+                      value={customLocation}
+                      onChange={(e) => setCustomLocation(e.target.value)}
+                      className="h-8 text-xs"
+                    />
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        className="h-6 text-xs bg-black dark:bg-white text-white dark:text-black hover:bg-black/80 dark:hover:bg-white/80 transition-colors"
+                        onClick={handleLocationSave}
+                      >
+                        Save
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-6 text-xs bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
+                        onClick={() => {
+                          setCustomLocation('');
+                          setIsEditingLocation(false);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {weatherData?.location.name || 'Loading location...'}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {weatherData && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg font-bold dark:text-white">{weatherData.current.temp_c}°C</span>
+                    <div className="flex items-center gap-1">
+                      <Droplets className="h-3.5 w-3.5 text-gray-500" />
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{weatherData.current.humidity}%</span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                      <div className="flex items-center gap-1">
+                        <Sun className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
+                        <span className="text-xs text-gray-600 dark:text-gray-200">UV</span>
+                      </div>
+                      <p className="text-sm font-semibold dark:text-white">{weatherData.current.uv}</p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                      <div className="flex items-center gap-1">
+                        <Wind className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
+                        <span className="text-xs text-gray-600 dark:text-gray-200">Wind</span>
+                      </div>
+                      <p className="text-sm font-semibold dark:text-white">{weatherData.current.wind_kph} km/h</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {moon && (
+                <div className="space-y-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full border border-black/10 dark:border-white/20 flex items-center justify-center">
+                      <Moon className="w-6 h-6 text-gray-600 dark:text-gray-200" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold dark:text-white">{moon.moon_phase}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{moon.moon_illumination}% illuminated</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Moonrise</p>
+                      <p className="text-sm font-semibold dark:text-white">{moon.moonrise}</p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Moonset</p>
+                      <p className="text-sm font-semibold dark:text-white">{moon.moonset}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </Card>
+        </div>
+
         {/* Settings Dropdown */}
         <div className="fixed top-4 right-4 z-50">
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
@@ -337,6 +718,16 @@ function NodesPageContent() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
+                <div className="flex items-center gap-2">
+                  <Satellite className="h-4 w-4" />
+                  <span>Satellites</span>
+                </div>
+                <Switch
+                  checked={showSatellites}
+                  onCheckedChange={handleSatellitesChange}
+                />
+              </DropdownMenuItem>
               <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
                 <div className="flex items-center gap-2">
                   <List className="h-4 w-4" />
@@ -383,11 +774,11 @@ function NodesPageContent() {
                   <div className="space-y-3">
                     {/* Clock Title and Description */}
                     <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10">
-                      <h3 className="text-sm font-medium text-purple-500">
-                        Saturn's Rings
+                      <h3 className="text-sm font-medium text-orange-500">
+                        Neptune's Discovery
                       </h3>
                       <p className="text-xs text-black/60 dark:text-white/60 line-clamp-2">
-                        The first detailed study of Saturn's rings, revealing their complex structure and composition.
+                        The historic discovery of Neptune, predicted through mathematical calculations before visual confirmation.
                       </p>
                     </div>
 
@@ -409,7 +800,7 @@ function NodesPageContent() {
                             Started
                           </p>
                           <p className="text-sm font-medium text-black/90 dark:text-white/90">
-                            {new Date('1610-08-21T21:00:00').toLocaleDateString()}
+                            {new Date('1846-09-23T06:00:00').toLocaleDateString()}
                           </p>
                         </div>
                       </div>
@@ -450,11 +841,20 @@ function NodesPageContent() {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
                         <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                          <div className="w-1 h-1 rounded-full bg-purple-500" />
+                          <div className="w-1 h-1 rounded-full bg-orange-500" />
                           Focus Nodes
                         </span>
                         <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
                           {focusNodes}
+                        </span>
+                      </div>
+                      <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
+                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+                          <div className="w-1 h-1 rounded-full border border-gray-900 dark:border-white/40" />
+                          Satellites
+                        </span>
+                        <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
+                          {satelliteConfigs.length}
                         </span>
                       </div>
                       <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
@@ -485,7 +885,7 @@ function NodesPageContent() {
 
         <div className="flex-grow flex items-center justify-center min-h-screen">
           <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px]">
-            {/* Pink glow effect */}
+            {/* Red glow effect */}
             {clockColor && (
               <motion.div
                 className="absolute inset-0 rounded-full"
@@ -540,17 +940,17 @@ function NodesPageContent() {
                 <div
                   className="absolute inset-0"
                   style={{
-                    transform: `translate(${clock6.imageX}%, ${clock6.imageY}%) rotate(${clock6.imageOrientation}deg) scale(${clock6.imageScale})`,
+                    transform: `translate(${clock2.imageX}%, ${clock2.imageY}%) rotate(${clock2.imageOrientation}deg) scale(${clock2.imageScale})`,
                     willChange: 'transform',
                     transformOrigin: 'center',
                   }}
                 >
                   <Image 
-                    src={clock6.imageUrl}
-                    alt="Clock Face 6"
+                    src={clock2.imageUrl}
+                    alt="Clock Face 2"
                     layout="fill"
                     objectFit="cover"
-                    className="rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none"
+                    className="rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none [&_*]:stroke-[0.5]"
                     priority
                     loading="eager"
                   />
@@ -573,12 +973,12 @@ function NodesPageContent() {
                 ease: 'linear'
               }}
             >
-              <div className="absolute inset-0" style={{ transform: `rotate(${clock6.imageOrientation}deg)`, pointerEvents: 'auto' }}>
+              <div className="absolute inset-0" style={{ transform: `rotate(${clock2.imageOrientation}deg)`, pointerEvents: 'auto' }}>
                 <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
                   {Array.from({ length: focusNodes }).map((_, index) => {
                     const angle = ((360 / focusNodes) * index + startingDegree + 45) % 360
                     const radians = angle * (Math.PI / 180)
-                    const nodeRadius = 55
+                    const nodeRadius = 55 // Increased from 48 to move nodes further out
                     const x = 50 + nodeRadius * Math.cos(radians)
                     const y = 50 + nodeRadius * Math.sin(radians)
                     const isSelected = selectedNodeIndex === index
@@ -616,7 +1016,7 @@ function NodesPageContent() {
 
                             {/* Icons above word - only show when word is selected */}
                             {selectedWord === word && (
-                              <div className="absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-2">
+                              <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex items-center gap-2">
                                 {/* Info Icon */}
                                 <motion.div 
                                   className="group relative"
@@ -697,6 +1097,18 @@ function NodesPageContent() {
                 </div>
               </div>
             </motion.div>
+          </div>
+        </div>
+
+        {/* Dot Navigation */}
+        <div className="fixed inset-0 pointer-events-none z-[999]">
+          <div className="pointer-events-auto">
+            {showElements && (
+              <DotNavigation
+                activeDot={2}
+                isSmallMultiView={false}
+              />
+            )}
           </div>
         </div>
 
