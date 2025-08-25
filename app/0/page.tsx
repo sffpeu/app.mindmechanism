@@ -32,6 +32,7 @@ import { LeaveWarning } from '@/components/LeaveWarning'
 import { SessionTimer } from '@/components/SessionTimer'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useLocation } from '@/lib/hooks/useLocation'
+import DotNavigation from '@/components/DotNavigation'
 
 // Test words for each node
 const testWords = [
@@ -978,7 +979,7 @@ function NodesPageContent() {
                 <div
                   className="absolute inset-0"
                   style={{
-                    transform: `translate(${clock0.imageX || 0}%, ${clock0.imageY || 0}%) rotate(${clock0.imageOrientation}deg) scale(0.8)`,
+                    transform: `translate(${clock0.imageX}%, ${clock0.imageY}%) rotate(${clock0.imageOrientation}deg) scale(${clock0.imageScale})`,
                     willChange: 'transform',
                     transformOrigin: 'center',
                   }}
@@ -988,7 +989,7 @@ function NodesPageContent() {
                     alt="Clock Face 0"
                     layout="fill"
                     objectFit="cover"
-                    className="rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none"
+                    className="rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none [&_*]:stroke-[0.5]"
                     priority
                     loading="eager"
                   />
@@ -1135,6 +1136,18 @@ function NodesPageContent() {
                 </div>
               </div>
             </motion.div>
+          </div>
+        </div>
+
+        {/* Dot Navigation */}
+        <div className="fixed inset-0 pointer-events-none z-[999]">
+          <div className="pointer-events-auto">
+            {showElements && (
+              <DotNavigation
+                activeDot={0}
+                isSmallMultiView={false}
+              />
+            )}
           </div>
         </div>
 
