@@ -165,6 +165,10 @@ export default function Home1Page() {
   // Interactive highlighting states
   const [selectedSatellite, setSelectedSatellite] = useState<{ clockIndex: number, satelliteIndex: number } | null>(null)
   const [selectedFocusNode, setSelectedFocusNode] = useState<{ clockIndex: number, nodeIndex: number } | null>(null)
+  
+  // Hover states for interactive effects
+  const [hoveredFocusNode, setHoveredFocusNode] = useState<{ clockIndex: number, nodeIndex: number } | null>(null)
+  const [hoveredSatellite, setHoveredSatellite] = useState<{ clockIndex: number, satelliteIndex: number } | null>(null)
 
   const handleSignOut = async () => {
     await signOut()
@@ -658,7 +662,9 @@ export default function Home1Page() {
                 className="absolute inset-0 flex items-center justify-center"
                 style={{
                   mixBlendMode: isDarkMode ? 'screen' : 'multiply',
-                  opacity: hoveredClockIndex === null || isHovered ? 1 : 0.2,
+                  opacity: hoveredClockIndex === null || isHovered || 
+                    hoveredFocusNode?.clockIndex === index || 
+                    hoveredSatellite?.clockIndex === index ? 1 : 0.2,
                   transition: 'opacity 0.3s ease-in-out',
                 }}
               >
@@ -739,6 +745,8 @@ export default function Home1Page() {
                                 ease: "easeOut"
                               }}
                               onClick={() => handleFocusNodeClick(index, nodeIndex)}
+                              onMouseEnter={() => setHoveredFocusNode({ clockIndex: index, nodeIndex })}
+                              onMouseLeave={() => setHoveredFocusNode(null)}
                               whileHover={{ scale: 1.5 }}
                             >
                               {/* Degree display for selected focus node */}
@@ -795,6 +803,8 @@ export default function Home1Page() {
                                   ease: "easeOut"
                                 }}
                                 whileHover={{ scale: 1.8 }}
+                                onMouseEnter={() => setHoveredSatellite({ clockIndex: index, satelliteIndex })}
+                                onMouseLeave={() => setHoveredSatellite(null)}
                                 onClick={() => handleSatelliteClick(index, satelliteIndex)}
                               >
                                 {/* Position and speed display for selected satellite */}
