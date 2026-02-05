@@ -17,7 +17,7 @@ import { useRouter } from 'next/navigation'
 export function SessionLobby() {
     const [sessions, setSessions] = useState<Session[]>([])
     const [loading, setLoading] = useState(true)
-    const [is advertising, setIsAdvertising] = useState(false)
+    const [isAdvertising, setIsAdvertising] = useState(false)
     const { user } = useAuth()
     const router = useRouter()
 
