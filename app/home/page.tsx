@@ -102,7 +102,7 @@ export default function HomePage() {
                 <h3 className="text-base font-medium text-black dark:text-white mb-2">Meditation Clock</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">A unique clock interface designed to enhance your meditation practice.</p>
                 <button
-                  onClick={() => router.push('/sessions')}
+                  onClick={() => router.push('/sessions?mode=clock')}
                   className="flex items-center gap-1.5 text-xs font-medium text-black dark:text-white group-hover:gap-2 transition-all"
                 >
                   Learn more
