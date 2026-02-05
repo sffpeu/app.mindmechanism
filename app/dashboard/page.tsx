@@ -184,10 +184,10 @@ export default function DashboardPage() {
     }
   })
   const [recentSessions, setRecentSessions] = useState<Session[]>([])
-  const [timeStats, setTimeStats] = useState<TimeStats>({ 
-    totalTime: 0, 
-    monthlyTime: 0, 
-    lastSignInTime: null 
+  const [timeStats, setTimeStats] = useState<TimeStats>({
+    totalTime: 0,
+    monthlyTime: 0,
+    lastSignInTime: null
   })
   const [timeEntryId, setTimeEntryId] = useState<string | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -258,8 +258,7 @@ export default function DashboardPage() {
       setIsWeatherLoading(true);
       try {
         const weatherRes = await fetch(
-          `https://api.weatherapi.com/v1/current.json?key=6cb652a81cb64a19a84103447252001&q=${
-            location?.coords ? `${location.coords.lat},${location.coords.lon}` : 'auto:ip'
+          `https://api.weatherapi.com/v1/current.json?key=6cb652a81cb64a19a84103447252001&q=${location?.coords ? `${location.coords.lat},${location.coords.lon}` : 'auto:ip'
           }&aqi=yes`
         );
         if (!weatherRes.ok) {
@@ -270,8 +269,7 @@ export default function DashboardPage() {
         setWeatherError(null);
 
         const astronomyRes = await fetch(
-          `https://api.weatherapi.com/v1/astronomy.json?key=6cb652a81cb64a19a84103447252001&q=${
-            location?.coords ? `${location.coords.lat},${location.coords.lon}` : 'auto:ip'
+          `https://api.weatherapi.com/v1/astronomy.json?key=6cb652a81cb64a19a84103447252001&q=${location?.coords ? `${location.coords.lat},${location.coords.lon}` : 'auto:ip'
           }`
         );
         if (!astronomyRes.ok) {
@@ -295,7 +293,7 @@ export default function DashboardPage() {
   // Handle authentication and initialization
   useEffect(() => {
     let mounted = true;
-    
+
     const initializeDashboard = async () => {
       try {
         if (!mounted) return;
@@ -310,7 +308,7 @@ export default function DashboardPage() {
         }
 
         console.log('Starting dashboard initialization...');
-        
+
         const [stats, baseSessions, timeStatsData] = await Promise.all([
           getUserStats(user.uid),
           getUserSessions(user.uid),
@@ -322,7 +320,7 @@ export default function DashboardPage() {
         // Add elapsed_time to sessions
         const sessions = baseSessions.map(session => ({
           ...session,
-          elapsed_time: session.end_time 
+          elapsed_time: session.end_time
             ? session.end_time.toDate().getTime() - session.start_time.toDate().getTime()
             : Date.now() - session.start_time.toDate().getTime()
         }));
@@ -330,7 +328,7 @@ export default function DashboardPage() {
         setUserStats(stats);
         setRecentSessions(sessions);
         setTimeStats(timeStatsData);
-        
+
         console.log('Dashboard initialization complete');
         setIsInitializing(false);
       } catch (error) {
@@ -354,7 +352,7 @@ export default function DashboardPage() {
   // Keep the refresh function for manual updates
   const loadAllStats = async () => {
     if (!user?.uid) return;
-    
+
     setIsRefreshing(true);
     try {
       console.log('Manually refreshing dashboard stats...');
@@ -367,7 +365,7 @@ export default function DashboardPage() {
       // Add elapsed_time to sessions
       const sessions = baseSessions.map(session => ({
         ...session,
-        elapsed_time: session.end_time 
+        elapsed_time: session.end_time
           ? session.end_time.toDate().getTime() - session.start_time.toDate().getTime()
           : Date.now() - session.start_time.toDate().getTime()
       }));
@@ -387,7 +385,7 @@ export default function DashboardPage() {
   useEffect(() => {
     let entryId: string | null = null;
     let mounted = true;
-    
+
     const startTracking = async () => {
       if (user?.uid && mounted) {
         console.log('Starting time tracking...');
@@ -513,6 +511,15 @@ export default function DashboardPage() {
           onSatellitesChange={setShowSatellites}
         />
         <div className="max-w-6xl mx-auto space-y-4 p-4">
+          {/* Welcome Header */}
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Welcome Back, {user?.displayName ? user.displayName.split(' ')[0] : 'Mind Explorer'}
+            </h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">
+              Your mind mechanism is ready.
+            </p>
+          </div>
           {/* Time and User Profile Section */}
           {showInfoCards && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -709,7 +716,7 @@ export default function DashboardPage() {
                                 <span className="text-xs text-gray-600 dark:text-gray-200">Air Quality</span>
                               </div>
                               <p className="text-base font-semibold mt-1 dark:text-white">
-                                {weatherData.current.air_quality && weatherData.current.air_quality['us-epa-index'] 
+                                {weatherData.current.air_quality && weatherData.current.air_quality['us-epa-index']
                                   ? getAQIDescription(weatherData.current.air_quality['us-epa-index'])
                                   : 'N/A'}
                               </p>
@@ -947,8 +954,8 @@ export default function DashboardPage() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <h3 className="text-xs font-medium text-gray-900 dark:text-white">Recent Sessions</h3>
-                    <Link 
-                      href="/sessions" 
+                    <Link
+                      href="/sessions"
                       className="text-xs text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
                     >
                       View All
@@ -960,10 +967,9 @@ export default function DashboardPage() {
                         <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5 cursor-help">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${
-                                session.status === 'completed' ? 'bg-green-500' :
-                                session.status === 'in_progress' ? 'bg-blue-500' : 'bg-red-500'
-                              }`} />
+                              <div className={`w-2 h-2 rounded-full ${session.status === 'completed' ? 'bg-green-500' :
+                                  session.status === 'in_progress' ? 'bg-blue-500' : 'bg-red-500'
+                                }`} />
                               <span className="text-sm font-medium dark:text-white">
                                 {clockTitles[session.clock_id]}
                               </span>
@@ -974,9 +980,9 @@ export default function DashboardPage() {
                           </div>
                           <div className="mt-1">
                             <div className="h-1 bg-gray-200 dark:bg-gray-700 rounded-full">
-                              <div 
+                              <div
                                 className="h-full bg-blue-500 rounded-full transition-all duration-300"
-                                style={{ 
+                                style={{
                                   width: `${Math.min(((session.elapsed_time / session.duration) * 100), 100)}%`
                                 }}
                               />
