@@ -32,6 +32,7 @@ import {
 import { Session as BaseSession } from '@/lib/sessions'
 import { useLocation } from '@/lib/hooks/useLocation'
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
+import { SessionLobby } from '@/components/SessionLobby'
 
 interface WeatherResponse {
   location: {
@@ -583,42 +584,8 @@ export default function DashboardPage() {
                 </Card>
               )}
 
-              {/* Connect Card */}
-              <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-base font-semibold dark:text-white">Connect</h2>
-                  <Users className="h-4 w-4 text-gray-500" />
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
-                        <Share2 className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium dark:text-white">Share Session</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Create & share with others</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" className="text-xs">
-                      Create
-                    </Button>
-                  </div>
-                  <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
-                    <div className="flex items-center gap-2">
-                      <div className="flex -space-x-2">
-                        <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center ring-2 ring-white dark:ring-black">
-                          <span className="text-[10px] text-gray-600 dark:text-gray-300 font-medium">JD</span>
-                        </div>
-                        <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center ring-2 ring-white dark:ring-black">
-                          <span className="text-[10px] text-gray-600 dark:text-gray-300 font-medium">AS</span>
-                        </div>
-                      </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">2 users connected</p>
-                    </div>
-                  </div>
-                </div>
-              </Card>
+              {/* Session Lobby (Connect) */}
+              <SessionLobby />
 
               {/* Device Card */}
               <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
@@ -968,7 +935,7 @@ export default function DashboardPage() {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <div className={`w-2 h-2 rounded-full ${session.status === 'completed' ? 'bg-green-500' :
-                                  session.status === 'in_progress' ? 'bg-blue-500' : 'bg-red-500'
+                                session.status === 'in_progress' ? 'bg-blue-500' : 'bg-red-500'
                                 }`} />
                               <span className="text-sm font-medium dark:text-white">
                                 {clockTitles[session.clock_id]}

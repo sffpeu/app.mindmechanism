@@ -1,5 +1,5 @@
 import { db } from '@/lib/firebase';
-import { 
+import {
   collection,
   query,
   where,
@@ -37,6 +37,11 @@ export interface SessionData {
   latitude: number;
   longitude: number;
   progress: number;
+  is_public?: boolean;
+  max_participants?: number;
+  current_participants?: number;
+  scheduled_start_time?: string;
+  host_id?: string;
 }
 
 export interface Session extends SessionData {
@@ -64,7 +69,7 @@ function validateSession(data: Partial<SessionData>): void {
 export async function createSession(data: SessionData): Promise<Session> {
   try {
     if (!db) throw new Error('Firestore is not initialized');
-    
+
     validateSession(data);
 
     const sessionData = {
@@ -76,7 +81,7 @@ export async function createSession(data: SessionData): Promise<Session> {
 
     const docRef = await addDoc(collection(db, 'sessions'), sessionData);
     const docSnap = await getDoc(docRef);
-    
+
     if (!docSnap.exists()) {
       throw new Error('Failed to create session');
     }
@@ -102,8 +107,8 @@ export async function createSession(data: SessionData): Promise<Session> {
 }
 
 export async function updateSession(
-  sessionId: string, 
-  data: Partial<SessionData> & { 
+  sessionId: string,
+  data: Partial<SessionData> & {
     status: 'completed' | 'in_progress' | 'aborted';
     actual_duration: number;
     end_time?: string;
@@ -148,7 +153,7 @@ export async function updateSession(
 
 export async function getUserSessions(userId: string, retryCount = 3): Promise<Session[]> {
   let lastError: Error | null = null;
-  
+
   for (let attempt = 0; attempt < retryCount; attempt++) {
     try {
       if (!db) throw new Error('Firestore is not initialized');
@@ -253,7 +258,7 @@ export async function getUserStats(userId: string, retryCount = 3): Promise<User
       const now = new Date();
       const totalTime = sessions.reduce((acc, session) => {
         if (!session.start_time) return acc;
-        
+
         if (session.status === 'completed') {
           return acc + (session.actual_duration || 0);
         } else if (session.status === 'aborted') {
@@ -262,7 +267,7 @@ export async function getUserStats(userId: string, retryCount = 3): Promise<User
           const startTime = session.start_time.toDate();
           const lastActiveTime = session.last_active_time?.toDate() || startTime;
           const pausedDuration = session.paused_duration || 0;
-          
+
           const activeTime = lastActiveTime.getTime() - startTime.getTime() - pausedDuration;
           return acc + activeTime;
         }
@@ -274,8 +279,8 @@ export async function getUserStats(userId: string, retryCount = 3): Promise<User
       const thisMonth = sessions.filter(session => {
         if (!session.start_time) return false;
         const sessionDate = session.start_time.toDate();
-        return sessionDate.getMonth() === now.getMonth() && 
-               sessionDate.getFullYear() === now.getFullYear();
+        return sessionDate.getMonth() === now.getMonth() &&
+          sessionDate.getFullYear() === now.getFullYear();
       });
 
       return {
@@ -285,7 +290,7 @@ export async function getUserStats(userId: string, retryCount = 3): Promise<User
         monthlyProgress: {
           totalSessions: thisMonth.length,
           totalTime: calculateMonthlyTime(thisMonth),
-          completionRate: thisMonth.length ? 
+          completionRate: thisMonth.length ?
             (thisMonth.filter(s => s.status === 'completed').length / thisMonth.length) * 100 : 0
         }
       };
@@ -343,7 +348,7 @@ function calculateMonthlyTime(sessions: Session[]): number {
       const startTime = session.start_time.toDate();
       const lastActiveTime = session.last_active_time?.toDate() || startTime;
       const pausedDuration = session.paused_duration || 0;
-      
+
       const activeTime = lastActiveTime.getTime() - startTime.getTime() - pausedDuration;
       return acc + activeTime;
     }
@@ -385,7 +390,7 @@ export async function deleteSession(sessionId: string): Promise<void> {
 export async function updateSessionActivity(sessionId: string): Promise<void> {
   try {
     if (!db) throw new Error('Firestore is not initialized');
-    
+
     const sessionRef = doc(db, 'sessions', sessionId);
     await updateDoc(sessionRef, {
       last_active_time: Timestamp.now()
@@ -399,7 +404,7 @@ export async function updateSessionActivity(sessionId: string): Promise<void> {
 export async function pauseSession(sessionId: string): Promise<void> {
   try {
     if (!db) throw new Error('Firestore is not initialized');
-    
+
     const sessionRef = doc(db, 'sessions', sessionId);
     const sessionDoc = await getDoc(sessionRef);
 
@@ -420,4 +425,49 @@ export async function pauseSession(sessionId: string): Promise<void> {
     console.error('Error pausing session:', error);
     throw error;
   }
-} 
+}
+
+export async function getPublicSessions(): Promise<Session[]> {
+  try {
+    if (!db) throw new Error('Firestore is not initialized');
+
+    const sessionsQuery = query(
+      collection(db, 'sessions'),
+      where('is_public', '==', true),
+      where('status', 'in', ['waiting', 'in_progress']),
+      orderBy('start_time', 'desc')
+    );
+
+    const snapshot = await getDocs(sessionsQuery);
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Session[];
+  } catch (error) {
+    console.error('Error fetching public sessions:', error);
+    return [];
+  }
+}
+
+export async function joinSession(sessionId: string): Promise<void> {
+  try {
+    if (!db) throw new Error('Firestore is not initialized');
+
+    const sessionRef = doc(db, 'sessions', sessionId);
+    const sessionDoc = await getDoc(sessionRef);
+
+    if (!sessionDoc.exists()) throw new Error('Session not found');
+
+    const data = sessionDoc.data() as Session;
+    if (data.current_participants && data.max_participants && data.current_participants >= data.max_participants) {
+      throw new Error('Session is full');
+    }
+
+    await updateDoc(sessionRef, {
+      current_participants: (data.current_participants || 0) + 1
+    });
+  } catch (error) {
+    console.error('Error joining session:', error);
+    throw error;
+  }
+}
