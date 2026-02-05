@@ -53,12 +53,14 @@ export default function HomePage() {
               Your mind. Your mechanism.
             </p>
             <div className="flex items-center justify-center gap-3">
-              <button
-                onClick={scrollToFeatures}
-                className="px-6 py-2.5 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-all text-sm"
-              >
-                Explore
-              </button>
+              {user && (
+                <button
+                  onClick={scrollToFeatures}
+                  className="px-6 py-2.5 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-all text-sm"
+                >
+                  Explore
+                </button>
+              )}
               {user ? (
                 <button
                   onClick={handleSignOut}
@@ -81,56 +83,58 @@ export default function HomePage() {
         </div>
 
         {/* Features Section */}
-        <div ref={featuresRef} className="space-y-8 mt-32">
-          <h2 className="text-lg font-semibold text-black dark:text-white">Key Features</h2>
+        {user && (
+          <div ref={featuresRef} className="space-y-8 mt-32">
+            <h2 className="text-lg font-semibold text-black dark:text-white">Key Features</h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all group">
-              <div className="w-8 h-8 rounded-lg bg-black/5 dark:bg-white/5 flex items-center justify-center mb-3">
-                <Play className="h-4 w-4 text-black dark:text-white" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all group">
+                <div className="w-8 h-8 rounded-lg bg-black/5 dark:bg-white/5 flex items-center justify-center mb-3">
+                  <Play className="h-4 w-4 text-black dark:text-white" />
+                </div>
+                <h3 className="text-base font-medium text-black dark:text-white mb-2">Meditation Clock</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">A unique clock interface designed to enhance your meditation practice.</p>
+                <button
+                  onClick={() => router.push('/sessions')}
+                  className="flex items-center gap-1.5 text-xs font-medium text-black dark:text-white group-hover:gap-2 transition-all"
+                >
+                  Learn more
+                  <ArrowRight className="h-3 w-3" />
+                </button>
               </div>
-              <h3 className="text-base font-medium text-black dark:text-white mb-2">Meditation Clock</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">A unique clock interface designed to enhance your meditation practice.</p>
-              <button
-                onClick={() => router.push('/sessions')}
-                className="flex items-center gap-1.5 text-xs font-medium text-black dark:text-white group-hover:gap-2 transition-all"
-              >
-                Learn more
-                <ArrowRight className="h-3 w-3" />
-              </button>
-            </div>
 
-            <div className="p-4 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all group">
-              <div className="w-8 h-8 rounded-lg bg-black/5 dark:bg-white/5 flex items-center justify-center mb-3">
-                <BookOpen className="h-4 w-4 text-black dark:text-white" />
+              <div className="p-4 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all group">
+                <div className="w-8 h-8 rounded-lg bg-black/5 dark:bg-white/5 flex items-center justify-center mb-3">
+                  <BookOpen className="h-4 w-4 text-black dark:text-white" />
+                </div>
+                <h3 className="text-base font-medium text-black dark:text-white mb-2">Guided Sessions</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Access a library of guided meditation sessions for all levels.</p>
+                <button
+                  onClick={() => router.push('/sessions')}
+                  className="flex items-center gap-1.5 text-xs font-medium text-black dark:text-white group-hover:gap-2 transition-all"
+                >
+                  Learn more
+                  <ArrowRight className="h-3 w-3" />
+                </button>
               </div>
-              <h3 className="text-base font-medium text-black dark:text-white mb-2">Guided Sessions</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Access a library of guided meditation sessions for all levels.</p>
-              <button
-                onClick={() => router.push('/sessions')}
-                className="flex items-center gap-1.5 text-xs font-medium text-black dark:text-white group-hover:gap-2 transition-all"
-              >
-                Learn more
-                <ArrowRight className="h-3 w-3" />
-              </button>
-            </div>
 
-            <div className="p-4 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all group">
-              <div className="w-8 h-8 rounded-lg bg-black/5 dark:bg-white/5 flex items-center justify-center mb-3">
-                <ClipboardList className="h-4 w-4 text-black dark:text-white" />
+              <div className="p-4 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all group">
+                <div className="w-8 h-8 rounded-lg bg-black/5 dark:bg-white/5 flex items-center justify-center mb-3">
+                  <ClipboardList className="h-4 w-4 text-black dark:text-white" />
+                </div>
+                <h3 className="text-base font-medium text-black dark:text-white mb-2">Progress Tracking</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Monitor your meditation journey with detailed insights and statistics.</p>
+                <button
+                  onClick={() => router.push('/sessions')}
+                  className="flex items-center gap-1.5 text-xs font-medium text-black dark:text-white group-hover:gap-2 transition-all"
+                >
+                  Learn more
+                  <ArrowRight className="h-3 w-3" />
+                </button>
               </div>
-              <h3 className="text-base font-medium text-black dark:text-white mb-2">Progress Tracking</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Monitor your meditation journey with detailed insights and statistics.</p>
-              <button
-                onClick={() => router.push('/sessions')}
-                className="flex items-center gap-1.5 text-xs font-medium text-black dark:text-white group-hover:gap-2 transition-all"
-              >
-                Learn more
-                <ArrowRight className="h-3 w-3" />
-              </button>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )
