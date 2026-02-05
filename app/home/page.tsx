@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { Play, BookOpen, ClipboardList, ArrowRight, LogIn, LogOut, LayoutDashboard } from 'lucide-react'
@@ -13,17 +13,24 @@ export default function HomePage() {
   const { theme } = useTheme()
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(false)
+  const [showFeatures, setShowFeatures] = useState(false)
   const router = useRouter()
   const { user, signOut } = useAuth()
   const featuresRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (showFeatures && featuresRef.current) {
+      featuresRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [showFeatures])
 
   const handleSignOut = async () => {
     await signOut()
     router.push('/auth/signin')
   }
 
-  const scrollToFeatures = () => {
-    featuresRef.current?.scrollIntoView({ behavior: 'smooth' })
+  const handleExplore = () => {
+    setShowFeatures(true)
   }
 
   return (
@@ -55,7 +62,7 @@ export default function HomePage() {
             <div className="flex items-center justify-center gap-3">
               {user && (
                 <button
-                  onClick={scrollToFeatures}
+                  onClick={handleExplore}
                   className="px-6 py-2.5 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-all text-sm"
                 >
                   Explore
@@ -83,7 +90,7 @@ export default function HomePage() {
         </div>
 
         {/* Features Section */}
-        {user && (
+        {user && showFeatures && (
           <div ref={featuresRef} className="space-y-8 mt-32">
             <h2 className="text-lg font-semibold text-black dark:text-white">Key Features</h2>
 
