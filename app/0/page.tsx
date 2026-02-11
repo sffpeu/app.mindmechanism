@@ -7,8 +7,9 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { motion } from 'framer-motion'
 import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
-import { Settings, List, Info, Satellite, Clock as ClockIcon, Calendar, RotateCw, Timer as TimerIcon, Compass, HelpCircle, Book, User, Edit, LogOut, Play, BookOpen, Library, Sun, Moon, MapPin, Cloud, Droplets, Wind } from 'lucide-react'
+import { Settings, List, Info, Satellite, Clock as ClockIcon, Calendar, RotateCw, Timer as TimerIcon, Compass, HelpCircle, Book, User, Users, Edit, LogOut, Play, BookOpen, Library, Sun, Moon, MapPin, Cloud, Droplets, Wind } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
+import { toast } from 'react-hot-toast'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Timer from '@/components/Timer'
 import {
@@ -147,7 +148,9 @@ function NodesPageContent() {
   const [customWords, setCustomWords] = useState<string[]>([])
   const [duration, setDuration] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  
+  const [sessionStatus, setSessionStatus] = useState<'waiting' | 'in_progress' | 'completed' | null>(null)
+  const [isHost, setIsHost] = useState(false)
+
   // Overlay state management
   const [mounted, setMounted] = useState(false)
   const [weatherData, setWeatherData] = useState<WeatherResponse | null>(null)
@@ -197,12 +200,16 @@ function NodesPageContent() {
     const durationParam = params.get('duration')
     const sessionIdParam = params.get('sessionId')
     const wordsParam = params.get('words')
-    
+    const isHostParam = params.get('isHost')
+
     if (durationParam) {
       setDuration(parseInt(durationParam, 10))
     }
     if (sessionIdParam) {
       setSessionId(sessionIdParam)
+    }
+    if (isHostParam === 'true') {
+      setIsHost(true)
     }
     if (wordsParam) {
       try {
@@ -215,6 +222,55 @@ function NodesPageContent() {
     }
     setIsLoading(false)
   }, [])
+
+  // Listen for session status changes
+  useEffect(() => {
+    if (!sessionId) return
+
+    const checkSessionStatus = async () => {
+      try {
+        // Dynamic import to avoid SSR issues if any, though likely fine here
+        const { doc, getDoc } = await import('firebase/firestore')
+        const { db } = await import('@/lib/firebase')
+        if (!db) return
+
+        const sessionRef = doc(db, 'sessions', sessionId)
+        const sessionDoc = await getDoc(sessionRef)
+
+        if (sessionDoc.exists()) {
+          const data = sessionDoc.data()
+          setSessionStatus(data.status as any) // Type assertion for now
+
+          if (data.status === 'in_progress' && sessionStatus === 'waiting') {
+            // Transition from waiting to in_progress
+            setIsPaused(false)
+            // toast.success('Session Started!') // Assuming toast is imported
+          }
+        }
+      } catch (error) {
+        console.error("Error checking session status", error)
+      }
+    }
+
+    // Check immediately and then poll
+    checkSessionStatus()
+    const interval = setInterval(checkSessionStatus, 3000)
+    return () => clearInterval(interval)
+  }, [sessionId, sessionStatus])
+
+  const handleStartSession = async () => {
+    if (!sessionId) return
+    try {
+      const { updateSession } = await import('@/lib/sessions')
+      await updateSession(sessionId, { status: 'in_progress' })
+      setSessionStatus('in_progress')
+      setIsPaused(false)
+      // toast.success('Session created and started!') // Assuming toast is imported
+    } catch (error) {
+      console.error("Failed to start session", error)
+      // toast.error("Failed to start session") // Assuming toast is imported
+    }
+  }
 
   // Handle mounting
   useEffect(() => {
@@ -230,7 +286,7 @@ function NodesPageContent() {
       setIsWeatherLoading(true)
       try {
         const locationQuery = customLocation || (location?.coords ? `${location.coords.lat},${location.coords.lon}` : 'auto:ip')
-        
+
         const weatherRes = await fetch(
           `https://api.weatherapi.com/v1/current.json?key=6cb652a81cb64a19a84103447252001&q=${locationQuery}&aqi=yes`
         )
@@ -433,7 +489,7 @@ function NodesPageContent() {
           }}
           whileHover={{ scale: 1.25 }} // Reduced from 1.5
         >
-          <div 
+          <div
             className="w-4 h-4 rounded-full bg-black dark:bg-white"
             style={{
               boxShadow: '0 0 12px rgba(0, 0, 0, 0.4)',
@@ -504,7 +560,7 @@ function NodesPageContent() {
           showSatellites={showSatellites}
           onSatellitesChange={setShowSatellites}
         />
-        
+
         {/* Overlay Widgets - Left Side */}
         <div className="fixed left-6 top-6 z-20 space-y-4 max-h-screen overflow-y-auto scrollbar-hide">
           {/* Profile Widget */}
@@ -729,7 +785,7 @@ function NodesPageContent() {
                   </div>
                 </div>
               )}
-              
+
               {moon && (
                 <div className="space-y-2 pt-2 border-t border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-3">
@@ -810,7 +866,7 @@ function NodesPageContent() {
             />
           )}
           <div className="group relative">
-            <button 
+            <button
               className="p-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors"
               aria-label="Clock Information"
             >
@@ -932,6 +988,43 @@ function NodesPageContent() {
         </div>
 
         <div className="flex-grow flex items-center justify-center min-h-screen">
+          {/* Waiting Room Overlay */}
+          {sessionStatus === 'waiting' && (
+            <div className="absolute inset-0 z-[1000] flex items-center justify-center bg-white/80 dark:bg-black/80 backdrop-blur-md">
+              <div className="text-center p-8 max-w-md bg-white dark:bg-black border border-black/10 dark:border-white/10 rounded-2xl shadow-xl">
+                <div className="mb-4 flex justify-center">
+                  <div className="h-16 w-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center animate-pulse">
+                    <Users className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                  </div>
+                </div>
+                <h2 className="text-2xl font-bold mb-2 dark:text-white">Waiting Room</h2>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  {isHost
+                    ? "You are the host. Wait for others to join or start now."
+                    : "Waiting for the host to start the session..."}
+                </p>
+
+                {isHost && (
+                  <Button
+                    size="lg"
+                    className="w-full font-semibold"
+                    onClick={handleStartSession}
+                  >
+                    Start Session Now
+                  </Button>
+                )}
+
+                {!isHost && (
+                  <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+                    <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px]">
             {/* Red glow effect */}
             {clockColor && (
@@ -960,9 +1053,9 @@ function NodesPageContent() {
 
             {/* Satellites layer */}
             {showSatellites && (
-              <motion.div 
+              <motion.div
                 className="absolute inset-0"
-                style={{ 
+                style={{
                   willChange: 'transform',
                   zIndex: 100,
                 }}
@@ -973,9 +1066,9 @@ function NodesPageContent() {
 
             {/* Clock face */}
             <div className="absolute inset-0 rounded-full overflow-hidden">
-              <motion.div 
+              <motion.div
                 className="absolute inset-0"
-                style={{ 
+                style={{
                   willChange: 'transform',
                 }}
                 animate={{ rotate: rotation }}
@@ -993,7 +1086,7 @@ function NodesPageContent() {
                     transformOrigin: 'center',
                   }}
                 >
-                  <Image 
+                  <Image
                     src={clock0.imageUrl}
                     alt="Clock Face 0"
                     layout="fill"
@@ -1007,9 +1100,9 @@ function NodesPageContent() {
             </div>
 
             {/* Focus nodes layer */}
-            <motion.div 
+            <motion.div
               className="absolute inset-0"
-              style={{ 
+              style={{
                 willChange: 'transform',
                 zIndex: 200,
                 pointerEvents: 'none',
@@ -1046,7 +1139,7 @@ function NodesPageContent() {
                         onMouseLeave={() => setHoveredNodeIndex(null)}
                       >
                         {showWords && (hoveredNodeIndex === index || isSelected) && word && (
-                          <div 
+                          <div
                             className="absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
                             shadow-sm transition-all outline outline-1 outline-black/10 dark:outline-white/20"
                             style={getWordContainerStyle(angle, isSelected)}
@@ -1066,13 +1159,13 @@ function NodesPageContent() {
                             {selectedWord === word && (
                               <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex items-center gap-2">
                                 {/* Info Icon */}
-                                <motion.div 
+                                <motion.div
                                   className="group relative"
                                   initial={{ opacity: 0, y: 10 }}
                                   animate={{ opacity: 1, y: 0 }}
                                   transition={{ duration: 0.2, delay: 0 }}
                                 >
-                                  <button 
+                                  <button
                                     className="pointer-events-auto w-6 h-6 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm border border-black/10 dark:border-white/20 
                                     flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                                     onClick={(e) => {
@@ -1090,13 +1183,13 @@ function NodesPageContent() {
                                 </motion.div>
 
                                 {/* Notes Icon */}
-                                <motion.div 
+                                <motion.div
                                   className="group relative"
                                   initial={{ opacity: 0, y: 10 }}
                                   animate={{ opacity: 1, y: 0 }}
                                   transition={{ duration: 0.2, delay: 0.1 }}
                                 >
-                                  <button 
+                                  <button
                                     className="pointer-events-auto w-6 h-6 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm border border-black/10 dark:border-white/20 
                                     flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                                     onClick={(e) => {
@@ -1114,13 +1207,13 @@ function NodesPageContent() {
                                 </motion.div>
 
                                 {/* Dictionary Icon */}
-                                <motion.div 
+                                <motion.div
                                   className="group relative"
                                   initial={{ opacity: 0, y: 10 }}
                                   animate={{ opacity: 1, y: 0 }}
                                   transition={{ duration: 0.2, delay: 0.2 }}
                                 >
-                                  <button 
+                                  <button
                                     className="pointer-events-auto w-6 h-6 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-sm border border-black/10 dark:border-white/20 
                                     flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                                     onClick={(e) => {

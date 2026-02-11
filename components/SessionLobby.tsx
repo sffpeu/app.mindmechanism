@@ -39,7 +39,7 @@ export function SessionLobby() {
 
     useEffect(() => {
         fetchSessions()
-        const interval = setInterval(fetchSessions, 10000) // Refresh every 10s
+        const interval = setInterval(fetchSessions, 5000) // Refresh every 5s for better responsiveness
         return () => clearInterval(interval)
     }, [])
 
@@ -49,11 +49,11 @@ export function SessionLobby() {
         try {
             const durationMs = parseInt(duration) * 60 * 1000
             let scheduledStart = new Date()
-            // Simple logic for "now" vs later could be expanded
 
-            await createSession({
+            // Create session with 'waiting' status (default in lib/sessions.ts)
+            const session = await createSession({
                 user_id: user.uid,
-                clock_id: 0, // Default clock or let user pick? Assuming default for now or random
+                clock_id: 0, // Default to Clock 0 for now as requested prototype
                 duration: durationMs,
                 words: [],
                 // Default environment values (placeholder)
@@ -71,24 +71,29 @@ export function SessionLobby() {
                 scheduled_start_time: scheduledStart.toISOString()
             })
 
-            toast.success('Session advertised!')
+            toast.success('Session advertised! Redirecting to lobby...')
             setIsAdvertising(false)
-            fetchSessions()
+            // Redirect host to the clock page immediately to wait for others
+            router.push(`/0?sessionId=${session.id}&isHost=true&duration=${durationMs}`)
         } catch (error) {
             toast.error('Failed to advertise session')
             console.error(error)
         }
     }
 
-    const handleJoin = async (sessionId: string) => {
+    const handleJoin = async (session: Session) => {
         try {
-            await joinSession(sessionId)
+            if (user?.uid === session.host_id) {
+                // Re-joining as host
+                router.push(`/${session.clock_id}?sessionId=${session.id}&isHost=true&duration=${session.duration}`)
+                return;
+            }
+
+            await joinSession(session.id)
             toast.success('Joined session!')
             fetchSessions()
-            // Navigation to the actual session view would define "connected"
-            // For now, we stay in lobby or go to a waiting room? 
-            // User said "blind interaction... chat lobby style connection".
-            // Maybe we just mark joined? 
+            // Redirect participant to session page
+            router.push(`/${session.clock_id}?sessionId=${session.id}&duration=${session.duration}`)
         } catch (error) {
             toast.error('Failed to join session (maybe full?)')
         }
@@ -119,7 +124,7 @@ export function SessionLobby() {
                                         <SelectValue placeholder="When?" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="now">Start Now</SelectItem>
+                                        <SelectItem value="now">Start Now (Waiting Room)</SelectItem>
                                         <SelectItem value="5m">In 5 mins</SelectItem>
                                         <SelectItem value="15m">In 15 mins</SelectItem>
                                     </SelectContent>
@@ -161,7 +166,7 @@ export function SessionLobby() {
                 </Dialog>
             </div>
 
-            <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+            <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                 {loading ? (
                     <p className="text-sm text-gray-500">Loading sessions...</p>
                 ) : sessions.length === 0 ? (
@@ -176,14 +181,20 @@ export function SessionLobby() {
                                 <div>
                                     <div className="flex items-center gap-2">
                                         <span className="text-sm font-medium dark:text-white">
-                                            Anonymous Session
+                                            {session.host_id === user?.uid ? 'My Session' : 'Anonymous Session'}
                                         </span>
-                                        <span className="px-1.5 py-0.5 rounded text-[10px] bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                                            Waiting
+                                        <span className={`px-1.5 py-0.5 rounded text-[10px] ${session.status === 'in_progress'
+                                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+                                                : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                                            }`}>
+                                            {session.status === 'in_progress' ? 'In Progress' : 'Waiting'}
                                         </span>
                                     </div>
                                     <p className="text-xs text-gray-500 mt-1">
-                                        Starting {session.scheduled_start_time ? formatDistanceToNow(new Date(session.scheduled_start_time), { addSuffix: true }) : 'soon'}
+                                        {session.status === 'waiting'
+                                            ? 'Waiting for participants...'
+                                            : `Started ${session.start_time ? formatDistanceToNow(session.start_time.toDate(), { addSuffix: true }) : ''}`
+                                        }
                                     </p>
                                 </div>
                                 <div className="text-right">
@@ -192,17 +203,25 @@ export function SessionLobby() {
                                         {session.current_participants || 1}/{session.max_participants || 5}
                                     </div>
                                     <p className="text-xs text-gray-500 mt-1">
-                                        {Math.round((session.duration || 0) / 60000)}m duration
+                                        {Math.round((session.duration || 0) / 60000)}m
                                     </p>
                                 </div>
                             </div>
                             <Button
                                 className="w-full mt-2 text-xs h-8"
-                                variant="secondary"
-                                onClick={() => handleJoin(session.id)}
-                                disabled={(session.current_participants || 0) >= (session.max_participants || 0)}
+                                variant={session.host_id === user?.uid ? "default" : "secondary"}
+                                onClick={() => handleJoin(session)}
+                                disabled={
+                                    session.host_id !== user?.uid && (
+                                        (session.current_participants || 0) >= (session.max_participants || 0) ||
+                                        session.status === 'in_progress'
+                                    )
+                                }
                             >
-                                Join Session
+                                {session.host_id === user?.uid
+                                    ? (session.status === 'waiting' ? 'Go to Waiting Room' : 'Rejoin Session')
+                                    : (session.status === 'waiting' ? 'Join Session' : 'Session In Progress')
+                                }
                             </Button>
                         </div>
                     ))
