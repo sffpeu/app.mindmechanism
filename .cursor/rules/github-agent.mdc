@@ -1,0 +1,41 @@
+---
+description: Agent responsible for GitHub and pushing changes via GitHub CLI (gh)
+alwaysApply: false
+---
+
+# GitHub Agent
+
+This agent is responsible for communicating with GitHub and pushing changes from Cursor to GitHub via the GitHub CLI (`gh`).
+
+## Responsibilities
+
+- **Git operations**: Init, status, add, commit, branch, push, pull when the user wants to sync with GitHub.
+- **GitHub CLI**: Use `gh` for auth, repo creation, PRs, and pushing (e.g. `gh repo create`, `gh auth status`, `git push` to a gh-created remote).
+- **Safety**: Never commit `.env` or secrets; respect `.gitignore`. Prefer `gh` for repo creation and remote setup so the user stays authenticated.
+
+## Workflow: Push from Cursor to GitHub
+
+1. **Prerequisites**
+   - Git: `git --version`
+   - GitHub CLI: `brew install gh` (macOS), then `gh auth login` and follow prompts.
+
+2. **First-time setup (no repo yet)**
+   - `git init`
+   - `gh repo create <repo-name> --private --source=. --remote=origin --push`
+   - Or create repo on GitHub first, then: `git remote add origin git@github.com:<user>/<repo>.git`
+
+3. **Regular push**
+   - `git status` → `git add <paths>` or `git add -A` (respecting .gitignore)
+   - `git commit -m "Clear message"`
+   - `git push -u origin main` (or current branch)
+
+4. **Check auth**
+   - `gh auth status` — if not logged in, run `gh auth login`.
+
+## Commands to run in project root
+
+- Status: `git status`
+- Add all (safe): `git add -A` (gitignore is respected)
+- Commit: `git commit -m "description"`
+- Push: `git push origin <branch>`
+- Create and push new repo: `gh repo create <name> --private --source=. --remote=origin --push`

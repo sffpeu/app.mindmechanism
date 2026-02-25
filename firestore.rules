@@ -1,0 +1,52 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isUserAuthenticated(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // User profiles
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isUserAuthenticated(userId);
+    }
+
+    // Glossary
+    match /glossary/{wordId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.source == 'user' && request.resource.data.user_id == request.auth.uid;
+      allow update, delete: if isAuthenticated() && (
+        resource.data.source == 'user' && 
+        resource.data.user_id == request.auth.uid
+      );
+    }
+
+    // Notes
+    match /users/{userId}/notes/{noteId} {
+      allow write: if isUserAuthenticated(userId);
+    }
+
+    // Time tracking
+    match /timeTracking/{entryId} {
+      allow write: if isAuthenticated();
+    }
+
+    // Sessions
+    match /sessions/{sessionId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && request.auth.uid == resource.data.user_id;
+    }
+
+    // Default rule - require authentication for all other reads
+    match /{document=**} {
+      allow read: if isAuthenticated();
+    }
+  }
+} 
