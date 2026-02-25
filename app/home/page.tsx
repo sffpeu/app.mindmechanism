@@ -11,6 +11,11 @@ import { useEffect, Suspense } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 
+function hasAuthCookie(): boolean {
+  if (typeof document === 'undefined') return false
+  return document.cookie.includes('__firebase_auth_token=')
+}
+
 function HomeLoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -27,7 +32,9 @@ function HomeLoginContent() {
       : rawCallback
 
   useEffect(() => {
-    if (user) {
+    // Only redirect if we have BOTH Firebase user AND the auth cookie.
+    // Otherwise middleware will redirect back to /home and we get ERR_TOO_MANY_REDIRECTS.
+    if (user && hasAuthCookie()) {
       router.replace(callbackUrl)
     }
   }, [user, router, callbackUrl])
