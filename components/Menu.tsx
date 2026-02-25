@@ -268,10 +268,10 @@ export function Menu({
                     </MenuItem>
                   ) : (
                     <MenuItem 
-                      href="/auth/signin" 
+                      href="/home" 
                       icon={LogOut} 
-                      isActive={isActive('/auth/signin')}
-                      onClick={() => handleNavigation('/auth/signin')}
+                      isActive={isActive('/home')}
+                      onClick={() => handleNavigation('/home')}
                     >
                       Sign In
                     </MenuItem>

@@ -13,7 +13,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/auth/signin');
+      router.push('/home');
     }
   }, [user, loading, router]);
 
@@ -31,7 +31,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
         <div className="text-center">
           <p className="text-gray-600 dark:text-gray-400 mb-4">Please sign in to continue</p>
           <button 
-            onClick={() => router.push('/auth/signin')}
+            onClick={() => router.push('/home')}
             className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-black/90 dark:hover:bg-white/90 transition-colors"
           >
             Sign In

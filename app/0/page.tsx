@@ -171,7 +171,7 @@ function NodesPageContent() {
   // Helper functions
   const handleSignOut = async () => {
     await signOut()
-    router.push('/auth/signin')
+    router.push('/home')
   }
 
   const handleLocationSave = () => {

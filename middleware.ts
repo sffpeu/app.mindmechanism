@@ -5,14 +5,14 @@ export function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
 
   // Define public paths that don't require authentication
-  const isPublicPath = path === '/' || path.startsWith('/auth/')
+  const isPublicPath = path === '/' || path === '/home' || path.startsWith('/auth/')
 
   // Get the Firebase auth token from the cookies
   const token = request.cookies.get('__firebase_auth_token')?.value
 
-  // If we're on a protected path and there's no token, redirect to sign in
+  // If we're on a protected path and there's no token, redirect to home (login screen)
   if (!isPublicPath && !token) {
-    const url = new URL('/auth/signin', request.url)
+    const url = new URL('/home', request.url)
     url.searchParams.set('callbackUrl', path)
     return NextResponse.redirect(url)
   }
@@ -22,8 +22,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  // If we're on auth pages and have a token, redirect to dashboard
-  if (path.startsWith('/auth/') && token) {
+  // If we're on home or auth pages and have a token, redirect to dashboard
+  if ((path === '/home' || path.startsWith('/auth/')) && token) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 

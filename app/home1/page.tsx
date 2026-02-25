@@ -172,7 +172,7 @@ export default function Home1Page() {
 
   const handleSignOut = async () => {
     await signOut()
-    router.push('/auth/signin')
+    router.push('/home')
   }
 
   // Initialize and update current time with optimized animation frame
