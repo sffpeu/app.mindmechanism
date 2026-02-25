@@ -15,7 +15,16 @@ function HomeLoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user } = useAuth()
-  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard'
+  const rawCallback = searchParams.get('callbackUrl') || '/dashboard'
+  // Avoid redirect loop: never send logged-in user back to /home or auth
+  const callbackUrl =
+    !rawCallback ||
+    rawCallback === '/' ||
+    rawCallback === '/home' ||
+    rawCallback === '/home/' ||
+    rawCallback.startsWith('/auth/')
+      ? '/dashboard'
+      : rawCallback
 
   useEffect(() => {
     if (user) {
