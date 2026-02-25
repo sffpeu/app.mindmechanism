@@ -34,13 +34,11 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
+     * Match all request paths except:
+     * - api, _next/static, _next/image, favicon.ico
+     * - public folder path
+     * - static assets (images, etc.) so they load without auth redirect
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|public).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|public|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp|mp3|wav|ogg|csv)$).*)',
   ],
 } 
