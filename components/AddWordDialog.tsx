@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { ThumbsUp, ThumbsDown, Minus, Wand2 } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Minus, Wand2, UserCircle2 } from 'lucide-react';
 import { addUserWord, updateUserWord } from '@/lib/glossary';
 import { useAuth } from '@/lib/FirebaseAuthContext';
 import { toast } from 'sonner';
@@ -27,6 +27,7 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord }: Add
   const [rating, setRating] = useState<'+' | '-' | '~'>('~');
   const [grade, setGrade] = useState<number>(3);
   const [isLoading, setIsLoading] = useState(false);
+  const [showOverwriteChoice, setShowOverwriteChoice] = useState(false);
   const isEditMode = Boolean(editWord?.id);
 
   useEffect(() => {
@@ -51,58 +52,80 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord }: Add
       toast.error('You must be logged in to add or edit words');
       return;
     }
+    if (isEditMode && editWord?.id) {
+      setShowOverwriteChoice(true);
+      return;
+    }
+    await doAddWord();
+  };
 
+  const doOverwrite = async () => {
+    if (!editWord?.id || !user?.uid) return;
     setIsLoading(true);
+    setShowOverwriteChoice(false);
     try {
-      if (isEditMode && editWord?.id) {
-        const result = await updateUserWord(editWord.id, {
-          word: word.trim(),
-          definition: definition.trim(),
-          phonetic_spelling: phoneticSpelling.trim(),
-          rating,
-          grade,
-          source: 'user',
-          version: 'User',
-          user_id: user.uid
-        });
-        if (result) {
-          playSuccess();
-          toast.success('Word updated successfully');
-          onWordAdded();
-          onOpenChange(false);
-          resetForm();
-        } else {
-          toast.error('Failed to update word');
-        }
+      const result = await updateUserWord(editWord.id, {
+        word: word.trim(),
+        definition: definition.trim(),
+        phonetic_spelling: phoneticSpelling.trim(),
+        rating,
+        grade,
+        source: 'system',
+        version: 'Default'
+      });
+      if (result) {
+        playSuccess();
+        toast.success('Word updated successfully');
+        onWordAdded();
+        onOpenChange(false);
+        resetForm();
       } else {
-        const newWord = {
-          word: word.trim(),
-          definition: definition.trim(),
-          phonetic_spelling: phoneticSpelling.trim(),
-          rating,
-          grade,
-          source: 'user' as const,
-          version: 'User' as const,
-          user_id: user.uid
-        };
-
-        const result = await addUserWord(newWord);
-        if (result) {
-          playSuccess();
-          toast.success('Word added successfully');
-          onWordAdded();
-          onOpenChange(false);
-          resetForm();
-        } else {
-          toast.error('Failed to add word');
-        }
+        toast.error('Failed to update word');
       }
     } catch (error) {
-      console.error('Error saving word:', error);
-      toast.error(isEditMode ? 'Failed to update word' : 'Failed to add word');
+      console.error('Error updating word:', error);
+      toast.error('Failed to update word');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const doAddWord = async () => {
+    if (!user?.uid) return;
+    setIsLoading(true);
+    if (showOverwriteChoice) setShowOverwriteChoice(false);
+    try {
+      const newWord = {
+        word: word.trim(),
+        definition: definition.trim(),
+        phonetic_spelling: phoneticSpelling.trim(),
+        rating,
+        grade,
+        source: 'user' as const,
+        version: 'User' as const,
+        user_id: user.uid
+      };
+      const result = await addUserWord(newWord);
+      if (result) {
+        playSuccess();
+        toast.success('Word added successfully');
+        onWordAdded();
+        onOpenChange(false);
+        resetForm();
+      } else {
+        toast.error('Failed to add word');
+      }
+    } catch (error) {
+      console.error('Error adding word:', error);
+      toast.error('Failed to add word');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddAsNew = async () => {
+    if (!user?.uid) return;
+    await doAddWord();
   };
 
   const resetForm = () => {
@@ -123,7 +146,8 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord }: Add
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+    <Dialog open={open} onOpenChange={(open) => { if (!open) setShowOverwriteChoice(false); onOpenChange(open); }}>
       <DialogContent className="sm:max-w-[600px] bg-white dark:bg-black border border-gray-200 dark:border-white/10">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -277,5 +301,50 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord }: Add
         </form>
       </DialogContent>
     </Dialog>
+
+    <Dialog open={showOverwriteChoice} onOpenChange={setShowOverwriteChoice}>
+      <DialogContent className="sm:max-w-[400px] bg-white dark:bg-black border border-gray-200 dark:border-white/10">
+        <DialogHeader>
+          <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+            Save changes
+          </DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-gray-600 dark:text-gray-400 py-2">
+          Overwrite the existing word or add as a new word?
+        </p>
+        <div className="flex flex-col gap-2 pt-2">
+          <Button
+            type="button"
+            onClick={doOverwrite}
+            disabled={isLoading}
+            variant="outline"
+            className="w-full justify-start gap-3 h-11"
+          >
+            <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 shrink-0">
+              D
+            </span>
+            Overwrite existing word
+          </Button>
+          <Button
+            type="button"
+            onClick={handleAddAsNew}
+            disabled={isLoading}
+            className="w-full justify-start gap-3 h-11 bg-purple-600 hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-700 text-white"
+          >
+            <UserCircle2 className="w-5 h-5 text-white shrink-0" />
+            Add as new word
+          </Button>
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => setShowOverwriteChoice(false)}
+          className="w-full mt-2"
+        >
+          Cancel
+        </Button>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 } 

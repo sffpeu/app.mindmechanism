@@ -933,7 +933,7 @@ function NodesPageContent() {
 
         <div className="flex-grow flex items-center justify-center min-h-screen">
           <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px]">
-            {/* Red glow effect */}
+            {/* Pulsing glow (color-matched to dot menu) */}
             {clockColor && (
               <motion.div
                 className="absolute inset-0 rounded-full"

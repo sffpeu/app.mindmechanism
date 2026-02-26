@@ -363,7 +363,7 @@ function NodesPageContent() {
   }
 
   const getFocusNodeStyle = (index: number, isSelected: boolean) => {
-    const color = '#fba63b' // Color for clock 1 (orange)
+    const color = '#6dc037' // Dot menu hover color for clock 3 (green)
     return {
       backgroundColor: isSelected ? color : 'transparent',
       border: `2px solid ${color}`,
@@ -439,7 +439,7 @@ function NodesPageContent() {
   }
 
   // Get the RGB values for the glow effect
-  const clockColor = hexToRgb('#fba63b') // Orange color for clock 1
+  const clockColor = hexToRgb('#6dc037') // Dot menu color for clock 3 (green)
 
   // Add getElapsedTime helper function
   const getElapsedTime = (startDateTime: Date): string => {
@@ -894,7 +894,7 @@ function NodesPageContent() {
 
         <div className="flex-grow flex items-center justify-center min-h-screen">
           <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px]">
-            {/* Red glow effect */}
+            {/* Pulsing glow (color-matched to dot menu) */}
             {clockColor && (
               <motion.div
                 className="absolute inset-0 rounded-full"

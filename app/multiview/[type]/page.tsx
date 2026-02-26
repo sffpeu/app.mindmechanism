@@ -384,7 +384,9 @@ export default function MultiViewPage() {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
             >
-              {clockSettings.slice(0, 9).map((clock, index) => (
+              {clockSettings.slice(0, 9).map((clock, index) => {
+                const clockRotation = getClockRotation(clock)
+                return (
                 <div
                   key={index}
                   className="absolute inset-0 flex items-center justify-center"
@@ -394,13 +396,11 @@ export default function MultiViewPage() {
                 >
                   <div className="w-full h-full relative">
                     <div className="absolute inset-0">
-                      <div
+                      <motion.div
                         className="absolute inset-0"
-                        style={{ 
-                          transform: `rotate(${rotationValues[index] || 0}deg)`,
-                          transformOrigin: 'center',
-                          willChange: 'transform'
-                        }}
+                        style={{ transformOrigin: 'center', willChange: 'transform' }}
+                        animate={{ rotate: clockRotation }}
+                        transition={{ type: 'tween', duration: 0.016, ease: 'linear' }}
                       >
                         <div
                           className="absolute inset-0"
@@ -418,11 +418,11 @@ export default function MultiViewPage() {
                             loading="eager"
                           />
                         </div>
-                      </div>
+                      </motion.div>
                     </div>
                   </div>
                 </div>
-              ))}
+              )})}
             </motion.div>
 
             {/* Outer ring clocks */}
@@ -433,7 +433,7 @@ export default function MultiViewPage() {
               transition={{ duration: 0.3, delay: 0.5 }}
             >
               {clockSettings.slice(0, 9).map((clock, index) => {
-                const rotation = rotationValues[index] || 0;
+                const clockRotation = getClockRotation(clock);
                 
                 // Map indices to arrange clocks in specific order
                 const positionIndex = index === 5 ? 0 : // Clock 6 to position 1
@@ -467,11 +467,11 @@ export default function MultiViewPage() {
                     }}
                   >
                     <div className="relative w-full h-full">
-                      <div
+                      <motion.div
                         className="absolute inset-0 rounded-full overflow-hidden"
-                        style={{
-                          transform: `rotate(${rotation}deg)`,
-                        }}
+                        style={{ transformOrigin: 'center', willChange: 'transform' }}
+                        animate={{ rotate: clockRotation }}
+                        transition={{ type: 'tween', duration: 0.016, ease: 'linear' }}
                       >
                         <div
                           className="absolute inset-0"
@@ -490,7 +490,7 @@ export default function MultiViewPage() {
                             loading="eager"
                           />
                         </div>
-                      </div>
+                      </motion.div>
                     </div>
                   </div>
                 );

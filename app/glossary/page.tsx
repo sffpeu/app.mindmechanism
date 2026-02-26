@@ -148,7 +148,7 @@ export default function GlossaryPage() {
               {['Default', 'Positive', 'Neutral', 'Negative'].map(filter => (
                 <button
                   key={filter}
-                  onClick={() => setSelectedFilter(selectedFilter === filter ? 'Default' : filter)}
+                  onClick={() => setSelectedFilter(filter)}
                   className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${
                     selectedFilter === filter
                       ? filter === 'Default'
@@ -276,19 +276,13 @@ export default function GlossaryPage() {
                           {word.rating}
                         </div>
                       </div>
-                      <div className="flex items-center justify-center w-full gap-1.5">
+                      <div className="flex items-center justify-center w-full">
                         {word.source === 'user' ? (
-                          <>
-                            <UserCircle2 className="w-5 h-5 text-purple-600 dark:text-purple-400 shrink-0" />
-                            <span className="text-xs text-gray-600 dark:text-gray-400">My Words</span>
-                          </>
+                          <UserCircle2 className="w-5 h-5 text-purple-600 dark:text-purple-400 shrink-0" />
                         ) : (
-                          <>
-                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300 shrink-0">
-                              D
-                            </div>
-                            <span className="text-xs text-gray-600 dark:text-gray-400">Default</span>
-                          </>
+                          <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300 shrink-0">
+                            D
+                          </div>
                         )}
                       </div>
                     </>
@@ -314,19 +308,13 @@ export default function GlossaryPage() {
                           >
                             {word.rating}
                           </div>
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center">
                             {word.source === 'user' ? (
-                              <>
-                                <UserCircle2 className="w-5 h-5 text-purple-600 dark:text-purple-400 shrink-0" />
-                                <span className="text-xs text-gray-600 dark:text-gray-400">My Words</span>
-                              </>
+                              <UserCircle2 className="w-5 h-5 text-purple-600 dark:text-purple-400 shrink-0" />
                             ) : (
-                              <>
-                                <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300 shrink-0">
-                                  D
-                                </div>
-                                <span className="text-xs text-gray-600 dark:text-gray-400">Default</span>
-                              </>
+                              <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300 shrink-0">
+                                D
+                              </div>
                             )}
                           </div>
                         </div>
