@@ -786,7 +786,6 @@ export default function Clock({
         case 2: return clockStartingDegree + 9;  // Clock 3 (/2)
         case 3: return clockStartingDegree + 180; // Clock 4
         case 4: return clockStartingDegree + 11; // Clock 5 (/4)
-        case 7: return clockStartingDegree - 15; // Clock 8 (/8)
         default: return clockStartingDegree;
       }
     })();
