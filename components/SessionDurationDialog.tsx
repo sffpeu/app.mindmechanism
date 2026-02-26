@@ -547,9 +547,12 @@ export function SessionDurationDialog({
                     aria-label={`Filter by ${filter} words`}
                   >
                     {filter === 'Default' ? (
-                      <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-medium bg-white/20 dark:bg-white/20">
-                        D
-                      </span>
+                      <>
+                        <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-medium bg-white/20 dark:bg-white/20 shrink-0">
+                          D
+                        </span>
+                        Default
+                      </>
                     ) : (
                       filter
                     )}

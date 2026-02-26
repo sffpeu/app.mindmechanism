@@ -170,9 +170,12 @@ export default function GlossaryPage() {
                   }`}
                 >
                   {filter === 'Default' ? (
-                    <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
-                      D
-                    </span>
+                    <>
+                      <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300 shrink-0">
+                        D
+                      </span>
+                      Default
+                    </>
                   ) : (
                     filter
                   )}
@@ -276,9 +279,7 @@ export default function GlossaryPage() {
                       <div className="flex items-center justify-center w-full gap-1.5">
                         {word.source === 'user' ? (
                           <>
-                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 shrink-0">
-                              U
-                            </div>
+                            <UserCircle2 className="w-5 h-5 text-purple-600 dark:text-purple-400 shrink-0" />
                             <span className="text-xs text-gray-600 dark:text-gray-400">My Words</span>
                           </>
                         ) : (
@@ -316,9 +317,7 @@ export default function GlossaryPage() {
                           <div className="flex items-center gap-1.5">
                             {word.source === 'user' ? (
                               <>
-                                <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 shrink-0">
-                                  U
-                                </div>
+                                <UserCircle2 className="w-5 h-5 text-purple-600 dark:text-purple-400 shrink-0" />
                                 <span className="text-xs text-gray-600 dark:text-gray-400">My Words</span>
                               </>
                             ) : (
