@@ -781,10 +781,12 @@ export default function Clock({
     // Adjust starting degree for specific clocks to align with their SVGs
     const adjustedStartingDegree = (() => {
       switch (clockId) {
-        case 0: return clockStartingDegree + 45; // Clock 1
-        case 1: return clockStartingDegree + 90; // Clock 2
+        case 0: return clockStartingDegree + 45; // Clock 1 (/0)
+        case 1: return clockStartingDegree + 45; // Clock 2 (/1)
+        case 2: return clockStartingDegree + 9;  // Clock 3 (/2)
         case 3: return clockStartingDegree + 180; // Clock 4
-        case 7: return clockStartingDegree + 270; // Clock 8
+        case 4: return clockStartingDegree + 11; // Clock 5 (/4)
+        case 7: return clockStartingDegree - 15; // Clock 8 (/8)
         default: return clockStartingDegree;
       }
     })();

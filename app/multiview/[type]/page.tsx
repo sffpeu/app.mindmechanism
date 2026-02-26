@@ -84,8 +84,7 @@ export default function MultiViewPage() {
   const isMultiView2 = type === 2
   const [rotationValues, setRotationValues] = useState<Record<number, number[]>>({})
   const animationRef = useRef<number>()
-  const [cursorRotationTooltip, setCursorRotationTooltip] = useState<{ x: number; y: number } | null>(null)
-  const multiview2ContainerRef = useRef<HTMLDivElement>(null)
+  const [hoveredOuterClockIndex, setHoveredOuterClockIndex] = useState<number | null>(null)
 
   // Initialize and update current time with optimized animation frame
   useEffect(() => {
@@ -191,45 +190,6 @@ export default function MultiViewPage() {
       ? (clock.startingDegree + calculatedRotation) % 360
       : (clock.startingDegree - calculatedRotation + 360) % 360
   }
-
-  // Check if a point (in container-local 0..450 coords) is inside any clock in multiview2
-  const isPointInsideAnyClock = useCallback((localX: number, localY: number) => {
-    const pctX = (localX / 450) * 100
-    const pctY = (localY / 450) * 100
-    const centerRadiusPct = 47.5
-    if (Math.hypot(pctX - 50, pctY - 50) < centerRadiusPct) return true
-    const outerRadiusPct = 72
-    const outerClockRadiusPct = 14
-    for (let positionIndex = 0; positionIndex < 9; positionIndex++) {
-      const angle = 270 + 20 + (360 / 9) * positionIndex
-      const radians = angle * (Math.PI / 180)
-      const cx = 50 + outerRadiusPct * Math.cos(radians)
-      const cy = 50 + outerRadiusPct * Math.sin(radians)
-      if (Math.hypot(pctX - cx, pctY - cy) < outerClockRadiusPct) return true
-    }
-    return false
-  }, [])
-
-  const handleMultiview2MouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const el = multiview2ContainerRef.current
-    if (!el) return
-    const rect = el.getBoundingClientRect()
-    const localX = e.clientX - rect.left
-    const localY = e.clientY - rect.top
-    if (localX < 0 || localY < 0 || localX > rect.width || localY > rect.height) {
-      setCursorRotationTooltip(null)
-      return
-    }
-    if (isPointInsideAnyClock(localX, localY)) {
-      setCursorRotationTooltip(null)
-      return
-    }
-    setCursorRotationTooltip({ x: e.clientX, y: e.clientY })
-  }, [isPointInsideAnyClock])
-
-  const handleMultiview2MouseLeave = useCallback(() => {
-    setCursorRotationTooltip(null)
-  }, [])
 
   // Focus node colors from individual clocks
   const focusNodeColors = [
@@ -396,34 +356,13 @@ export default function MultiViewPage() {
           </div>
         )}
         {type === 2 && (
-          <div
-            ref={multiview2ContainerRef}
-            className="relative w-[450px] h-[450px]"
-            onMouseMove={handleMultiview2MouseMove}
-            onMouseLeave={handleMultiview2MouseLeave}
-          >
-            {/* Rotation counter next to cursor when hovering outside clocks */}
-            {cursorRotationTooltip != null && currentTime != null && (
-              <div
-                className="fixed pointer-events-none z-[1000] text-sm font-mono tabular-nums text-gray-800 dark:text-gray-200 bg-white/90 dark:bg-black/90 px-2 py-1 rounded shadow-lg border border-gray-200 dark:border-gray-700 whitespace-nowrap"
-                style={{
-                  left: cursorRotationTooltip.x + 14,
-                  top: cursorRotationTooltip.y + 14,
-                }}
-              >
-                {(() => {
-                  const r = getClockRotation(clockSettings[0])
-                  const signed = r > 180 ? r - 360 : r
-                  return `${signed.toFixed(3)}°`
-                })()}
-              </div>
-            )}
-            {/* Satellite grid pattern */}
+          <div className="relative w-[450px] h-[450px]">
+            {/* Satellite grid pattern - 100% visible */}
             <motion.div 
-              className="absolute inset-[-25%] rounded-full overflow-hidden opacity-40"
+              className="absolute inset-[-25%] rounded-full overflow-hidden"
               style={{ zIndex: 20 }}
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.4 }}
+              animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
             >
               <div className="absolute inset-0 flex items-center justify-center">
@@ -432,7 +371,7 @@ export default function MultiViewPage() {
                   alt="Satellite Grid Pattern"
                   layout="fill"
                   objectFit="cover"
-                  className="opacity-40 dark:invert"
+                  className="dark:invert opacity-100"
                   priority
                 />
               </div>
@@ -487,9 +426,10 @@ export default function MultiViewPage() {
               )})}
             </motion.div>
 
-            {/* Outer ring clocks */}
+            {/* Outer ring clocks - z-50 above center; pointer-events-none on container so only clock divs receive hover */}
             <motion.div 
-              className="absolute inset-0"
+              className="absolute inset-0 pointer-events-none"
+              style={{ zIndex: 50 }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3, delay: 0.5 }}
@@ -519,7 +459,7 @@ export default function MultiViewPage() {
                 return (
                   <div
                     key={index}
-                    className="absolute aspect-square transition-transform duration-200"
+                    className="absolute aspect-square transition-transform duration-200 pointer-events-auto"
                     style={{
                       width: '28%',
                       left: `${x}%`,
@@ -527,6 +467,8 @@ export default function MultiViewPage() {
                       transform: 'translate(-50%, -50%)',
                       zIndex: 30,
                     }}
+                    onMouseEnter={() => setHoveredOuterClockIndex(index)}
+                    onMouseLeave={() => setHoveredOuterClockIndex(null)}
                   >
                     <div className="relative w-full h-full">
                       <motion.div
@@ -553,6 +495,54 @@ export default function MultiViewPage() {
                           />
                         </div>
                       </motion.div>
+                      {/* Focus nodes visible on hover */}
+                      <motion.div
+                        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                        style={{ transformOrigin: 'center', willChange: 'transform' }}
+                        animate={{ rotate: clockRotation }}
+                        transition={{ type: 'tween', duration: 0.016, ease: 'linear' }}
+                      >
+                        <div className="absolute inset-0">
+                          <div className="w-full h-full rounded-full relative">
+                            {Array.from({ length: clock.focusNodes }).map((_, nodeIndex) => {
+                              const nodeAngle = (nodeIndex * 360) / clock.focusNodes
+                              const radius = 53
+                              const nodeX = 50 + radius * Math.cos((nodeAngle - 90) * (Math.PI / 180))
+                              const nodeY = 50 + radius * Math.sin((nodeAngle - 90) * (Math.PI / 180))
+                              return (
+                                <motion.div
+                                  key={nodeIndex}
+                                  className={`absolute w-2 h-2 rounded-full ${focusNodeColors[index]} dark:brightness-150`}
+                                  style={{
+                                    left: `${nodeX}%`,
+                                    top: `${nodeY}%`,
+                                    transform: 'translate(-50%, -50%)',
+                                    mixBlendMode: isDarkMode ? 'screen' : 'multiply',
+                                    boxShadow: isDarkMode
+                                      ? '0 0 4px rgba(255, 255, 255, 0.3)'
+                                      : '0 0 4px rgba(0, 0, 0, 0.2)',
+                                  }}
+                                  initial={false}
+                                  animate={{
+                                    opacity: hoveredOuterClockIndex === index ? 1 : 0,
+                                    scale: hoveredOuterClockIndex === index ? 1 : 0.5,
+                                  }}
+                                  transition={{ duration: 0.15, ease: 'easeOut' }}
+                                />
+                              )
+                            })}
+                          </div>
+                        </div>
+                      </motion.div>
+                      {hoveredOuterClockIndex === index && currentTime != null && (
+                        <div className="absolute left-1/2 top-full -translate-x-1/2 mt-1 text-center text-xs font-mono tabular-nums text-gray-700 dark:text-gray-300 whitespace-nowrap z-50">
+                          {(() => {
+                            const r = clockRotation
+                            const signed = r > 180 ? r - 360 : r
+                            return `${signed.toFixed(3)}°`
+                          })()}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
