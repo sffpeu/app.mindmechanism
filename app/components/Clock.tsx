@@ -17,11 +17,11 @@ const Clock: React.FC = () => {
           ease: [0.4, 0, 0.2, 1]
         }}
       >
-        {/* Satellite grid pattern - only shown in multiview2 */}
+        {/* Satellite grid pattern - only shown in multiview2 (30% less visible) */}
         {isMultiView2 && (
           <motion.div 
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.2 }}
+            animate={{ opacity: 0.14 }}
             transition={{ duration: 1 }}
             className="absolute inset-[-12%] rounded-full overflow-hidden"
           >
@@ -31,7 +31,7 @@ const Clock: React.FC = () => {
                 alt="Satellite Grid Pattern"
                 layout="fill"
                 objectFit="cover"
-                className="opacity-20 dark:invert"
+                className="opacity-[0.14] dark:invert"
                 priority
               />
             </div>

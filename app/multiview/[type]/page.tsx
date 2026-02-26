@@ -357,12 +357,12 @@ export default function MultiViewPage() {
         )}
         {type === 2 && (
           <div className="relative w-[450px] h-[450px]">
-            {/* Satellite grid pattern - 100% visible */}
+            {/* Satellite grid pattern - 30% less visible */}
             <motion.div 
               className="absolute inset-[-25%] rounded-full overflow-hidden"
               style={{ zIndex: 20 }}
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              animate={{ opacity: 0.7 }}
               transition={{ duration: 0.5 }}
             >
               <div className="absolute inset-0 flex items-center justify-center">
@@ -371,7 +371,7 @@ export default function MultiViewPage() {
                   alt="Satellite Grid Pattern"
                   layout="fill"
                   objectFit="cover"
-                  className="dark:invert opacity-100"
+                  className="dark:invert opacity-70"
                   priority
                 />
               </div>
@@ -495,32 +495,32 @@ export default function MultiViewPage() {
                           />
                         </div>
                       </motion.div>
-                      {/* Focus nodes visible on hover */}
+                      {/* Focus nodes visible on hover - smaller and aligned for outer clocks */}
                       <motion.div
                         className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                        style={{ transformOrigin: 'center', willChange: 'transform' }}
+                        style={{ transformOrigin: 'center center', willChange: 'transform' }}
                         animate={{ rotate: clockRotation }}
                         transition={{ type: 'tween', duration: 0.016, ease: 'linear' }}
                       >
-                        <div className="absolute inset-0">
-                          <div className="w-full h-full rounded-full relative">
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-full h-full rounded-full relative" style={{ aspectRatio: '1' }}>
                             {Array.from({ length: clock.focusNodes }).map((_, nodeIndex) => {
                               const nodeAngle = (nodeIndex * 360) / clock.focusNodes
-                              const radius = 53
+                              const radius = 48
                               const nodeX = 50 + radius * Math.cos((nodeAngle - 90) * (Math.PI / 180))
                               const nodeY = 50 + radius * Math.sin((nodeAngle - 90) * (Math.PI / 180))
                               return (
                                 <motion.div
                                   key={nodeIndex}
-                                  className={`absolute w-2 h-2 rounded-full ${focusNodeColors[index]} dark:brightness-150`}
+                                  className={`absolute w-1.5 h-1.5 rounded-full ${focusNodeColors[index]} dark:brightness-150`}
                                   style={{
                                     left: `${nodeX}%`,
                                     top: `${nodeY}%`,
                                     transform: 'translate(-50%, -50%)',
                                     mixBlendMode: isDarkMode ? 'screen' : 'multiply',
                                     boxShadow: isDarkMode
-                                      ? '0 0 4px rgba(255, 255, 255, 0.3)'
-                                      : '0 0 4px rgba(0, 0, 0, 0.2)',
+                                      ? '0 0 3px rgba(255, 255, 255, 0.3)'
+                                      : '0 0 3px rgba(0, 0, 0, 0.2)',
                                   }}
                                   initial={false}
                                   animate={{
