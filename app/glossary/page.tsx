@@ -16,12 +16,12 @@ export default function GlossaryPage() {
   const [showSatellites, setShowSatellites] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedFilter, setSelectedFilter] = useState('Default')
+  const [scopeFilter, setScopeFilter] = useState<'All' | 'My Words'>('All')
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
   const [words, setWords] = useState<GlossaryWord[]>([])
   const [loading, setLoading] = useState(true)
   const [isListView, setIsListView] = useState(false)
   const [isAddWordOpen, setIsAddWordOpen] = useState(false)
-  const [showOnlyMyWords, setShowOnlyMyWords] = useState(false)
   const [selectedCard, setSelectedCard] = useState<GlossaryWord | null>(null)
   const [editWord, setEditWord] = useState<GlossaryWord | null>(null)
 
@@ -70,8 +70,8 @@ export default function GlossaryPage() {
   }
 
   const filteredWords = words.filter(word => {
-    // First filter by My Words if selected
-    if (showOnlyMyWords && (word.source !== 'user' || word.user_id !== user?.uid)) {
+    // Scope: All vs My Words
+    if (scopeFilter === 'My Words' && (word.source !== 'user' || word.user_id !== user?.uid)) {
       return false
     }
     // Then apply rating filters
@@ -124,30 +124,27 @@ export default function GlossaryPage() {
           </div>
 
           <div className="flex flex-col space-y-2">
-            <div className="flex space-x-2">
-              <div className="bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 rounded-lg p-0.5 flex">
+            <div className="flex flex-wrap items-center gap-2">
+              {(['All', 'My Words'] as const).map(scope => (
                 <button
-                  onClick={() => setShowOnlyMyWords(false)}
-                  className={`px-4 py-2 rounded-md transition-all ${
-                    !showOnlyMyWords
-                      ? 'bg-black/5 dark:bg-white/10 text-black dark:text-white font-medium'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5'
+                  key={scope}
+                  onClick={() => setScopeFilter(scope)}
+                  className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${
+                    scopeFilter === scope
+                      ? scope === 'All'
+                        ? 'bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 font-medium border border-gray-200 dark:border-white/20'
+                        : 'bg-purple-100/50 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 font-medium border border-purple-200 dark:border-purple-500/30'
+                      : `bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 ${
+                          scope === 'All'
+                            ? 'hover:bg-gray-50 dark:hover:bg-black/60 hover:border-gray-200 dark:hover:border-white/20 text-gray-900 dark:text-white'
+                            : 'hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-200 dark:hover:border-purple-500/30 text-gray-900 dark:text-white'
+                        }`
                   }`}
                 >
-                  All
+                  {scope === 'My Words' && <UserCircle2 className="w-4 h-4" />}
+                  {scope}
                 </button>
-                <button
-                  onClick={() => setShowOnlyMyWords(true)}
-                  className={`px-4 py-2 rounded-md transition-all flex items-center gap-2 ${
-                    showOnlyMyWords
-                      ? 'bg-purple-100/50 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 font-medium'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20'
-                  }`}
-                >
-                  <UserCircle2 className="w-4 h-4" />
-                  My Words
-                </button>
-              </div>
+              ))}
               {['Default', 'Positive', 'Neutral', 'Negative'].map(filter => (
                 <button
                   key={filter}
@@ -190,33 +187,49 @@ export default function GlossaryPage() {
             </div>
           </div>
 
-          {/* Alphabet Filter */}
-          <div className="flex flex-wrap gap-1">
-            {alphabet.map(letter => (
+          {/* Alphabet Filter + Edit (when card selected) */}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap gap-1">
+              {alphabet.map(letter => (
+                <button
+                  key={letter}
+                  onClick={() => setSelectedLetter(selectedLetter === letter ? null : letter)}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                    selectedLetter === letter
+                      ? 'bg-black text-white dark:bg-white dark:text-black'
+                      : 'bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 text-gray-900 dark:text-white'
+                  }`}
+                >
+                  {letter}
+                </button>
+              ))}
+            </div>
+            {selectedCard && (
               <button
-                key={letter}
-                onClick={() => setSelectedLetter(selectedLetter === letter ? null : letter)}
-                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                  selectedLetter === letter
-                    ? 'bg-black text-white dark:bg-white dark:text-black'
-                    : 'bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 text-gray-900 dark:text-white'
-                }`}
+                type="button"
+                onClick={() => {
+                  setEditWord(selectedCard)
+                  setIsAddWordOpen(true)
+                }}
+                className="p-2 rounded-lg bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all text-gray-900 dark:text-white flex items-center gap-2"
+                aria-label="Edit word"
               >
-                {letter}
+                <Pencil className="h-5 w-5" />
+                Edit
               </button>
-            ))}
+            )}
           </div>
         </div>
 
         {/* Word Grid/List */}
         <div>
           {isListView && (
-            <div className="mb-2 px-4 text-sm font-medium text-gray-500 dark:text-gray-400 grid grid-cols-[2fr,3fr,4rem,4rem,4rem] gap-4 items-center">
+            <div className="mb-2 px-4 text-sm font-medium text-gray-500 dark:text-gray-400 grid grid-cols-[2fr,3fr,4rem,4rem,6rem] gap-4 items-center">
               <div>Word</div>
               <div>Definition</div>
               <div className="text-center">Grade</div>
               <div className="text-center">Rating</div>
-              <div className="text-center">Type</div>
+              <div className="text-center">Icon</div>
             </div>
           )}
           <div className={`${isListView ? 'space-y-1' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'}`}>
@@ -233,22 +246,8 @@ export default function GlossaryPage() {
                     selectedCard?.id === word.id
                       ? 'border-black/20 dark:border-white/30 ring-2 ring-black/10 dark:ring-white/20'
                       : 'border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20'
-                  } ${isListView ? 'grid grid-cols-[2fr,3fr,4rem,4rem,4rem] gap-4 items-center' : ''}`}
+                  } ${isListView ? 'grid grid-cols-[2fr,3fr,4rem,4rem,6rem] gap-4 items-center' : ''}`}
                 >
-                  {selectedCard?.id === word.id && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setEditWord(word)
-                        setIsAddWordOpen(true)
-                      }}
-                      className="absolute top-2 right-2 p-1.5 rounded-lg bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-600 dark:text-gray-300 transition-colors"
-                      aria-label="Edit word"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </button>
-                  )}
                   {isListView ? (
                     <>
                       <div className="min-w-0">
@@ -274,25 +273,21 @@ export default function GlossaryPage() {
                           {word.rating}
                         </div>
                       </div>
-                      <div className="flex items-center justify-center w-full">
+                      <div className="flex items-center justify-center w-full gap-1.5">
                         {word.source === 'user' ? (
-                          <div className="group relative">
-                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400">
+                          <>
+                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 shrink-0">
                               U
                             </div>
-                            <span className="absolute -bottom-8 right-0 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                              User Word
-                            </span>
-                          </div>
-                        ) : word.version === 'Default' && (
-                          <div className="group relative">
-                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
+                            <span className="text-xs text-gray-600 dark:text-gray-400">My Words</span>
+                          </>
+                        ) : (
+                          <>
+                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300 shrink-0">
                               D
                             </div>
-                            <span className="absolute -bottom-8 right-0 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                              Default Word
-                            </span>
-                          </div>
+                            <span className="text-xs text-gray-600 dark:text-gray-400">Default</span>
+                          </>
                         )}
                       </div>
                     </>
@@ -318,25 +313,23 @@ export default function GlossaryPage() {
                           >
                             {word.rating}
                           </div>
-                          {word.source === 'user' ? (
-                            <div className="group relative">
-                              <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400">
-                                U
-                              </div>
-                              <span className="absolute -bottom-8 right-0 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                                User Word
-                              </span>
-                            </div>
-                          ) : word.version === 'Default' && (
-                            <div className="group relative">
-                              <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
-                                D
-                              </div>
-                              <span className="absolute -bottom-8 right-0 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                                Default Word
-                              </span>
-                            </div>
-                          )}
+                          <div className="flex items-center gap-1.5">
+                            {word.source === 'user' ? (
+                              <>
+                                <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 shrink-0">
+                                  U
+                                </div>
+                                <span className="text-xs text-gray-600 dark:text-gray-400">My Words</span>
+                              </>
+                            ) : (
+                              <>
+                                <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300 shrink-0">
+                                  D
+                                </div>
+                                <span className="text-xs text-gray-600 dark:text-gray-400">Default</span>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
                       <p className="text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-2">{word.definition}</p>
