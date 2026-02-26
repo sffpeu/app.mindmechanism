@@ -33,6 +33,7 @@ import { SessionTimer } from '@/components/SessionTimer'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useLocation } from '@/lib/hooks/useLocation'
 import DotNavigation from '@/components/DotNavigation'
+import { FocusNodesDevTool } from '@/components/FocusNodesDevTool'
 
 // Test words for each node
 const testWords = [
@@ -127,7 +128,6 @@ function NodesPageContent() {
     }
     return true
   })
-  const [showInfoCards, setShowInfoCards] = useState(true)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const { isDarkMode, setIsDarkMode } = useTheme()
   const [remainingTime, setRemainingTime] = useState<number | null>(null)
@@ -536,16 +536,6 @@ function NodesPageContent() {
                   onCheckedChange={handleWordsChange}
                 />
               </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
-                <div className="flex items-center gap-2">
-                  <Info className="h-4 w-4" />
-                  <span>Info Cards</span>
-                </div>
-                <Switch
-                  checked={showInfoCards}
-                  onCheckedChange={setShowInfoCards}
-                />
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -951,6 +941,12 @@ function NodesPageContent() {
             onSessionComplete={handleSessionComplete}
           />
         </div>
+
+        {/* Dev tool: focus nodes position (bottom right) */}
+        <FocusNodesDevTool
+          value={focusNodesOffset}
+          onChange={setFocusNodesOffset}
+        />
       </div>
     </ProtectedRoute>
   )
