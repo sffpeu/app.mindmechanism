@@ -15,7 +15,7 @@ export default function GlossaryPage() {
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedFilter, setSelectedFilter] = useState('All')
+  const [selectedFilter, setSelectedFilter] = useState('Default')
   const [scopeFilter, setScopeFilter] = useState<'All' | 'My Words'>('All')
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
   const [words, setWords] = useState<GlossaryWord[]>([])
@@ -75,7 +75,6 @@ export default function GlossaryPage() {
       return false
     }
     // Then apply rating filters
-    if (selectedFilter === 'All') return true
     if (selectedFilter === 'Default') return true
     if (selectedFilter === 'Positive') return word.rating === '+'
     if (selectedFilter === 'Neutral') return word.rating === '~'
@@ -146,13 +145,13 @@ export default function GlossaryPage() {
                   {scope}
                 </button>
               ))}
-              {['All', 'Default', 'Positive', 'Neutral', 'Negative'].map(filter => (
+              {['Default', 'Positive', 'Neutral', 'Negative'].map(filter => (
                 <button
                   key={filter}
                   onClick={() => setSelectedFilter(filter)}
                   className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${
                     selectedFilter === filter
-                      ? filter === 'All' || filter === 'Default'
+                      ? filter === 'Default'
                         ? 'bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 font-medium border border-gray-200 dark:border-white/20'
                         : filter === 'Positive'
                         ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 font-medium border border-green-200 dark:border-green-500/30'
@@ -160,7 +159,7 @@ export default function GlossaryPage() {
                           ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-medium border border-red-200 dark:border-red-500/30'
                           : 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium border border-blue-200 dark:border-blue-500/30'
                       : `bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 text-gray-900 dark:text-white ${
-                          filter === 'All' || filter === 'Default'
+                          filter === 'Default'
                             ? 'hover:bg-gray-50 dark:hover:bg-black/60 hover:border-gray-200 dark:hover:border-white/20'
                             : filter === 'Positive'
                             ? 'hover:bg-green-50 dark:hover:bg-green-900/20 hover:border-green-200 dark:hover:border-green-500/30 hover:text-green-600 dark:hover:text-green-400'
@@ -177,8 +176,6 @@ export default function GlossaryPage() {
                       </span>
                       Default
                     </>
-                  ) : filter === 'All' ? (
-                    'All'
                   ) : (
                     filter
                   )}
