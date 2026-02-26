@@ -19,6 +19,8 @@ interface MenuProps {
   onSatellitesChange?: (value: boolean) => void
   showInfoCards?: boolean
   onInfoCardsChange?: (checked: boolean) => void
+  /** Position of the hamburger button. Default 'right'. Use 'left' for individual clock pages. */
+  position?: 'left' | 'right'
 }
 
 const MenuItem = ({ 
@@ -91,6 +93,7 @@ export function Menu({
   onSatellitesChange = () => {},
   showInfoCards = true,
   onInfoCardsChange,
+  position = 'right',
 }: MenuProps) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const router = useRouter()
@@ -120,7 +123,7 @@ export function Menu({
       {/* Hamburger Button */}
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="fixed top-6 right-6 z-[999] w-10 h-10 bg-white dark:bg-black shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center rounded-full"
+        className={`fixed top-4 z-[999] w-10 h-10 bg-white dark:bg-black shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center rounded-full ${position === 'left' ? 'left-4' : 'right-4'}`}
       >
         <MenuIcon className="h-5 w-5 text-black dark:text-white" />
       </button>

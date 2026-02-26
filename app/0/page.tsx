@@ -7,7 +7,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { motion } from 'framer-motion'
 import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
-import { Settings, List, Info, Satellite, Clock as ClockIcon, Calendar, RotateCw, Timer as TimerIcon, Compass, HelpCircle, Book, User, Edit, LogOut, Play, BookOpen, Library, Sun, Moon, MapPin, Cloud, Droplets, Wind } from 'lucide-react'
+import { Settings, List, Info, Satellite, Clock as ClockIcon, Calendar, RotateCw, Timer as TimerIcon, Compass, HelpCircle, Book, User, Edit, LogOut, Play, BookOpen, Library, Sun, Moon, MapPin, Cloud, Droplets, Wind, Minus, Plus } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Timer from '@/components/Timer'
@@ -167,6 +167,7 @@ function NodesPageContent() {
   // Calculate rotation
   const [rotation, setRotation] = useState(startingDegree)
   const [currentDegree, setCurrentDegree] = useState(startingDegree)
+  const [focusNodesOffset, setFocusNodesOffset] = useState(0)
 
   // Helper functions
   const handleSignOut = async () => {
@@ -503,259 +504,8 @@ function NodesPageContent() {
           onToggleShow={() => setShowElements(!showElements)}
           showSatellites={showSatellites}
           onSatellitesChange={setShowSatellites}
+          position="left"
         />
-        
-        {/* Overlay Widgets - Left Side */}
-        <div className="fixed left-6 top-6 z-20 space-y-4 max-h-screen overflow-y-auto scrollbar-hide">
-          {/* Profile Widget */}
-          <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold dark:text-white">Profile</h2>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0 bg-white dark:bg-black text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
-                  onClick={() => router.push('/settings')}
-                >
-                  <Edit className="h-3 w-3" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0 bg-white dark:bg-black text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
-                  onClick={handleSignOut}
-                >
-                  <LogOut className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                {user?.photoURL ? (
-                  <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-gray-200 dark:ring-gray-700">
-                    <Image
-                      src={user.photoURL}
-                      alt="Profile"
-                      width={40}
-                      height={40}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
-                    <User className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-                  </div>
-                )}
-                <div>
-                  <p className="text-sm font-medium dark:text-white">
-                    {user?.displayName || user?.email || 'Guest User'}
-                  </p>
-                  {user?.email && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {user.email}
-                    </p>
-                  )}
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {user ? 'Signed in' : 'Not signed in'}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Quick Actions Widget */}
-          <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold dark:text-white">Quick Actions</h2>
-            </div>
-            <div className="grid grid-cols-4 gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-10 w-10 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
-                onClick={() => router.push('/sessions')}
-              >
-                <Play className="h-3 w-3" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-10 w-10 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
-                onClick={() => router.push('/notes')}
-              >
-                <BookOpen className="h-3 w-3" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-10 w-10 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
-                onClick={() => setIsDarkMode(!isDarkMode)}
-                title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-              >
-                {isDarkMode ? <Sun className="h-3 w-3" /> : <Moon className="h-3 w-3" />}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-10 w-10 p-0 bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
-                onClick={() => router.push('/settings')}
-              >
-                <Settings className="h-3 w-3" />
-              </Button>
-            </div>
-          </Card>
-
-          {/* Recent Sessions Widget */}
-          <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-sm font-semibold dark:text-white">Recent Sessions</h2>
-              <ClockIcon className="h-4 w-4 text-gray-500" />
-            </div>
-            <div className="space-y-2">
-              <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
-                      <ClockIcon className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium dark:text-white">Morning Session</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">25 minutes ago</p>
-                    </div>
-                  </div>
-                  <span className="text-xs font-medium text-gray-900 dark:text-white">15m</span>
-                </div>
-              </div>
-              <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
-                      <ClockIcon className="h-3 w-3 text-green-600 dark:text-green-400" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium dark:text-white">Evening Session</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">2 hours ago</p>
-                    </div>
-                  </div>
-                  <span className="text-xs font-medium text-gray-900 dark:text-white">30m</span>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Weather & Moon Widget with Location */}
-          <Card className="w-64 p-3 bg-white/90 dark:bg-black/90 backdrop-blur-lg border border-black/10 dark:border-white/10">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-sm font-semibold dark:text-white">Weather & Moon</h2>
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0 bg-white dark:bg-black text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200"
-                  onClick={() => setIsEditingLocation(!isEditingLocation)}
-                >
-                  <Edit className="h-3 w-3" />
-                </Button>
-                <Cloud className="h-4 w-4 text-gray-500" />
-              </div>
-            </div>
-            <div className="space-y-3">
-              {/* Location Section */}
-              <div className="space-y-2">
-                {isEditingLocation ? (
-                  <div className="space-y-2">
-                    <Input
-                      placeholder="Enter city name..."
-                      value={customLocation}
-                      onChange={(e) => setCustomLocation(e.target.value)}
-                      className="h-8 text-xs"
-                    />
-                    <div className="flex gap-1">
-                      <Button
-                        size="sm"
-                        className="h-6 text-xs bg-black dark:bg-white text-white dark:text-black hover:bg-black/80 dark:hover:bg-white/80 transition-colors"
-                        onClick={handleLocationSave}
-                      >
-                        Save
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-6 text-xs bg-white dark:bg-black border-2 border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200 shadow-lg"
-                        onClick={() => {
-                          setCustomLocation('');
-                          setIsEditingLocation(false);
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {weatherData?.location.name || 'Loading location...'}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {weatherData && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold dark:text-white">{weatherData.current.temp_c}°C</span>
-                    <div className="flex items-center gap-1">
-                      <Droplets className="h-3.5 w-3.5 text-gray-500" />
-                      <span className="text-xs text-gray-500 dark:text-gray-400">{weatherData.current.humidity}%</span>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-4 gap-2">
-                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
-                      <div className="flex items-center gap-1">
-                        <Sun className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
-                        <span className="text-xs text-gray-600 dark:text-gray-200">UV</span>
-                      </div>
-                      <p className="text-sm font-semibold dark:text-white">{weatherData.current.uv}</p>
-                    </div>
-                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
-                      <div className="flex items-center gap-1">
-                        <Wind className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
-                        <span className="text-xs text-gray-600 dark:text-gray-200">Wind</span>
-                      </div>
-                      <p className="text-sm font-semibold dark:text-white">{weatherData.current.wind_kph} km/h</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {moon && (
-                <div className="space-y-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full border border-black/10 dark:border-white/20 flex items-center justify-center">
-                      <Moon className="w-6 h-6 text-gray-600 dark:text-gray-200" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold dark:text-white">{moon.moon_phase}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{moon.moon_illumination}% illuminated</p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-4 gap-2">
-                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Moonrise</p>
-                      <p className="text-sm font-semibold dark:text-white">{moon.moonrise}</p>
-                    </div>
-                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Moonset</p>
-                      <p className="text-sm font-semibold dark:text-white">{moon.moonset}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </Card>
-        </div>
 
         {/* Settings Dropdown */}
         <div className="fixed top-4 right-4 z-50">
@@ -924,6 +674,39 @@ function NodesPageContent() {
                         </span>
                       </div>
                     </div>
+
+                    {/* Focus nodes rotation */}
+                    <div className="pt-2 border-t border-black/10 dark:border-white/10">
+                      <p className="text-xs font-medium text-black/60 dark:text-white/60 mb-2 flex items-center gap-1">
+                        <RotateCw className="h-3 w-3" />
+                        Focus nodes rotation
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8 shrink-0 rounded-full"
+                          onClick={() => setFocusNodesOffset((n) => n - 1)}
+                          aria-label="Rotate focus nodes -1°"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <span className="text-sm font-medium text-black/90 dark:text-white/90 min-w-[7rem] text-center tabular-nums">
+                          {focusNodesOffset >= 0 ? '+' : ''}{focusNodesOffset} Degrees
+                        </span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8 shrink-0 rounded-full"
+                          onClick={() => setFocusNodesOffset((n) => n + 1)}
+                          aria-label="Rotate focus nodes +1°"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -1024,7 +807,7 @@ function NodesPageContent() {
               <div className="absolute inset-0" style={{ transform: `rotate(${clock0.imageOrientation}deg)`, pointerEvents: 'auto' }}>
                 <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
                   {Array.from({ length: focusNodes }).map((_, index) => {
-                    const angle = ((360 / focusNodes) * index + startingDegree + 45) % 360
+                    const angle = ((360 / focusNodes) * index + startingDegree + 45 + focusNodesOffset) % 360
                     const radians = angle * (Math.PI / 180)
                     const nodeRadius = 55 // Increased from 48 to move nodes further out
                     const x = 50 + nodeRadius * Math.cos(radians)
