@@ -33,8 +33,6 @@ import { SessionTimer } from '@/components/SessionTimer'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useLocation } from '@/lib/hooks/useLocation'
 import DotNavigation from '@/components/DotNavigation'
-import { FocusNodesDevTool } from '@/components/FocusNodesDevTool'
-
 // Test words for each node
 const testWords = [
   'Consciousness',
@@ -942,11 +940,6 @@ function NodesPageContent() {
           />
         </div>
 
-        {/* Dev tool: focus nodes position (bottom right) */}
-        <FocusNodesDevTool
-          value={focusNodesOffset}
-          onChange={setFocusNodesOffset}
-        />
       </div>
     </ProtectedRoute>
   )
