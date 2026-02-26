@@ -47,7 +47,7 @@ export function SessionDurationDialog({
   const [words, setWords] = useState<string[]>([])
   const [glossaryWords, setGlossaryWords] = useState<GlossaryWord[]>([])
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedFilter, setSelectedFilter] = useState('All')
+  const [selectedFilter, setSelectedFilter] = useState('Default')
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
   const [hoveredWord, setHoveredWord] = useState<string | null>(null)
   const [showDurationHint, setShowDurationHint] = useState(false)
@@ -346,7 +346,7 @@ export function SessionDurationDialog({
       if (selectedFilter === 'Positive') return word.rating === '+'
       if (selectedFilter === 'Neutral') return word.rating === '~'
       if (selectedFilter === 'Negative') return word.rating === '-'
-      if (selectedFilter === 'Default') return word.version === 'Default'
+      if (selectedFilter === 'Default') return true
       if (selectedLetter) return word.word.toUpperCase().startsWith(selectedLetter)
       return true
     }).sort((a, b) => a.word.localeCompare(b.word))
@@ -533,12 +533,12 @@ export function SessionDurationDialog({
 
               {/* Filters */}
               <div className="flex flex-wrap gap-1.5">
-                {['All', 'Default', 'Positive', 'Neutral', 'Negative'].map(filter => (
+                {['Default', 'Positive', 'Neutral', 'Negative'].map(filter => (
                   <button
                     key={filter}
                     onClick={() => setSelectedFilter(filter)}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-sm transition-all shrink-0",
+                      "px-3 py-1.5 rounded-lg text-sm transition-all shrink-0 flex items-center gap-1.5",
                       selectedFilter === filter
                         ? `${bgColorClass} text-white`
                         : 'bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10'
@@ -546,7 +546,13 @@ export function SessionDurationDialog({
                     aria-pressed={selectedFilter === filter}
                     aria-label={`Filter by ${filter} words`}
                   >
-                    {filter}
+                    {filter === 'Default' ? (
+                      <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-medium bg-white/20 dark:bg-white/20">
+                        D
+                      </span>
+                    ) : (
+                      filter
+                    )}
                   </button>
                 ))}
               </div>

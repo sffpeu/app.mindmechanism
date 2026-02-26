@@ -1,22 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ThumbsUp, ThumbsDown, Minus, Wand2 } from 'lucide-react';
-import { addUserWord } from '@/lib/glossary';
+import { addUserWord, updateUserWord } from '@/lib/glossary';
 import { useAuth } from '@/lib/FirebaseAuthContext';
 import { toast } from 'sonner';
 import { useSoundEffects } from '@/lib/sounds';
+import { GlossaryWord } from '@/types/Glossary';
 
 interface AddWordDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onWordAdded: () => void;
+  editWord?: GlossaryWord | null;
 }
 
-export function AddWordDialog({ open, onOpenChange, onWordAdded }: AddWordDialogProps) {
+export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord }: AddWordDialogProps) {
   const { user } = useAuth();
   const { playSuccess } = useSoundEffects();
   const [word, setWord] = useState('');
@@ -25,40 +27,79 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded }: AddWordDialog
   const [rating, setRating] = useState<'+' | '-' | '~'>('~');
   const [grade, setGrade] = useState<number>(3);
   const [isLoading, setIsLoading] = useState(false);
+  const isEditMode = Boolean(editWord?.id);
+
+  useEffect(() => {
+    if (open) {
+      if (editWord) {
+        setWord(editWord.word);
+        setDefinition(editWord.definition);
+        setPhoneticSpelling(editWord.phonetic_spelling ?? '');
+        setRating(editWord.rating);
+        setGrade(editWord.grade);
+      } else {
+        resetForm();
+      }
+    } else {
+      resetForm();
+    }
+  }, [open, editWord]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user?.uid) {
-      toast.error('You must be logged in to add words');
+      toast.error('You must be logged in to add or edit words');
       return;
     }
 
     setIsLoading(true);
     try {
-      const newWord = {
-        word: word.trim(),
-        definition: definition.trim(),
-        phonetic_spelling: phoneticSpelling.trim(),
-        rating,
-        grade,
-        source: 'user' as const,
-        version: 'User' as const,
-        user_id: user.uid
-      };
-
-      const result = await addUserWord(newWord);
-      if (result) {
-        playSuccess();
-        toast.success('Word added successfully');
-        onWordAdded();
-        onOpenChange(false);
-        resetForm();
+      if (isEditMode && editWord?.id) {
+        const result = await updateUserWord(editWord.id, {
+          word: word.trim(),
+          definition: definition.trim(),
+          phonetic_spelling: phoneticSpelling.trim(),
+          rating,
+          grade,
+          source: 'user',
+          version: 'User',
+          user_id: user.uid
+        });
+        if (result) {
+          playSuccess();
+          toast.success('Word updated successfully');
+          onWordAdded();
+          onOpenChange(false);
+          resetForm();
+        } else {
+          toast.error('Failed to update word');
+        }
       } else {
-        toast.error('Failed to add word');
+        const newWord = {
+          word: word.trim(),
+          definition: definition.trim(),
+          phonetic_spelling: phoneticSpelling.trim(),
+          rating,
+          grade,
+          source: 'user' as const,
+          version: 'User' as const,
+          user_id: user.uid
+        };
+
+        const result = await addUserWord(newWord);
+        if (result) {
+          playSuccess();
+          toast.success('Word added successfully');
+          onWordAdded();
+          onOpenChange(false);
+          resetForm();
+        } else {
+          toast.error('Failed to add word');
+        }
       }
     } catch (error) {
-      console.error('Error adding word:', error);
-      toast.error('Failed to add word');
+      console.error('Error saving word:', error);
+      toast.error(isEditMode ? 'Failed to update word' : 'Failed to add word');
     } finally {
       setIsLoading(false);
     }
@@ -85,7 +126,9 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded }: AddWordDialog
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] bg-white dark:bg-black border border-gray-200 dark:border-white/10">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white">Add New Word</DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white">
+            {isEditMode ? 'Edit Word' : 'Add New Word'}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6 py-4">
           <div className="space-y-6">
@@ -227,7 +270,7 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded }: AddWordDialog
                 disabled={isLoading}
                 className="bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90"
               >
-                {isLoading ? 'Adding...' : 'Add Word'}
+                {isLoading ? (isEditMode ? 'Saving...' : 'Adding...') : (isEditMode ? 'Save Changes' : 'Add Word')}
               </Button>
             </div>
           </div>
