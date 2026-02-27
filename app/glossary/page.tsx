@@ -15,7 +15,7 @@ export default function GlossaryPage() {
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedFilter, setSelectedFilter] = useState('Default')
+  const [selectedFilter, setSelectedFilter] = useState<string | null>(null)
   const [scopeFilter, setScopeFilter] = useState<'All' | 'My Words'>('All')
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
   const [words, setWords] = useState<GlossaryWord[]>([])
@@ -74,8 +74,8 @@ export default function GlossaryPage() {
     if (scopeFilter === 'My Words' && (word.source !== 'user' || word.user_id !== user?.uid)) {
       return false
     }
-    // Then apply rating filters
-    if (selectedFilter === 'Default') return true
+    // Then apply rating filters (null = no filter selected, show all; Default = same)
+    if (selectedFilter === null || selectedFilter === 'Default') return true
     if (selectedFilter === 'Positive') return word.rating === '+'
     if (selectedFilter === 'Neutral') return word.rating === '~'
     if (selectedFilter === 'Negative') return word.rating === '-'
