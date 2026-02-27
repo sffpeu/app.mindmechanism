@@ -520,140 +520,6 @@ export default function DashboardPage() {
               Your mind mechanism is ready.
             </p>
           </div>
-          {/* Time and User Profile Section */}
-          {showInfoCards && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Time Card */}
-              <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-base font-semibold dark:text-white">Time</h2>
-                  <ClockIcon className="h-4 w-4 text-gray-500" />
-                </div>
-                <p className="text-3xl font-bold dark:text-white tracking-tight">
-                  {formatTime(currentTime)}
-                </p>
-              </Card>
-
-              {/* User Profile Card */}
-              {user && (
-                <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-                  <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-base font-semibold dark:text-white">Profile</h2>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      {user.photoURL && (
-                        <img src={user.photoURL} alt="Profile" className="w-12 h-12 rounded-full" />
-                      )}
-                      <div>
-                        <p className="font-medium dark:text-white">{user.displayName || 'User'}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
-                      </div>
-                    </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      <p>Last sign in: {timeStats.lastSignInTime ? timeStats.lastSignInTime.toLocaleString() : 'N/A'}</p>
-                      <p>Member since {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('en-US', { month: '2-digit', year: 'numeric' }) : 'N/A'}</p>
-                    </div>
-                  </div>
-                </Card>
-              )}
-            </div>
-          )}
-
-          {/* Location, Connect, and Device Section */}
-          {showInfoCards && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Location Card */}
-              {weatherData && (
-                <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-                  <div className="flex items-center justify-between mb-2">
-                    <h2 className="text-base font-semibold dark:text-white">Location</h2>
-                    <MapPin className="h-4 w-4 text-gray-500" />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div>
-                        <p className="text-base font-medium dark:text-white">{weatherData.location.name}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {weatherData.location.region && `${weatherData.location.region}, `}{weatherData.location.country}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              )}
-
-              {/* Connect Card */}
-              <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-base font-semibold dark:text-white">Connect</h2>
-                  <Users className="h-4 w-4 text-gray-500" />
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
-                        <Share2 className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium dark:text-white">Share Session</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Create & share with others</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" className="text-xs">
-                      Create
-                    </Button>
-                  </div>
-                  <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
-                    <div className="flex items-center gap-2">
-                      <div className="flex -space-x-2">
-                        <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center ring-2 ring-white dark:ring-black">
-                          <span className="text-[10px] text-gray-600 dark:text-gray-300 font-medium">JD</span>
-                        </div>
-                        <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center ring-2 ring-white dark:ring-black">
-                          <span className="text-[10px] text-gray-600 dark:text-gray-300 font-medium">AS</span>
-                        </div>
-                      </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">2 users connected</p>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Device Card */}
-              <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-base font-semibold dark:text-white">Device</h2>
-                  <Cpu className="h-4 w-4 text-gray-500" />
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
-                        <Wifi className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium dark:text-white">M13 Mechanism</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">No device connected</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" className="text-xs">
-                      Connect
-                    </Button>
-                  </div>
-                  <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <Battery className="h-3.5 w-3.5 text-gray-500" />
-                        <span className="text-xs text-gray-500 dark:text-gray-400">Battery</span>
-                      </div>
-                      <span className="text-xs font-medium text-gray-900 dark:text-white">N/A</span>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </div>
-          )}
 
           {/* Weather and Moon Section */}
           {showInfoCards && (
@@ -816,6 +682,141 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 )}
+              </Card>
+            </div>
+          )}
+
+          {/* Time and User Profile Section */}
+          {showInfoCards && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Time Card */}
+              <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-base font-semibold dark:text-white">Time</h2>
+                  <ClockIcon className="h-4 w-4 text-gray-500" />
+                </div>
+                <p className="text-3xl font-bold dark:text-white tracking-tight">
+                  {formatTime(currentTime)}
+                </p>
+              </Card>
+
+              {/* User Profile Card */}
+              {user && (
+                <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-base font-semibold dark:text-white">Profile</h2>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                      {user.photoURL && (
+                        <img src={user.photoURL} alt="Profile" className="w-12 h-12 rounded-full" />
+                      )}
+                      <div>
+                        <p className="font-medium dark:text-white">{user.displayName || 'User'}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
+                      </div>
+                    </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      <p>Last sign in: {timeStats.lastSignInTime ? timeStats.lastSignInTime.toLocaleString() : 'N/A'}</p>
+                      <p>Member since {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('en-US', { month: '2-digit', year: 'numeric' }) : 'N/A'}</p>
+                    </div>
+                  </div>
+                </Card>
+              )}
+            </div>
+          )}
+
+          {/* Location, Connect, and Device Section */}
+          {showInfoCards && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Location Card */}
+              {weatherData && (
+                <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+                  <div className="flex items-center justify-between mb-2">
+                    <h2 className="text-base font-semibold dark:text-white">Location</h2>
+                    <MapPin className="h-4 w-4 text-gray-500" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div>
+                        <p className="text-base font-medium dark:text-white">{weatherData.location.name}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {weatherData.location.region && `${weatherData.location.region}, `}{weatherData.location.country}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              )}
+
+              {/* Connect Card */}
+              <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-base font-semibold dark:text-white">Connect</h2>
+                  <Users className="h-4 w-4 text-gray-500" />
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
+                        <Share2 className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium dark:text-white">Share Session</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Create & share with others</p>
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm" className="text-xs">
+                      Create
+                    </Button>
+                  </div>
+                  <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                    <div className="flex items-center gap-2">
+                      <div className="flex -space-x-2">
+                        <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center ring-2 ring-white dark:ring-black">
+                          <span className="text-[10px] text-gray-600 dark:text-gray-300 font-medium">JD</span>
+                        </div>
+                        <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center ring-2 ring-white dark:ring-black">
+                          <span className="text-[10px] text-gray-600 dark:text-gray-300 font-medium">AS</span>
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">2 users connected</p>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Device Card */}
+              <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-base font-semibold dark:text-white">Device</h2>
+                  <Cpu className="h-4 w-4 text-gray-500" />
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
+                        <Wifi className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium dark:text-white">M13 Mechanism</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">No device connected</p>
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm" className="text-xs">
+                      Connect
+                    </Button>
+                  </div>
+                  <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Battery className="h-3.5 w-3.5 text-gray-500" />
+                        <span className="text-xs text-gray-500 dark:text-gray-400">Battery</span>
+                      </div>
+                      <span className="text-xs font-medium text-gray-900 dark:text-white">N/A</span>
+                    </div>
+                  </div>
+                </div>
               </Card>
             </div>
           )}
