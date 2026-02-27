@@ -250,7 +250,7 @@ export function Menu({
                     className="flex items-center gap-3 w-full text-left hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200 px-0 py-2"
                   >
                     <Settings className="h-4 w-4" />
-                    <span className="text-sm font-medium">Advanced Settings</span>
+                    <span className="text-sm font-medium">Profile Settings</span>
                   </button>
                 </div>
               </MenuSection>

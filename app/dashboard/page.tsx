@@ -950,7 +950,7 @@ export default function DashboardPage() {
                   </Popover>
                 </div>
 
-                {/* Recent Sessions List */}
+                {/* Recent Sessions - mini clocks row */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <h3 className="text-xs font-medium text-gray-900 dark:text-white">Recent Sessions</h3>
@@ -961,46 +961,7 @@ export default function DashboardPage() {
                       View All
                     </Link>
                   </div>
-                  {recentSessions.slice(0, 3).map((session) => (
-                    <Popover key={session.id}>
-                      <PopoverTrigger asChild>
-                        <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5 cursor-help">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${session.status === 'completed' ? 'bg-green-500' :
-                                  session.status === 'in_progress' ? 'bg-blue-500' : 'bg-red-500'
-                                }`} />
-                              <span className="text-sm font-medium dark:text-white">
-                                {clockTitles[session.clock_id]}
-                              </span>
-                            </div>
-                            <span className="text-xs text-gray-500">
-                              {formatDuration(session.duration)}
-                            </span>
-                          </div>
-                          <div className="mt-1">
-                            <div className="h-1 bg-gray-200 dark:bg-gray-700 rounded-full">
-                              <div
-                                className="h-full bg-blue-500 rounded-full transition-all duration-300"
-                                style={{
-                                  width: `${Math.min(((session.elapsed_time / session.duration) * 100), 100)}%`
-                                }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-72">
-                        <div className="space-y-2">
-                          <p className="text-sm font-medium">{clockTitles[session.clock_id]}</p>
-                          <p className="text-sm">Started: {new Date(session.start_time.toDate()).toLocaleString()}</p>
-                          <p className="text-sm">Duration: {formatDuration(session.duration)}</p>
-                          <p className="text-sm">Progress: {Math.min(((session.elapsed_time / session.duration) * 100), 100).toFixed(1)}%</p>
-                          <p className="text-sm">Status: {session.status}</p>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  ))}
+                  <DashboardRecentSessions sessions={recentSessions} />
                 </div>
               </div>
             </Card>
