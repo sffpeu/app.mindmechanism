@@ -14,6 +14,25 @@ import {
 } from 'firebase/firestore';
 import { testWords } from '@/lib/testWords';
 
+/** Words that appear under Default > ROOT in the glossary (clock_id 0). */
+export const ROOT_DEFAULT_WORDS: readonly string[] = [
+  'Achievement',
+  'Willingness',
+  'Vitality',
+  'Boldness',
+  'Insight',
+  'Command',
+  'Reflection',
+  'Illusion'
+];
+
+function assignRootClockId(words: GlossaryWord[]): GlossaryWord[] {
+  const rootSet = new Set(ROOT_DEFAULT_WORDS.map(w => w.toLowerCase()));
+  return words.map(w =>
+    rootSet.has(w.word.toLowerCase()) ? { ...w, clock_id: 0 } : w
+  );
+}
+
 // Maximum number of retries for Firestore operations
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second
@@ -71,7 +90,7 @@ export async function getAllWords(): Promise<GlossaryWord[]> {
         return createDefaultGlossaryWords();
       }
 
-      return words;
+      return assignRootClockId(words);
     };
 
     return await retryOperation(operation);
@@ -106,7 +125,7 @@ export async function getWordsByRating(rating: string): Promise<GlossaryWord[]> 
         return createDefaultGlossaryWords().filter(word => word.rating === rating);
       }
 
-      return words;
+      return assignRootClockId(words);
     };
 
     return await retryOperation(operation);
@@ -140,7 +159,7 @@ export async function getClockWords(): Promise<GlossaryWord[]> {
         return createDefaultGlossaryWords();
       }
 
-      return words;
+      return assignRootClockId(words);
     };
 
     return await retryOperation(operation);
@@ -213,15 +232,16 @@ export async function searchWords(searchText: string): Promise<GlossaryWord[]> {
     const querySnapshot = await getDocs(q);
     
     const searchQuery = searchText.toLowerCase();
-    return querySnapshot.docs
+    const results = querySnapshot.docs
       .map(doc => ({
         id: doc.id,
         ...doc.data()
       }) as GlossaryWord)
-      .filter(word => 
+      .filter(word =>
         word.word.toLowerCase().includes(searchQuery) ||
         word.definition.toLowerCase().includes(searchQuery)
       );
+    return assignRootClockId(results);
   } catch (error) {
     console.error('Error searching words:', error);
     return [];
