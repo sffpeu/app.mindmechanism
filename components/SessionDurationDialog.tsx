@@ -351,7 +351,7 @@ export function SessionDurationDialog({
       return true
     }).sort((a, b) => a.word.localeCompare(b.word))
 
-    return (
+    const stepContent = (
       <div className="w-full h-[calc(100%-1rem)] px-6 overflow-hidden">
         <Motion.div
           key="words"
@@ -696,6 +696,7 @@ export function SessionDurationDialog({
         </Motion.div>
       </div>
     )
+    return stepContent
   }
 
   const handleDurationSelected = async (duration: number | null, words: string[]) => {
