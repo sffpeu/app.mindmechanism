@@ -359,9 +359,9 @@ export function SessionDurationDialog({
         exit={{ opacity: 0, x: -20 }}
         className="w-full h-[calc(100%-1rem)] px-6 overflow-hidden"
       >
-        <div className="grid grid-cols-2 gap-6 h-full">
+        <div className="grid grid-cols-[minmax(320px,1fr)_minmax(0,1fr)] gap-6 h-full">
           {/* Left half: Clock visualization */}
-          <div className="flex flex-col items-center justify-center gap-4">
+          <div className="flex flex-col items-center justify-center gap-4 overflow-hidden">
             <div className="relative w-full max-w-[320px] aspect-square">
               <div className="absolute inset-0 rounded-full border border-gray-200 dark:border-gray-800" />
               <div className="absolute inset-[8%] rounded-full border border-gray-100 dark:border-gray-900" />
@@ -454,7 +454,7 @@ export function SessionDurationDialog({
           </div>
 
           {/* Right half: Glossary (synced to /glossary styling and content) */}
-          <div className="bg-white dark:bg-black/40 border border-black/5 dark:border-white/10 rounded-xl overflow-hidden flex flex-col max-h-full backdrop-blur-lg">
+          <div className="min-w-0 bg-white dark:bg-black/40 border border-black/5 dark:border-white/10 rounded-xl overflow-hidden flex flex-col max-h-full backdrop-blur-lg">
             <div className="p-3 border-b border-black/5 dark:border-white/10 space-y-2">
               <div className="flex items-center gap-2">
                 <div className="flex-1 relative">
