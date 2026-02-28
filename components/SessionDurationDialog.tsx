@@ -661,7 +661,7 @@ export function SessionDurationDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(
         "bg-white dark:bg-black border-white/20 dark:border-white/10 overflow-hidden",
-        step === 'words' ? "max-w-[90vw] w-[1200px] h-[90vh] max-h-[800px]" : "sm:max-w-[800px]",
+        step === 'words' ? "max-w-[95vw] w-[1560px] h-[90vh] max-h-[1040px]" : "sm:max-w-[800px]",
         step === 'duration' && "sm:h-[500px]",
         step === 'confirm' && "sm:h-[500px]"
       )}>
