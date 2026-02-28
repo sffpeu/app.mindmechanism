@@ -1,10 +1,10 @@
 export const testWords = [
-  'Consciousness',
-  'Quantum',
-  'Synchronicity',
-  'Emergence',
-  'Resonance',
-  'Entropy',
-  'Duality',
-  'Infinity'
+  'Achievement',
+  'Willingness',
+  'Vitality',
+  'Boldness',
+  'Insight',
+  'Command',
+  'Reflection',
+  'Illusion'
 ]; 
