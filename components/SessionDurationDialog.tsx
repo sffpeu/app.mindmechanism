@@ -4,11 +4,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Timer, ChevronRight, InfinityIcon, X, Check, ArrowLeft, PenLine, Search, Tag, ThumbsUp, Shuffle, Trash2 } from 'lucide-react'
+import { Timer, ChevronRight, InfinityIcon, X, Check, ArrowLeft, PenLine, Search, Shuffle, Trash2, Layers, UserCircle2, ChevronDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { clockSettings } from '@/lib/clockSettings'
 import { GlossaryWord } from '@/types/Glossary'
-import { getClockWords } from '@/lib/glossary'
+import { getAllWords } from '@/lib/glossary'
+import { clockTitles } from '@/lib/clockTitles'
 import { useSoundEffects } from '@/lib/sounds'
 import { useRouter } from 'next/navigation'
 import { createSession } from '@/lib/sessions'
@@ -46,12 +47,14 @@ export function SessionDurationDialog({
   const [words, setWords] = useState<string[]>([])
   const [glossaryWords, setGlossaryWords] = useState<GlossaryWord[]>([])
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedFilter, setSelectedFilter] = useState('Default')
+  const [scopeFilter, setScopeFilter] = useState<'All' | 'Default' | 'My Words'>('Default')
+  const [selectedSentiment, setSelectedSentiment] = useState<'+' | '~' | '-' | null>(null)
+  const [selectedClockId, setSelectedClockId] = useState<number | null>(null)
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
+  const [showAzFilter, setShowAzFilter] = useState(false)
   const [hoveredWord, setHoveredWord] = useState<string | null>(null)
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false)
   const [selectedWordIndex, setSelectedWordIndex] = useState<number | null>(null)
-  const [filteredWords, setFilteredWords] = useState<GlossaryWord[]>([])
   const { playClick } = useSoundEffects()
   const [hasInteracted, setHasInteracted] = useState(false)
   const router = useRouter()
@@ -92,7 +95,7 @@ export function SessionDurationDialog({
     try {
       setIsLoadingWords(true)
       setLoadError(null)
-      const words = await getClockWords()
+      const words = await getAllWords()
       if (!words || words.length === 0) {
         console.log('No words found in glossary')
         setLoadError('No words found in the glossary. Please try again later.')
@@ -315,20 +318,36 @@ export function SessionDurationDialog({
     </div>
   )
 
+  // Clock colors for glossary sync (match /glossary page)
+  const CLOCK_HEX = ['#fd290a', '#fba63b', '#f7da5f', '#6dc037', '#156fde', '#941952', '#541b96', '#ee5fa7', '#56c1ff']
+  const getDefaultIconStyle = (clockId: number | undefined) => {
+    if (clockId == null || clockId < 0 || clockId >= CLOCK_HEX.length) return undefined
+    const hex = CLOCK_HEX[clockId]
+    return { backgroundColor: `${hex}20`, color: hex }
+  }
+
+  const setScope = (scope: 'All' | 'Default' | 'My Words') => {
+    if (scope !== 'Default') setSelectedClockId(null)
+    setScopeFilter(scope)
+  }
+
   const renderWordsStep = () => {
     const focusNodesCount = clockSettings[clockId]?.focusNodes || 0
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
 
     const filteredWords = glossaryWords.filter(word => {
+      if (scopeFilter === 'My Words') {
+        if (word.source !== 'user' || word.user_id !== user?.uid) return false
+      } else if (scopeFilter === 'Default') {
+        if (word.clock_id == null || word.clock_id < 0 || word.clock_id > 8) return false
+        if (selectedClockId !== null && word.clock_id !== selectedClockId) return false
+      }
+      if (selectedSentiment !== null && word.rating !== selectedSentiment) return false
+      if (selectedLetter && !word.word.toUpperCase().startsWith(selectedLetter)) return false
       if (searchQuery) {
         return word.word.toLowerCase().includes(searchQuery.toLowerCase()) ||
                word.definition.toLowerCase().includes(searchQuery.toLowerCase())
       }
-      if (selectedFilter === 'Positive') return word.rating === '+'
-      if (selectedFilter === 'Neutral') return word.rating === '~'
-      if (selectedFilter === 'Negative') return word.rating === '-'
-      if (selectedFilter === 'Default') return word.clock_id != null && word.clock_id >= 0 && word.clock_id <= 8
-      if (selectedLetter) return word.word.toUpperCase().startsWith(selectedLetter)
       return true
     }).sort((a, b) => a.word.localeCompare(b.word))
 
@@ -340,72 +359,18 @@ export function SessionDurationDialog({
         exit={{ opacity: 0, x: -20 }}
         className="w-full h-[calc(100%-1rem)] px-6 overflow-hidden"
       >
-        <div className="grid grid-cols-[280px_1fr] gap-4 h-full">
-          {/* Left side: Focus Nodes and Selected Words */}
-          <div className="space-y-3 overflow-y-auto pr-2 max-h-full scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
-            {/* Focus Nodes Card */}
-            <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
-              <div className="p-3 border-b border-gray-200 dark:border-gray-800">
-                <h3 className="text-sm font-medium text-black/90 dark:text-white/90">Focus Nodes</h3>
-                <p className="text-xs text-black/60 dark:text-white/60 mt-0.5">
-                  {focusNodesCount} active node{focusNodesCount !== 1 ? 's' : ''}
-                </p>
-              </div>
-              <div className="aspect-square relative">
-                <div className="absolute inset-4">
-                  <div className="relative w-full h-full">
-                    {/* Thin ring */}
-                    <div className="absolute inset-[15%] rounded-full border border-gray-100 dark:border-gray-900" />
-                    
-                    {/* Focus Nodes */}
-                    {Array.from({ length: focusNodesCount }).map((_, index) => {
-                      const angle = ((360 / focusNodesCount) * index - 90) * (Math.PI / 180)
-                      const radius = 45 // Reduced radius to bring nodes closer
-                      const x = 50 + radius * Math.cos(angle)
-                      const y = 50 + radius * Math.sin(angle)
-
-                      return (
-                        <motion.div
-                          key={index}
-                          className="absolute"
-                          style={{
-                            left: `${x}%`,
-                            top: `${y}%`,
-                            transform: 'translate(-50%, -50%)',
-                          }}
-                        >
-                          <div className={cn(
-                            "relative w-4 h-4 rounded-full flex items-center justify-center", // Reduced size from w-5 h-5
-                            bgColorClass,
-                            words[index] ? 'opacity-100' : 'opacity-50'
-                          )}>
-                            <span className="text-[8px] font-medium text-white"> {/* Reduced text size */}
-                              {index + 1}
-                            </span>
-                            <motion.div
-                              className="absolute inset-0 rounded-full bg-white/10"
-                              whileHover={{ scale: 1.5 }}
-                              transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                            />
-                          </div>
-                        </motion.div>
-                      )
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Selected Words */}
-            <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+        <div className="grid grid-cols-[220px_280px_1fr] gap-4 h-full">
+          {/* Left: Selected Words list + actions */}
+          <div className="flex flex-col overflow-y-auto pr-2 max-h-full scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
+            <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden flex-shrink-0">
               <div className="p-3 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-medium text-black/90 dark:text-white/90">Selected Words</h3>
                   <p className="text-xs text-black/60 dark:text-white/60 mt-0.5">
-                    {words.filter(w => w).length} of {focusNodesCount} words selected
+                    {words.filter(w => w).length} of {focusNodesCount}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   <button
                     onClick={handleRandomWords}
                     disabled={words.every(word => word.trim() !== '')}
@@ -436,7 +401,7 @@ export function SessionDurationDialog({
                     onClick={handleResetAllWords}
                     disabled={words.every(word => !word)}
                     className={cn(
-                      "w-6 h-6 rounded-full flex items-center justify-center transition-all ml-1",
+                      "w-6 h-6 rounded-full flex items-center justify-center transition-all",
                       words.every(word => !word)
                         ? "bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed"
                         : "bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
@@ -447,19 +412,19 @@ export function SessionDurationDialog({
                   </button>
                 </div>
               </div>
-              <div className="p-2 pb-4 space-y-2">
+              <div className="p-2 pb-3 space-y-1.5 max-h-[200px] overflow-y-auto">
                 {Array.from({ length: focusNodesCount }).map((_, index) => (
                   <div
                     key={index}
                     className={cn(
-                      "px-3 py-2 rounded-lg flex items-center gap-2",
+                      "px-2.5 py-1.5 rounded-lg flex items-center gap-2",
                       words[index]
                         ? "bg-gray-50 dark:bg-white/5"
                         : "border border-dashed border-gray-200 dark:border-gray-800"
                     )}
                   >
                     <div className={cn(
-                      "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium",
+                      "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium shrink-0",
                       words[index]
                         ? `${bgColorClass} text-white`
                         : "bg-gray-100 dark:bg-white/5 text-gray-400 dark:text-gray-500"
@@ -467,8 +432,8 @@ export function SessionDurationDialog({
                       {index + 1}
                     </div>
                     {words[index] ? (
-                      <div className="flex-1 flex items-center justify-between">
-                        <span className="text-base font-medium text-black/90 dark:text-white/90">
+                      <div className="flex-1 min-w-0 flex items-center justify-between gap-1">
+                        <span className="text-sm font-medium text-black/90 dark:text-white/90 truncate">
                           {words[index]}
                         </span>
                         <button
@@ -477,16 +442,14 @@ export function SessionDurationDialog({
                             newWords[index] = ''
                             setWords(newWords)
                           }}
-                          className="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
+                          className="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 shrink-0"
                           aria-label={`Remove word ${words[index]}`}
                         >
-                          <X className="h-4 w-4" />
+                          <X className="h-3.5 w-3.5" />
                         </button>
                       </div>
                     ) : (
-                      <span className="text-sm text-gray-400 dark:text-gray-500">
-                        Empty slot
-                      </span>
+                      <span className="text-xs text-gray-400 dark:text-gray-500">Empty</span>
                     )}
                   </div>
                 ))}
@@ -494,115 +457,279 @@ export function SessionDurationDialog({
             </div>
           </div>
 
-          {/* Right side: Word Selection */}
-          <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden flex flex-col max-h-full">
-            <div className="p-3 border-b border-gray-200 dark:border-gray-800 space-y-2">
-              {/* Search */}
-              <div className="flex items-center space-x-3">
+          {/* Center: Clock visualization */}
+          <div className="flex items-center justify-center py-4">
+            <div className="relative w-full max-w-[260px] aspect-square">
+              <div className="absolute inset-0 rounded-full border border-gray-200 dark:border-gray-800" />
+              <div className="absolute inset-[8%] rounded-full border border-gray-100 dark:border-gray-900" />
+              {Array.from({ length: focusNodesCount }).map((_, index) => {
+                const angle = ((360 / focusNodesCount) * index - 90) * (Math.PI / 180)
+                const radius = 42
+                const x = 50 + radius * Math.cos(angle)
+                const y = 50 + radius * Math.sin(angle)
+                return (
+                  <motion.div
+                    key={index}
+                    className="absolute"
+                    style={{
+                      left: `${x}%`,
+                      top: `${y}%`,
+                      transform: 'translate(-50%, -50%)',
+                    }}
+                  >
+                    <div className={cn(
+                      "relative w-10 h-10 rounded-full flex items-center justify-center shadow-sm",
+                      bgColorClass,
+                      words[index] ? 'opacity-100 ring-2 ring-white/30 dark:ring-black/20' : 'opacity-60'
+                    )}>
+                      <span className="text-xs font-semibold text-white">{index + 1}</span>
+                    </div>
+                    {words[index] && (
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 w-16 text-center">
+                        <span className="text-[10px] font-medium text-black/80 dark:text-white/80 truncate block">
+                          {words[index]}
+                        </span>
+                      </div>
+                    )}
+                  </motion.div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Right: Glossary (synced to /glossary styling and content) */}
+          <div className="bg-white dark:bg-black/40 border border-black/5 dark:border-white/10 rounded-xl overflow-hidden flex flex-col max-h-full backdrop-blur-lg">
+            <div className="p-3 border-b border-black/5 dark:border-white/10 space-y-2">
+              <div className="flex items-center gap-2">
                 <div className="flex-1 relative">
                   <input
                     type="text"
                     placeholder="Search words or definitions"
-                    className="w-full pl-9 pr-4 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                    className="w-full pl-9 pr-4 py-2 rounded-lg bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 border border-black/5 dark:border-white/10 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-all"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     aria-label="Search words or definitions"
                   />
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" />
                 </div>
+                <span className="text-sm text-gray-400 dark:text-gray-500 shrink-0">{filteredWords.length} words</span>
               </div>
-
-              {/* Filters */}
+              {/* Scope: All | Default | My Words (match /glossary) */}
               <div className="flex flex-wrap gap-1.5">
-                {['Default', 'Positive', 'Neutral', 'Negative'].map(filter => (
+                {(['All', 'Default', 'My Words'] as const).map(scope => (
                   <button
-                    key={filter}
-                    onClick={() => setSelectedFilter(filter)}
+                    key={scope}
+                    onClick={() => setScope(scope)}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-sm transition-all shrink-0 flex items-center gap-1.5",
-                      selectedFilter === filter
-                        ? `${bgColorClass} text-white`
-                        : 'bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10'
+                      "px-3 py-1.5 rounded-lg text-sm font-medium transition-all shrink-0 flex items-center gap-1",
+                      scopeFilter === scope
+                        ? scope === 'All'
+                          ? 'bg-gray-200 dark:bg-white/15 text-gray-800 dark:text-gray-100'
+                          : scope === 'Default'
+                          ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-200'
+                          : 'bg-purple-100 dark:bg-purple-500/20 text-purple-800 dark:text-purple-200'
+                        : 'bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
                     )}
-                    aria-pressed={selectedFilter === filter}
-                    aria-label={`Filter by ${filter} words`}
                   >
-                    {filter === 'Default' ? (
-                      <>
-                        <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-medium bg-white/20 dark:bg-white/20 shrink-0">
-                          D
-                        </span>
-                        Default
-                      </>
-                    ) : (
-                      filter
-                    )}
+                    {scope === 'Default' && <Layers className="w-3.5 h-3.5 shrink-0" />}
+                    {scope === 'My Words' && <UserCircle2 className="w-3.5 h-3.5 shrink-0" />}
+                    {scope}
                   </button>
                 ))}
               </div>
-
-              {/* Alphabet */}
-              <div className="flex flex-wrap gap-1">
-                {alphabet.map(letter => (
+              {/* Sentiment: Positive | Neutral | Negative (match /glossary) */}
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  { value: '+' as const, label: 'Positive' },
+                  { value: '~' as const, label: 'Neutral' },
+                  { value: '-' as const, label: 'Negative' },
+                ].map(({ value, label }) => (
                   <button
-                    key={letter}
-                    onClick={() => setSelectedLetter(selectedLetter === letter ? null : letter)}
+                    key={label}
+                    onClick={() => setSelectedSentiment(selectedSentiment === value ? null : value)}
                     className={cn(
-                      "w-6 h-6 rounded-full flex items-center justify-center text-xs transition-all shrink-0",
-                      selectedLetter === letter
-                        ? `${bgColorClass} text-white`
-                        : 'bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10'
+                      "px-3 py-1.5 rounded-full text-sm font-medium transition-all shrink-0",
+                      selectedSentiment === value
+                        ? value === '+'
+                          ? 'bg-emerald-100 dark:bg-emerald-500/25 text-emerald-800 dark:text-emerald-200 ring-1 ring-emerald-200 dark:ring-emerald-500/40'
+                          : value === '-'
+                          ? 'bg-rose-100 dark:bg-rose-500/25 text-rose-800 dark:text-rose-200 ring-1 ring-rose-200 dark:ring-rose-500/40'
+                          : 'bg-slate-100 dark:bg-slate-500/20 text-slate-700 dark:text-slate-200 ring-1 ring-slate-500/30'
+                        : value === '+'
+                        ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20'
+                        : value === '-'
+                        ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20'
+                        : 'bg-slate-50 dark:bg-slate-500/10 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-500/20'
                     )}
-                    aria-pressed={selectedLetter === letter}
-                    aria-label={`Filter by letter ${letter}`}
                   >
-                    {letter}
+                    {label}
                   </button>
                 ))}
               </div>
+              {/* Default: clock filter (match /glossary) */}
+              {scopeFilter === 'Default' && (
+                <div className="flex flex-wrap gap-1.5">
+                  <button
+                    onClick={() => setSelectedClockId(null)}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-sm font-medium transition-all shrink-0",
+                      selectedClockId === null
+                        ? 'bg-gray-200 dark:bg-white/20 text-gray-800 dark:text-gray-100'
+                        : 'bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                    )}
+                  >
+                    All
+                  </button>
+                  {clockTitles.map((title, id) => {
+                    const hex = CLOCK_HEX[id]
+                    const selected = selectedClockId === id
+                    return (
+                      <button
+                        key={id}
+                        onClick={() => setSelectedClockId(selected ? null : id)}
+                        className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all border bg-white dark:bg-black/30 border-black/5 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:border-opacity-100"
+                        style={selected && hex ? { borderColor: hex, color: hex } : undefined}
+                        onMouseEnter={(e) => {
+                          if (hex) { e.currentTarget.style.borderColor = hex; e.currentTarget.style.color = hex }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!hex) return
+                          if (selectedClockId === id) { e.currentTarget.style.borderColor = hex; e.currentTarget.style.color = hex }
+                          else { e.currentTarget.style.borderColor = ''; e.currentTarget.style.color = '' }
+                        }}
+                      >
+                        {title}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+              {/* A–Z collapsible (match /glossary) */}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => setShowAzFilter(!showAzFilter)}
+                  className={cn(
+                    "px-2.5 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-all",
+                    showAzFilter || selectedLetter
+                      ? 'bg-black/10 dark:bg-white/10 text-gray-800 dark:text-gray-200'
+                      : 'bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  )}
+                  aria-expanded={showAzFilter}
+                >
+                  {showAzFilter ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  A–Z
+                  {selectedLetter && <span className="text-xs opacity-80">({selectedLetter})</span>}
+                </button>
+                {showAzFilter && selectedLetter && (
+                  <button onClick={() => setSelectedLetter(null)} className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 underline">
+                    Clear
+                  </button>
+                )}
+              </div>
+              {showAzFilter && (
+                <div className="flex flex-wrap gap-1">
+                  {alphabet.map(letter => (
+                    <button
+                      key={letter}
+                      onClick={() => setSelectedLetter(selectedLetter === letter ? null : letter)}
+                      className={cn(
+                        "w-7 h-7 rounded flex items-center justify-center text-sm font-medium transition-all shrink-0",
+                        selectedLetter === letter
+                          ? 'bg-black text-white dark:bg-white dark:text-black'
+                          : 'bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-black/50 text-gray-700 dark:text-gray-300'
+                      )}
+                    >
+                      {letter}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Word Grid with Loading State */}
             <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
-              <div className="grid grid-cols-3 gap-2 p-2">
+              <div className="grid grid-cols-2 gap-2 p-2">
                 {isLoadingWords ? (
-                  <div className="col-span-3 py-6 text-center text-gray-500 dark:text-gray-400">
-                    Loading words...
-                  </div>
+                  <div className="col-span-2 py-6 text-center text-gray-500 dark:text-gray-400">Loading words...</div>
                 ) : loadError ? (
-                  <div className="col-span-3 py-6 text-center">
+                  <div className="col-span-2 py-6 text-center">
                     <p className="text-amber-500 dark:text-amber-400">{loadError}</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Please try again later</p>
                   </div>
                 ) : filteredWords.length === 0 ? (
-                  <div className="col-span-3 py-6 text-center text-gray-500 dark:text-gray-400">
-                    No words found. Try adjusting your filters or search.
-                  </div>
+                  <div className="col-span-2 py-6 text-center text-gray-500 dark:text-gray-400">No words found. Try adjusting filters or search.</div>
                 ) : (
-                  filteredWords.map((word) => (
-                    <button
-                      key={word.id}
-                      onClick={() => {
-                        const isSelected = words.includes(word.word)
-                        if (isSelected) {
-                          setWords(words.filter(w => w !== word.word))
-                        } else if (words.length < focusNodesCount) {
-                          setWords([...words, word.word])
-                        }
-                      }}
-                      className={`p-2 rounded-lg text-left transition-all ${
-                        words.includes(word.word)
-                          ? `${clockColor.split(' ')[0]} border border-current`
-                          : 'text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                      }`}
-                      disabled={!words.includes(word.word) && words.length >= focusNodesCount}
-                    >
-                      <div className="text-sm font-medium">{word.word}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
-                        {word.definition}
-                      </div>
-                    </button>
-                  ))
+                  filteredWords.map((word) => {
+                    const isAssigned = words.includes(word.word)
+                    const canAssign = isAssigned || words.filter(w => w).length < focusNodesCount
+                    return (
+                      <button
+                        key={word.id}
+                        onClick={() => {
+                          if (isAssigned) {
+                            const idx = words.indexOf(word.word)
+                            if (idx >= 0) {
+                              const newWords = [...words]
+                              newWords[idx] = ''
+                              setWords(newWords)
+                            }
+                          } else if (canAssign) {
+                            const emptyIdx = words.findIndex(w => !w)
+                            if (emptyIdx >= 0) {
+                              const newWords = [...words]
+                              newWords[emptyIdx] = word.word
+                              setWords(newWords)
+                            }
+                          }
+                        }}
+                        disabled={!canAssign && !isAssigned}
+                        className={cn(
+                          "p-3 rounded-lg text-left transition-all border",
+                          isAssigned
+                            ? 'border-black/20 dark:border-white/30 ring-2 ring-black/10 dark:ring-white/20 bg-gray-50 dark:bg-white/5'
+                            : 'bg-white dark:bg-black/40 border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20',
+                          !canAssign && !isAssigned && 'opacity-60 cursor-not-allowed'
+                        )}
+                      >
+                        <div className="flex justify-between items-start gap-2">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-sm font-medium text-black dark:text-white truncate">{word.word}</h3>
+                            {word.phonetic_spelling && (
+                              <span className="text-xs text-gray-500 dark:text-gray-400 block">{word.phonetic_spelling}</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <div className={cn(
+                              "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium",
+                              word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
+                              word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
+                              'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                            )}>
+                              {word.grade}
+                            </div>
+                            <div className={cn(
+                              "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium",
+                              word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
+                              word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
+                              'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                            )}>
+                              {word.rating}
+                            </div>
+                            {word.source === 'user' ? (
+                              <UserCircle2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                            ) : (
+                              <div
+                                className={cn("w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium", getDefaultIconStyle(word.clock_id) ? '' : 'bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300')}
+                                style={getDefaultIconStyle(word.clock_id) ?? undefined}
+                              >
+                                D
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <p className="text-gray-600 dark:text-gray-400 text-xs mt-1 line-clamp-2">{word.definition}</p>
+                      </button>
+                    )
+                  })
                 )}
               </div>
             </div>
