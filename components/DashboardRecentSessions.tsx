@@ -6,18 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
 
-// Clock titles mapping
-const clockTitles = [
-  "Galileo's First Observation",
-  "Neptune's Discovery",
-  "Galileo's Spring Observation",
-  "Jupiter's Moons",
-  "Uranus Discovery",
-  "Saturn's Rings",
-  "Ancient Star Charts",
-  "Winter Solstice Study",
-  "Medieval Observations"
-];
+import { clockTitles } from '@/lib/clockTitles';
 
 const clockColors = [
   'text-red-500',

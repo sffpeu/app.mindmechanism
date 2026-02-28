@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select"
 import { getUserSessions } from '@/lib/sessions'
 import { Session } from '@/lib/sessions'
+import { clockTitles } from '@/lib/clockTitles'
 import { useLocation } from '@/lib/hooks/useLocation'
 import { useSoundEffects } from '@/lib/sounds'
 
@@ -96,18 +97,6 @@ export default function NotesPage() {
   const [recentSessions, setRecentSessions] = useState<Session[]>([])
   const [selectedSessionId, setSelectedSessionId] = useState<string>('none')
   const { playSuccess } = useSoundEffects()
-
-  const clockTitles = [
-    "Galileo's First Observation",
-    "Neptune's Discovery",
-    "Galileo's Spring Observation",
-    "Jupiter's Moons",
-    "Uranus Discovery",
-    "Saturn's Rings",
-    "Ancient Star Charts",
-    "Winter Solstice Study",
-    "Medieval Observations"
-  ]
 
   // Load recent sessions
   useEffect(() => {

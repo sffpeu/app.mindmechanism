@@ -33,6 +33,7 @@ import { SessionTimer } from '@/components/SessionTimer'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useLocation } from '@/lib/hooks/useLocation'
 import DotNavigation from '@/components/DotNavigation'
+import { clockTitles } from '@/lib/clockTitles'
 // Test words for each node
 const testWords = [
   'Consciousness',
@@ -561,7 +562,7 @@ function NodesPageContent() {
                     {/* Clock Title and Description */}
                     <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10">
                       <h3 className="text-sm font-medium text-red-500">
-                        Galileo's First Observation
+                        {clockTitles[0]}
                       </h3>
                       <p className="text-xs text-black/60 dark:text-white/60 line-clamp-2">
                         First telescopic observations of the night sky, marking the beginning of modern astronomy.

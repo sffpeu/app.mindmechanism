@@ -32,6 +32,7 @@ import {
 import { Session as BaseSession } from '@/lib/sessions'
 import { useLocation } from '@/lib/hooks/useLocation'
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
+import { clockTitles } from '@/lib/clockTitles'
 
 interface WeatherResponse {
   location: {
@@ -111,18 +112,6 @@ const clockColors = [
   'bg-[#541b96]', // 7. Purple
   'bg-[#ee5fa7]', // 8. Pink
   'bg-[#56c1ff]', // 9. Light Blue
-];
-
-const clockTitles = [
-  "Galileo's First Observation",
-  "Neptune's Discovery",
-  "Galileo's Spring Observation",
-  "Jupiter's Moons",
-  "Uranus Discovery",
-  "Saturn's Rings",
-  "Ancient Star Charts",
-  "Winter Solstice Study",
-  "Medieval Observations"
 ];
 
 const WEATHER_API_KEY = process.env.NEXT_PUBLIC_WEATHER_API_KEY;

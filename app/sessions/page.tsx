@@ -17,6 +17,7 @@ import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useTimeTracking } from '@/lib/hooks/useTimeTracking'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { useSoundEffects } from '@/lib/sounds'
+import { clockTitles } from '@/lib/clockTitles'
 
 // Update satellites count for each clock
 const clockSatellites: Record<number, number> = {
@@ -111,19 +112,6 @@ export default function SessionsPage() {
     'text-purple-500 bg-purple-500',
     'text-indigo-500 bg-indigo-500',
     'text-cyan-500 bg-cyan-500'
-  ]
-
-  // Clock titles mapping
-  const clockTitles = [
-    "Galileo's First Observation",
-    "Neptune's Discovery",
-    "Galileo's Spring Observation",
-    "Jupiter's Moons",
-    "Uranus Discovery",
-    "Saturn's Rings",
-    "Ancient Star Charts",
-    "Winter Solstice Study",
-    "Medieval Observations"
   ]
 
   // Map clockSettings to clockData
