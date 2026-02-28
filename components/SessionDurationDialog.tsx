@@ -359,103 +359,11 @@ export function SessionDurationDialog({
         exit={{ opacity: 0, x: -20 }}
         className="w-full h-[calc(100%-1rem)] px-6 overflow-hidden"
       >
-        <div className="grid grid-cols-[minmax(320px,1fr)_minmax(0,1fr)] gap-6 h-full min-w-0">
-          {/* Left half: Clock visualization - fixed size so it never collapses */}
-          <div className="flex flex-col items-center justify-center gap-4 overflow-hidden min-w-[320px]">
-            <div className="relative w-[280px] h-[280px] shrink-0">
-              <div className="absolute inset-0 rounded-full border border-gray-200 dark:border-gray-800" />
-              <div className="absolute inset-[8%] rounded-full border border-gray-100 dark:border-gray-900" />
-              {Array.from({ length: focusNodesCount }).map((_, index) => {
-                const angle = ((360 / focusNodesCount) * index - 90) * (Math.PI / 180)
-                const radius = 42
-                const x = 50 + radius * Math.cos(angle)
-                const y = 50 + radius * Math.sin(angle)
-                return (
-                  <motion.button
-                    key={index}
-                    type="button"
-                    className="absolute focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-400 rounded-full"
-                    style={{
-                      left: `${x}%`,
-                      top: `${y}%`,
-                      transform: 'translate(-50%, -50%)',
-                    }}
-                    onClick={() => {
-                      if (words[index]) {
-                        const newWords = [...words]
-                        newWords[index] = ''
-                        setWords(newWords)
-                      }
-                    }}
-                    aria-label={words[index] ? `Clear ${words[index]}` : `Slot ${index + 1}`}
-                  >
-                    <div className={cn(
-                      "relative w-10 h-10 rounded-full flex items-center justify-center shadow-sm",
-                      bgColorClass,
-                      words[index] ? 'opacity-100 ring-2 ring-white/30 dark:ring-black/20' : 'opacity-60'
-                    )}>
-                      <span className="text-xs font-semibold text-white">{index + 1}</span>
-                    </div>
-                    {words[index] && (
-                      <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 w-20 text-center pointer-events-none">
-                        <span className="text-[10px] font-medium text-black/80 dark:text-white/80 truncate block">
-                          {words[index]}
-                        </span>
-                      </div>
-                    )}
-                  </motion.button>
-                )
-              })}
-            </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              {words.filter(w => w).length} of {focusNodesCount} — click node to clear
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleRandomWords}
-                disabled={words.every(word => word.trim() !== '')}
-                className={cn(
-                  "w-9 h-9 rounded-full flex items-center justify-center transition-all",
-                  words.every(word => word.trim() !== '')
-                    ? "bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed"
-                    : "bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
-                )}
-                aria-label="Fill empty slots with random words"
-              >
-                <Shuffle className="w-4 h-4" />
-              </button>
-              <button
-                onClick={handleRandomDefaultWords}
-                disabled={words.every(word => word.trim() !== '')}
-                className={cn(
-                  "w-9 h-9 rounded-full flex items-center justify-center transition-all font-bold text-xs",
-                  words.every(word => word.trim() !== '')
-                    ? "bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed"
-                    : "bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
-                )}
-                aria-label="Fill empty slots with default words"
-              >
-                D
-              </button>
-              <button
-                onClick={handleResetAllWords}
-                disabled={words.every(word => !word)}
-                className={cn(
-                  "w-9 h-9 rounded-full flex items-center justify-center transition-all",
-                  words.every(word => !word)
-                    ? "bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed"
-                    : "bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
-                )}
-                aria-label="Reset all words"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Right half: Glossary (synced to /glossary styling and content) */}
-          <div className="min-w-0 bg-white dark:bg-black/40 border border-black/5 dark:border-white/10 rounded-xl overflow-hidden flex flex-col max-h-full backdrop-blur-lg">
-            <div className="p-3 border-b border-black/5 dark:border-white/10 space-y-2">
+        <div className="flex gap-6 h-full min-w-0">
+          {/* Left: Glossary (takes remaining space, scrolls internally) */}
+          <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
+            <div className="min-w-0 bg-white dark:bg-black/40 border border-black/5 dark:border-white/10 rounded-xl overflow-hidden flex flex-col h-full backdrop-blur-lg">
+              <div className="p-3 border-b border-black/5 dark:border-white/10 space-y-2">
               <div className="flex items-center gap-2">
                 <div className="flex-1 relative">
                   <input
@@ -600,7 +508,7 @@ export function SessionDurationDialog({
                   ))}
                 </div>
               )}
-            </div>
+              </div>
 
             <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
               <div className="grid grid-cols-2 gap-2 p-2">
@@ -688,6 +596,99 @@ export function SessionDurationDialog({
                   })
                 )}
               </div>
+            </div>
+          </div>
+
+          {/* Right: Clock - fixed width, always visible regardless of glossary */}
+          <div className="flex-shrink-0 w-[360px] flex flex-col items-center justify-center gap-4">
+            <div className="relative w-[280px] h-[280px]">
+              <div className="absolute inset-0 rounded-full border border-gray-200 dark:border-gray-800" />
+              <div className="absolute inset-[8%] rounded-full border border-gray-100 dark:border-gray-900" />
+              {Array.from({ length: focusNodesCount }).map((_, index) => {
+                const angle = ((360 / focusNodesCount) * index - 90) * (Math.PI / 180)
+                const radius = 42
+                const x = 50 + radius * Math.cos(angle)
+                const y = 50 + radius * Math.sin(angle)
+                return (
+                  <motion.button
+                    key={index}
+                    type="button"
+                    className="absolute focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-400 rounded-full"
+                    style={{
+                      left: `${x}%`,
+                      top: `${y}%`,
+                      transform: 'translate(-50%, -50%)',
+                    }}
+                    onClick={() => {
+                      if (words[index]) {
+                        const newWords = [...words]
+                        newWords[index] = ''
+                        setWords(newWords)
+                      }
+                    }}
+                    aria-label={words[index] ? `Clear ${words[index]}` : `Slot ${index + 1}`}
+                  >
+                    <div className={cn(
+                      "relative w-10 h-10 rounded-full flex items-center justify-center shadow-sm",
+                      bgColorClass,
+                      words[index] ? 'opacity-100 ring-2 ring-white/30 dark:ring-black/20' : 'opacity-60'
+                    )}>
+                      <span className="text-xs font-semibold text-white">{index + 1}</span>
+                    </div>
+                    {words[index] && (
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 w-20 text-center pointer-events-none">
+                        <span className="text-[10px] font-medium text-black/80 dark:text-white/80 truncate block">
+                          {words[index]}
+                        </span>
+                      </div>
+                    )}
+                  </motion.button>
+                )
+              })}
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {words.filter(w => w).length} of {focusNodesCount} — click node to clear
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleRandomWords}
+                disabled={words.every(word => word.trim() !== '')}
+                className={cn(
+                  "w-9 h-9 rounded-full flex items-center justify-center transition-all",
+                  words.every(word => word.trim() !== '')
+                    ? "bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                    : "bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
+                )}
+                aria-label="Fill empty slots with random words"
+              >
+                <Shuffle className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleRandomDefaultWords}
+                disabled={words.every(word => word.trim() !== '')}
+                className={cn(
+                  "w-9 h-9 rounded-full flex items-center justify-center transition-all font-bold text-xs",
+                  words.every(word => word.trim() !== '')
+                    ? "bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                    : "bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
+                )}
+                aria-label="Fill empty slots with default words"
+              >
+                D
+              </button>
+              <button
+                onClick={handleResetAllWords}
+                disabled={words.every(word => !word)}
+                className={cn(
+                  "w-9 h-9 rounded-full flex items-center justify-center transition-all",
+                  words.every(word => !word)
+                    ? "bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                    : "bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
+                )}
+                aria-label="Reset all words"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>
