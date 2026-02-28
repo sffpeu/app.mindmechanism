@@ -26,11 +26,144 @@ export const ROOT_DEFAULT_WORDS: readonly string[] = [
   'Illusion'
 ];
 
-function assignRootClockId(words: GlossaryWord[]): GlossaryWord[] {
+/** Words that appear under Default > SACROL in the glossary (clock_id 1). */
+export const SACROL_DEFAULT_WORDS: readonly string[] = [
+  'Union',
+  'Sturdiness',
+  'Insightful',
+  'Modesty',
+  'Surprise',
+  'Joyless'
+];
+
+/** Words that appear under Default > SOLAR PLEXUS in the glossary (clock_id 2). */
+export const SOLAR_PLEXUS_DEFAULT_WORDS: readonly string[] = [
+  'Rampant',
+  'Causing',
+  'Salvage',
+  'Roaring',
+  'Pretentions',
+  'Salaciousness',
+  'Aim',
+  'Rebirth',
+  'Exuberance',
+  'Urge'
+];
+
+/** Words that appear under Default > HEART in the glossary (clock_id 3). */
+export const HEART_DEFAULT_WORDS: readonly string[] = [
+  'Balancing',
+  'Submerging',
+  'Attracting',
+  'Curiosity',
+  'Colliding',
+  'Concern',
+  'Fate',
+  'Overbearing',
+  'Life force',
+  'Protecting',
+  'Triumphing',
+  'Preening'
+];
+
+/** Words that appear under Default > THROAT in the glossary (clock_id 4). */
+export const THROAT_DEFAULT_WORDS: readonly string[] = [
+  'Resonating',
+  'Immersing',
+  'Righteous',
+  'Compulsion',
+  'Yearning',
+  'Adapting',
+  'Fostering',
+  'Flaunting',
+  'Advocating',
+  'Beguiling',
+  'Crippling',
+  'Repairing',
+  'Transforming',
+  'Suspension',
+  'Replanting',
+  'Reprocessing'
+];
+
+/** Words that appear under Default > THIRD EYE in the glossary (clock_id 5). */
+export const THIRD_EYE_DEFAULT_WORDS: readonly string[] = [
+  'Child-like',
+  'Unveiling',
+  'Flight',
+  'Premonition'
+];
+
+/** Words that appear under Default > MALE CROWN in the glossary (clock_id 6). */
+export const MALE_CROWN_DEFAULT_WORDS: readonly string[] = [
+  'Seeking',
+  'Idealism',
+  'Surrendering',
+  'Bliss',
+  'Spontaneity',
+  'Discourse',
+  'Empathy',
+  'Righteousness',
+  'Prayer',
+  'Majesty',
+  'Praise',
+  'Libation',
+  'Atonement',
+  'Ceremony',
+  'Temperance',
+  'Release'
+];
+
+/** Words that appear under Default > FEMALE CROWN in the glossary (clock_id 7). */
+export const FEMALE_CROWN_DEFAULT_WORDS: readonly string[] = [
+  'Infinity',
+  'Weaving love',
+  'Vibrating',
+  'Core centring',
+  'Purification',
+  'Stability',
+  'Kindness',
+  'Transformation',
+  'Self love',
+  'Pure being',
+  'Limitlessness',
+  'Contingency',
+  'Sensual',
+  'Effort',
+  'Innovating',
+  'Heritage'
+];
+
+/** Words that appear under Default > ETHERAL HEART in the glossary (clock_id 8). */
+export const ETHERAL_HEART_DEFAULT_WORDS: readonly string[] = [
+  'Father',
+  'Son',
+  'Spirit'
+];
+
+function assignDefaultClockIds(words: GlossaryWord[]): GlossaryWord[] {
   const rootSet = new Set(ROOT_DEFAULT_WORDS.map(w => w.toLowerCase()));
-  return words.map(w =>
-    rootSet.has(w.word.toLowerCase()) ? { ...w, clock_id: 0 } : w
-  );
+  const sacrolSet = new Set(SACROL_DEFAULT_WORDS.map(w => w.toLowerCase()));
+  const solarPlexusSet = new Set(SOLAR_PLEXUS_DEFAULT_WORDS.map(w => w.toLowerCase()));
+  const heartSet = new Set(HEART_DEFAULT_WORDS.map(w => w.toLowerCase()));
+  const throatSet = new Set(THROAT_DEFAULT_WORDS.map(w => w.toLowerCase()));
+  const thirdEyeSet = new Set(THIRD_EYE_DEFAULT_WORDS.map(w => w.toLowerCase()));
+  const maleCrownSet = new Set(MALE_CROWN_DEFAULT_WORDS.map(w => w.toLowerCase()));
+  const femaleCrownSet = new Set(FEMALE_CROWN_DEFAULT_WORDS.map(w => w.toLowerCase()));
+  const etherealHeartSet = new Set(ETHERAL_HEART_DEFAULT_WORDS.map(w => w.toLowerCase()));
+  return words.map(w => {
+    const lower = w.word.toLowerCase();
+    if (rootSet.has(lower)) return { ...w, clock_id: 0 };
+    if (sacrolSet.has(lower)) return { ...w, clock_id: 1 };
+    if (solarPlexusSet.has(lower)) return { ...w, clock_id: 2 };
+    if (heartSet.has(lower)) return { ...w, clock_id: 3 };
+    if (throatSet.has(lower)) return { ...w, clock_id: 4 };
+    if (thirdEyeSet.has(lower)) return { ...w, clock_id: 5 };
+    if (maleCrownSet.has(lower)) return { ...w, clock_id: 6 };
+    if (femaleCrownSet.has(lower)) return { ...w, clock_id: 7 };
+    if (etherealHeartSet.has(lower)) return { ...w, clock_id: 8 };
+    return w;
+  });
 }
 
 // Maximum number of retries for Firestore operations
@@ -90,7 +223,7 @@ export async function getAllWords(): Promise<GlossaryWord[]> {
         return createDefaultGlossaryWords();
       }
 
-      return assignRootClockId(words);
+      return assignDefaultClockIds(words);
     };
 
     return await retryOperation(operation);
@@ -125,7 +258,7 @@ export async function getWordsByRating(rating: string): Promise<GlossaryWord[]> 
         return createDefaultGlossaryWords().filter(word => word.rating === rating);
       }
 
-      return assignRootClockId(words);
+      return assignDefaultClockIds(words);
     };
 
     return await retryOperation(operation);
@@ -159,7 +292,7 @@ export async function getClockWords(): Promise<GlossaryWord[]> {
         return createDefaultGlossaryWords();
       }
 
-      return assignRootClockId(words);
+      return assignDefaultClockIds(words);
     };
 
     return await retryOperation(operation);
@@ -241,7 +374,7 @@ export async function searchWords(searchText: string): Promise<GlossaryWord[]> {
         word.word.toLowerCase().includes(searchQuery) ||
         word.definition.toLowerCase().includes(searchQuery)
       );
-    return assignRootClockId(results);
+    return assignDefaultClockIds(results);
   } catch (error) {
     console.error('Error searching words:', error);
     return [];

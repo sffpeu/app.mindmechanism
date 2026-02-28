@@ -33,6 +33,12 @@ export default function GlossaryPage() {
   // Clock 1–9 colors from Clock.tsx (ROOT → ETHERAL HEART)
   const CLOCK_HEX = ['#fd290a', '#fba63b', '#f7da5f', '#6dc037', '#156fde', '#941952', '#541b96', '#ee5fa7', '#56c1ff']
 
+  const getDefaultIconStyle = (clockId: number | undefined) => {
+    if (clockId == null || clockId < 0 || clockId >= CLOCK_HEX.length) return undefined
+    const hex = CLOCK_HEX[clockId]
+    return { backgroundColor: `${hex}20`, color: hex }
+  }
+
   useEffect(() => {
     loadWords()
   }, [])
@@ -357,7 +363,10 @@ export default function GlossaryPage() {
                         {word.source === 'user' ? (
                           <UserCircle2 className="w-5 h-5 text-purple-600 dark:text-purple-400 shrink-0" />
                         ) : (
-                          <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300 shrink-0">
+                          <div
+                            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium shrink-0 ${getDefaultIconStyle(word.clock_id) ? '' : 'bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300'}`}
+                            style={getDefaultIconStyle(word.clock_id) ?? undefined}
+                          >
                             D
                           </div>
                         )}
@@ -389,7 +398,10 @@ export default function GlossaryPage() {
                             {word.source === 'user' ? (
                               <UserCircle2 className="w-5 h-5 text-purple-600 dark:text-purple-400 shrink-0" />
                             ) : (
-                              <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300 shrink-0">
+                              <div
+                                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium shrink-0 ${getDefaultIconStyle(word.clock_id) ? '' : 'bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300'}`}
+                                style={getDefaultIconStyle(word.clock_id) ?? undefined}
+                              >
                                 D
                               </div>
                             )}
