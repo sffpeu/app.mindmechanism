@@ -225,8 +225,8 @@ export function SessionDurationDialog({
   }
 
   const handleRandomDefaultWords = () => {
-    // Get all default words from the glossary
-    const defaultWords = glossaryWords.filter(word => word.version === 'Default');
+    // Default = words belonging to a clock (ROOT, SACROL, …); exclude words with no clock_id
+    const defaultWords = glossaryWords.filter(word => word.clock_id != null && word.clock_id >= 0 && word.clock_id <= 8);
     if (defaultWords.length === 0) return;
 
     // Define themes for each clock
@@ -327,7 +327,7 @@ export function SessionDurationDialog({
       if (selectedFilter === 'Positive') return word.rating === '+'
       if (selectedFilter === 'Neutral') return word.rating === '~'
       if (selectedFilter === 'Negative') return word.rating === '-'
-      if (selectedFilter === 'Default') return true
+      if (selectedFilter === 'Default') return word.clock_id != null && word.clock_id >= 0 && word.clock_id <= 8
       if (selectedLetter) return word.word.toUpperCase().startsWith(selectedLetter)
       return true
     }).sort((a, b) => a.word.localeCompare(b.word))

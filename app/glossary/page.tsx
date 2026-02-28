@@ -86,7 +86,8 @@ export default function GlossaryPage() {
     if (scopeFilter === 'My Words') {
       if (word.source !== 'user' || word.user_id !== user?.uid) return false
     } else if (scopeFilter === 'Default') {
-      if (word.source !== 'system' && word.version !== 'Default') return false
+      // Only words belonging to a clock (ROOT, SACROL, …) are Default words
+      if (word.clock_id == null || word.clock_id < 0 || word.clock_id > 8) return false
       if (selectedClockId !== null && word.clock_id !== selectedClockId) return false
     }
     // Sentiment (Positive / Neutral / Negative)
