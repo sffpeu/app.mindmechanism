@@ -352,13 +352,14 @@ export function SessionDurationDialog({
     }).sort((a, b) => a.word.localeCompare(b.word))
 
     return (
-      <Motion.div
-        key="words"
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -20 }}
-        className="w-full h-[calc(100%-1rem)] px-6 overflow-hidden"
-      >
+      <div className="w-full h-[calc(100%-1rem)] px-6 overflow-hidden">
+        <Motion.div
+          key="words"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          className="w-full h-full"
+        >
         <div className="flex gap-6 h-full min-w-0">
           {/* Left: Glossary (takes remaining space, scrolls internally) */}
           <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
@@ -692,7 +693,8 @@ export function SessionDurationDialog({
             </div>
           </div>
         </div>
-      </Motion.div>
+        </Motion.div>
+      </div>
     )
   }
 
