@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
-import { Play, Clock, Calendar, RotateCw, Timer, Compass, LayoutGrid, List, ChevronUp, ChevronDown } from 'lucide-react'
+import { Play, Clock, RotateCw, Timer, Compass, LayoutGrid, List, ChevronUp, ChevronDown } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import DotNavigation from '@/components/DotNavigation'
@@ -44,6 +44,7 @@ interface ClockData extends Omit<typeof clockSettings[0], 'startDateTime'> {
   title: string
   startDate: string
   timeElapsed: string
+  currentDegree: number
   focusNodes: number
   satellites: SatelliteSettings[]
   totalRotations: number
@@ -92,13 +93,12 @@ export default function SessionsPage() {
     return `${years}y ${days}d ${hours}h`
   }
 
-  // Function to format start date
-  const formatStartDate = (date: Date): string => {
-    return `Started ${date.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric'
-    })}`
+  // Date as DD.MM.YYYY for session cards
+  const formatClockDate = (date: Date): string => {
+    const d = date.getDate().toString().padStart(2, '0')
+    const m = (date.getMonth() + 1).toString().padStart(2, '0')
+    const y = date.getFullYear()
+    return `${d}.${m}.${y}`
   }
 
   // Clock colors mapping
@@ -115,21 +115,29 @@ export default function SessionsPage() {
   ]
 
   // Map clockSettings to clockData
-  const clockData: ClockData[] = clockSettings.map((clock, index) => ({
-    ...clock,
-    title: clockTitles[index],
-    startDate: formatStartDate(clock.startDateTime),
-    timeElapsed: getElapsedTime(clock.startDateTime),
-    focusNodes: clock.focusNodes,
-    satellites: Array.from({ length: clockSatellites[index] || 0 }).map((_, i) => ({
-      id: i,
-      rotationTime: 60000, // default 60 seconds
-      rotationDirection: 'clockwise' as const
-    })),
-    totalRotations: Math.floor((Date.now() - clock.startDateTime.getTime()) / clock.rotationTime),
-    color: clockColors[index],
-    description: clockDescriptions[index]
-  }))
+  const clockData: ClockData[] = clockSettings.map((clock, index) => {
+    const elapsedMs = Date.now() - clock.startDateTime.getTime()
+    const rotationFraction = (elapsedMs / clock.rotationTime) % 1
+    const currentDegree = clock.rotationDirection === 'clockwise'
+      ? (clock.startingDegree + rotationFraction * 360) % 360
+      : (clock.startingDegree - rotationFraction * 360 + 360) % 360
+    return {
+      ...clock,
+      title: clockTitles[index],
+      startDate: formatClockDate(clock.startDateTime),
+      timeElapsed: getElapsedTime(clock.startDateTime),
+      currentDegree,
+      focusNodes: clock.focusNodes,
+      satellites: Array.from({ length: clockSatellites[index] || 0 }).map((_, i) => ({
+        id: i,
+        rotationTime: 60000, // default 60 seconds
+        rotationDirection: 'clockwise' as const
+      })),
+      totalRotations: Math.floor(elapsedMs / clock.rotationTime),
+      color: clockColors[index],
+      description: clockDescriptions[index]
+    }
+  })
 
   const formatTime = (seconds: number) => {
     return `${Math.floor(seconds)}s remaining`
@@ -308,19 +316,18 @@ export default function SessionsPage() {
                       </div>
 
                       <div className={`flex-1 min-w-0 ${isCreateListView ? '' : 'flex flex-col h-full'}`}>
-                        <div>
+                        <div className="text-center">
                           <h3 className={`text-lg font-medium ${clock.color.split(' ')[0]}`}>
                             {clock.title}
                           </h3>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            {clock.startDate}
+                          </p>
                           {isCreateListView && (
                             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
                               {clock.description}
                             </p>
                           )}
-                          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-2">
-                            <Calendar className="h-4 w-4" />
-                            {clock.startDate}
-                          </div>
                         </div>
 
                         <div className={`${isCreateListView ? "grid grid-cols-3 gap-4 mb-4" : "grid grid-cols-3 gap-1.5 my-4"}`}>
@@ -344,11 +351,11 @@ export default function SessionsPage() {
                           </div>
                           <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
                             <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                              <Timer className="h-3 w-3 text-gray-400 dark:text-gray-500" />
-                              Rot. Time
+                              <Compass className="h-3 w-3 text-gray-400 dark:text-gray-500" />
+                              Rotation
                             </span>
                             <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                              {(clock.rotationTime / 1000).toFixed(0)}s
+                              {clock.currentDegree.toFixed(3)}°
                             </span>
                           </div>
                           <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">

@@ -521,10 +521,13 @@ function NodesPageContent() {
                 <CardContent className="p-4">
                   <div className="space-y-3">
                     {/* Clock Title and Description */}
-                    <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10">
+                    <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10 text-center">
                       <h3 className="text-sm font-medium text-orange-500">
                         {clockTitles[6]}
                       </h3>
+                      <p className="text-xs text-black/60 dark:text-white/60">
+                        {clock6.startDateTime.getDate().toString().padStart(2, '0')}.{(clock6.startDateTime.getMonth() + 1).toString().padStart(2, '0')}.{clock6.startDateTime.getFullYear()}
+                      </p>
                       <p className="text-xs text-black/60 dark:text-white/60 line-clamp-2">
                         The historic discovery of Neptune, predicted through mathematical calculations before visual confirmation.
                       </p>
@@ -532,25 +535,14 @@ function NodesPageContent() {
 
                     {/* Clock Information */}
                     <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10">
-                      <div className="grid grid-cols-4 gap-2">
-                        <div>
-                          <p className="text-xs font-medium text-black/60 dark:text-white/60 flex items-center gap-1">
-                            <ClockIcon className="h-3 w-3" />
-                            Current
-                          </p>
-                          <p className="text-sm font-medium text-black/90 dark:text-white/90">
-                            {currentTime.toLocaleTimeString()}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs font-medium text-black/60 dark:text-white/60 flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            Started
-                          </p>
-                          <p className="text-sm font-medium text-black/90 dark:text-white/90">
-                            {new Date('1846-09-23T06:00:00').toLocaleDateString()}
-                          </p>
-                        </div>
+                      <div>
+                        <p className="text-xs font-medium text-black/60 dark:text-white/60 flex items-center gap-1">
+                          <ClockIcon className="h-3 w-3" />
+                          Current
+                        </p>
+                        <p className="text-sm font-medium text-black/90 dark:text-white/90">
+                          {currentTime.toLocaleTimeString()}
+                        </p>
                       </div>
 
                       <div>
@@ -576,10 +568,10 @@ function NodesPageContent() {
                         <div>
                           <p className="text-xs font-medium text-black/60 dark:text-white/60 flex items-center gap-1">
                             <RotateCw className="h-3 w-3" />
-                            Rot. Time
+                            Rotation
                           </p>
                           <p className="text-sm font-medium text-black/90 dark:text-white/90">
-                            {rotationTime / 1000}s
+                            {currentDegree.toFixed(3)}°
                           </p>
                         </div>
                       </div>
@@ -617,7 +609,7 @@ function NodesPageContent() {
                       <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
                         <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
                           <Compass className="h-3 w-3 text-gray-400 dark:text-gray-500" />
-                          Current °
+                          Rotation
                         </span>
                         <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
                           {clockInfo.direction === 'clockwise' ? '+' : ''}{currentDegree.toFixed(3)}°
