@@ -7,6 +7,8 @@ export interface GlossaryWord {
   rating: '+' | '-' | '~';
   source: 'system' | 'user';
   version: 'Default' | 'User';
+  /** For default words: which clock (0–8) this word belongs to. See clockTitles. */
+  clock_id?: number;
   user_id?: string;
   created_at: string;
 }
