@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion as Motion, AnimatePresence } from 'framer-motion'
 import { Timer, ChevronRight, InfinityIcon, X, Check, ArrowLeft, PenLine, Search, Shuffle, Trash2, Layers, UserCircle2, ChevronDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { clockSettings } from '@/lib/clockSettings'
@@ -352,7 +352,7 @@ export function SessionDurationDialog({
     }).sort((a, b) => a.word.localeCompare(b.word))
 
     return (
-      <motion.div
+      <Motion.div
         key="words"
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -610,7 +610,7 @@ export function SessionDurationDialog({
                 const x = 50 + radius * Math.cos(angle)
                 const y = 50 + radius * Math.sin(angle)
                 return (
-                  <motion.button
+                  <Motion.button
                     key={index}
                     type="button"
                     className="absolute focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-400 rounded-full"
@@ -642,7 +642,7 @@ export function SessionDurationDialog({
                         </span>
                       </div>
                     )}
-                  </motion.button>
+                  </Motion.button>
                 )
               })}
             </div>
@@ -692,7 +692,7 @@ export function SessionDurationDialog({
             </div>
           </div>
         </div>
-      </motion.div>
+      </Motion.div>
     )
   }
 
@@ -860,7 +860,7 @@ export function SessionDurationDialog({
           )}>
             <AnimatePresence mode="wait">
               {step === 'duration' && (
-                <motion.div
+                <Motion.div
                   key="duration"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -917,7 +917,7 @@ export function SessionDurationDialog({
                         {/* Center content */}
                         <div className="absolute inset-0 flex items-center justify-center">
                           <AnimatePresence mode="wait">
-                            <motion.div
+                            <Motion.div
                               key={isEndless ? 'endless' : 'timed'}
                               initial={{ opacity: 0, scale: 0.9 }}
                               animate={{ opacity: 1, scale: 1 }}
@@ -938,7 +938,7 @@ export function SessionDurationDialog({
                                   </span>
                                 </>
                               )}
-                            </motion.div>
+                            </Motion.div>
                           </AnimatePresence>
                         </div>
                       </div>
@@ -962,7 +962,7 @@ export function SessionDurationDialog({
                       {/* Time Presets */}
                       <div className="grid grid-cols-2 gap-2">
                         {timePresets.map((preset) => (
-                          <motion.button
+                          <Motion.button
                             key={preset}
                             onClick={() => handlePresetClick(preset)}
                             onHoverStart={() => setHoveredPreset(preset)}
@@ -980,7 +980,7 @@ export function SessionDurationDialog({
                               <span className="text-base">{preset}</span>
                               <span className="text-xs ml-0.5">min</span>
                             </div>
-                          </motion.button>
+                          </Motion.button>
                         ))}
                       </div>
 
@@ -1023,7 +1023,7 @@ export function SessionDurationDialog({
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </Motion.div>
               )}
 
               {step === 'words' && (
