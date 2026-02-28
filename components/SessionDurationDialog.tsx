@@ -9,7 +9,6 @@ import { cn } from '@/lib/utils'
 import { clockSettings } from '@/lib/clockSettings'
 import { GlossaryWord } from '@/types/Glossary'
 import { getClockWords } from '@/lib/glossary'
-import { HintPopup } from '@/components/ui/hint-popup'
 import { useSoundEffects } from '@/lib/sounds'
 import { useRouter } from 'next/navigation'
 import { createSession } from '@/lib/sessions'
@@ -50,8 +49,6 @@ export function SessionDurationDialog({
   const [selectedFilter, setSelectedFilter] = useState('Default')
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
   const [hoveredWord, setHoveredWord] = useState<string | null>(null)
-  const [showDurationHint, setShowDurationHint] = useState(false)
-  const [showWordsHint, setShowWordsHint] = useState(false)
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false)
   const [selectedWordIndex, setSelectedWordIndex] = useState<number | null>(null)
   const [filteredWords, setFilteredWords] = useState<GlossaryWord[]>([])
@@ -69,24 +66,8 @@ export function SessionDurationDialog({
   useEffect(() => {
     if (!open) {
       setHasInteracted(false)
-      setShowDurationHint(false)
-      setShowWordsHint(false)
     }
   }, [open])
-
-  useEffect(() => {
-    if (step === 'duration' && hasInteracted) {
-      const hasSeenAnyDurationHint = localStorage.getItem('hasSeenAnyDurationHint')
-      if (!hasSeenAnyDurationHint) {
-        setShowDurationHint(true)
-      }
-    } else if (step === 'words' && hasInteracted) {
-      const hasSeenAnyWordsHint = localStorage.getItem('hasSeenAnyWordsHint')
-      if (!hasSeenAnyWordsHint) {
-        setShowWordsHint(true)
-      }
-    }
-  }, [step, hasInteracted])
 
   useEffect(() => {
     if (step === 'words') {
@@ -969,22 +950,6 @@ export function SessionDurationDialog({
             </AnimatePresence>
           </div>
         </div>
-
-        <HintPopup
-          title="Set Your Session Duration"
-          description="Setting the right duration for your session is crucial. A focused session typically lasts between 15-60 minutes. Choose a duration that matches your energy levels and the complexity of your task."
-          storageKey="hasSeenAnyDurationHint"
-          open={showDurationHint}
-          onOpenChange={setShowDurationHint}
-        />
-
-        <HintPopup
-          title="Assign Words to Focus Nodes"
-          description="Words help you maintain focus during your session. Each focus node represents a key concept or task you want to concentrate on. You can skip this step, but assigning words can make your session more meaningful and structured."
-          storageKey="hasSeenAnyWordsHint"
-          open={showWordsHint}
-          onOpenChange={setShowWordsHint}
-        />
 
       </DialogContent>
     </Dialog>

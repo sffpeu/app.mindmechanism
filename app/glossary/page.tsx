@@ -32,10 +32,6 @@ export default function GlossaryPage() {
 
   // Clock 1–9 colors from Clock.tsx (ROOT → ETHERAL HEART)
   const CLOCK_HEX = ['#fd290a', '#fba63b', '#f7da5f', '#6dc037', '#156fde', '#941952', '#541b96', '#ee5fa7', '#56c1ff']
-  const isLight = (hex: string) => {
-    const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16)
-    return (r * 299 + g * 587 + b * 114) / 1000 > 155
-  }
 
   useEffect(() => {
     loadWords()
@@ -231,10 +227,28 @@ export default function GlossaryPage() {
                   <button
                     key={id}
                     onClick={() => setSelectedClockId(selected ? null : id)}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border border-transparent ${
-                      selected ? '' : 'bg-white dark:bg-black/30 border-black/5 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:opacity-90'
-                    }`}
-                    style={selected && hex ? { backgroundColor: hex, color: isLight(hex) ? '#1a1a1a' : '#fff', borderColor: hex } : undefined}
+                    className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all border bg-white dark:bg-black/30 border-black/5 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:border-opacity-100"
+                    style={
+                      selected && hex
+                        ? { borderColor: hex, color: hex }
+                        : undefined
+                    }
+                    onMouseEnter={(e) => {
+                      if (hex) {
+                        e.currentTarget.style.borderColor = hex
+                        e.currentTarget.style.color = hex
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!hex) return
+                      if (selectedClockId === id) {
+                        e.currentTarget.style.borderColor = hex
+                        e.currentTarget.style.color = hex
+                      } else {
+                        e.currentTarget.style.borderColor = ''
+                        e.currentTarget.style.color = ''
+                      }
+                    }}
                   >
                     {title}
                   </button>
