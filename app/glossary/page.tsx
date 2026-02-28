@@ -30,18 +30,12 @@ export default function GlossaryPage() {
 
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
 
-  // Per-clock colors for Default filter (selected state)
-  const clockColorClasses: { selected: string; hover: string }[] = [
-    { selected: 'bg-amber-100 dark:bg-amber-500/25 text-amber-800 dark:text-amber-200', hover: 'hover:bg-amber-50 dark:hover:bg-amber-500/10' },
-    { selected: 'bg-orange-100 dark:bg-orange-500/25 text-orange-800 dark:text-orange-200', hover: 'hover:bg-orange-50 dark:hover:bg-orange-500/10' },
-    { selected: 'bg-yellow-100 dark:bg-yellow-500/20 text-yellow-800 dark:text-yellow-200', hover: 'hover:bg-yellow-50 dark:hover:bg-yellow-500/10' },
-    { selected: 'bg-rose-100 dark:bg-rose-500/25 text-rose-800 dark:text-rose-200', hover: 'hover:bg-rose-50 dark:hover:bg-rose-500/10' },
-    { selected: 'bg-sky-100 dark:bg-sky-500/25 text-sky-800 dark:text-sky-200', hover: 'hover:bg-sky-50 dark:hover:bg-sky-500/10' },
-    { selected: 'bg-violet-100 dark:bg-violet-500/25 text-violet-800 dark:text-violet-200', hover: 'hover:bg-violet-50 dark:hover:bg-violet-500/10' },
-    { selected: 'bg-indigo-100 dark:bg-indigo-500/25 text-indigo-800 dark:text-indigo-200', hover: 'hover:bg-indigo-50 dark:hover:bg-indigo-500/10' },
-    { selected: 'bg-fuchsia-100 dark:bg-fuchsia-500/25 text-fuchsia-800 dark:text-fuchsia-200', hover: 'hover:bg-fuchsia-50 dark:hover:bg-fuchsia-500/10' },
-    { selected: 'bg-teal-100 dark:bg-teal-500/25 text-teal-800 dark:text-teal-200', hover: 'hover:bg-teal-50 dark:hover:bg-teal-500/10' },
-  ]
+  // Clock 1–9 colors from Clock.tsx (ROOT → ETHERAL HEART)
+  const CLOCK_HEX = ['#fd290a', '#fba63b', '#f7da5f', '#6dc037', '#156fde', '#941952', '#541b96', '#ee5fa7', '#56c1ff']
+  const isLight = (hex: string) => {
+    const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16)
+    return (r * 299 + g * 587 + b * 114) / 1000 > 155
+  }
 
   useEffect(() => {
     loadWords()
@@ -168,21 +162,18 @@ export default function GlossaryPage() {
               </button>
             ))}
             <span className="w-px h-4 bg-gray-200 dark:bg-white/10" aria-hidden />
-            {/* Mood: always colored pills */}
+            {/* Mood: Positive, Neutral, Negative — always colored */}
             {[
-              { value: null, label: 'All' },
               { value: '+' as const, label: 'Positive' },
               { value: '~' as const, label: 'Neutral' },
               { value: '-' as const, label: 'Negative' },
             ].map(({ value, label }) => (
               <button
                 key={label}
-                onClick={() => setSelectedSentiment(value)}
+                onClick={() => setSelectedSentiment(selectedSentiment === value ? null : value)}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                   selectedSentiment === value
-                    ? value === null
-                      ? 'bg-gray-200 dark:bg-white/15 text-gray-800 dark:text-gray-100'
-                      : value === '+'
+                    ? value === '+'
                       ? 'bg-emerald-100 dark:bg-emerald-500/25 text-emerald-800 dark:text-emerald-200 ring-1 ring-emerald-200 dark:ring-emerald-500/40'
                       : value === '-'
                       ? 'bg-rose-100 dark:bg-rose-500/25 text-rose-800 dark:text-rose-200 ring-1 ring-rose-200 dark:ring-rose-500/40'
@@ -191,30 +182,41 @@ export default function GlossaryPage() {
                     ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20'
                     : value === '-'
                     ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20'
-                    : value === '~'
-                    ? 'bg-slate-50 dark:bg-slate-500/10 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-500/20'
-                    : 'bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                    : 'bg-slate-50 dark:bg-slate-500/10 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-500/20'
                 }`}
               >
                 {label}
               </button>
             ))}
-            <button
-              onClick={() => setIsAddWordOpen(true)}
-              className="ml-auto px-3 py-1.5 rounded-lg text-sm bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 text-gray-700 dark:text-gray-300 flex items-center gap-1.5"
-              aria-label="Add word"
-            >
-              <Plus className="w-4 h-4" />
-              Add
-            </button>
+            <div className="ml-auto flex items-center gap-2">
+              {selectedCard && (
+                <button
+                  type="button"
+                  onClick={() => { setEditWord(selectedCard); setIsAddWordOpen(true) }}
+                  className="px-3 py-1.5 rounded-lg text-sm bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 text-gray-700 dark:text-gray-300 flex items-center gap-1.5"
+                  aria-label="Edit word"
+                >
+                  <Pencil className="w-4 h-4" />
+                  Edit
+                </button>
+              )}
+              <button
+                onClick={() => setIsAddWordOpen(true)}
+                className="px-3 py-1.5 rounded-lg text-sm bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 text-gray-700 dark:text-gray-300 flex items-center gap-1.5"
+                aria-label="Add word"
+              >
+                <Plus className="w-4 h-4" />
+                Add
+              </button>
+            </div>
           </div>
 
-          {/* Default: clock filter with per-clock colors */}
+          {/* Default: clock filter — same size as category pills, colors from clocks 1–9 */}
           {scopeFilter === 'Default' && (
-            <div className="flex flex-wrap items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-3">
               <button
                 onClick={() => setSelectedClockId(null)}
-                className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   selectedClockId === null
                     ? 'bg-gray-200 dark:bg-white/20 text-gray-800 dark:text-gray-100'
                     : 'bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
@@ -223,14 +225,16 @@ export default function GlossaryPage() {
                 All
               </button>
               {clockTitles.map((title, id) => {
-                const style = clockColorClasses[id]
+                const hex = CLOCK_HEX[id]
+                const selected = selectedClockId === id
                 return (
                   <button
                     key={id}
-                    onClick={() => setSelectedClockId(selectedClockId === id ? null : id)}
-                    className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all border border-transparent ${
-                      selectedClockId === id ? style.selected : `bg-white dark:bg-black/30 border-black/5 dark:border-white/10 text-gray-500 dark:text-gray-400 ${style.hover}`
+                    onClick={() => setSelectedClockId(selected ? null : id)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border border-transparent ${
+                      selected ? '' : 'bg-white dark:bg-black/30 border-black/5 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:opacity-90'
                     }`}
+                    style={selected && hex ? { backgroundColor: hex, color: isLight(hex) ? '#1a1a1a' : '#fff', borderColor: hex } : undefined}
                   >
                     {title}
                   </button>
@@ -240,40 +244,27 @@ export default function GlossaryPage() {
           )}
 
           {/* A–Z: collapsible */}
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setShowAzFilter(!showAzFilter)}
+              className={`px-2.5 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-all ${
+                showAzFilter || selectedLetter
+                  ? 'bg-black/10 dark:bg-white/10 text-gray-800 dark:text-gray-200'
+                  : 'bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+              }`}
+              aria-expanded={showAzFilter}
+              aria-controls="az-filter"
+            >
+              {showAzFilter ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              A–Z
+              {selectedLetter && <span className="text-xs opacity-80">({selectedLetter})</span>}
+            </button>
+            {showAzFilter && selectedLetter && (
               <button
-                onClick={() => setShowAzFilter(!showAzFilter)}
-                className={`px-2.5 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-all ${
-                  showAzFilter || selectedLetter
-                    ? 'bg-black/10 dark:bg-white/10 text-gray-800 dark:text-gray-200'
-                    : 'bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-                }`}
-                aria-expanded={showAzFilter}
-                aria-controls="az-filter"
+                onClick={() => setSelectedLetter(null)}
+                className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 underline"
               >
-                {showAzFilter ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                A–Z
-                {selectedLetter && <span className="text-xs opacity-80">({selectedLetter})</span>}
-              </button>
-              {showAzFilter && selectedLetter && (
-                <button
-                  onClick={() => setSelectedLetter(null)}
-                  className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 underline"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-            {selectedCard && (
-              <button
-                type="button"
-                onClick={() => { setEditWord(selectedCard); setIsAddWordOpen(true) }}
-                className="p-2 rounded-lg bg-white dark:bg-black/40 border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 text-gray-700 dark:text-gray-300 flex items-center gap-2 text-sm"
-                aria-label="Edit word"
-              >
-                <Pencil className="h-4 w-4" />
-                Edit
+                Clear
               </button>
             )}
           </div>
