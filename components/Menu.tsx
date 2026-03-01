@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Menu as MenuIcon, X, Settings, Sun, Moon, BookOpen, ClipboardList, LogOut, LayoutDashboard, Clock, Home, Volume2, VolumeX, ExternalLink } from 'lucide-react'
+import { X, Settings, Sun, Moon, BookOpen, ClipboardList, LogOut, LayoutDashboard, Clock, Home, Volume2, VolumeX, ExternalLink } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -19,7 +19,7 @@ interface MenuProps {
   onSatellitesChange?: (value: boolean) => void
   showInfoCards?: boolean
   onInfoCardsChange?: (checked: boolean) => void
-  /** Position of the hamburger button. Default 'right'. Use 'left' for individual clock pages. */
+  /** Position of the menu trigger (home icon). Default 'right' for top-right on all pages. */
   position?: 'left' | 'right'
 }
 
@@ -120,12 +120,13 @@ export function Menu({
 
   return (
     <>
-      {/* Hamburger Button */}
+      {/* Menu trigger (home icon) – top right on all pages */}
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className={`fixed top-4 z-[999] w-10 h-10 bg-white dark:bg-black shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center rounded-full ${position === 'left' ? 'left-4' : 'right-4'}`}
+        className={`fixed top-4 z-[999] w-10 h-10 flex items-center justify-center text-black dark:text-white hover:opacity-80 transition-opacity ${position === 'left' ? 'left-4' : 'right-4'}`}
+        aria-label="Open menu"
       >
-        <MenuIcon className="h-5 w-5 text-black dark:text-white" />
+        <Home className="h-5 w-5" />
       </button>
 
       {/* Backdrop overlay */}
@@ -158,12 +159,13 @@ export function Menu({
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-4 border-b border-black/10 dark:border-white/10 shrink-0">
-              <h1 className="text-lg font-bold text-black dark:text-white">
+              <h1 className="text-lg font-bold text-black dark:text-white normal-case">
                 1M3 Mindmechanism
               </h1>
               <button
                 onClick={() => setIsMenuOpen(false)}
-                className="w-9 h-9 bg-black dark:bg-white text-white dark:text-black flex items-center justify-center hover:bg-black/80 dark:hover:bg-white/80 transition-colors rounded-full"
+                className="p-1 text-black dark:text-white hover:opacity-70 transition-opacity"
+                aria-label="Close menu"
               >
                 <X className="h-4 w-4" />
               </button>

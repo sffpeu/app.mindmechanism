@@ -408,14 +408,14 @@ export default function GlossaryPage() {
                                 </div>
                                 {word.source === 'user' ? (
                                   <UserCircle2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                                ) : (
+                                ) : getDefaultIconStyle(word.clock_id) ? (
                                   <div
-                                    className={cn('w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium shrink-0', getDefaultIconStyle(word.clock_id) ? '' : 'bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300')}
-                                    style={getDefaultIconStyle(word.clock_id) ?? undefined}
+                                    className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium shrink-0"
+                                    style={getDefaultIconStyle(word.clock_id)}
                                   >
-                                    D
+                                    {clockTitles[word.clock_id!]?.[0] ?? ''}
                                   </div>
-                                )}
+                                ) : null}
                               </div>
                             </div>
                             <p className="text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-2">{word.definition}</p>

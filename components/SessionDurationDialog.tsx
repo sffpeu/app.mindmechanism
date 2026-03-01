@@ -57,7 +57,7 @@ export function SessionDurationDialog({
   const [words, setWords] = useState<string[]>([])
   const [glossaryWords, setGlossaryWords] = useState<GlossaryWord[]>([])
   const [searchQuery, setSearchQuery] = useState('')
-  const [scopeFilter, setScopeFilter] = useState<'All' | 'Default' | 'My Words'>('Default')
+  const [scopeFilter, setScopeFilter] = useState<'All' | 'Default' | 'My Words'>('All')
   const [selectedSentiment, setSelectedSentiment] = useState<'+' | '~' | '-' | null>(null)
   const [selectedClockId, setSelectedClockId] = useState<number | null>(null)
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
@@ -110,6 +110,12 @@ export function SessionDurationDialog({
       setWords(Array(focusNodesCount).fill(''))
       setSelectedFocusNodeIndex(0)
       setLoadError(null)
+      // Reset filters to default when entering Assign Words
+      setScopeFilter('All')
+      setSelectedSentiment(null)
+      setSelectedClockId(null)
+      setSelectedLetter(null)
+      setSearchQuery('')
     } else {
       setScrollLetter(null)
     }
@@ -418,6 +424,16 @@ export function SessionDurationDialog({
       el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
 
+    // Count assigned words by sentiment (look up rating from glossary)
+    const wordToRating = (() => {
+      const m: Record<string, '+' | '~' | '-'> = {}
+      glossaryWords.forEach(w => { m[w.word] = w.rating })
+      return m
+    })()
+    const assignedPositive = words.filter(w => w.trim() && wordToRating[w.trim()] === '+').length
+    const assignedNeutral = words.filter(w => w.trim() && wordToRating[w.trim()] === '~').length
+    const assignedNegative = words.filter(w => w.trim() && wordToRating[w.trim()] === '-').length
+
     const handleWordClick = (word: GlossaryWord) => {
       const focusNodesCount = clock.focusNodes
       const isAssigned = words.includes(word.word)
@@ -635,14 +651,14 @@ export function SessionDurationDialog({
                                       </div>
                                       {word.source === 'user' ? (
                                         <UserCircle2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                                      ) : (
+                                      ) : getDefaultIconStyle(word.clock_id) ? (
                                         <div
-                                          className={cn('w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium shrink-0', getDefaultIconStyle(word.clock_id) ? '' : 'bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300')}
-                                          style={getDefaultIconStyle(word.clock_id) ?? undefined}
+                                          className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium shrink-0"
+                                          style={getDefaultIconStyle(word.clock_id)}
                                         >
-                                          D
+                                          {clockTitles[word.clock_id!]?.[0] ?? ''}
                                         </div>
-                                      )}
+                                      ) : null}
                                     </div>
                                   </div>
                                   <p className="text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-2">{word.definition}</p>
@@ -657,8 +673,8 @@ export function SessionDurationDialog({
               </div>
             </div>
         </Motion.div>
-        {/* Right half: selected clock — grid column 2, always visible */}
-        <div className="min-w-0 flex items-center justify-center min-h-0 overflow-hidden">
+        {/* Right half: selected clock + sentiment counts below */}
+        <div className="min-w-0 flex flex-col items-center justify-center min-h-0 overflow-hidden gap-4">
           <div className="w-[560px] h-[560px] relative flex items-center justify-center flex-shrink-0">
             <div className="w-[75%] h-[75%] relative rounded-full overflow-hidden">
               <div
@@ -759,6 +775,24 @@ export function SessionDurationDialog({
                   )
                 })}
               </div>
+            </div>
+          </div>
+          {/* Sentiment counts for assigned words — below clock, right side of popup */}
+          <div className="flex items-center gap-4 shrink-0">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-emerald-500" aria-hidden />
+              <span className="text-emerald-600 dark:text-emerald-400 font-medium">{assignedPositive}</span>
+              <span className="text-gray-600 dark:text-gray-400 text-sm">Positive</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500" aria-hidden />
+              <span className="text-gray-700 dark:text-gray-300 font-medium">{assignedNeutral}</span>
+              <span className="text-gray-600 dark:text-gray-400 text-sm">Neutral</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-rose-500" aria-hidden />
+              <span className="text-rose-600 dark:text-rose-400 font-medium">{assignedNegative}</span>
+              <span className="text-gray-600 dark:text-gray-400 text-sm">Negative</span>
             </div>
           </div>
         </div>
