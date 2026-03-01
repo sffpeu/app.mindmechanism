@@ -712,7 +712,9 @@ export function SessionDurationDialog({
                           left: `${x}%`,
                           top: `${y}%`,
                           transform: 'translate(-50%, -50%)',
-                          ...(isSelected && { boxShadow: `0 0 0 2px ${clockHex}` }),
+                          ...(isSelected && {
+                            boxShadow: `0 0 0 2px var(--dialog-bg, white), 0 0 0 4px ${clockHex}`,
+                          }),
                         }}
                         onClick={() => {
                           playClick()
@@ -739,12 +741,11 @@ export function SessionDurationDialog({
                             left: `${x}%`,
                             top: `${y}%`,
                             transform: (() => {
-                              const t = 'translate(-50%, -50%)'
-                              const off = 36
-                              if (pillPlacement === 'top') return `${t} translateY(-${off}px)`
-                              if (pillPlacement === 'bottom') return `${t} translateY(${off}px)`
-                              if (pillPlacement === 'left') return `${t} translateX(-${off}px)`
-                              return `${t} translateX(${off}px)`
+                              const gap = 8
+                              if (pillPlacement === 'top') return 'translate(-50%, -50%) translateY(-36px)'
+                              if (pillPlacement === 'bottom') return 'translate(-50%, -50%) translateY(36px)'
+                              if (pillPlacement === 'left') return `translate(-100%, -50%) translateX(-${gap}px)`
+                              return `translate(0, -50%) translateX(${gap}px)`
                             })(),
                           }}
                           title={wordLabel}
