@@ -66,6 +66,7 @@ export function SessionDurationDialog({
   const [hoveredWord, setHoveredWord] = useState<string | null>(null)
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false)
   const [selectedWordIndex, setSelectedWordIndex] = useState<number | null>(null)
+  const [selectedFocusNodeIndex, setSelectedFocusNodeIndex] = useState<number | null>(null)
   const { playClick } = useSoundEffects()
   const [hasInteracted, setHasInteracted] = useState(false)
   const router = useRouter()
@@ -106,6 +107,8 @@ export function SessionDurationDialog({
     if (step === 'words') {
       const focusNodesCount = clockSettings[clockId]?.focusNodes || 0
       setWords(Array(focusNodesCount).fill(''))
+      setSelectedFocusNodeIndex(0)
+      setLoadError(null)
     }
   }, [step, clockId])
 
@@ -192,18 +195,15 @@ export function SessionDurationDialog({
     if (step === 'duration') {
       setStep('words')
     } else if (step === 'words') {
-      // Only proceed if at least one word is selected
-      const selectedWords = words.filter(word => word.trim() !== '')
-      
-      if (selectedWords.length === 0) {
-        // If no words are selected, show an error message
-        setLoadError('Please select at least one word to continue.')
+      const focusNodesCount = clockSettings[clockId]?.focusNodes || 0
+      const allAssigned = words.length === focusNodesCount && words.every(w => w.trim() !== '')
+      if (!allAssigned) {
+        setLoadError('Assign a word to every focus node to continue.')
         return
       }
-      
       onNext(
         isEndless ? null : (isCustom ? parseInt(customDuration) : selectedPreset),
-        selectedWords
+        words
       )
       onOpenChange(false)
     }
@@ -220,8 +220,8 @@ export function SessionDurationDialog({
     if (step === 'duration') {
       return isEndless || selectedPreset !== null || (isCustom && isCustomConfirmed)
     } else if (step === 'words') {
-      const hasAnyWord = words.some(word => word.trim() !== '')
-      return hasAnyWord
+      const focusNodesCount = clockSettings[clockId]?.focusNodes || 0
+      return words.length === focusNodesCount && words.every(w => w.trim() !== '')
     }
     return true
   }
@@ -378,6 +378,7 @@ export function SessionDurationDialog({
       .sort((a, b) => a.word.localeCompare(b.word))
 
     const handleWordClick = (word: GlossaryWord) => {
+      const focusNodesCount = clock.focusNodes
       const isAssigned = words.includes(word.word)
       if (isAssigned) {
         const idx = words.indexOf(word.word)
@@ -385,13 +386,17 @@ export function SessionDurationDialog({
           const next = [...words]
           next[idx] = ''
           setWords(next)
+          setSelectedFocusNodeIndex(idx)
         }
       } else {
-        const emptyIdx = words.findIndex(w => !w)
-        if (emptyIdx >= 0) {
+        const targetIndex = selectedFocusNodeIndex ?? words.findIndex(w => !w)
+        if (targetIndex >= 0 && targetIndex < focusNodesCount) {
           const next = [...words]
-          next[emptyIdx] = word.word
+          next[targetIndex] = word.word
           setWords(next)
+          const nextEmpty = next.findIndex((w, i) => i > targetIndex && !w)
+          const nextEmptyFromStart = next.findIndex(w => !w)
+          setSelectedFocusNodeIndex(nextEmpty >= 0 ? nextEmpty : (nextEmptyFromStart >= 0 ? nextEmptyFromStart : null))
         }
       }
     }
@@ -558,7 +563,7 @@ export function SessionDurationDialog({
                     ) : (
                       filteredWords.map(word => {
                         const isAssigned = words.includes(word.word)
-                        const canAssign = isAssigned || words.filter(w => w).length < focusNodesCount
+                        const canAssign = isAssigned || selectedFocusNodeIndex !== null
                         return (
                           <button
                             key={word.id}
@@ -644,23 +649,75 @@ export function SessionDurationDialog({
                 </div>
               </div>
             </div>
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-[90%] h-[90%] rounded-full relative">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-[90%] h-[90%] rounded-full relative pointer-events-none">
                 {Array.from({ length: clock.focusNodes }).map((_, index) => {
-                  const angle = (index * 360) / clock.focusNodes
+                  const angleDeg = (index * 360) / clock.focusNodes
+                  const angleRad = (angleDeg - 90) * (Math.PI / 180)
                   const radius = 48
-                  const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
-                  const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
+                  const x = 50 + radius * Math.cos(angleRad)
+                  const y = 50 + radius * Math.sin(angleRad)
+                  const isSelected = selectedFocusNodeIndex === index
+                  const wordLabel = words[index]?.trim() || ''
+                  const pillPlacement = (() => {
+                    const a = ((angleDeg % 360) + 360) % 360
+                    if (a >= 315 || a < 45) return 'top'
+                    if (a >= 45 && a < 135) return 'right'
+                    if (a >= 135 && a < 225) return 'bottom'
+                    return 'left'
+                  })()
                   return (
-                    <div
-                      key={index}
-                      className={cn('absolute w-3 h-3 rounded-full', bgColorClass)}
-                      style={{
-                        left: `${x}%`,
-                        top: `${y}%`,
-                        transform: 'translate(-50%, -50%)',
-                      }}
-                    />
+                    <React.Fragment key={index}>
+                      <div
+                        className={cn(
+                          'absolute w-3 h-3 rounded-full cursor-pointer pointer-events-auto transition-all',
+                          bgColorClass,
+                          isSelected && 'ring-4 ring-gray-400 dark:ring-gray-500 ring-offset-2 ring-offset-white dark:ring-offset-black scale-125'
+                        )}
+                        style={{
+                          left: `${x}%`,
+                          top: `${y}%`,
+                          transform: 'translate(-50%, -50%)',
+                        }}
+                        onClick={() => {
+                          playClick()
+                          setSelectedFocusNodeIndex(index)
+                        }}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={wordLabel ? `Focus node ${index + 1}: ${wordLabel}` : `Focus node ${index + 1}, no word assigned`}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            playClick()
+                            setSelectedFocusNodeIndex(index)
+                          }
+                        }}
+                      />
+                      {wordLabel && (
+                        <div
+                          className={cn(
+                            'absolute pointer-events-none px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap max-w-[80px] truncate',
+                            'bg-white/95 dark:bg-gray-800/95 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-600 shadow-sm'
+                          )}
+                          style={{
+                            left: `${x}%`,
+                            top: `${y}%`,
+                            transform: (() => {
+                              const t = 'translate(-50%, -50%)'
+                              const off = 18
+                              if (pillPlacement === 'top') return `${t} translateY(-${off}px)`
+                              if (pillPlacement === 'bottom') return `${t} translateY(${off}px)`
+                              if (pillPlacement === 'left') return `${t} translateX(-${off}px)`
+                              return `${t} translateX(${off}px)`
+                            })(),
+                          }}
+                          title={wordLabel}
+                        >
+                          {wordLabel}
+                        </div>
+                      )}
+                    </React.Fragment>
                   )
                 })}
               </div>
@@ -751,46 +808,24 @@ export function SessionDurationDialog({
             )}
             {step === 'words' ? (
               <div className="flex items-center gap-2">
-                {words.some(word => word.trim() !== '') ? (
-                  <button
-                    onClick={handleNext}
-                    disabled={!canProceed()}
-                    className={cn(
-                      "h-8 px-4 rounded-full flex items-center text-sm font-medium transition-all",
-                      bgColorClass,
-                      "text-white hover:opacity-90 disabled:opacity-50",
-                      "disabled:cursor-not-allowed"
-                    )}
-                  >
-                    Start
-                    <ChevronRight className="w-4 h-4 ml-1" />
-                  </button>
-                ) : (
-                  <>
-                    <button
-                      onClick={handleNext}
-                      disabled={!canProceed()}
-                      className={cn(
-                        "h-8 px-4 rounded-full flex items-center text-sm font-medium transition-all",
-                        "bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-400",
-                        "hover:bg-gray-100 dark:hover:bg-white/10",
-                        "disabled:opacity-50 disabled:cursor-not-allowed"
-                      )}
-                    >
-                      Skip
-                      <ChevronRight className="w-4 h-4 ml-1" />
-                    </button>
-                    <button
-                      className={cn(
-                        "h-8 px-4 rounded-full flex items-center text-sm font-medium transition-all",
-                        bgColorClass,
-                        "text-white hover:opacity-90"
-                      )}
-                    >
-                      {clockSettings[clockId]?.focusNodes || 0} words required
-                    </button>
-                  </>
-                )}
+                <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:inline">
+                  {words.filter(w => w.trim()).length}/{clockSettings[clockId]?.focusNodes ?? 0} words
+                </span>
+                <button
+                  onClick={handleNext}
+                  disabled={!canProceed()}
+                  className={cn(
+                    "h-8 px-4 rounded-full flex items-center text-sm font-medium transition-all",
+                    canProceed()
+                      ? [bgColorClass, "text-white hover:opacity-90"]
+                      : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed",
+                    "disabled:cursor-not-allowed"
+                  )}
+                  title={!canProceed() ? `Assign a word to all ${clockSettings[clockId]?.focusNodes ?? 0} focus nodes to start` : 'Start session'}
+                >
+                  Start
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </button>
               </div>
             ) : step === 'duration' && (
               <button
