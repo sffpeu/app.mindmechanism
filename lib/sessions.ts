@@ -150,7 +150,8 @@ export async function updateSession(
         : {})
     };
 
-    await updateDoc(sessionRef, updateData as Parameters<typeof updateDoc>[1]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Firestore UpdateData type varies by SDK version
+    await updateDoc(sessionRef, updateData as { [key: string]: any });
   } catch (error) {
     console.error('Error in updateSession:', error);
     throw error;
