@@ -2,24 +2,52 @@
 
 import { useMemo } from 'react'
 
-// At edge of viewBox so ring sits further outside focus nodes
-const RING_RADIUS = 50
-const CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS
+// Radius at edge of viewBox so path sits outside focus nodes
+const PATH_RADIUS = 50
 
 interface SessionProgressRingProps {
   remainingTime: number | null
   initialDuration: number | null
   isPaused: boolean
-  /** Clock color for the ring (e.g. hex or Tailwind color). Defaults to blue. */
+  /** Number of focus nodes — path connects these points in order. */
+  focusNodes: number
+  /** Angle in degrees for the first focus node (index 0). Matches clock's startingDegree + offset. */
+  startingAngle?: number
+  /** Rotate the path to stay aligned with the clock (e.g. pass same rotation as focus nodes layer). */
+  rotation?: number
+  /** Clock color for the stroke. Defaults to blue. */
   color?: string
-  /** Size as a fraction of the container (e.g. 1 = full). Ring is drawn outside focus nodes (r=48 ≈ 96% of 50). */
   className?: string
+}
+
+function getPolygonPath(focusNodes: number, startingAngle: number): string {
+  if (focusNodes < 2) return ''
+  const points: Array<{ x: number; y: number }> = []
+  for (let i = 0; i < focusNodes; i++) {
+    const angleDeg = (360 / focusNodes) * i + startingAngle
+    const rad = (angleDeg * Math.PI) / 180
+    const x = 50 + PATH_RADIUS * Math.cos(rad)
+    const y = 50 + PATH_RADIUS * Math.sin(rad)
+    points.push({ x, y })
+  }
+  const [first, ...rest] = points
+  const path = rest.reduce((acc, p) => `${acc} L ${p.x} ${p.y}`, `M ${first.x} ${first.y}`)
+  return `${path} Z`
+}
+
+/** Perimeter of regular polygon with n sides and radius r. */
+function polygonLength(n: number, r: number): number {
+  if (n < 2) return 0
+  return n * 2 * r * Math.sin(Math.PI / n)
 }
 
 export function SessionProgressRing({
   remainingTime,
   initialDuration,
   isPaused,
+  focusNodes,
+  startingAngle = 0,
+  rotation = 0,
   color = '#156fde',
   className = ''
 }: SessionProgressRingProps) {
@@ -29,9 +57,18 @@ export function SessionProgressRing({
     return Math.min(1, elapsed / initialDuration)
   }, [remainingTime, initialDuration])
 
-  if (remainingTime == null || initialDuration == null) return null
+  const pathD = useMemo(
+    () => getPolygonPath(focusNodes, startingAngle),
+    [focusNodes, startingAngle]
+  )
+  const totalLength = useMemo(
+    () => polygonLength(focusNodes, PATH_RADIUS),
+    [focusNodes]
+  )
 
-  const dash = progress * CIRCUMFERENCE
+  if (remainingTime == null || initialDuration == null || pathD === '') return null
+
+  const dash = progress * totalLength
 
   return (
     <div
@@ -39,33 +76,33 @@ export function SessionProgressRing({
       aria-hidden
     >
       <svg
-        className="absolute inset-0 w-full h-full -rotate-90"
+        className="absolute inset-0 w-full h-full"
         viewBox="0 0 100 100"
         preserveAspectRatio="xMidYMid meet"
       >
-        {/* Track circle (full ring, faint) */}
-        <circle
-          cx="50"
-          cy="50"
-          r={RING_RADIUS}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          className="text-black/10 dark:text-white/10"
-        />
-        {/* Progress arc — moves in real time with timer; stops when paused */}
-        <circle
-          cx="50"
-          cy="50"
-          r={RING_RADIUS}
-          fill="none"
-          stroke={color}
-          strokeWidth="2"
-          strokeDasharray={`${dash} ${CIRCUMFERENCE}`}
-          strokeLinecap="round"
-          className="transition-[stroke-dasharray] duration-[150ms] ease-linear"
-          style={{ opacity: isPaused ? 0.7 : 0.9 }}
-        />
+        <g transform={`rotate(${rotation} 50 50)`}>
+          {/* Track: full polygon, faint */}
+          <path
+            d={pathD}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+            className="text-black/10 dark:text-white/10"
+          />
+          {/* Progress: starts at first focus node, follows path as timer runs */}
+          <path
+            d={pathD}
+            fill="none"
+            stroke={color}
+            strokeWidth="2"
+            strokeDasharray={`${dash} ${totalLength}`}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="transition-[stroke-dasharray] duration-[150ms] ease-linear"
+            style={{ opacity: isPaused ? 0.7 : 0.9 }}
+          />
+        </g>
       </svg>
     </div>
   )

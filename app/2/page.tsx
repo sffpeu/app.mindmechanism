@@ -753,6 +753,9 @@ function NodesPageContent() {
                 remainingTime={sessionState.remainingTime}
                 initialDuration={sessionState.initialDuration}
                 isPaused={sessionState.isPaused}
+                focusNodes={focusNodes}
+                startingAngle={startingDegree + 9 + focusNodesOffset}
+                rotation={rotation}
                 color="#f7da5f"
                 className="z-[150]"
               />

@@ -1064,12 +1064,24 @@ export default function Clock({
           </motion.div>
         </div>
 
-        {/* Session progress ring — outside focus nodes; runs when session active, stops on pause */}
-        {duration != null && remainingTime != null && initialDuration != null && (
+        {/* Session progress — path along focus nodes, starts at first node, in sync with timer */}
+        {duration != null && remainingTime != null && initialDuration != null && focusNodes > 0 && (
           <SessionProgressRing
             remainingTime={remainingTime}
             initialDuration={initialDuration}
             isPaused={isPaused}
+            focusNodes={focusNodes}
+            startingAngle={(() => {
+              switch (id) {
+                case 0: return startingDegree + 45
+                case 1: return startingDegree + 45
+                case 2: return startingDegree + 9
+                case 3: return startingDegree + 180
+                case 4: return startingDegree + 11
+                default: return startingDegree
+              }
+            })()}
+            rotation={rotation}
             color={dotColors[id % dotColors.length].replace('bg-[', '').replace(']', '')}
             className="z-[150]"
           />
