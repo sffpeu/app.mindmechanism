@@ -30,6 +30,19 @@ const timePresets = [15, 30, 45, 60, 120]
 // Clock 1–9 colors (match /glossary)
 const CLOCK_HEX = ['#fd290a', '#fba63b', '#f7da5f', '#6dc037', '#156fde', '#941952', '#541b96', '#ee5fa7', '#56c1ff']
 
+// Default words per clock for "Default" button: word 1 = focus node 1, etc. Key = clock id.
+const DEFAULT_WORDS_BY_CLOCK: Record<number, string[]> = {
+  0: ['Achievement', 'Willingness', 'Vitality', 'Boldness', 'Insight', 'Command', 'Reflection', 'Illusion'],
+  1: ['Union', 'Insightful', 'Sturdiness', 'Modesty', 'Surprise', 'Joyless'], // Sacrol
+  2: ['Rampant', 'Causing', 'Salvage', 'Roaring', 'Pretentions', 'Salaciousness', 'Aim', 'Rebirth', 'Exuberance', 'Urge'], // Solar Plexus
+  3: ['Balancing', 'Submerging', 'Attracting', 'Curiosity', 'Colliding', 'Concern', 'Fate', 'Overbearing', 'Life force', 'Protecting', 'Triumphing', 'Preening'], // Heart
+  4: ['Resonating', 'Immersing', 'Righteous', 'Compulsion', 'Yearning', 'Adapting', 'Fostering', 'Flaunting', 'Advocating', 'Beguiling', 'Crippling', 'Repairing', 'Transforming', 'Suspension', 'Replanting', 'Reprocessing'], // Throat
+  5: ['Child-like', 'Unveiling', 'Flight', 'Premonition'], // Third Eye
+  6: ['Seeking', 'Idealism', 'Surrendering', 'Bliss', 'Spontaneity', 'Discourse', 'Empathy', 'Righteousness', 'Prayer', 'Majesty', 'Praise', 'Libation', 'Atonement', 'Ceremony', 'Temperance', 'Release'], // Male Crown
+  7: ['Infinity', 'Weaving love', 'Vibrating', 'Core centring', 'Purification', 'Stability', 'Kindness', 'Transformation', 'Self love', 'Pure being', 'Limitlessness', 'Contingency', 'Sensual', 'Effort', 'Innovating', 'Heritage'], // Female Crown
+  8: ['Father', 'Son', 'Spirit'], // Ethereal Heart
+}
+
 const getDefaultIconStyle = (clockId: number | undefined) => {
   if (clockId == null || clockId < 0 || clockId >= CLOCK_HEX.length) return undefined
   const hex = CLOCK_HEX[clockId]
@@ -330,16 +343,13 @@ export function SessionDurationDialog({
     setWords(Array(words.length).fill(''))
   }
 
-  /** Fill all slots at once with default words for the current clock. */
+  /** Fill all slots with default words in order: word 1 = focus node 1, etc. */
   const handleFillAllDefaultWords = () => {
-    const defaultWords = glossaryWords.filter(
-      (word) => word.clock_id != null && word.clock_id >= 0 && word.clock_id <= 8 && word.clock_id === clockId
-    )
-    if (defaultWords.length === 0) return
     const focusNodesCount = clockSettings[clockId]?.focusNodes ?? 0
+    const list = DEFAULT_WORDS_BY_CLOCK[clockId] ?? []
     const newWords = Array(focusNodesCount)
       .fill('')
-      .map((_, i) => defaultWords[i]?.word ?? '')
+      .map((_, i) => list[i] ?? '')
     setWords(newWords)
   }
 
