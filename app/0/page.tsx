@@ -33,6 +33,7 @@ import { SessionTimer } from '@/components/SessionTimer'
 import { useSessionTimer } from '@/lib/useSessionTimer'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useLocation } from '@/lib/hooks/useLocation'
+import { useClockEntrance } from '@/lib/hooks/useClockEntrance'
 import DotNavigation from '@/components/DotNavigation'
 import { clockTitles } from '@/lib/clockTitles'
 // Test words for each node
@@ -168,6 +169,7 @@ function NodesPageContent() {
   const [rotation, setRotation] = useState(startingDegree)
   const [currentDegree, setCurrentDegree] = useState(startingDegree)
   const [focusNodesOffset, setFocusNodesOffset] = useState(0)
+  const entranceOffset = useClockEntrance()
 
   // Helper functions
   const handleSignOut = async () => {
@@ -754,10 +756,10 @@ function NodesPageContent() {
                 style={{ 
                   willChange: 'transform',
                 }}
-                animate={{ rotate: rotation }}
+                animate={{ rotate: rotation + entranceOffset }}
                 transition={{
                   type: 'tween',
-                  duration: 0.016,
+                  duration: entranceOffset > 0 ? 0 : 0.016,
                   ease: 'linear'
                 }}
               >
@@ -790,10 +792,10 @@ function NodesPageContent() {
                 zIndex: 200,
                 pointerEvents: 'none',
               }}
-              animate={{ rotate: rotation }}
+              animate={{ rotate: rotation + entranceOffset }}
               transition={{
                 type: 'tween',
-                duration: 0.016,
+                duration: entranceOffset > 0 ? 0 : 0.016,
                 ease: 'linear'
               }}
             >
