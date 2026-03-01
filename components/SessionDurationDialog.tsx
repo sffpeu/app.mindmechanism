@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { motion as Motion, AnimatePresence } from 'framer-motion'
-import { Timer, ChevronRight, InfinityIcon, X, Check, ArrowLeft, PenLine, Search, Shuffle, Trash2, Layers, UserCircle2, BookOpen } from 'lucide-react'
+import { Timer, ChevronRight, InfinityIcon, X, Check, ArrowLeft, PenLine, Search, Shuffle, Trash2, Layers, UserCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { clockSettings } from '@/lib/clockSettings'
 import { GlossaryWord } from '@/types/Glossary'
@@ -473,6 +473,12 @@ export function SessionDurationDialog({
           const nextEmpty = next.findIndex((w, i) => i > targetIndex && !w)
           const nextEmptyFromStart = next.findIndex(w => !w)
           setSelectedFocusNodeIndex(nextEmpty >= 0 ? nextEmpty : (nextEmptyFromStart >= 0 ? nextEmptyFromStart : null))
+          // Update A–Z filter to match the selected word's first letter
+          const letter = word.word.trim()[0]?.toUpperCase()
+          if (letter && alphabet.includes(letter)) {
+            setSelectedLetter(letter)
+            scrollToLetter(letter)
+          }
         }
       }
     }
@@ -770,19 +776,9 @@ export function SessionDurationDialog({
                           }
                         }}
                       />
-                      {wordLabel && (() => {
-                        const rating = wordToRating[wordLabel.trim()]
-                        const sentimentClasses = rating === '+'
-                          ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-500/50'
-                          : rating === '-'
-                            ? 'bg-rose-50 dark:bg-rose-900/30 text-rose-800 dark:text-rose-200 border-rose-200 dark:border-rose-500/50'
-                            : 'bg-slate-100 dark:bg-slate-700/50 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-500/50'
-                        return (
+                      {wordLabel && (
                           <div
-                            className={cn(
-                              'absolute pointer-events-none px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap border shadow-sm',
-                              sentimentClasses
-                            )}
+                            className="absolute pointer-events-none px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap border-2 border-emerald-500 bg-white/90 dark:bg-black/90 text-gray-800 dark:text-gray-200 shadow-sm"
                             style={{
                               left: `${x}%`,
                               top: `${y}%`,
@@ -798,8 +794,7 @@ export function SessionDurationDialog({
                           >
                             {wordLabel}
                           </div>
-                        )
-                      })()}
+                      )}
                     </React.Fragment>
                   )
                 })}
@@ -808,7 +803,7 @@ export function SessionDurationDialog({
           </div>
           {/* Spacer to move counter and actions further down below clock */}
           <div className="min-h-[24px]" aria-hidden />
-          {/* Sentiment counts + Glossary — below clock, moved further down */}
+          {/* Sentiment counts — below clock, moved further down (no Glossary link) */}
           <div className="flex flex-col items-center gap-3 shrink-0 mt-2">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1.5">
@@ -826,23 +821,14 @@ export function SessionDurationDialog({
                 <span className="text-rose-600 dark:text-rose-400 font-medium">{assignedNegative}</span>
                 <span className="text-gray-600 dark:text-gray-400 text-sm">Negative</span>
               </div>
-              <a
-                href="/glossary"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors ml-2"
-              >
-                <BookOpen className="w-4 h-4" />
-                <span className="text-sm">Glossary</span>
-              </a>
             </div>
-            {/* Random, Default, Delete — match image layout */}
+            {/* Random, Default, Delete — round buttons; Random/Default overwrite all words */}
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => { playClick(); handleRandomWords(); }}
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-white dark:bg-black/40 border border-black/10 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
-                title="Randomly fill empty slots with words from the glossary"
+                onClick={() => { playClick(); handleRandomize(); }}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-white dark:bg-black/40 border border-black/10 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
+                title="Overwrite all slots with random words from the glossary"
               >
                 <Shuffle className="w-4 h-4" />
                 Random
@@ -850,15 +836,15 @@ export function SessionDurationDialog({
               <button
                 type="button"
                 onClick={() => { playClick(); handleFillAllDefaultWords(); }}
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-white dark:bg-black/40 border border-black/10 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
-                title="Fill all slots at once with default words for this clock"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-white dark:bg-black/40 border border-black/10 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
+                title="Overwrite all slots with default words for this clock"
               >
                 Default
               </button>
               <button
                 type="button"
                 onClick={() => { playClick(); handleResetAllWords(); }}
-                className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-700 dark:hover:text-white transition-colors"
+                className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-700 dark:hover:text-white transition-colors"
                 title="Clear all assigned words"
                 aria-label="Delete all words"
               >
