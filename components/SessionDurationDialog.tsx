@@ -434,16 +434,15 @@ export function SessionDurationDialog({
 
     return (
       <div className="w-full flex-1 min-h-0 min-w-0 px-6 overflow-hidden grid grid-cols-[1fr_1fr] gap-6">
-        {/* Left half: glossary — grid column 1, min-h-0 so scroll area gets bounded height */}
+        {/* Left half: glossary — fixed-height scroll region so only this area scrolls */}
         <Motion.div
           key="words"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
-          className="min-w-0 min-h-0 flex flex-col overflow-hidden"
+          className="min-w-0 min-h-0 flex flex-col overflow-hidden rounded-xl border border-black/5 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-lg relative"
         >
-          <div className="min-w-0 min-h-0 flex flex-col overflow-hidden flex-1 rounded-xl border border-black/5 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-lg">
-            <div className="p-3 border-b border-black/5 dark:border-white/10 space-y-2 shrink-0">
+            <div className="p-3 border-b border-black/5 dark:border-white/10 space-y-2 shrink-0 flex-shrink-0">
               <div className="flex items-center gap-2">
                 <div className="flex-1 relative">
                   <input
@@ -535,12 +534,14 @@ export function SessionDurationDialog({
                 ))}
               </div>
             </div>
-            {/* Scrollable word list — only this area scrolls; contain overscroll so dialog doesn't move */}
-            <div
-              ref={wordsScrollRef}
-              className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800 touch-pan-y"
-              style={{ WebkitOverflowScrolling: 'touch' }}
-            >
+            {/* Wrapper gets remaining height; scroll div fills it so scrollbar reflects limited space */}
+            <div className="flex-1 min-h-0 relative flex flex-col">
+              <div
+                ref={wordsScrollRef}
+                className="absolute inset-0 overflow-y-auto overflow-x-hidden overscroll-contain scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800 touch-pan-y"
+                style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
+                onWheel={(e) => e.stopPropagation()}
+              >
               <div className="grid grid-cols-3 gap-2 p-2">
                     {isLoadingWords ? (
                       <div className="col-span-3 py-6 text-center text-gray-500 dark:text-gray-400">Loading words...</div>
@@ -617,8 +618,8 @@ export function SessionDurationDialog({
                       ])
                     )}
                   </div>
+              </div>
             </div>
-          </div>
         </Motion.div>
         {/* Right half: selected clock — grid column 2, always visible */}
         <div className="min-w-0 flex items-center justify-center min-h-0 overflow-hidden">
@@ -732,7 +733,7 @@ export function SessionDurationDialog({
           {step === 'confirm' && 'Confirm Session'}
         </DialogTitle>
         <div className={cn(
-          "relative w-full h-full flex flex-col",
+          "relative w-full h-full min-h-0 flex flex-col overflow-hidden",
           step === 'duration' && "justify-center"
         )}>
           {/* Step indicator - Moved inside the dialog */}
