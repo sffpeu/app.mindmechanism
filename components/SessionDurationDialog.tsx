@@ -693,12 +693,13 @@ export function SessionDurationDialog({
                   const y = 50 + radius * Math.sin(angleRad)
                   const isSelected = selectedFocusNodeIndex === index
                   const wordLabel = words[index]?.trim() || ''
+                  // Quadrants so right-half nodes (45°–135°) get word to the right, left-half (225°–315°) to the left; top/bottom only at 12 and 6
                   const pillPlacement = (() => {
                     const a = ((angleDeg % 360) + 360) % 360
-                    if (a >= 315 || a < 45) return 'top'
-                    if (a >= 45 && a < 135) return 'right'
-                    if (a >= 135 && a < 225) return 'bottom'
-                    return 'left'
+                    if (a > 315 || a < 45) return 'top'   // 12 o'clock only
+                    if (a >= 45 && a <= 135) return 'right'  // right half: like node 2
+                    if (a > 135 && a < 225) return 'bottom'  // 6 o'clock
+                    return 'left'   // left half (225–315): mirror of right, like node 8 like node 2 flipped
                   })()
                   return (
                     <React.Fragment key={index}>
