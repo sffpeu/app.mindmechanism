@@ -728,22 +728,34 @@ export function SessionDurationDialog({
             </div>
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-[90%] h-[90%] rounded-full relative pointer-events-none">
-                {Array.from({ length: clock.focusNodes }).map((_, index) => {
-                  const angleDeg = (index * 360) / clock.focusNodes
-                  const angleRad = (angleDeg - 90) * (Math.PI / 180)
-                  const radius = 48
-                  const x = 50 + radius * Math.cos(angleRad)
-                  const y = 50 + radius * Math.sin(angleRad)
-                  const isSelected = selectedFocusNodeIndex === index
-                  const wordLabel = words[index]?.trim() || ''
-                  // Quadrants so right-half nodes (45°–135°) get word to the right, left-half (225°–315°) to the left; top/bottom only at 12 and 6
-                  const pillPlacement = (() => {
-                    const a = ((angleDeg % 360) + 360) % 360
-                    if (a > 315 || a < 45) return 'top'   // 12 o'clock only
-                    if (a >= 45 && a <= 135) return 'right'  // right half: like node 2
-                    if (a > 135 && a < 225) return 'bottom'  // 6 o'clock
-                    return 'left'   // left half (225–315): mirror of right, like node 8 like node 2 flipped
+                {(() => {
+                  // Match Clock.tsx: same adjustedStartingDegree so node order matches the session
+                  const adjustedStartingDegree = (() => {
+                    switch (clockId) {
+                      case 0: return (clock.startingDegree ?? 0) + 45
+                      case 1: return (clock.startingDegree ?? 0) + 45
+                      case 2: return (clock.startingDegree ?? 0) + 9
+                      case 3: return (clock.startingDegree ?? 0) + 180
+                      case 4: return (clock.startingDegree ?? 0) + 11
+                      default: return clock.startingDegree ?? 0
+                    }
                   })()
+                  return Array.from({ length: clock.focusNodes }).map((_, index) => {
+                    const angle = ((360 / clock.focusNodes) * index + adjustedStartingDegree) % 360
+                    const angleRad = angle * (Math.PI / 180)
+                    const radius = 48
+                    const x = 50 + radius * Math.cos(angleRad)
+                    const y = 50 + radius * Math.sin(angleRad)
+                    const isSelected = selectedFocusNodeIndex === index
+                    const wordLabel = words[index]?.trim() || ''
+                    // Quadrants (angle 0 = 3 o'clock): top 225–315, right 315–45, bottom 45–135, left 135–225
+                    const pillPlacement = (() => {
+                      const a = ((angle % 360) + 360) % 360
+                      if (a >= 225 && a < 315) return 'top'
+                      if (a >= 315 || a < 45) return 'right'
+                      if (a >= 45 && a < 135) return 'bottom'
+                      return 'left'
+                    })()
                   return (
                     <React.Fragment key={index}>
                       <div
@@ -800,7 +812,8 @@ export function SessionDurationDialog({
                       )}
                     </React.Fragment>
                   )
-                })}
+                })
+                })()}
               </div>
             </div>
           </div>
