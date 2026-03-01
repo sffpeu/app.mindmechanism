@@ -190,9 +190,10 @@ export function DashboardRecentSessions({ sessions: propSessions }: DashboardRec
       const lastActiveTime = session.last_active_time?.toDate().getTime() || startTime;
       const pausedDuration = session.paused_duration || 0;
 
-      const timeSpent = session.status === 'aborted' ?
-        session.actual_duration || 0 :
-        lastActiveTime - startTime - pausedDuration;
+      // Use saved actual_duration when available (set when user left session); else compute from timestamps
+      const timeSpent = session.status === 'aborted'
+        ? (session.actual_duration ?? 0)
+        : (session.actual_duration ?? (lastActiveTime - startTime - pausedDuration));
 
       const remainingTime = Math.max(0, session.duration - timeSpent);
       const sessionAge = now - lastActiveTime;
@@ -217,19 +218,18 @@ export function DashboardRecentSessions({ sessions: propSessions }: DashboardRec
     const lastActiveTime = session.last_active_time?.toDate() || startTime;
     const pausedDuration = session.paused_duration ?? 0;
 
-    const progress = session.status === 'completed' ? 100 :
-      session.status === 'aborted' ?
-        Math.min(((session.actual_duration ?? 0) / session.duration) * 100, 100) :
-        Math.min(((lastActiveTime.getTime() - startTime.getTime() - pausedDuration) / session.duration) * 100, 100);
-
-    const canContinue = session.status === 'in_progress' || session.status === 'aborted';
-    const isCompleted = session.status === 'completed';
-
+    // Use saved actual_duration when available (set when user left), else compute from timestamps
     const timeSpent = session.status === 'completed'
       ? (session.actual_duration ?? 0)
       : session.status === 'aborted'
         ? (session.actual_duration ?? 0)
-        : lastActiveTime.getTime() - startTime.getTime() - pausedDuration;
+        : (session.actual_duration ?? (lastActiveTime.getTime() - startTime.getTime() - pausedDuration));
+
+    const progress = session.status === 'completed' ? 100 :
+      Math.min((timeSpent / session.duration) * 100, 100);
+
+    const canContinue = session.status === 'in_progress' || session.status === 'aborted';
+    const isCompleted = session.status === 'completed';
     const timeLeft = Math.max(0, session.duration - timeSpent);
 
     const timeLabel = isCompleted
@@ -237,25 +237,25 @@ export function DashboardRecentSessions({ sessions: propSessions }: DashboardRec
       : `${formatTime(timeLeft)} left`;
 
     return (
-      <div className="flex flex-col items-center p-3 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 min-w-[120px] max-w-[160px]">
+      <div className="flex flex-col items-center p-4 rounded-2xl bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-black/5 dark:border-white/10 min-w-[128px] max-w-[168px] shadow-sm hover:shadow-md transition-shadow">
         <MiniClockWithNodes
           progress={progress}
           strokeColor={strokeColor}
           nodeColor={nodeColor}
           focusNodes={focusNodes}
         />
-        <h3 className={`text-xs font-medium mt-2 text-center line-clamp-2 ${textColor}`}>
+        <h3 className={`text-xs font-semibold mt-3 text-center line-clamp-2 ${textColor}`}>
           {clockType}
         </h3>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 tabular-nums">
           {timeLabel}
         </p>
-        <div className="flex gap-1.5 mt-2 w-full justify-center flex-wrap">
+        <div className="flex gap-2 mt-3 w-full justify-center flex-wrap">
           {canContinue && (
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 text-xs"
+              className="h-8 text-xs rounded-full px-3"
               onClick={() => handleContinueSession(session)}
             >
               <Play className="h-3 w-3 mr-1" />
@@ -265,7 +265,7 @@ export function DashboardRecentSessions({ sessions: propSessions }: DashboardRec
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 text-xs"
+            className="h-8 text-xs rounded-full px-3"
             onClick={() => handleRestartSession(session)}
           >
             <RefreshCw className="h-3 w-3 mr-1" />
@@ -277,7 +277,7 @@ export function DashboardRecentSessions({ sessions: propSessions }: DashboardRec
   };
 
   return (
-    <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+    <div className="flex flex-wrap gap-4 justify-center sm:justify-start">
       {sessions.slice(0, 6).map((session) => (
         <SessionMini key={session.id} session={session} />
       ))}

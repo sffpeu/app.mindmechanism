@@ -473,11 +473,10 @@ export function SessionDurationDialog({
           const nextEmpty = next.findIndex((w, i) => i > targetIndex && !w)
           const nextEmptyFromStart = next.findIndex(w => !w)
           setSelectedFocusNodeIndex(nextEmpty >= 0 ? nextEmpty : (nextEmptyFromStart >= 0 ? nextEmptyFromStart : null))
-          // Update A–Z filter to match the selected word's first letter
+          // Update A–Z filter to match the selected word's first letter (no scroll — keep list position)
           const letter = word.word.trim()[0]?.toUpperCase()
           if (letter && alphabet.includes(letter)) {
             setSelectedLetter(letter)
-            scrollToLetter(letter)
           }
         }
       }

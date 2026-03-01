@@ -375,8 +375,8 @@ function NodesPageContent() {
       return {
         backgroundColor: color,
         border: `2px solid ${color}`,
-        width: '12px',
-        height: '12px',
+        width: '18px',
+        height: '18px',
         opacity: 1,
         transform: 'translate(-50%, -50%)',
         transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -387,8 +387,8 @@ function NodesPageContent() {
     return {
       backgroundColor: isSelected ? color : 'transparent',
       border: `2px solid ${color}`,
-      width: '12px',
-      height: '12px',
+      width: '18px',
+      height: '18px',
       opacity: isSelected ? 1 : 0.9,
       transform: 'translate(-50%, -50%)',
       transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -813,7 +813,7 @@ function NodesPageContent() {
                     return (
                       <motion.div
                         key={index}
-                        className="absolute rounded-full cursor-pointer"
+                        className="absolute rounded-full cursor-pointer flex items-center justify-center"
                         style={{
                           left: `${x}%`,
                           top: `${y}%`,
@@ -823,6 +823,9 @@ function NodesPageContent() {
                         onMouseEnter={() => setHoveredNodeIndex(index)}
                         onMouseLeave={() => setHoveredNodeIndex(null)}
                       >
+                        <span className="absolute inset-0 flex items-center justify-center text-white text-[10px] font-medium pointer-events-none select-none">
+                          {index + 1}
+                        </span>
                         {showWords && (hoveredNodeIndex === index || isSelected) && word && (
                           <div 
                             className="absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 

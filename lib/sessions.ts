@@ -139,12 +139,17 @@ export async function updateSession(
       actualDuration = now.getTime() - sessionData.start_time.toDate().getTime() - pausedDuration;
     }
 
-    const updateData = {
+    const updateData: Record<string, unknown> = {
       ...data,
       actual_duration: actualDuration,
-      end_time: data.end_time ? Timestamp.fromDate(new Date(data.end_time)) : Timestamp.now(),
       last_active_time: data.last_active_time ? Timestamp.fromDate(new Date(data.last_active_time)) : Timestamp.now()
     };
+    // Only set end_time when session is completed or aborted (so leaving mid-session doesn't overwrite)
+    if (data.status === 'completed' || data.status === 'aborted') {
+      updateData.end_time = data.end_time ? Timestamp.fromDate(new Date(data.end_time)) : Timestamp.now();
+    } else {
+      delete updateData.end_time;
+    }
 
     await updateDoc(sessionRef, updateData);
   } catch (error) {
