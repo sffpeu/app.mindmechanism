@@ -29,6 +29,8 @@ import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords } from '@/lib/glossary'
 import Clock from '@/components/Clock'
 import { SessionTimer } from '@/components/SessionTimer'
+import { SessionProgressRing } from '@/components/SessionProgressRing'
+import { useSessionTimer } from '@/lib/useSessionTimer'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useLocation } from '@/lib/hooks/useLocation'
 import DotNavigation from '@/components/DotNavigation'
@@ -362,8 +364,21 @@ function NodesPageContent() {
     }
   }
 
-  const getFocusNodeStyle = (index: number, isSelected: boolean) => {
+  const getFocusNodeStyle = (index: number, isSelected: boolean, isSessionActive?: boolean) => {
     const color = '#541b96' // Dot menu hover color for clock 6 (purple)
+    if (isSessionActive) {
+      return {
+        backgroundColor: color,
+        border: `2px solid ${color}`,
+        width: '12px',
+        height: '12px',
+        opacity: 1,
+        transform: 'translate(-50%, -50%)',
+        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        zIndex: isSelected ? 400 : 200,
+        boxShadow: isSelected ? '0 0 0 2px rgba(255,255,255,0.9), 0 0 12px rgba(0,0,0,0.2)' : '0 0 8px rgba(0, 0, 0, 0.2)',
+      }
+    }
     return {
       backgroundColor: isSelected ? color : 'transparent',
       border: `2px solid ${color}`,
@@ -731,6 +746,16 @@ function NodesPageContent() {
               </motion.div>
             </div>
 
+            {duration != null && sessionState.remainingTime != null && sessionState.initialDuration != null && (
+              <SessionProgressRing
+                remainingTime={sessionState.remainingTime}
+                initialDuration={sessionState.initialDuration}
+                isPaused={sessionState.isPaused}
+                color="#541b96"
+                className="z-[150]"
+              />
+            )}
+
             {/* Focus nodes layer */}
             <motion.div 
               className="absolute inset-0"
@@ -764,7 +789,7 @@ function NodesPageContent() {
                         style={{
                           left: `${x}%`,
                           top: `${y}%`,
-                          ...getFocusNodeStyle(index, isSelected),
+                          ...getFocusNodeStyle(index, isSelected, duration != null),
                         }}
                         onClick={() => handleNodeClick(index)}
                         onMouseEnter={() => setHoveredNodeIndex(index)}
@@ -888,9 +913,12 @@ function NodesPageContent() {
         {/* Position the timer in the bottom left corner */}
         <div className="absolute bottom-4 left-4 z-50">
           <SessionTimer
-            duration={duration}
-            sessionId={sessionId}
+            duration={duration ?? undefined}
+            sessionId={sessionId ?? undefined}
             onSessionComplete={handleSessionComplete}
+            remainingTime={duration != null ? sessionState.remainingTime : undefined}
+            isPaused={duration != null ? sessionState.isPaused : undefined}
+            onPauseResume={duration != null ? sessionState.onPauseResume : undefined}
           />
         </div>
 

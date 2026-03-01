@@ -13,6 +13,7 @@ import { toast } from 'react-hot-toast';
 import { useLocation } from '@/lib/hooks/useLocation';
 import { Timestamp } from 'firebase/firestore';
 import { useSoundEffects } from '@/lib/sounds';
+import { SessionProgressRing } from '@/components/SessionProgressRing';
 
 const dotColors = [
   'bg-[#fd290a]', // 1. Red
@@ -232,10 +233,31 @@ const getLabelRotation = (angle: number) => {
   return angle + (normalizedAngle > 180 ? 90 : -90);
 };
 
-const getFocusNodeStyle = (index: number, isMultiView: boolean, selectedNodeIndex: number | null, clockId: number) => {
+const getFocusNodeStyle = (
+  index: number,
+  isMultiView: boolean,
+  selectedNodeIndex: number | null,
+  clockId: number,
+  isSessionActive?: boolean
+) => {
   const isSelected = selectedNodeIndex === index;
   const color = dotColors[clockId % dotColors.length].replace('bg-[', '').replace(']', '');
-  
+
+  // Session (assign-words style): nodes always filled; selected shows outline
+  if (isSessionActive) {
+    return {
+      backgroundColor: color,
+      border: `2px solid ${color}`,
+      width: isMultiView ? '8px' : '12px',
+      height: isMultiView ? '8px' : '12px',
+      opacity: 1,
+      transform: 'translate(-50%, -50%)',
+      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+      zIndex: isSelected ? 400 : 200,
+      boxShadow: isSelected ? '0 0 0 2px rgba(255,255,255,0.9), 0 0 12px rgba(0,0,0,0.2)' : '0 0 8px rgba(0, 0, 0, 0.2)',
+    };
+  }
+
   return {
     backgroundColor: isSelected ? color : 'transparent',
     border: `2px solid ${color}`,
@@ -348,7 +370,8 @@ const FocusNode = ({
   isMultiView, 
   onClick, 
   selectedNodeIndex,
-  rotation 
+  rotation,
+  isSessionActive = false
 }: {
   index: number;
   angle: number;
@@ -360,6 +383,7 @@ const FocusNode = ({
   onClick: () => void;
   selectedNodeIndex: number | null;
   rotation: number;
+  isSessionActive?: boolean;
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const radians = angle * (Math.PI / 180);
@@ -373,7 +397,7 @@ const FocusNode = ({
       style={{
         left: `${x}%`,
         top: `${y}%`,
-        ...getFocusNodeStyle(index, isMultiView, selectedNodeIndex, clockId),
+        ...getFocusNodeStyle(index, isMultiView, selectedNodeIndex, clockId, isSessionActive),
       }}
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
@@ -785,7 +809,7 @@ export default function Clock({
     setHoveredNodeIndex(null); // Reset hover state on click
   };
 
-  const renderFocusNodes = (clockRotation: number, clockFocusNodes: number, clockStartingDegree: number, clockId: number) => {
+  const renderFocusNodes = (clockRotation: number, clockFocusNodes: number, clockStartingDegree: number, clockId: number, isSessionActive = false) => {
     // Adjust starting degree for specific clocks to align with their SVGs
     const adjustedStartingDegree = (() => {
       switch (clockId) {
@@ -818,6 +842,7 @@ export default function Clock({
               onClick={() => handleNodeClick(index)}
               selectedNodeIndex={selectedNodeIndex}
               rotation={clockRotation}
+              isSessionActive={isSessionActive}
             />
           );
         })}
@@ -1039,6 +1064,17 @@ export default function Clock({
           </motion.div>
         </div>
 
+        {/* Session progress ring — outside focus nodes; runs when session active, stops on pause */}
+        {duration != null && remainingTime != null && initialDuration != null && (
+          <SessionProgressRing
+            remainingTime={remainingTime}
+            initialDuration={initialDuration}
+            isPaused={isPaused}
+            color={dotColors[id % dotColors.length].replace('bg-[', '').replace(']', '')}
+            className="z-[150]"
+          />
+        )}
+
         {/* Focus nodes layer */}
         <motion.div 
           className="absolute inset-0"
@@ -1051,7 +1087,7 @@ export default function Clock({
           transition={transitionConfig}
         >
           <div className="absolute inset-0" style={{ transform: `rotate(${imageOrientation}deg)`, pointerEvents: 'auto' }}>
-            {renderFocusNodes(rotation, focusNodes, startingDegree, id)}
+            {renderFocusNodes(rotation, focusNodes, startingDegree, id, duration != null)}
           </div>
         </motion.div>
       </div>
