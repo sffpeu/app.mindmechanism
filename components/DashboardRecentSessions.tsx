@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
 
 import { clockTitles } from '@/lib/clockTitles';
+import { clockSettings } from '@/lib/clockSettings';
 
 const clockColors = [
   'text-red-500',
@@ -30,6 +31,18 @@ const clockStrokeColors = [
   'stroke-purple-500',
   'stroke-indigo-500',
   'stroke-cyan-500'
+];
+
+const clockBgColors = [
+  'bg-red-500',
+  'bg-orange-500',
+  'bg-yellow-500',
+  'bg-green-500',
+  'bg-blue-500',
+  'bg-pink-500',
+  'bg-purple-500',
+  'bg-indigo-500',
+  'bg-cyan-500'
 ];
 
 const formatTime = (ms: number) => {
@@ -70,6 +83,51 @@ function MiniClock({ progress, strokeColor }: { progress: number; strokeColor: s
         transform={`rotate(-90 ${size / 2} ${size / 2})`}
       />
     </svg>
+  );
+}
+
+function MiniClockWithNodes({
+  progress,
+  strokeColor,
+  nodeColor,
+  focusNodes,
+}: {
+  progress: number;
+  strokeColor: string;
+  nodeColor: string;
+  focusNodes: number;
+}) {
+  const size = 48;
+  const center = size / 2;
+  const nodeRadius = 20;
+  return (
+    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <MiniClock progress={progress} strokeColor={strokeColor} />
+      </div>
+      {/* Clock nodes like session cards */}
+      {focusNodes > 0 && (
+        <div className="absolute inset-0" style={{ width: size, height: size }}>
+          {Array.from({ length: focusNodes }).map((_, index) => {
+            const angle = (index * 360) / focusNodes;
+            const radians = ((angle - 90) * Math.PI) / 180;
+            const x = center + nodeRadius * Math.cos(radians);
+            const y = center + nodeRadius * Math.sin(radians);
+            return (
+              <div
+                key={index}
+                className={`absolute w-1.5 h-1.5 rounded-full ${nodeColor}`}
+                style={{
+                  left: `${x}px`,
+                  top: `${y}px`,
+                  transform: 'translate(-50%, -50%)',
+                }}
+              />
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -150,28 +208,47 @@ export function DashboardRecentSessions({ sessions: propSessions }: DashboardRec
   };
 
   const SessionMini = ({ session }: { session: Session }) => {
-    const clockType = clockTitles[session.clock_id] || 'Unknown Clock';
-    const textColor = clockColors[session.clock_id] || 'text-gray-500';
-    const strokeColor = clockStrokeColors[session.clock_id] || 'stroke-gray-500';
+    const clockType = clockTitles[session.clock_id] ?? 'Unknown Clock';
+    const textColor = clockColors[session.clock_id] ?? 'text-gray-500';
+    const strokeColor = clockStrokeColors[session.clock_id] ?? 'stroke-gray-500';
+    const nodeColor = clockBgColors[session.clock_id] ?? 'bg-gray-500';
+    const focusNodes = clockSettings[session.clock_id]?.focusNodes ?? 8;
     const startTime = session.start_time.toDate();
     const lastActiveTime = session.last_active_time?.toDate() || startTime;
-    const pausedDuration = session.paused_duration || 0;
+    const pausedDuration = session.paused_duration ?? 0;
 
     const progress = session.status === 'completed' ? 100 :
       session.status === 'aborted' ?
-        Math.min((session.actual_duration / session.duration) * 100, 100) :
+        Math.min(((session.actual_duration ?? 0) / session.duration) * 100, 100) :
         Math.min(((lastActiveTime.getTime() - startTime.getTime() - pausedDuration) / session.duration) * 100, 100);
 
     const canContinue = session.status === 'in_progress' || session.status === 'aborted';
+    const isCompleted = session.status === 'completed';
+
+    const timeSpent = session.status === 'completed'
+      ? (session.actual_duration ?? 0)
+      : session.status === 'aborted'
+        ? (session.actual_duration ?? 0)
+        : lastActiveTime.getTime() - startTime.getTime() - pausedDuration;
+    const timeLeft = Math.max(0, session.duration - timeSpent);
+
+    const timeLabel = isCompleted
+      ? `${formatTime(session.actual_duration ?? 0)} completed`
+      : `${formatTime(timeLeft)} left`;
 
     return (
       <div className="flex flex-col items-center p-3 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 min-w-[120px] max-w-[160px]">
-        <MiniClock progress={progress} strokeColor={strokeColor} />
+        <MiniClockWithNodes
+          progress={progress}
+          strokeColor={strokeColor}
+          nodeColor={nodeColor}
+          focusNodes={focusNodes}
+        />
         <h3 className={`text-xs font-medium mt-2 text-center line-clamp-2 ${textColor}`}>
           {clockType}
         </h3>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-          {formatTime(session.duration)}
+          {timeLabel}
         </p>
         <div className="flex gap-1.5 mt-2 w-full justify-center flex-wrap">
           {canContinue && (
@@ -192,7 +269,7 @@ export function DashboardRecentSessions({ sessions: propSessions }: DashboardRec
             onClick={() => handleRestartSession(session)}
           >
             <RefreshCw className="h-3 w-3 mr-1" />
-            Restart
+            {isCompleted ? 'Start again' : 'Restart'}
           </Button>
         </div>
       </div>

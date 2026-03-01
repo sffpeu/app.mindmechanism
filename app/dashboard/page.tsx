@@ -14,6 +14,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { XCircle } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { DashboardRecentSessions } from '@/components/DashboardRecentSessions'
 
 interface TimeStats {
   totalTime: number
@@ -221,6 +222,16 @@ export default function DashboardPage() {
               </div>
             </div>
           </Card>
+
+          {/* Recent Sessions */}
+          <section className="mt-8">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+              Recent Sessions
+            </h2>
+            <Card className="p-4 sm:p-6 bg-white dark:bg-black/40 border border-black/5 dark:border-white/10">
+              <DashboardRecentSessions />
+            </Card>
+          </section>
         </div>
       </div>
     </ProtectedRoute>

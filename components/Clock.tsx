@@ -482,7 +482,6 @@ export default function Clock({
   const [remainingTime, setRemainingTime] = useState<number | null>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
-  const [sessionStartRotation, setSessionStartRotation] = useState<number | null>(null);
   const [pausedTimeRemaining, setPausedTimeRemaining] = useState<number | null>(null);
   const [initialDuration, setInitialDuration] = useState<number | null>(null);
   const { user } = useAuth() as { user: { uid: string } | null }
@@ -521,14 +520,6 @@ export default function Clock({
         setLastAutoSave(now);
         playClick(); // Play click sound when session starts
 
-        // Capture clock rotation at session start (fixed overlay "entry point")
-        const elapsedMs = now - startDateTime.getTime();
-        const calculatedRotation = (elapsedMs / rotationTime) * 360;
-        const entryRotation = rotationDirection === 'clockwise'
-          ? (startingDegree + calculatedRotation) % 360
-          : (startingDegree - calculatedRotation + 360) % 360;
-        setSessionStartRotation(entryRotation);
-
         // If this is a continued session, check for pending state
         if (sessionId) {
           const savedSession = localStorage.getItem('pendingSession');
@@ -548,11 +539,9 @@ export default function Clock({
             }
           }
         }
-      } else {
-        setSessionStartRotation(null);
       }
     }
-  }, [duration, sessionId, playClick, startDateTime, rotationTime, startingDegree, rotationDirection]);
+  }, [duration, sessionId, playClick]);
 
   // Timer effect with auto-save — start counting down as soon as session begins
   useEffect(() => {
@@ -1072,40 +1061,6 @@ export default function Clock({
               />
             </div>
           </motion.div>
-          {/* Session entry overlay: fixed clock at start rotation, multiply so both visible */}
-          {duration != null && sessionStartRotation != null && (
-            <div
-              className="absolute inset-0 rounded-full overflow-hidden pointer-events-none"
-              style={{ zIndex: 110, mixBlendMode: 'multiply' }}
-            >
-              <motion.div
-                className="absolute inset-0"
-                initial={false}
-                animate={{ rotate: sessionStartRotation }}
-                transition={{ duration: 0 }}
-                style={{ willChange: 'auto' }}
-              >
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    transform: `translate(${imageX || 0}%, ${imageY || 0}%) rotate(${imageOrientation}deg) scale(${imageScale})`,
-                    transformOrigin: 'center',
-                  }}
-                >
-                  <Image
-                    src={getImagePath(id)}
-                    alt=""
-                    role="presentation"
-                    layout="fill"
-                    objectFit="cover"
-                    className="rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none"
-                    priority
-                    loading="eager"
-                  />
-                </div>
-              </motion.div>
-            </div>
-          )}
         </div>
 
         {/* Focus nodes layer */}
