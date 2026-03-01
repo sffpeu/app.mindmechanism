@@ -3,401 +3,91 @@
 import { useEffect, useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { Card } from '@/components/ui/card'
-import { Calendar, Clock, Cloud, Droplets, Gauge, Wind, Moon, ClipboardList, BookOpen, Sun, MapPin, Mountain, Waves, User, BarChart2, Pencil, Trash2, Globe, RefreshCw, CheckCircle2, Pause, XCircle, Users, Share2, Cpu, Wifi, Battery, Eye } from 'lucide-react'
-import { useTheme } from '@/app/ThemeContext'
+import { Button } from '@/components/ui/button'
+import { User, Mail, Calendar, LogIn, Pencil, LogOut } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/FirebaseAuthContext'
-import { useNotes } from '@/lib/NotesContext'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Button } from '@/components/ui/button'
-import { Note } from '@/lib/notes'
-import { ChangeEvent } from 'react'
 import Link from 'next/link'
-import { getUserStats, getUserSessions } from '@/lib/sessions'
-import { Timestamp } from 'firebase/firestore'
-import { startTimeTracking, endTimeTracking, calculateUserTimeStats } from '@/lib/timeTracking'
-import { DashboardRecentSessions } from '@/components/DashboardRecentSessions'
+import { calculateUserTimeStats } from '@/lib/timeTracking'
+import { startTimeTracking, endTimeTracking } from '@/lib/timeTracking'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { Clock as ClockIcon } from 'lucide-react'
-import { WeatherSnapshot } from '@/lib/notes'
-import { WeatherSnapshotPopover } from '@/components/WeatherSnapshotPopover'
-import { toast } from '@/components/ui/use-toast'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { Session as BaseSession } from '@/lib/sessions'
-import { useLocation } from '@/lib/hooks/useLocation'
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
-import { clockTitles } from '@/lib/clockTitles'
-
-interface WeatherResponse {
-  location: {
-    name: string
-    region: string
-    country: string
-    lat: number
-    lon: number
-    tz_id: string
-    localtime: string
-  }
-  current: {
-    temp_c: number
-    condition: {
-      text: string
-      icon: string
-    }
-    humidity: number
-    uv: number
-    pressure_mb: number
-    wind_kph: number
-    wind_dir: string
-    air_quality: {
-      'us-epa-index': number
-    }
-  }
-}
-
-interface MoonData {
-  moon_phase: string
-  moon_illumination: string
-  moonrise: string
-  moonset: string
-  next_full_moon: string
-  next_new_moon: string
-}
-
-interface UserStats {
-  totalTime: number
-  totalSessions: number
-  completionRate: number
-  monthlyProgress: {
-    totalSessions: number
-    totalTime: number
-    completionRate: number
-  }
-}
-
-interface FirebaseUser {
-  uid: string
-  photoURL: string | null
-  displayName: string | null
-  email: string | null
-  metadata: {
-    creationTime?: string
-    lastSignInTime?: string
-  }
-}
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { XCircle } from 'lucide-react'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 interface TimeStats {
-  totalTime: number;
-  monthlyTime: number;
-  lastSignInTime: Date | null;
-}
-
-interface Session extends BaseSession {
-  elapsed_time: number
-}
-
-const clockColors = [
-  'bg-[#fd290a]', // 1. Red
-  'bg-[#fba63b]', // 2. Orange
-  'bg-[#f7da5f]', // 3. Yellow
-  'bg-[#6dc037]', // 4. Green
-  'bg-[#156fde]', // 5. Blue
-  'bg-[#941952]', // 6. Dark Pink
-  'bg-[#541b96]', // 7. Purple
-  'bg-[#ee5fa7]', // 8. Pink
-  'bg-[#56c1ff]', // 9. Light Blue
-];
-
-const WEATHER_API_KEY = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
-
-const getWeatherInfo = (metric: string) => {
-  const info = {
-    temperature: "Temperature is a measure of how hot or cold the air is. It affects everything from human comfort to plant growth and is measured in degrees Celsius (°C).",
-    humidity: "Humidity shows the amount of water vapor in the air. High humidity can make it feel warmer than it is and affect comfort and health.",
-    uvIndex: "The UV Index indicates the intensity of ultraviolet radiation from the sun. Higher values (>3) mean greater risk of sun damage to skin and eyes.",
-    pressure: "Air pressure, measured in hectopascals (hPa), indicates the weight of air above us. Changes in pressure often signal incoming weather changes.",
-    wind: "Wind speed and direction affect weather patterns, temperature feel, and can indicate incoming weather changes. Direction shows where the wind is coming from.",
-    airQuality: "Air Quality Index (AQI) measures the cleanliness of the air we breathe. It considers multiple pollutants and their impact on human health.",
-    moonPhase: "The moon's phase shows how much of its surface appears illuminated from Earth. It affects tides, nocturnal animal behavior, and has cultural significance.",
-    moonrise: "Moonrise time marks when the moon appears above the horizon. This timing varies daily and affects nighttime visibility.",
-    moonset: "Moonset time indicates when the moon disappears below the horizon. Understanding moonset helps plan nighttime activities and observations.",
-    illumination: "Moon illumination percentage shows how much of the moon's surface appears lit from Earth. This affects nighttime brightness and visibility.",
-    sessionProgress: "Track your progress through each session. This shows how much of your planned observation time has been completed.",
-    sessionDuration: "The total time allocated for this astronomical observation session. Longer sessions allow for more detailed observations.",
-    sessionType: "Different types of astronomical observations require varying approaches and equipment. Each session type is optimized for specific celestial objects.",
-    completionRate: "Your overall completion rate for observation sessions. Higher rates indicate consistent dedication to astronomical studies."
-  };
-  return info[metric as keyof typeof info] || "No information available";
-};
-
-const formatDuration = (ms: number) => {
-  const hours = Math.floor(ms / (1000 * 60 * 60))
-  const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60))
-  return `${hours}h ${minutes}m`
+  totalTime: number
+  monthlyTime: number
+  lastSignInTime: Date | null
 }
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false)
-  const [showElements, setShowElements] = useState(true)
-  const [showSatellites, setShowSatellites] = useState(false)
-  const [showInfoCards, setShowInfoCards] = useState(true)
-  const [weatherData, setWeatherData] = useState<WeatherResponse | null>(null)
-  const [moon, setMoon] = useState<MoonData | null>(null)
-  const [currentTime, setCurrentTime] = useState<Date | null>(null)
-  const { isDarkMode } = useTheme()
-  const [isWeatherLoading, setIsWeatherLoading] = useState(false)
-  const [weatherError, setWeatherError] = useState<string | null>(null)
-  const { location, error: locationError, isLoading: isLocationLoading } = useLocation()
   const router = useRouter()
-  const { user, loading: authLoading } = useAuth()
-  const { notes, isLoading: notesLoading, addNote, editNote, removeNote } = useNotes()
-  const [isAddNoteOpen, setIsAddNoteOpen] = useState(false)
-  const [isEditNoteOpen, setIsEditNoteOpen] = useState(false)
-  const [selectedNote, setSelectedNote] = useState<Note | null>(null)
-  const [noteTitle, setNoteTitle] = useState('')
-  const [noteContent, setNoteContent] = useState('')
-  const [userStats, setUserStats] = useState<UserStats>({
-    totalTime: 0,
-    totalSessions: 0,
-    completionRate: 0,
-    monthlyProgress: {
-      totalSessions: 0,
-      totalTime: 0,
-      completionRate: 0
-    }
-  })
-  const [recentSessions, setRecentSessions] = useState<Session[]>([])
+  const { user, loading: authLoading, signOut } = useAuth()
   const [timeStats, setTimeStats] = useState<TimeStats>({
     totalTime: 0,
     monthlyTime: 0,
-    lastSignInTime: null
+    lastSignInTime: null,
   })
   const [timeEntryId, setTimeEntryId] = useState<string | null>(null)
-  const [isRefreshing, setIsRefreshing] = useState(false)
-  const [showRecentSessions, setShowRecentSessions] = useState(true)
   const [isInitializing, setIsInitializing] = useState(true)
   const [authError, setAuthError] = useState<string | null>(null)
 
-  const getAQIDescription = (index: number) => {
-    const descriptions = {
-      1: 'Good',
-      2: 'Moderate',
-      3: 'Unhealthy for sensitive groups',
-      4: 'Unhealthy',
-      5: 'Very Unhealthy',
-      6: 'Hazardous'
-    };
-    return descriptions[index as keyof typeof descriptions] || 'Unknown';
-  };
-
-  // Handle mounting
   useEffect(() => {
     setMounted(true)
-    setCurrentTime(new Date())
   }, [])
 
-  const formatTime = (date: Date | null) => {
-    if (!date) return '--:--:--'
-    const hours = date.getHours().toString().padStart(2, '0')
-    const minutes = date.getMinutes().toString().padStart(2, '0')
-    const seconds = date.getSeconds().toString().padStart(2, '0')
-    return `${hours}:${minutes}:${seconds}`
-  }
-
-  // Initialize dark mode from system preference
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      if (prefersDark) {
-        document.documentElement.classList.add('dark')
-      }
-    }
-  }, [])
+    let mounted = true
 
-  // Handle dark mode changes
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-  }, [isDarkMode])
-
-  // Update current time every second
-  useEffect(() => {
-    if (!mounted) return
-
-    const timer = setInterval(() => {
-      setCurrentTime(new Date())
-    }, 1000)
-    return () => clearInterval(timer)
-  }, [mounted])
-
-  // Fetch weather and moon data
-  useEffect(() => {
-    if (!mounted) return;
-
-    const fetchData = async () => {
-      setIsWeatherLoading(true);
+    const init = async () => {
       try {
-        const weatherRes = await fetch(
-          `https://api.weatherapi.com/v1/current.json?key=6cb652a81cb64a19a84103447252001&q=${location?.coords ? `${location.coords.lat},${location.coords.lon}` : 'auto:ip'
-          }&aqi=yes`
-        );
-        if (!weatherRes.ok) {
-          throw new Error('Weather API request failed');
+        if (authLoading || !user) {
+          if (!authLoading && !user) {
+            router.push('/login')
+          }
+          return
         }
-        const weatherData = await weatherRes.json();
-        setWeatherData(weatherData);
-        setWeatherError(null);
-
-        const astronomyRes = await fetch(
-          `https://api.weatherapi.com/v1/astronomy.json?key=6cb652a81cb64a19a84103447252001&q=${location?.coords ? `${location.coords.lat},${location.coords.lon}` : 'auto:ip'
-          }`
-        );
-        if (!astronomyRes.ok) {
-          throw new Error('Astronomy API request failed');
+        setIsInitializing(true)
+        setAuthError(null)
+        const timeStatsData = await calculateUserTimeStats(user.uid)
+        if (mounted) {
+          setTimeStats(timeStatsData)
         }
-        const astronomyData = await astronomyRes.json();
-        setMoon(astronomyData.astronomy.astro);
       } catch (error) {
-        console.error('Error fetching weather data:', error);
-        setWeatherError(error instanceof Error ? error.message : 'Failed to load weather data');
+        if (mounted) {
+          setAuthError(error instanceof Error ? error.message : 'Failed to load profile')
+        }
       } finally {
-        setIsWeatherLoading(false);
+        if (mounted) setIsInitializing(false)
       }
-    };
-
-    fetchData();
-    const interval = setInterval(fetchData, 5 * 60 * 1000); // Update every 5 minutes
-    return () => clearInterval(interval);
-  }, [mounted, location?.coords]);
-
-  // Handle authentication and initialization
-  useEffect(() => {
-    let mounted = true;
-
-    const initializeDashboard = async () => {
-      try {
-        if (!mounted) return;
-        setIsInitializing(true);
-        setAuthError(null);
-
-        if (authLoading) return;
-        if (!user) {
-          console.log('User not authenticated, redirecting to login');
-          router.push('/login');
-          return;
-        }
-
-        console.log('Starting dashboard initialization...');
-
-        const [stats, baseSessions, timeStatsData] = await Promise.all([
-          getUserStats(user.uid),
-          getUserSessions(user.uid),
-          calculateUserTimeStats(user.uid)
-        ]);
-
-        if (!mounted) return;
-
-        // Add elapsed_time to sessions
-        const sessions = baseSessions.map(session => ({
-          ...session,
-          elapsed_time: session.end_time
-            ? session.end_time.toDate().getTime() - session.start_time.toDate().getTime()
-            : Date.now() - session.start_time.toDate().getTime()
-        }));
-
-        setUserStats(stats);
-        setRecentSessions(sessions);
-        setTimeStats(timeStatsData);
-
-        console.log('Dashboard initialization complete');
-        setIsInitializing(false);
-      } catch (error) {
-        console.error('Dashboard initialization failed:', error);
-        if (!mounted) return;
-        setAuthError(error instanceof Error ? error.message : 'Failed to load dashboard');
-        setIsInitializing(false);
-      }
-    };
-
-    initializeDashboard();
-
-    return () => {
-      mounted = false;
-    };
-  }, [user?.uid, authLoading]);
-
-  // Remove the separate useEffects for loadUserStats and loadRecentSessions
-  // since they're now handled in the initialization effect
-
-  // Keep the refresh function for manual updates
-  const loadAllStats = async () => {
-    if (!user?.uid) return;
-
-    setIsRefreshing(true);
-    try {
-      console.log('Manually refreshing dashboard stats...');
-      const [stats, baseSessions, timeStatsData] = await Promise.all([
-        getUserStats(user.uid),
-        getUserSessions(user.uid),
-        calculateUserTimeStats(user.uid)
-      ]);
-
-      // Add elapsed_time to sessions
-      const sessions = baseSessions.map(session => ({
-        ...session,
-        elapsed_time: session.end_time
-          ? session.end_time.toDate().getTime() - session.start_time.toDate().getTime()
-          : Date.now() - session.start_time.toDate().getTime()
-      }));
-
-      setUserStats(stats);
-      setRecentSessions(sessions);
-      setTimeStats(timeStatsData);
-      console.log('Manual refresh complete');
-    } catch (error) {
-      console.error('Error refreshing stats:', error);
-    } finally {
-      setIsRefreshing(false);
     }
-  };
 
-  // Start time tracking when the page loads
+    init()
+    return () => {
+      mounted = false
+    }
+  }, [user?.uid, authLoading, router])
+
   useEffect(() => {
-    let entryId: string | null = null;
-    let mounted = true;
+    let entryId: string | null = null
+    let mounted = true
 
     const startTracking = async () => {
       if (user?.uid && mounted) {
-        console.log('Starting time tracking...');
-        entryId = await startTimeTracking(user.uid, 'dashboard');
-        if (mounted) {
-          setTimeEntryId(entryId);
-        }
+        entryId = await startTimeTracking(user.uid, 'dashboard')
+        if (mounted) setTimeEntryId(entryId)
       }
-    };
+    }
 
-    startTracking();
-
-    // Cleanup function
+    startTracking()
     return () => {
-      mounted = false;
-      if (entryId) {
-        console.log('Ending time tracking...');
-        endTimeTracking(entryId);
-      }
-    };
-  }, [user?.uid]); // Only depend on user.uid
+      mounted = false
+      if (entryId) endTimeTracking(entryId)
+    }
+  }, [user?.uid])
 
-  // Show loading state
   if (isInitializing || authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -406,7 +96,6 @@ export default function DashboardPage() {
     )
   }
 
-  // Show error state
   if (authError) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -426,538 +115,114 @@ export default function DashboardPage() {
     )
   }
 
-  if (!mounted) {
+  if (!mounted || !user) {
     return null
   }
 
-  const createWeatherSnapshot = (): WeatherSnapshot | undefined => {
-    if (!weatherData || !moon) return undefined;
-
-    return {
-      temperature: weatherData.current.temp_c,
-      humidity: weatherData.current.humidity,
-      uvIndex: weatherData.current.uv,
-      airPressure: weatherData.current.pressure_mb,
-      wind: {
-        speed: weatherData.current.wind_kph,
-        direction: weatherData.current.wind_dir,
-      },
-      moon: {
-        phase: moon.moon_phase,
-        illumination: parseInt(moon.moon_illumination),
-        moonrise: moon.moonrise,
-        moonset: moon.moonset,
-      },
-      location: {
-        name: weatherData.location.name,
-        country: weatherData.location.country,
-        coordinates: {
-          lat: weatherData.location.lat,
-          lon: weatherData.location.lon,
-        },
-      },
-      timestamp: Timestamp.now(),
-    };
-  };
-
-  const handleSaveNote = async () => {
-    if (!noteTitle.trim() || !noteContent.trim()) {
-      toast({
-        title: "Error",
-        description: "Title and content are required"
-      });
-      return;
-    }
-
-    try {
-      const weatherSnapshot = createWeatherSnapshot();
-      if (selectedNote && isEditNoteOpen) {
-        await editNote(selectedNote.id, noteTitle, noteContent);
-      } else {
-        await addNote(noteTitle, noteContent);
-      }
-      setNoteTitle('');
-      setNoteContent('');
-      setSelectedNote(null);
-      setIsAddNoteOpen(false);
-      setIsEditNoteOpen(false);
-    } catch (error) {
-      console.error('Error saving note:', error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : 'Failed to save note'
-      });
-    }
-  };
+  const memberSince = user.metadata?.creationTime
+    ? new Date(user.metadata.creationTime).toLocaleDateString('en-US', {
+        month: 'long',
+        year: 'numeric',
+      })
+    : null
 
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50 dark:bg-black/95">
-        <Menu
-          showElements={showElements}
-          onToggleShow={() => setShowElements(!showElements)}
-          showSatellites={showSatellites}
-          onSatellitesChange={setShowSatellites}
-        />
-        <div className="max-w-6xl mx-auto space-y-4 p-4">
-          {/* Welcome Header */}
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Welcome Back, {user?.displayName ? user.displayName.split(' ')[0] : 'Mind Explorer'}
+        <Menu />
+        <div className="max-w-2xl mx-auto p-4 sm:p-6">
+          <header className="mb-8">
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+              Profile
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">
-              Your mind mechanism is ready.
+            <p className="text-gray-500 dark:text-gray-400 mt-0.5">
+              Your account at a glance.
             </p>
-          </div>
+          </header>
 
-          {/* Weather and Moon Section */}
-          {showInfoCards && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {weatherData && (
-                <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h2 className="text-base font-semibold dark:text-white mb-1">Current Weather</h2>
-                        {isWeatherLoading ? (
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Loading...</p>
-                        ) : weatherError ? (
-                          <p className="text-sm text-red-500">{weatherError}</p>
-                        ) : (
-                          <div className="text-right">
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <div className="text-right cursor-help">
-                                  <p className="text-3xl font-bold dark:text-white">{weatherData.current.temp_c}°C</p>
-                                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                                    <Droplets className="h-3.5 w-3.5" />
-                                    <span>{weatherData.current.humidity}%</span>
-                                  </div>
-                                </div>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-72">
-                                <div className="space-y-2">
-                                  <p className="text-sm">{getWeatherInfo('temperature')}</p>
-                                  <p className="text-sm">{getWeatherInfo('humidity')}</p>
-                                </div>
-                              </PopoverContent>
-                            </Popover>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    {!weatherError && (
-                      <div className="grid grid-cols-4 gap-3">
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <div className="p-2 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all cursor-help">
-                              <div className="flex items-center gap-1.5">
-                                <Sun className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
-                                <span className="text-xs text-gray-600 dark:text-gray-200">UV Index</span>
-                              </div>
-                              <p className="text-base font-semibold mt-1 dark:text-white">{weatherData.current.uv}</p>
-                            </div>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-72">
-                            <p className="text-sm">{getWeatherInfo('uvIndex')}</p>
-                          </PopoverContent>
-                        </Popover>
+          <Card className="overflow-hidden bg-white dark:bg-black/40 border border-black/5 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-none">
+            {/* Banner strip */}
+            <div
+              className="h-24 sm:h-28 bg-gradient-to-br from-slate-700 via-slate-600 to-slate-800 dark:from-slate-800 dark:via-slate-700 dark:to-slate-900"
+              aria-hidden
+            />
 
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <div className="p-2 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all cursor-help">
-                              <div className="flex items-center gap-1.5">
-                                <Wind className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
-                                <span className="text-xs text-gray-600 dark:text-gray-200">Air Quality</span>
-                              </div>
-                              <p className="text-base font-semibold mt-1 dark:text-white">
-                                {weatherData.current.air_quality && weatherData.current.air_quality['us-epa-index']
-                                  ? getAQIDescription(weatherData.current.air_quality['us-epa-index'])
-                                  : 'N/A'}
-                              </p>
-                            </div>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-72">
-                            <p className="text-sm">{getWeatherInfo('airQuality')}</p>
-                          </PopoverContent>
-                        </Popover>
+            <div className="px-4 sm:px-6 pb-6">
+              {/* Avatar overlapping banner */}
+              <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-12 sm:-mt-14">
+                <Avatar className="h-24 w-24 sm:h-28 sm:w-28 rounded-2xl border-4 border-white dark:border-black/40 shadow-xl ring-2 ring-black/5 dark:ring-white/10 flex-shrink-0">
+                  <AvatarImage src={user.photoURL || undefined} className="object-cover" />
+                  <AvatarFallback className="rounded-2xl bg-slate-500 text-white text-2xl font-medium">
+                    {user.displayName
+                      ? user.displayName
+                          .split(/\s+/)
+                          .map((n) => n[0])
+                          .join('')
+                          .slice(0, 2)
+                          .toUpperCase()
+                      : <User className="h-10 w-10" />}
+                  </AvatarFallback>
+                </Avatar>
 
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <div className="p-2 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all cursor-help">
-                              <div className="flex items-center gap-1.5">
-                                <Gauge className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
-                                <span className="text-xs text-gray-600 dark:text-gray-200">Pressure</span>
-                              </div>
-                              <p className="text-base font-semibold mt-1 dark:text-white">{weatherData.current.pressure_mb} hPa</p>
-                            </div>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-72">
-                            <p className="text-sm">{getWeatherInfo('pressure')}</p>
-                          </PopoverContent>
-                        </Popover>
-
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <div className="p-2 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all cursor-help">
-                              <div className="flex items-center gap-1.5">
-                                <Wind className="h-3.5 w-3.5 text-gray-600 dark:text-gray-200" />
-                                <span className="text-xs text-gray-600 dark:text-gray-200">Wind</span>
-                              </div>
-                              <p className="text-base font-semibold mt-1 dark:text-white">{weatherData.current.wind_kph} km/h</p>
-                            </div>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-72">
-                            <p className="text-sm">{getWeatherInfo('wind')}</p>
-                          </PopoverContent>
-                        </Popover>
-                      </div>
-                    )}
+                <div className="flex-1 min-w-0 pt-1 sm:pt-0 sm:pb-1">
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate">
+                    {user.displayName || 'User'}
+                  </h2>
+                  <div className="flex items-center gap-2 mt-1 text-gray-500 dark:text-gray-400">
+                    <Mail className="h-4 w-4 flex-shrink-0" />
+                    <span className="text-sm truncate">{user.email}</span>
                   </div>
-                </Card>
-              )}
-
-              <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-base font-semibold dark:text-white">Moon Phase</h2>
-                  <Moon className="h-4 w-4 text-gray-500" />
                 </div>
-                {moon && (
-                  <div className="space-y-4">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <div className="flex items-center gap-4 cursor-help">
-                          <div className="w-16 h-16 rounded-full border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all flex items-center justify-center">
-                            <Moon className="w-10 h-10 text-gray-600 dark:text-gray-200" />
-                          </div>
-                          <div>
-                            <p className="text-base font-semibold dark:text-white">{moon.moon_phase}</p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">{moon.moon_illumination}% illuminated</p>
-                          </div>
-                        </div>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-72">
-                        <div className="space-y-2">
-                          <p className="text-sm">{getWeatherInfo('moonPhase')}</p>
-                          <p className="text-sm">{getWeatherInfo('illumination')}</p>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
+              </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all cursor-help">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Moonrise</p>
-                            <p className="text-sm font-semibold dark:text-white">{moon.moonrise}</p>
-                          </div>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-72">
-                          <p className="text-sm">{getWeatherInfo('moonrise')}</p>
-                        </PopoverContent>
-                      </Popover>
-
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <div className="p-3 rounded-lg border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all cursor-help">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Moonset</p>
-                            <p className="text-sm font-semibold dark:text-white">{moon.moonset}</p>
-                          </div>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-72">
-                          <p className="text-sm">{getWeatherInfo('moonset')}</p>
-                        </PopoverContent>
-                      </Popover>
-                    </div>
+              {/* Meta row */}
+              <div className="mt-6 pt-6 border-t border-gray-100 dark:border-white/10 space-y-3">
+                {timeStats.lastSignInTime && (
+                  <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+                    <span className="flex items-center gap-2">
+                      <LogIn className="h-4 w-4 text-gray-400" />
+                      Last sign in
+                    </span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {timeStats.lastSignInTime.toLocaleString()}
+                    </span>
                   </div>
                 )}
-              </Card>
-            </div>
-          )}
+                {memberSince && (
+                  <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+                    <span className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-gray-400" />
+                      Member since
+                    </span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {memberSince}
+                    </span>
+                  </div>
+                )}
+              </div>
 
-          {/* Time and User Profile Section */}
-          {showInfoCards && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Time Card */}
-              <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-base font-semibold dark:text-white">Time</h2>
-                  <ClockIcon className="h-4 w-4 text-gray-500" />
-                </div>
-                <p className="text-3xl font-bold dark:text-white tracking-tight">
-                  {formatTime(currentTime)}
-                </p>
-              </Card>
-
-              {/* User Profile Card */}
-              {user && (
-                <Card className="p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-                  <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-base font-semibold dark:text-white">Profile</h2>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      {user.photoURL && (
-                        <img src={user.photoURL} alt="Profile" className="w-12 h-12 rounded-full" />
-                      )}
-                      <div>
-                        <p className="font-medium dark:text-white">{user.displayName || 'User'}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
-                      </div>
-                    </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      <p>Last sign in: {timeStats.lastSignInTime ? timeStats.lastSignInTime.toLocaleString() : 'N/A'}</p>
-                      <p>Member since {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('en-US', { month: '2-digit', year: 'numeric' }) : 'N/A'}</p>
-                    </div>
-                  </div>
-                </Card>
-              )}
-            </div>
-          )}
-
-          {/* Location, Connect, and Device Section */}
-          {showInfoCards && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Location Card */}
-              {weatherData && (
-                <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-                  <div className="flex items-center justify-between mb-2">
-                    <h2 className="text-base font-semibold dark:text-white">Location</h2>
-                    <MapPin className="h-4 w-4 text-gray-500" />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div>
-                        <p className="text-base font-medium dark:text-white">{weatherData.location.name}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {weatherData.location.region && `${weatherData.location.region}, `}{weatherData.location.country}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              )}
-
-              {/* Connect Card */}
-              <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-base font-semibold dark:text-white">Connect</h2>
-                  <Users className="h-4 w-4 text-gray-500" />
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
-                        <Share2 className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium dark:text-white">Share Session</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Create & share with others</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" className="text-xs">
-                      Create
-                    </Button>
-                  </div>
-                  <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
-                    <div className="flex items-center gap-2">
-                      <div className="flex -space-x-2">
-                        <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center ring-2 ring-white dark:ring-black">
-                          <span className="text-[10px] text-gray-600 dark:text-gray-300 font-medium">JD</span>
-                        </div>
-                        <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center ring-2 ring-white dark:ring-black">
-                          <span className="text-[10px] text-gray-600 dark:text-gray-300 font-medium">AS</span>
-                        </div>
-                      </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">2 users connected</p>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Device Card */}
-              <Card className="p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-base font-semibold dark:text-white">Device</h2>
-                  <Cpu className="h-4 w-4 text-gray-500" />
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
-                        <Wifi className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium dark:text-white">M13 Mechanism</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">No device connected</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" className="text-xs">
-                      Connect
-                    </Button>
-                  </div>
-                  <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <Battery className="h-3.5 w-3.5 text-gray-500" />
-                        <span className="text-xs text-gray-500 dark:text-gray-400">Battery</span>
-                      </div>
-                      <span className="text-xs font-medium text-gray-900 dark:text-white">N/A</span>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </div>
-          )}
-
-          {/* Notes and Sessions Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Recent Notes Card */}
-            <Card className="card p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-sm font-semibold dark:text-white">Recent Notes</h2>
-                <div className="flex items-center gap-1.5">
-                  <ClipboardList className="h-3.5 w-3.5 text-gray-500" />
-                  <Link href="/notes" className="text-xs text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300">
-                    View All
+              {/* Actions */}
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Button variant="outline" size="sm" asChild className="gap-2">
+                  <Link href="/settings">
+                    <Pencil className="h-4 w-4" />
+                    Edit profile
                   </Link>
-                </div>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => signOut()}
+                  className="gap-2 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sign out
+                </Button>
               </div>
-              <div className="space-y-1.5">
-                {notes?.slice(0, 3).map((note) => (
-                  <div
-                    key={note.id}
-                    className="p-2 rounded-lg bg-gray-50 dark:bg-black/20 border border-black/5 dark:border-white/10"
-                  >
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-medium dark:text-white truncate max-w-[80%]">{note.title}</h3>
-                      <div className="flex items-center gap-1">
-                        {note.weatherSnapshot && (
-                          <WeatherSnapshotPopover weatherSnapshot={note.weatherSnapshot}>
-                            <button className="p-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-white/10">
-                              <Cloud className="h-3.5 w-3.5 text-gray-500" />
-                            </button>
-                          </WeatherSnapshotPopover>
-                        )}
-                        <button
-                          onClick={() => {
-                            setSelectedNote(note);
-                            setIsEditNoteOpen(true);
-                          }}
-                          className="p-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-white/10"
-                        >
-                          <Pencil className="h-3.5 w-3.5 text-gray-500" />
-                        </button>
-                        <button
-                          onClick={() => removeNote(note.id)}
-                          className="p-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-white/10"
-                        >
-                          <Trash2 className="h-3.5 w-3.5 text-gray-500" />
-                        </button>
-                      </div>
-                    </div>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-1 mt-0.5">{note.content}</p>
-                    <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
-                      {note.updatedAt.toDate().toLocaleString()}
-                    </p>
-                  </div>
-                ))}
-                {notes?.length === 0 && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400">No notes yet</p>
-                )}
-              </div>
-            </Card>
-
-            {/* Sessions Card */}
-            <Card className="card p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-sm font-semibold dark:text-white">Sessions</h2>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={loadAllStats}
-                    disabled={isRefreshing}
-                    className={`h-6 w-6 ${isRefreshing ? 'animate-spin' : ''}`}
-                  >
-                    <RefreshCw className="h-3.5 w-3.5" />
-                  </Button>
-                  <ClockIcon className="h-3.5 w-3.5 text-gray-500" />
-                </div>
-              </div>
-              <div className="space-y-3">
-                {/* Session Type Breakdown */}
-                <div className="grid grid-cols-3 gap-1.5">
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5 cursor-help">
-                        <div className="flex items-center gap-1 mb-0.5">
-                          <CheckCircle2 className="h-3 w-3 text-gray-600 dark:text-gray-300" />
-                          <span className="text-xs text-gray-500 dark:text-gray-400">Completed</span>
-                        </div>
-                        <span className="text-xs font-medium text-gray-900 dark:text-white">
-                          {recentSessions.filter(s => s.status === 'completed').length}
-                        </span>
-                      </div>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-72">
-                      <p className="text-sm">Successfully completed observation sessions. These sessions were carried out for their full planned duration.</p>
-                    </PopoverContent>
-                  </Popover>
-
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5 cursor-help">
-                        <div className="flex items-center gap-1 mb-0.5">
-                          <Pause className="h-3 w-3 text-gray-600 dark:text-gray-300" />
-                          <span className="text-xs text-gray-500 dark:text-gray-400">In Progress</span>
-                        </div>
-                        <span className="text-xs font-medium text-gray-900 dark:text-white">
-                          {recentSessions.filter(s => s.status === 'in_progress').length}
-                        </span>
-                      </div>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-72">
-                      <p className="text-sm">Currently active observation sessions. These sessions are still ongoing and collecting data.</p>
-                    </PopoverContent>
-                  </Popover>
-
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5 cursor-help">
-                        <div className="flex items-center gap-1 mb-0.5">
-                          <XCircle className="h-3 w-3 text-gray-600 dark:text-gray-300" />
-                          <span className="text-xs text-gray-500 dark:text-gray-400">Aborted</span>
-                        </div>
-                        <span className="text-xs font-medium text-gray-900 dark:text-white">
-                          {recentSessions.filter(s => s.status === 'aborted').length}
-                        </span>
-                      </div>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-72">
-                      <p className="text-sm">Sessions that were ended before completion. This could be due to weather conditions, technical issues, or other interruptions.</p>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                {/* Recent Sessions - mini clocks row */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-medium text-gray-900 dark:text-white">Recent Sessions</h3>
-                    <Link
-                      href="/sessions"
-                      className="text-xs text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-                    >
-                      View All
-                    </Link>
-                  </div>
-                  <DashboardRecentSessions sessions={recentSessions} />
-                </div>
-              </div>
-            </Card>
-          </div>
+            </div>
+          </Card>
         </div>
       </div>
     </ProtectedRoute>
   )
-} 
+}
