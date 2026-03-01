@@ -748,7 +748,7 @@ export function SessionDurationDialog({
                     <React.Fragment key={index}>
                       <div
                         className={cn(
-                          'absolute w-3 h-3 rounded-full cursor-pointer pointer-events-auto transition-all',
+                          'absolute w-6 h-6 rounded-full cursor-pointer pointer-events-auto transition-all flex items-center justify-center',
                           bgColorClass,
                           isSelected && 'ring-offset-2 ring-offset-white dark:ring-offset-black scale-125'
                         )}
@@ -774,7 +774,11 @@ export function SessionDurationDialog({
                             setSelectedFocusNodeIndex(index)
                           }
                         }}
-                      />
+                      >
+                        <span className="text-[10px] font-semibold text-white drop-shadow-[0_0_1px_rgba(0,0,0,0.8)] select-none" aria-hidden>
+                          {index + 1}
+                        </span>
+                      </div>
                       {wordLabel && (
                           <div
                             className="absolute pointer-events-none px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap outline outline-1 outline-black/10 dark:outline-white/20 bg-white/90 dark:bg-black/90 text-gray-800 dark:text-gray-200 shadow-sm"
