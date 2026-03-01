@@ -9,7 +9,7 @@ import { Timer, ChevronRight, InfinityIcon, X, Check, ArrowLeft, PenLine, Search
 import { cn } from '@/lib/utils'
 import { clockSettings } from '@/lib/clockSettings'
 import { GlossaryWord } from '@/types/Glossary'
-import { getAllWords } from '@/lib/glossary'
+import { getAllWords, searchWords } from '@/lib/glossary'
 import { clockTitles } from '@/lib/clockTitles'
 import { useSoundEffects } from '@/lib/sounds'
 import { useRouter } from 'next/navigation'
@@ -26,6 +26,15 @@ interface SessionDurationDialogProps {
 }
 
 const timePresets = [15, 30, 45, 60, 120]
+
+// Clock 1–9 colors (match /glossary)
+const CLOCK_HEX = ['#fd290a', '#fba63b', '#f7da5f', '#6dc037', '#156fde', '#941952', '#541b96', '#ee5fa7', '#56c1ff']
+
+const getDefaultIconStyle = (clockId: number | undefined) => {
+  if (clockId == null || clockId < 0 || clockId >= CLOCK_HEX.length) return undefined
+  const hex = CLOCK_HEX[clockId]
+  return { backgroundColor: `${hex}20`, color: hex }
+}
 
 type Step = 'duration' | 'words' | 'confirm'
 
@@ -78,6 +87,19 @@ export function SessionDurationDialog({
       loadGlossaryWords()
     }
   }, [step])
+
+  // Debounced search (in sync with /glossary)
+  useEffect(() => {
+    if (step !== 'words') return
+    const timer = setTimeout(() => {
+      if (!searchQuery.trim()) {
+        loadGlossaryWords()
+      } else {
+        searchWords(searchQuery).then(setGlossaryWords).catch(() => setGlossaryWords([]))
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [step, searchQuery])
 
   useEffect(() => {
     if (step === 'words') {
@@ -335,15 +357,235 @@ export function SessionDurationDialog({
   const renderWordsStep = () => {
     const clock = clockId != null ? clockSettings[clockId] : null
     if (!clock) return null
+    const focusNodesCount = clock.focusNodes
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
+    // Filter: Default = only words for the selected clock (no clock picker in dialog)
+    const filteredWords = glossaryWords
+      .filter(word => {
+        if (scopeFilter === 'My Words') {
+          if (word.source !== 'user' || word.user_id !== user?.uid) return false
+        } else if (scopeFilter === 'Default') {
+          if (word.clock_id == null || word.clock_id < 0 || word.clock_id > 8) return false
+          if (word.clock_id !== clockId) return false
+        }
+        if (selectedSentiment !== null && word.rating !== selectedSentiment) return false
+        if (selectedLetter && !word.word.toUpperCase().startsWith(selectedLetter)) return false
+        return true
+      })
+      .sort((a, b) => a.word.localeCompare(b.word))
+
+    const handleWordClick = (word: GlossaryWord) => {
+      const isAssigned = words.includes(word.word)
+      if (isAssigned) {
+        const idx = words.indexOf(word.word)
+        if (idx >= 0) {
+          const next = [...words]
+          next[idx] = ''
+          setWords(next)
+        }
+      } else {
+        const emptyIdx = words.findIndex(w => !w)
+        if (emptyIdx >= 0) {
+          const next = [...words]
+          next[emptyIdx] = word.word
+          setWords(next)
+        }
+      }
+    }
+
     return (
       <div className="w-full h-[calc(100%-1rem)] px-6 overflow-hidden flex gap-6">
+        {/* Left half: glossary (in sync with /glossary, Default = current clock only) */}
         <Motion.div
           key="words"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
-          className="flex-1 min-w-0 h-full"
-        />
+          className="flex-1 min-w-0 flex flex-col overflow-hidden"
+        >
+          <div className="min-w-0 bg-white dark:bg-black/40 border border-black/5 dark:border-white/10 rounded-xl overflow-hidden flex flex-col h-full backdrop-blur-lg">
+            <div className="p-3 border-b border-black/5 dark:border-white/10 space-y-2 shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="flex-1 relative">
+                  <input
+                    type="text"
+                    placeholder="Search words or definitions"
+                    className="w-full pl-9 pr-4 py-2 rounded-lg bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 border border-black/5 dark:border-white/10 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-all"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    aria-label="Search words or definitions"
+                  />
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" />
+                </div>
+                <span className="text-sm text-gray-400 dark:text-gray-500 shrink-0">{filteredWords.length} words</span>
+              </div>
+              {/* Scope: All | Default (this clock) | My Words — same styling as /glossary */}
+              <div className="flex flex-wrap gap-1.5">
+                {(['All', 'Default', 'My Words'] as const).map(scope => (
+                  <button
+                    key={scope}
+                    onClick={() => setScope(scope)}
+                    className={cn(
+                      'px-3 py-1.5 rounded-lg text-sm font-medium transition-all shrink-0 flex items-center gap-1',
+                      scopeFilter === scope
+                        ? scope === 'All'
+                          ? 'bg-gray-200 dark:bg-white/15 text-gray-800 dark:text-gray-100'
+                          : scope === 'Default'
+                            ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-200'
+                            : 'bg-purple-100 dark:bg-purple-500/20 text-purple-800 dark:text-purple-200'
+                        : 'bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                    )}
+                  >
+                    {scope === 'Default' && <Layers className="w-3.5 h-3.5 shrink-0" />}
+                    {scope === 'My Words' && <UserCircle2 className="w-3.5 h-3.5 shrink-0" />}
+                    {scope === 'Default' ? `Default (${clockTitles[clockId] ?? 'Clock'})` : scope}
+                  </button>
+                ))}
+              </div>
+              {/* Sentiment: Positive | Neutral | Negative — match /glossary */}
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  { value: '+' as const, label: 'Positive' },
+                  { value: '~' as const, label: 'Neutral' },
+                  { value: '-' as const, label: 'Negative' },
+                ].map(({ value, label }) => (
+                  <button
+                    key={label}
+                    onClick={() => setSelectedSentiment(selectedSentiment === value ? null : value)}
+                    className={cn(
+                      'px-3 py-1.5 rounded-full text-sm font-medium transition-all shrink-0',
+                      selectedSentiment === value
+                        ? value === '+'
+                          ? 'bg-emerald-100 dark:bg-emerald-500/25 text-emerald-800 dark:text-emerald-200 ring-1 ring-emerald-200 dark:ring-emerald-500/40'
+                          : value === '-'
+                            ? 'bg-rose-100 dark:bg-rose-500/25 text-rose-800 dark:text-rose-200 ring-1 ring-rose-200 dark:ring-rose-500/40'
+                            : 'bg-slate-100 dark:bg-slate-500/20 text-slate-700 dark:text-slate-200 ring-1 ring-slate-500/30'
+                        : value === '+'
+                          ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20'
+                          : value === '-'
+                            ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20'
+                            : 'bg-slate-50 dark:bg-slate-500/10 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-500/20'
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              {/* A–Z collapsible — match /glossary */}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => setShowAzFilter(!showAzFilter)}
+                  className={cn(
+                    'px-2.5 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-all',
+                    showAzFilter || selectedLetter
+                      ? 'bg-black/10 dark:bg-white/10 text-gray-800 dark:text-gray-200'
+                      : 'bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  )}
+                  aria-expanded={showAzFilter}
+                >
+                  {showAzFilter ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  A–Z
+                  {selectedLetter && <span className="text-xs opacity-80">({selectedLetter})</span>}
+                </button>
+                {showAzFilter && selectedLetter && (
+                  <button onClick={() => setSelectedLetter(null)} className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 underline">
+                    Clear
+                  </button>
+                )}
+              </div>
+              {showAzFilter && (
+                <div className="flex flex-wrap gap-1">
+                  {alphabet.map(letter => (
+                    <button
+                      key={letter}
+                      onClick={() => setSelectedLetter(selectedLetter === letter ? null : letter)}
+                      className={cn(
+                        'w-7 h-7 rounded flex items-center justify-center text-sm font-medium transition-all shrink-0',
+                        selectedLetter === letter
+                          ? 'bg-black text-white dark:bg-white dark:text-black'
+                          : 'bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-black/50 text-gray-700 dark:text-gray-300'
+                      )}
+                    >
+                      {letter}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
+              <div className="grid grid-cols-2 gap-2 p-2">
+                {isLoadingWords ? (
+                  <div className="col-span-2 py-6 text-center text-gray-500 dark:text-gray-400">Loading words...</div>
+                ) : loadError ? (
+                  <div className="col-span-2 py-6 text-center">
+                    <p className="text-amber-500 dark:text-amber-400">{loadError}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Please try again later</p>
+                  </div>
+                ) : filteredWords.length === 0 ? (
+                  <div className="col-span-2 py-6 text-center text-gray-500 dark:text-gray-400">No words found. Try adjusting filters or search.</div>
+                ) : (
+                  filteredWords.map(word => {
+                    const isAssigned = words.includes(word.word)
+                    const canAssign = isAssigned || words.filter(w => w).length < focusNodesCount
+                    return (
+                      <button
+                        key={word.id}
+                        type="button"
+                        onClick={() => canAssign && handleWordClick(word)}
+                        disabled={!canAssign && !isAssigned}
+                        className={cn(
+                          'p-3 rounded-lg text-left transition-all border',
+                          isAssigned
+                            ? 'border-black/20 dark:border-white/30 ring-2 ring-black/10 dark:ring-white/20 bg-gray-50 dark:bg-white/5'
+                            : 'bg-white dark:bg-black/40 border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20',
+                          !canAssign && !isAssigned && 'opacity-60 cursor-not-allowed'
+                        )}
+                      >
+                        <div className="flex justify-between items-start gap-2">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-sm font-medium text-black dark:text-white truncate">{word.word}</h3>
+                            {word.phonetic_spelling && (
+                              <span className="text-xs text-gray-500 dark:text-gray-400 block">{word.phonetic_spelling}</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <div className={cn(
+                              'w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium',
+                              word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
+                              word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
+                              'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                            )}>
+                              {word.grade}
+                            </div>
+                            <div className={cn(
+                              'w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium',
+                              word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
+                              word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
+                              'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                            )}>
+                              {word.rating}
+                            </div>
+                            {word.source === 'user' ? (
+                              <UserCircle2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                            ) : (
+                              <div
+                                className={cn('w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium', getDefaultIconStyle(word.clock_id) ? '' : 'bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300')}
+                                style={getDefaultIconStyle(word.clock_id) ?? undefined}
+                              >
+                                D
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <p className="text-gray-600 dark:text-gray-400 text-xs mt-1 line-clamp-2">{word.definition}</p>
+                      </button>
+                    )
+                  })
+                )}
+              </div>
+            </div>
+          </div>
+        </Motion.div>
         {/* Right half: selected clock (double size like /sessions cards) */}
         <div className="flex-shrink-0 w-1/2 flex items-center justify-center min-h-0">
           <div className="w-[560px] h-[560px] relative flex items-center justify-center flex-shrink-0">
