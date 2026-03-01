@@ -62,7 +62,6 @@ export function SessionDurationDialog({
   const [selectedClockId, setSelectedClockId] = useState<number | null>(null)
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
   const [showAzFilter, setShowAzFilter] = useState(false)
-  const [highlightedLetter, setHighlightedLetter] = useState<string>('A')
   const wordsScrollRef = useRef<HTMLDivElement>(null)
   const [hoveredWord, setHoveredWord] = useState<string | null>(null)
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false)
@@ -116,25 +115,6 @@ export function SessionDurationDialog({
     }
   }, [open, playClick])
 
-  // Scroll-spy: update highlighted letter when scrolling words list; default 'A'
-  useEffect(() => {
-    if (step !== 'words') return
-    setHighlightedLetter('A')
-    const el = wordsScrollRef.current
-    if (!el) return
-    const onScroll = () => {
-      const sections = el.querySelectorAll('[data-letter-section]')
-      let current = 'A'
-      for (const s of sections) {
-        const top = (s as HTMLElement).offsetTop
-        if (el.scrollTop >= top - 20) current = (s as HTMLElement).dataset.letter ?? current
-      }
-      setHighlightedLetter(current)
-    }
-    el.addEventListener('scroll', onScroll, { passive: true })
-    onScroll()
-    return () => el.removeEventListener('scroll', onScroll)
-  }, [step, scopeFilter, selectedSentiment, searchQuery])
 
   const loadGlossaryWords = async () => {
     try {
@@ -382,7 +362,7 @@ export function SessionDurationDialog({
     const focusNodesCount = clock.focusNodes
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
     const clockHex = CLOCK_HEX[clockId] ?? '#6b7280'
-    // Filter: scope + sentiment only (no letter filter; letter is scroll-spy)
+    // Filter: scope + sentiment + letter (match /glossary)
     const filteredWords = glossaryWords
       .filter(word => {
         if (scopeFilter === 'My Words') {
@@ -392,26 +372,10 @@ export function SessionDurationDialog({
           if (word.clock_id !== clockId) return false
         }
         if (selectedSentiment !== null && word.rating !== selectedSentiment) return false
+        if (selectedLetter && !word.word.toUpperCase().startsWith(selectedLetter)) return false
         return true
       })
       .sort((a, b) => a.word.localeCompare(b.word))
-
-    // Group by first letter for section headers and scroll-spy
-    const byLetter = (() => {
-      const map = new Map<string, GlossaryWord[]>()
-      for (const w of filteredWords) {
-        const L = w.word[0]?.toUpperCase() ?? '?'
-        if (!/^[A-Z]$/.test(L)) continue
-        if (!map.has(L)) map.set(L, [])
-        map.get(L)!.push(w)
-      }
-      return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b))
-    })()
-
-    const scrollToLetter = (letter: string) => {
-      wordsScrollRef.current?.querySelector(`[data-letter-section][data-letter="${letter}"]`)?.scrollIntoView({ block: 'start', behavior: 'smooth' })
-      setHighlightedLetter(letter)
-    }
 
     const handleWordClick = (word: GlossaryWord) => {
       const isAssigned = words.includes(word.word)
@@ -443,22 +407,22 @@ export function SessionDurationDialog({
           className="min-w-0 min-h-0 flex flex-col overflow-hidden rounded-xl border border-black/5 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-lg relative"
         >
             <div className="p-3 border-b border-black/5 dark:border-white/10 space-y-2 shrink-0 flex-shrink-0">
-              <div className="flex items-center gap-2">
-                <div className="flex-1 relative">
-                  <input
-                    type="text"
-                    placeholder="Search words or definitions"
-                    className="w-full pl-9 pr-4 py-2 rounded-lg bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 border border-black/5 dark:border-white/10 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-all"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    aria-label="Search words or definitions"
-                  />
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" />
-                </div>
-                <span className="text-sm text-gray-400 dark:text-gray-500 shrink-0">{filteredWords.length} words</span>
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  placeholder="Search words or definitions"
+                  className="w-full pl-10 pr-4 py-2 rounded-lg bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  aria-label="Search words or definitions"
+                />
+                <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400 dark:text-gray-500" />
+                <span className="absolute right-3 top-2.5 text-sm text-gray-400 dark:text-gray-500">
+                  {filteredWords.length} words
+                </span>
               </div>
-              {/* Scope (left) + Sentiment (right) in one row — Default uses clock color; sentiment hover outline + fill when selected */}
-              <div className="flex items-center justify-between gap-3 flex-wrap">
+              {/* Scope + Sentiment — match /glossary layout; Default uses clock color */}
+              <div className="flex flex-wrap items-center gap-3">
                 <div className="flex flex-wrap gap-1.5">
                   {(['All', 'Default', 'My Words'] as const).map(scope => (
                     <button
@@ -496,43 +460,82 @@ export function SessionDurationDialog({
                     </button>
                   ))}
                 </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {[
-                    { value: '+' as const, label: 'Positive', selectedClass: 'bg-emerald-500/25 text-emerald-800 dark:text-emerald-200 border-emerald-400 dark:border-emerald-500/50', hoverClass: 'hover:border-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-400' },
-                    { value: '~' as const, label: 'Neutral', selectedClass: 'bg-slate-500/20 text-slate-700 dark:text-slate-200 border-slate-400 dark:border-slate-500/50', hoverClass: 'hover:border-slate-400 hover:text-slate-600 dark:hover:text-slate-400' },
-                    { value: '-' as const, label: 'Negative', selectedClass: 'bg-rose-500/25 text-rose-800 dark:text-rose-200 border-rose-400 dark:border-rose-500/50', hoverClass: 'hover:border-rose-400 hover:text-rose-600 dark:hover:text-rose-400' },
-                  ].map(({ value, label, selectedClass, hoverClass }) => (
-                    <button
-                      key={label}
-                      onClick={() => setSelectedSentiment(selectedSentiment === value ? null : value)}
-                      className={cn(
-                        'px-3 py-1.5 rounded-full text-sm font-medium transition-all shrink-0 border-2 border-transparent',
-                        selectedSentiment === value ? selectedClass : hoverClass
-                      )}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {/* A–Z below filters — round shapes, highlight from scroll position */}
-              <div className="flex flex-wrap gap-1 py-1.5">
-                {alphabet.map(letter => (
+                <span className="w-px h-4 bg-gray-200 dark:bg-white/10" aria-hidden />
+                {[
+                  { value: '+' as const, label: 'Positive' },
+                  { value: '~' as const, label: 'Neutral' },
+                  { value: '-' as const, label: 'Negative' },
+                ].map(({ value, label }) => (
                   <button
-                    key={letter}
+                    key={label}
                     type="button"
-                    onClick={() => scrollToLetter(letter)}
+                    onClick={() => setSelectedSentiment(selectedSentiment === value ? null : value)}
                     className={cn(
-                      'w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-all shrink-0 border-2',
-                      highlightedLetter === letter
-                        ? 'bg-black text-white border-black dark:bg-white dark:text-black dark:border-white'
-                        : 'bg-white dark:bg-black/30 border-black/10 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-black/50 text-gray-700 dark:text-gray-300'
+                      'px-3 py-1.5 rounded-full text-sm font-medium transition-all shrink-0',
+                      selectedSentiment === value
+                        ? value === '+'
+                          ? 'bg-emerald-100 dark:bg-emerald-500/25 text-emerald-800 dark:text-emerald-200 ring-1 ring-emerald-200 dark:ring-emerald-500/40'
+                          : value === '-'
+                            ? 'bg-rose-100 dark:bg-rose-500/25 text-rose-800 dark:text-rose-200 ring-1 ring-rose-200 dark:ring-rose-500/40'
+                            : 'bg-slate-100 dark:bg-slate-500/20 text-slate-700 dark:text-slate-200 ring-1 ring-slate-200 dark:ring-slate-500/30'
+                        : value === '+'
+                          ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20'
+                          : value === '-'
+                            ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20'
+                            : 'bg-slate-50 dark:bg-slate-500/10 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-500/20'
                     )}
                   >
-                    {letter}
+                    {label}
                   </button>
                 ))}
               </div>
+              {/* A–Z collapsible — match /glossary */}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAzFilter(!showAzFilter)}
+                  className={cn(
+                    'px-2.5 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-all',
+                    showAzFilter || selectedLetter
+                      ? 'bg-black/10 dark:bg-white/10 text-gray-800 dark:text-gray-200'
+                      : 'bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  )}
+                  aria-expanded={showAzFilter}
+                  aria-controls="az-filter-words"
+                >
+                  {showAzFilter ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  A–Z
+                  {selectedLetter && <span className="text-xs opacity-80">({selectedLetter})</span>}
+                </button>
+                {showAzFilter && selectedLetter && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedLetter(null)}
+                    className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 underline"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              {showAzFilter && (
+                <div id="az-filter-words" className="flex flex-wrap gap-1" role="region" aria-label="Filter by letter">
+                  {alphabet.map(letter => (
+                    <button
+                      key={letter}
+                      type="button"
+                      onClick={() => setSelectedLetter(selectedLetter === letter ? null : letter)}
+                      className={cn(
+                        'w-7 h-7 rounded flex items-center justify-center text-sm font-medium transition-all shrink-0',
+                        selectedLetter === letter
+                          ? 'bg-black text-white dark:bg-white dark:text-black'
+                          : 'bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-black/50 text-gray-700 dark:text-gray-300'
+                      )}
+                    >
+                      {letter}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             {/* Wrapper gets remaining height; scroll div fills it so scrollbar reflects limited space */}
             <div className="flex-1 min-h-0 relative flex flex-col">
@@ -542,80 +545,74 @@ export function SessionDurationDialog({
                 style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
                 onWheel={(e) => e.stopPropagation()}
               >
-              <div className="grid grid-cols-3 gap-2 p-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
                     {isLoadingWords ? (
-                      <div className="col-span-3 py-6 text-center text-gray-500 dark:text-gray-400">Loading words...</div>
+                      <div className="col-span-full text-center py-8 text-gray-500 dark:text-gray-400">Loading words...</div>
                     ) : loadError ? (
-                      <div className="col-span-3 py-6 text-center">
+                      <div className="col-span-full text-center py-8">
                         <p className="text-amber-500 dark:text-amber-400">{loadError}</p>
                         <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Please try again later</p>
                       </div>
                     ) : filteredWords.length === 0 ? (
-                      <div className="col-span-3 py-6 text-center text-gray-500 dark:text-gray-400">No words found. Try adjusting filters or search.</div>
+                      <div className="col-span-full text-center py-8 text-gray-500 dark:text-gray-400">No words found</div>
                     ) : (
-                      byLetter.flatMap(([letter, letterWords]) => [
-                        <div key={`h-${letter}`} data-letter-section data-letter={letter} className="col-span-3 pt-3 pb-1 flex items-center gap-2">
-                          <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">{letter}</span>
-                          <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
-                        </div>,
-                        ...letterWords.map(word => {
-                    const isAssigned = words.includes(word.word)
-                    const canAssign = isAssigned || words.filter(w => w).length < focusNodesCount
-                    return (
-                      <button
-                        key={word.id}
-                        type="button"
-                        onClick={() => canAssign && handleWordClick(word)}
-                        disabled={!canAssign && !isAssigned}
-                        className={cn(
-                          'p-3 rounded-lg text-left transition-all border',
-                          isAssigned
-                            ? 'border-black/20 dark:border-white/30 ring-2 ring-black/10 dark:ring-white/20 bg-gray-50 dark:bg-white/5'
-                            : 'bg-white dark:bg-black/40 border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20',
-                          !canAssign && !isAssigned && 'opacity-60 cursor-not-allowed'
-                        )}
-                      >
-                        <div className="flex justify-between items-start gap-2">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-sm font-medium text-black dark:text-white truncate">{word.word}</h3>
-                            {word.phonetic_spelling && (
-                              <span className="text-xs text-gray-500 dark:text-gray-400 block">{word.phonetic_spelling}</span>
+                      filteredWords.map(word => {
+                        const isAssigned = words.includes(word.word)
+                        const canAssign = isAssigned || words.filter(w => w).length < focusNodesCount
+                        return (
+                          <button
+                            key={word.id}
+                            type="button"
+                            onClick={() => canAssign && handleWordClick(word)}
+                            disabled={!canAssign && !isAssigned}
+                            className={cn(
+                              'rounded-lg text-left transition-all border p-4 backdrop-blur-lg',
+                              isAssigned
+                                ? 'border-black/20 dark:border-white/30 ring-2 ring-black/10 dark:ring-white/20 bg-gray-50 dark:bg-white/5'
+                                : 'bg-white dark:bg-black/40 border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20',
+                              !canAssign && !isAssigned && 'opacity-60 cursor-not-allowed'
                             )}
-                          </div>
-                          <div className="flex items-center gap-1 shrink-0">
-                            <div className={cn(
-                              'w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium',
-                              word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
-                              word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
-                              'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                            )}>
-                              {word.grade}
-                            </div>
-                            <div className={cn(
-                              'w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium',
-                              word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
-                              word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
-                              'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                            )}>
-                              {word.rating}
-                            </div>
-                            {word.source === 'user' ? (
-                              <UserCircle2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                            ) : (
-                              <div
-                                className={cn('w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium', getDefaultIconStyle(word.clock_id) ? '' : 'bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300')}
-                                style={getDefaultIconStyle(word.clock_id) ?? undefined}
-                              >
-                                D
+                          >
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-lg font-medium text-black dark:text-white mb-0.5 truncate">{word.word}</h3>
+                                {word.phonetic_spelling && (
+                                  <span className="text-sm text-gray-500 dark:text-gray-400 block">{word.phonetic_spelling}</span>
+                                )}
                               </div>
-                            )}
-                          </div>
-                        </div>
-                        <p className="text-gray-600 dark:text-gray-400 text-xs mt-1 line-clamp-2">{word.definition}</p>
-                      </button>
-                    )
-                  })
-                      ])
+                              <div className="flex items-center ml-4 space-x-1.5 shrink-0">
+                                <div className={cn(
+                                  'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
+                                  word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
+                                  word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
+                                  'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                                )}>
+                                  {word.grade}
+                                </div>
+                                <div className={cn(
+                                  'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
+                                  word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
+                                  word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
+                                  'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                                )}>
+                                  {word.rating}
+                                </div>
+                                {word.source === 'user' ? (
+                                  <UserCircle2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                                ) : (
+                                  <div
+                                    className={cn('w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium shrink-0', getDefaultIconStyle(word.clock_id) ? '' : 'bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300')}
+                                    style={getDefaultIconStyle(word.clock_id) ?? undefined}
+                                  >
+                                    D
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <p className="text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-2">{word.definition}</p>
+                          </button>
+                        )
+                      })
                     )}
                   </div>
               </div>
