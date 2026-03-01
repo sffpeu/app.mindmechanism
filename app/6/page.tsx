@@ -259,14 +259,15 @@ function NodesPageContent() {
     return () => clearInterval(interval)
   }, [mounted, location?.coords, customLocation])
 
-  // Handle session completion
   const handleSessionComplete = () => {
     localStorage.removeItem('pendingSession')
   }
 
-  // Handle pause/resume
+  const sessionState = useSessionTimer(duration, sessionId, handleSessionComplete)
+
   const handlePauseResume = () => {
-    setIsPaused(!isPaused)
+    if (duration != null) sessionState.onPauseResume()
+    else setIsPaused((p) => !p)
   }
 
   // Timer countdown effect
