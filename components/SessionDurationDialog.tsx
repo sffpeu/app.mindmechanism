@@ -433,16 +433,16 @@ export function SessionDurationDialog({
     }
 
     return (
-      <div className="w-full h-[calc(100%-1rem)] px-6 overflow-hidden grid grid-cols-[1fr_1fr] gap-6">
-        {/* Left half: glossary — grid column 1 so right column is always reserved */}
+      <div className="w-full flex-1 min-h-0 min-w-0 px-6 overflow-hidden grid grid-cols-[1fr_1fr] gap-6">
+        {/* Left half: glossary — grid column 1, min-h-0 so scroll area gets bounded height */}
         <Motion.div
           key="words"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
-          className="min-w-0 flex flex-col overflow-hidden"
+          className="min-w-0 min-h-0 flex flex-col overflow-hidden"
         >
-          <div className="min-w-0 bg-white dark:bg-black/40 border border-black/5 dark:border-white/10 rounded-xl overflow-hidden flex flex-col h-full backdrop-blur-lg">
+          <div className="min-w-0 min-h-0 flex flex-col overflow-hidden flex-1 rounded-xl border border-black/5 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-lg">
             <div className="p-3 border-b border-black/5 dark:border-white/10 space-y-2 shrink-0">
               <div className="flex items-center gap-2">
                 <div className="flex-1 relative">
@@ -535,8 +535,12 @@ export function SessionDurationDialog({
                 ))}
               </div>
             </div>
-            {/* Scrollable word list with letter section headers — 3 cards per row */}
-            <div ref={wordsScrollRef} className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
+            {/* Scrollable word list — only this area scrolls; contain overscroll so dialog doesn't move */}
+            <div
+              ref={wordsScrollRef}
+              className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800 touch-pan-y"
+              style={{ WebkitOverflowScrolling: 'touch' }}
+            >
               <div className="grid grid-cols-3 gap-2 p-2">
                     {isLoadingWords ? (
                       <div className="col-span-3 py-6 text-center text-gray-500 dark:text-gray-400">Loading words...</div>
@@ -826,9 +830,9 @@ export function SessionDurationDialog({
             </h2>
           </div>
 
-          {/* Main Content - Adjusted padding and overflow */}
+          {/* Main Content - flex-1 min-h-0 so height is bounded and inner scroll works */}
           <div className={cn(
-            "flex-1 overflow-hidden",
+            "flex-1 min-h-0 overflow-hidden flex flex-col",
             step === 'duration' ? "mt-4" : "mt-14"
           )}>
             <AnimatePresence mode="wait">
