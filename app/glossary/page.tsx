@@ -18,7 +18,7 @@ export default function GlossaryPage() {
   const [scopeFilter, setScopeFilter] = useState<'All' | 'Default' | 'My Words'>('All')
   const [selectedClockId, setSelectedClockId] = useState<number | null>(null)
   const [selectedSentiment, setSelectedSentiment] = useState<'+' | '~' | '-' | null>(null)
-  const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
+  const [selectedLetter, setSelectedLetter] = useState<string | null>('A')
   const [words, setWords] = useState<GlossaryWord[]>([])
   const [loading, setLoading] = useState(true)
   const [isAddWordOpen, setIsAddWordOpen] = useState(false)
@@ -137,7 +137,7 @@ export default function GlossaryPage() {
         </div>
 
         {/* Single card: same look as Assign Words popup glossary */}
-        <div className="rounded-xl border border-black/5 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-lg overflow-hidden flex flex-col min-h-[60vh]">
+        <div className="rounded-xl border border-black/5 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-lg overflow-hidden flex flex-col min-h-[calc(100vh-12rem)]">
           {/* Header: search + filters */}
           <div className="p-3 border-b border-black/5 dark:border-white/10 space-y-2 shrink-0 flex-shrink-0">
             <div className="flex-1 relative flex items-center gap-3">
@@ -300,18 +300,8 @@ export default function GlossaryPage() {
                 })}
               </div>
             )}
-            {/* A–Z extended below filters — same as Assign Words popup */}
+            {/* Letter filter — click letter to filter/scroll, click again to clear */}
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">A–Z</span>
-              {selectedLetter && (
-                <button
-                  type="button"
-                  onClick={() => setSelectedLetter(null)}
-                  className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 underline"
-                >
-                  Clear
-                </button>
-              )}
               <div id="az-filter-glossary" className="flex flex-wrap gap-1.5" role="region" aria-label="Filter by letter">
                 {alphabet.map(letter => (
                   <button

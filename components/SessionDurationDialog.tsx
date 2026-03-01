@@ -535,18 +535,8 @@ export function SessionDurationDialog({
                   </button>
                 ))}
               </div>
-              {/* A–Z extended below filters — round buttons, scroll-linked highlight in clock color */}
+              {/* Letter filter — round buttons, scroll-linked highlight in clock color; click letter again to clear */}
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">A–Z</span>
-                {selectedLetter && (
-                  <button
-                    type="button"
-                    onClick={() => setSelectedLetter(null)}
-                    className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 underline"
-                  >
-                    Clear
-                  </button>
-                )}
                 <div id="az-filter-words" className="flex flex-wrap gap-1.5" role="region" aria-label="Filter by letter">
                   {alphabet.map(letter => {
                     const isActive = selectedLetter === letter || (!selectedLetter && scrollLetter === letter)
