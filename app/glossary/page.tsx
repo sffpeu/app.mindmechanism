@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Menu } from '@/components/Menu'
-import { Search, Plus, UserCircle2, Pencil, Layers, ChevronDown, ChevronUp } from 'lucide-react'
+import { Search, Plus, UserCircle2, Pencil, Layers } from 'lucide-react'
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords, searchWords } from '@/lib/glossary'
 import { clockTitles } from '@/lib/clockTitles'
@@ -24,7 +24,7 @@ export default function GlossaryPage() {
   const [isAddWordOpen, setIsAddWordOpen] = useState(false)
   const [selectedCard, setSelectedCard] = useState<GlossaryWord | null>(null)
   const [editWord, setEditWord] = useState<GlossaryWord | null>(null)
-  const [showAzFilter, setShowAzFilter] = useState(false)
+  const sectionRefsMap = useRef<Record<string, HTMLDivElement | null>>({})
 
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
 
@@ -106,6 +106,21 @@ export default function GlossaryPage() {
   const clockHex = selectedClockId != null ? (CLOCK_HEX[selectedClockId] ?? '#6b7280') : '#6b7280'
 
   const sortedWords = [...filteredWords].sort((a, b) => a.word.localeCompare(b.word))
+
+  const letterSections = (() => {
+    const map: Record<string, GlossaryWord[]> = {}
+    sortedWords.forEach(w => {
+      const letter = w.word[0]?.toUpperCase() || '#'
+      if (!map[letter]) map[letter] = []
+      map[letter].push(w)
+    })
+    return Object.entries(map).sort(([a], [b]) => a.localeCompare(b))
+  })()
+
+  const scrollToLetter = (letter: string) => {
+    const el = sectionRefsMap.current[`letter-${letter}`] ?? document.getElementById(`letter-${letter}`)
+    el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95">
@@ -285,25 +300,10 @@ export default function GlossaryPage() {
                 })}
               </div>
             )}
-            {/* A–Z collapsible — match Assign Words popup */}
+            {/* A–Z extended below filters — same as Assign Words popup */}
             <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setShowAzFilter(!showAzFilter)}
-                className={cn(
-                  'px-2.5 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-all',
-                  showAzFilter || selectedLetter
-                    ? 'bg-black/10 dark:bg-white/10 text-gray-800 dark:text-gray-200'
-                    : 'bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-                )}
-                aria-expanded={showAzFilter}
-                aria-controls="az-filter-glossary"
-              >
-                {showAzFilter ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                A–Z
-                {selectedLetter && <span className="text-xs opacity-80">({selectedLetter})</span>}
-              </button>
-              {showAzFilter && selectedLetter && (
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">A–Z</span>
+              {selectedLetter && (
                 <button
                   type="button"
                   onClick={() => setSelectedLetter(null)}
@@ -312,87 +312,107 @@ export default function GlossaryPage() {
                   Clear
                 </button>
               )}
-            </div>
-            {showAzFilter && (
-              <div id="az-filter-glossary" className="flex flex-wrap gap-1" role="region" aria-label="Filter by letter">
+              <div id="az-filter-glossary" className="flex flex-wrap gap-1.5" role="region" aria-label="Filter by letter">
                 {alphabet.map(letter => (
                   <button
                     key={letter}
                     type="button"
-                    onClick={() => setSelectedLetter(selectedLetter === letter ? null : letter)}
+                    onClick={() => {
+                      const next = selectedLetter === letter ? null : letter
+                      setSelectedLetter(next)
+                      if (next) scrollToLetter(next)
+                    }}
                     className={cn(
-                      'w-7 h-7 rounded flex items-center justify-center text-sm font-medium transition-all shrink-0',
+                      'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all shrink-0 border',
                       selectedLetter === letter
-                        ? 'bg-black text-white dark:bg-white dark:text-black'
-                        : 'bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-black/50 text-gray-700 dark:text-gray-300'
+                        ? 'bg-black text-white dark:bg-white dark:text-black border-transparent'
+                        : 'bg-white dark:bg-black/30 border-black/5 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-black/50 text-gray-700 dark:text-gray-300'
                     )}
                   >
                     {letter}
                   </button>
                 ))}
               </div>
-            )}
+            </div>
           </div>
-          {/* Scrollable word grid — same card style as popup */}
-          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800 touch-pan-y" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-              {loading ? (
-                <div className="col-span-full text-center py-8 text-gray-500 dark:text-gray-400">Loading words...</div>
-              ) : sortedWords.length === 0 ? (
-                <div className="col-span-full text-center py-8 text-gray-500 dark:text-gray-400">No words found</div>
-              ) : (
-                sortedWords.map(word => (
-                  <button
-                    key={word.id}
-                    type="button"
-                    onClick={() => setSelectedCard(selectedCard?.id === word.id ? null : word)}
-                    className={cn(
-                      'rounded-lg text-left transition-all border p-4 backdrop-blur-lg',
-                      selectedCard?.id === word.id
-                        ? 'border-black/20 dark:border-white/30 ring-2 ring-black/10 dark:ring-white/20 bg-gray-50 dark:bg-white/5'
-                        : 'bg-white dark:bg-black/40 border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20'
-                    )}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-medium text-black dark:text-white mb-0.5 truncate">{word.word}</h3>
-                        {word.phonetic_spelling && (
-                          <span className="text-sm text-gray-500 dark:text-gray-400 block">{word.phonetic_spelling}</span>
-                        )}
+          {/* Scrollable letter sections — same as Assign Words popup */}
+          <div className="flex-1 min-h-0 relative flex flex-col">
+            <div
+              className="absolute inset-0 overflow-y-auto overflow-x-hidden overscroll-contain scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800 touch-pan-y"
+              style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
+            >
+              <div className="p-4 space-y-6">
+                {loading ? (
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">Loading words...</div>
+                ) : letterSections.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">No words found</div>
+                ) : (
+                  letterSections.map(([letter, sectionWords]) => (
+                    <div
+                      key={letter}
+                      id={`letter-${letter}`}
+                      ref={(el) => { sectionRefsMap.current[`letter-${letter}`] = el }}
+                    >
+                      <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 pt-2 first:pt-0 sticky top-0 bg-white/95 dark:bg-black/95 py-1 z-10 backdrop-blur-sm">
+                        {letter}
                       </div>
-                      <div className="flex items-center ml-4 space-x-1.5 shrink-0">
-                        <div className={cn(
-                          'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
-                          word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
-                          word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
-                          'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                        )}>
-                          {word.grade}
-                        </div>
-                        <div className={cn(
-                          'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
-                          word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
-                          word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
-                          'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                        )}>
-                          {word.rating}
-                        </div>
-                        {word.source === 'user' ? (
-                          <UserCircle2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                        ) : (
-                          <div
-                            className={cn('w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium shrink-0', getDefaultIconStyle(word.clock_id) ? '' : 'bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300')}
-                            style={getDefaultIconStyle(word.clock_id) ?? undefined}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {sectionWords.map(word => (
+                          <button
+                            key={word.id}
+                            type="button"
+                            onClick={() => setSelectedCard(selectedCard?.id === word.id ? null : word)}
+                            className={cn(
+                              'rounded-lg text-left transition-all border p-4 backdrop-blur-lg',
+                              selectedCard?.id === word.id
+                                ? 'border-black/20 dark:border-white/30 ring-2 ring-black/10 dark:ring-white/20 bg-gray-50 dark:bg-white/5'
+                                : 'bg-white dark:bg-black/40 border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20'
+                            )}
                           >
-                            D
-                          </div>
-                        )}
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-lg font-medium text-black dark:text-white mb-0.5 truncate">{word.word}</h3>
+                                {word.phonetic_spelling && (
+                                  <span className="text-sm text-gray-500 dark:text-gray-400 block">{word.phonetic_spelling}</span>
+                                )}
+                              </div>
+                              <div className="flex items-center ml-4 space-x-1.5 shrink-0">
+                                <div className={cn(
+                                  'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
+                                  word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
+                                  word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
+                                  'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                                )}>
+                                  {word.grade}
+                                </div>
+                                <div className={cn(
+                                  'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
+                                  word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
+                                  word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
+                                  'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                                )}>
+                                  {word.rating}
+                                </div>
+                                {word.source === 'user' ? (
+                                  <UserCircle2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                                ) : (
+                                  <div
+                                    className={cn('w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium shrink-0', getDefaultIconStyle(word.clock_id) ? '' : 'bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300')}
+                                    style={getDefaultIconStyle(word.clock_id) ?? undefined}
+                                  >
+                                    D
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <p className="text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-2">{word.definition}</p>
+                          </button>
+                        ))}
                       </div>
                     </div>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-2">{word.definition}</p>
-                  </button>
-                ))
-              )}
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </div>

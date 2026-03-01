@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { motion as Motion, AnimatePresence } from 'framer-motion'
-import { Timer, ChevronRight, InfinityIcon, X, Check, ArrowLeft, PenLine, Search, Shuffle, Trash2, Layers, UserCircle2, ChevronDown, ChevronUp } from 'lucide-react'
+import { Timer, ChevronRight, InfinityIcon, X, Check, ArrowLeft, PenLine, Search, Shuffle, Trash2, Layers, UserCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { clockSettings } from '@/lib/clockSettings'
 import { GlossaryWord } from '@/types/Glossary'
@@ -61,7 +61,6 @@ export function SessionDurationDialog({
   const [selectedSentiment, setSelectedSentiment] = useState<'+' | '~' | '-' | null>(null)
   const [selectedClockId, setSelectedClockId] = useState<number | null>(null)
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
-  const [showAzFilter, setShowAzFilter] = useState(false)
   const wordsScrollRef = useRef<HTMLDivElement>(null)
   const [hoveredWord, setHoveredWord] = useState<string | null>(null)
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false)
@@ -536,27 +535,10 @@ export function SessionDurationDialog({
                   </button>
                 ))}
               </div>
-              {/* A–Z collapsible — round buttons, scroll-linked highlight in clock color */}
+              {/* A–Z extended below filters — round buttons, scroll-linked highlight in clock color */}
               <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowAzFilter(!showAzFilter)}
-                  className={cn(
-                    'px-2.5 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-all',
-                    showAzFilter || selectedLetter || scrollLetter
-                      ? 'bg-black/10 dark:bg-white/10 text-gray-800 dark:text-gray-200'
-                      : 'bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-                  )}
-                  aria-expanded={showAzFilter}
-                  aria-controls="az-filter-words"
-                >
-                  {showAzFilter ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                  A–Z
-                  {(selectedLetter || scrollLetter) && (
-                    <span className="text-xs opacity-80">({selectedLetter || scrollLetter})</span>
-                  )}
-                </button>
-                {showAzFilter && selectedLetter && (
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">A–Z</span>
+                {selectedLetter && (
                   <button
                     type="button"
                     onClick={() => setSelectedLetter(null)}
@@ -565,8 +547,6 @@ export function SessionDurationDialog({
                     Clear
                   </button>
                 )}
-              </div>
-              {showAzFilter && (
                 <div id="az-filter-words" className="flex flex-wrap gap-1.5" role="region" aria-label="Filter by letter">
                   {alphabet.map(letter => {
                     const isActive = selectedLetter === letter || (!selectedLetter && scrollLetter === letter)
@@ -592,7 +572,7 @@ export function SessionDurationDialog({
                     )
                   })}
                 </div>
-              )}
+              </div>
             </div>
             {/* Wrapper gets remaining height; scroll div fills it so scrollbar reflects limited space */}
             <div className="flex-1 min-h-0 relative flex flex-col">
