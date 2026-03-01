@@ -29,7 +29,6 @@ import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords } from '@/lib/glossary'
 import Clock from '@/components/Clock'
 import { SessionTimer } from '@/components/SessionTimer'
-import { SessionProgressRing } from '@/components/SessionProgressRing'
 import { useSessionTimer } from '@/lib/useSessionTimer'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useLocation } from '@/lib/hooks/useLocation'
@@ -750,19 +749,6 @@ function NodesPageContent() {
             </div>
 
             {/* Session progress ring — outside focus nodes; runs when session active, stops on pause */}
-            {duration != null && sessionState.remainingTime != null && sessionState.initialDuration != null && (
-              <SessionProgressRing
-                remainingTime={sessionState.remainingTime}
-                initialDuration={sessionState.initialDuration}
-                isPaused={sessionState.isPaused}
-                focusNodes={focusNodes}
-                startingAngle={startingDegree + 11 + focusNodesOffset}
-                rotation={rotation}
-                color="#156fde"
-                className="z-[150]"
-              />
-            )}
-
             {/* Focus nodes layer */}
             <motion.div 
               className="absolute inset-0"

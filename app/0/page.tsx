@@ -30,7 +30,6 @@ import { getAllWords } from '@/lib/glossary'
 import Clock from '@/components/Clock'
 import { LeaveWarning } from '@/components/LeaveWarning'
 import { SessionTimer } from '@/components/SessionTimer'
-import { SessionProgressRing } from '@/components/SessionProgressRing'
 import { useSessionTimer } from '@/lib/useSessionTimer'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useLocation } from '@/lib/hooks/useLocation'
@@ -782,19 +781,6 @@ function NodesPageContent() {
                 </div>
               </motion.div>
             </div>
-
-            {duration != null && sessionState.remainingTime != null && sessionState.initialDuration != null && (
-              <SessionProgressRing
-                remainingTime={sessionState.remainingTime}
-                initialDuration={sessionState.initialDuration}
-                isPaused={sessionState.isPaused}
-                focusNodes={focusNodes}
-                startingAngle={startingDegree + 45 + focusNodesOffset}
-                rotation={rotation}
-                color="#fd290a"
-                className="z-[150]"
-              />
-            )}
 
             {/* Focus nodes layer */}
             <motion.div 

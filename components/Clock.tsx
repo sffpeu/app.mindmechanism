@@ -13,7 +13,6 @@ import { toast } from 'react-hot-toast';
 import { useLocation } from '@/lib/hooks/useLocation';
 import { Timestamp } from 'firebase/firestore';
 import { useSoundEffects } from '@/lib/sounds';
-import { SessionProgressRing } from '@/components/SessionProgressRing';
 
 const dotColors = [
   'bg-[#fd290a]', // 1. Red
@@ -483,6 +482,7 @@ export default function Clock({
   const [remainingTime, setRemainingTime] = useState<number | null>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
+  const [sessionStartRotation, setSessionStartRotation] = useState<number | null>(null);
   const [pausedTimeRemaining, setPausedTimeRemaining] = useState<number | null>(null);
   const [initialDuration, setInitialDuration] = useState<number | null>(null);
   const { user } = useAuth() as { user: { uid: string } | null }
@@ -521,6 +521,14 @@ export default function Clock({
         setLastAutoSave(now);
         playClick(); // Play click sound when session starts
 
+        // Capture clock rotation at session start (fixed overlay "entry point")
+        const elapsedMs = now - startDateTime.getTime();
+        const calculatedRotation = (elapsedMs / rotationTime) * 360;
+        const entryRotation = rotationDirection === 'clockwise'
+          ? (startingDegree + calculatedRotation) % 360
+          : (startingDegree - calculatedRotation + 360) % 360;
+        setSessionStartRotation(entryRotation);
+
         // If this is a continued session, check for pending state
         if (sessionId) {
           const savedSession = localStorage.getItem('pendingSession');
@@ -540,9 +548,11 @@ export default function Clock({
             }
           }
         }
+      } else {
+        setSessionStartRotation(null);
       }
     }
-  }, [duration, sessionId, playClick]);
+  }, [duration, sessionId, playClick, startDateTime, rotationTime, startingDegree, rotationDirection]);
 
   // Timer effect with auto-save — start counting down as soon as session begins
   useEffect(() => {
@@ -1062,30 +1072,41 @@ export default function Clock({
               />
             </div>
           </motion.div>
+          {/* Session entry overlay: fixed clock at start rotation, multiply so both visible */}
+          {duration != null && sessionStartRotation != null && (
+            <div
+              className="absolute inset-0 rounded-full overflow-hidden pointer-events-none"
+              style={{ zIndex: 110, mixBlendMode: 'multiply' }}
+            >
+              <motion.div
+                className="absolute inset-0"
+                initial={false}
+                animate={{ rotate: sessionStartRotation }}
+                transition={{ duration: 0 }}
+                style={{ willChange: 'auto' }}
+              >
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    transform: `translate(${imageX || 0}%, ${imageY || 0}%) rotate(${imageOrientation}deg) scale(${imageScale})`,
+                    transformOrigin: 'center',
+                  }}
+                >
+                  <Image
+                    src={getImagePath(id)}
+                    alt=""
+                    role="presentation"
+                    layout="fill"
+                    objectFit="cover"
+                    className="rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none"
+                    priority
+                    loading="eager"
+                  />
+                </div>
+              </motion.div>
+            </div>
+          )}
         </div>
-
-        {/* Session progress — path along focus nodes, starts at first node, in sync with timer */}
-        {duration != null && remainingTime != null && initialDuration != null && focusNodes > 0 && (
-          <SessionProgressRing
-            remainingTime={remainingTime}
-            initialDuration={initialDuration}
-            isPaused={isPaused}
-            focusNodes={focusNodes}
-            startingAngle={(() => {
-              switch (id) {
-                case 0: return startingDegree + 45
-                case 1: return startingDegree + 45
-                case 2: return startingDegree + 9
-                case 3: return startingDegree + 180
-                case 4: return startingDegree + 11
-                default: return startingDegree
-              }
-            })()}
-            rotation={rotation}
-            color={dotColors[id % dotColors.length].replace('bg-[', '').replace(']', '')}
-            className="z-[150]"
-          />
-        )}
 
         {/* Focus nodes layer */}
         <motion.div 
