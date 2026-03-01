@@ -741,11 +741,12 @@ export function SessionDurationDialog({
                             left: `${x}%`,
                             top: `${y}%`,
                             transform: (() => {
-                              const gap = 8
-                              if (pillPlacement === 'top') return 'translate(-50%, -50%) translateY(-36px)'
-                              if (pillPlacement === 'bottom') return 'translate(-50%, -50%) translateY(36px)'
-                              if (pillPlacement === 'left') return `translate(-100%, -50%) translateX(-${gap}px)`
-                              return `translate(0, -50%) translateX(${gap}px)`
+                              // Same offset on all sides so left mirrors right and top/bottom are even
+                              const offsetPx = 36
+                              if (pillPlacement === 'top') return `translate(-50%, -50%) translateY(-${offsetPx}px)`
+                              if (pillPlacement === 'bottom') return `translate(-50%, -50%) translateY(${offsetPx}px)`
+                              if (pillPlacement === 'left') return `translate(-100%, -50%) translateX(-${offsetPx}px)`
+                              return `translate(0, -50%) translateX(${offsetPx}px)`
                             })(),
                           }}
                           title={wordLabel}
