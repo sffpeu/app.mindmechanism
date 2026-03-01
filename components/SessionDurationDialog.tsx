@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { motion as Motion, AnimatePresence } from 'framer-motion'
-import { Timer, ChevronRight, InfinityIcon, X, Check, ArrowLeft, PenLine, Search, Shuffle, Trash2, Layers, UserCircle2, ChevronDown, ChevronUp, ChevronLeft } from 'lucide-react'
+import { Timer, ChevronRight, InfinityIcon, X, Check, ArrowLeft, PenLine, Search, Shuffle, Trash2, Layers, UserCircle2, ChevronDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { clockSettings } from '@/lib/clockSettings'
 import { GlossaryWord } from '@/types/Glossary'
@@ -62,7 +62,8 @@ export function SessionDurationDialog({
   const [selectedClockId, setSelectedClockId] = useState<number | null>(null)
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
   const [showAzFilter, setShowAzFilter] = useState(false)
-  const [wordsPage, setWordsPage] = useState(1)
+  const [highlightedLetter, setHighlightedLetter] = useState<string>('A')
+  const wordsScrollRef = useRef<HTMLDivElement>(null)
   const [hoveredWord, setHoveredWord] = useState<string | null>(null)
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false)
   const [selectedWordIndex, setSelectedWordIndex] = useState<number | null>(null)
@@ -115,9 +116,25 @@ export function SessionDurationDialog({
     }
   }, [open, playClick])
 
+  // Scroll-spy: update highlighted letter when scrolling words list; default 'A'
   useEffect(() => {
-    if (step === 'words') setWordsPage(1)
-  }, [step, scopeFilter, selectedSentiment, selectedLetter, searchQuery])
+    if (step !== 'words') return
+    setHighlightedLetter('A')
+    const el = wordsScrollRef.current
+    if (!el) return
+    const onScroll = () => {
+      const sections = el.querySelectorAll('[data-letter-section]')
+      let current = 'A'
+      for (const s of sections) {
+        const top = (s as HTMLElement).offsetTop
+        if (el.scrollTop >= top - 20) current = (s as HTMLElement).dataset.letter ?? current
+      }
+      setHighlightedLetter(current)
+    }
+    el.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [step, scopeFilter, selectedSentiment, searchQuery])
 
   const loadGlossaryWords = async () => {
     try {
@@ -359,14 +376,13 @@ export function SessionDurationDialog({
     setScopeFilter(scope)
   }
 
-  const WORDS_PER_PAGE = 12
-
   const renderWordsStep = () => {
     const clock = clockId != null ? clockSettings[clockId] : null
     if (!clock) return null
     const focusNodesCount = clock.focusNodes
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
-    // Filter: Default = only words for the selected clock (no clock picker in dialog)
+    const clockHex = CLOCK_HEX[clockId] ?? '#6b7280'
+    // Filter: scope + sentiment only (no letter filter; letter is scroll-spy)
     const filteredWords = glossaryWords
       .filter(word => {
         if (scopeFilter === 'My Words') {
@@ -376,15 +392,26 @@ export function SessionDurationDialog({
           if (word.clock_id !== clockId) return false
         }
         if (selectedSentiment !== null && word.rating !== selectedSentiment) return false
-        if (selectedLetter && !word.word.toUpperCase().startsWith(selectedLetter)) return false
         return true
       })
       .sort((a, b) => a.word.localeCompare(b.word))
 
-    const totalPages = Math.max(1, Math.ceil(filteredWords.length / WORDS_PER_PAGE))
-    const safePage = Math.min(wordsPage, totalPages)
-    const startIdx = (safePage - 1) * WORDS_PER_PAGE
-    const pageWords = filteredWords.slice(startIdx, startIdx + WORDS_PER_PAGE)
+    // Group by first letter for section headers and scroll-spy
+    const byLetter = (() => {
+      const map = new Map<string, GlossaryWord[]>()
+      for (const w of filteredWords) {
+        const L = w.word[0]?.toUpperCase() ?? '?'
+        if (!/^[A-Z]$/.test(L)) continue
+        if (!map.has(L)) map.set(L, [])
+        map.get(L)!.push(w)
+      }
+      return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b))
+    })()
+
+    const scrollToLetter = (letter: string) => {
+      wordsScrollRef.current?.querySelector(`[data-letter-section][data-letter="${letter}"]`)?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+      setHighlightedLetter(letter)
+    }
 
     const handleWordClick = (word: GlossaryWord) => {
       const isAssigned = words.includes(word.word)
@@ -431,7 +458,7 @@ export function SessionDurationDialog({
                 </div>
                 <span className="text-sm text-gray-400 dark:text-gray-500 shrink-0">{filteredWords.length} words</span>
               </div>
-              {/* Scope (left) + Sentiment (right) in one row */}
+              {/* Scope (left) + Sentiment (right) in one row — Default uses clock color; sentiment hover outline + fill when selected */}
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <div className="flex flex-wrap gap-1.5">
                   {(['All', 'Default', 'My Words'] as const).map(scope => (
@@ -439,44 +466,49 @@ export function SessionDurationDialog({
                       key={scope}
                       onClick={() => setScope(scope)}
                       className={cn(
-                        'px-3 py-1.5 rounded-lg text-sm font-medium transition-all shrink-0 flex items-center gap-1',
+                        'px-3 py-1.5 rounded-lg text-sm font-medium transition-all shrink-0 flex items-center gap-1 border',
                         scopeFilter === scope
                           ? scope === 'All'
-                            ? 'bg-gray-200 dark:bg-white/15 text-gray-800 dark:text-gray-100'
+                            ? 'bg-gray-200 dark:bg-white/15 text-gray-800 dark:text-gray-100 border-gray-300 dark:border-white/20'
                             : scope === 'Default'
-                              ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-200'
-                              : 'bg-purple-100 dark:bg-purple-500/20 text-purple-800 dark:text-purple-200'
-                          : 'bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                              ? 'border-transparent'
+                              : 'bg-purple-100 dark:bg-purple-500/20 text-purple-800 dark:text-purple-200 border-purple-300 dark:border-purple-500/40'
+                          : 'bg-white dark:bg-black/30 border-black/5 dark:border-white/10 text-gray-600 dark:text-gray-400 hover:border-black/20 dark:hover:border-white/20'
                       )}
+                      style={scope === 'Default' && scopeFilter === scope ? { backgroundColor: `${clockHex}20`, color: clockHex, borderColor: clockHex } : undefined}
+                      onMouseEnter={(e) => {
+                        if (scope !== 'Default') return
+                        if (scopeFilter !== scope) {
+                          e.currentTarget.style.borderColor = clockHex
+                          e.currentTarget.style.color = clockHex
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (scope !== 'Default') return
+                        if (scopeFilter !== scope) {
+                          e.currentTarget.style.borderColor = ''
+                          e.currentTarget.style.color = ''
+                        }
+                      }}
                     >
                       {scope === 'Default' && <Layers className="w-3.5 h-3.5 shrink-0" />}
                       {scope === 'My Words' && <UserCircle2 className="w-3.5 h-3.5 shrink-0" />}
-                      {scope === 'Default' ? `Default (${clockTitles[clockId] ?? 'Clock'})` : scope}
+                      {scope}
                     </button>
                   ))}
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {[
-                    { value: '+' as const, label: 'Positive' },
-                    { value: '~' as const, label: 'Neutral' },
-                    { value: '-' as const, label: 'Negative' },
-                  ].map(({ value, label }) => (
+                    { value: '+' as const, label: 'Positive', selectedClass: 'bg-emerald-500/25 text-emerald-800 dark:text-emerald-200 border-emerald-400 dark:border-emerald-500/50', hoverClass: 'hover:border-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-400' },
+                    { value: '~' as const, label: 'Neutral', selectedClass: 'bg-slate-500/20 text-slate-700 dark:text-slate-200 border-slate-400 dark:border-slate-500/50', hoverClass: 'hover:border-slate-400 hover:text-slate-600 dark:hover:text-slate-400' },
+                    { value: '-' as const, label: 'Negative', selectedClass: 'bg-rose-500/25 text-rose-800 dark:text-rose-200 border-rose-400 dark:border-rose-500/50', hoverClass: 'hover:border-rose-400 hover:text-rose-600 dark:hover:text-rose-400' },
+                  ].map(({ value, label, selectedClass, hoverClass }) => (
                     <button
                       key={label}
                       onClick={() => setSelectedSentiment(selectedSentiment === value ? null : value)}
                       className={cn(
-                        'px-3 py-1.5 rounded-full text-sm font-medium transition-all shrink-0',
-                        selectedSentiment === value
-                          ? value === '+'
-                            ? 'bg-emerald-100 dark:bg-emerald-500/25 text-emerald-800 dark:text-emerald-200 ring-1 ring-emerald-200 dark:ring-emerald-500/40'
-                            : value === '-'
-                              ? 'bg-rose-100 dark:bg-rose-500/25 text-rose-800 dark:text-rose-200 ring-1 ring-rose-200 dark:ring-rose-500/40'
-                              : 'bg-slate-100 dark:bg-slate-500/20 text-slate-700 dark:text-slate-200 ring-1 ring-slate-500/30'
-                          : value === '+'
-                            ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20'
-                            : value === '-'
-                              ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20'
-                              : 'bg-slate-50 dark:bg-slate-500/10 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-500/20'
+                        'px-3 py-1.5 rounded-full text-sm font-medium transition-all shrink-0 border-2 border-transparent',
+                        selectedSentiment === value ? selectedClass : hoverClass
                       )}
                     >
                       {label}
@@ -484,48 +516,44 @@ export function SessionDurationDialog({
                   ))}
                 </div>
               </div>
-            </div>
-            {/* A–Z vertical (left) + cards + pagination (right), no scroll */}
-            <div className="flex-1 min-h-0 flex gap-2 overflow-hidden">
-              {/* Vertical A–Z strip — always visible */}
-              <div className="flex flex-col gap-0.5 py-2 shrink-0 w-8 items-center overflow-y-auto">
-                {selectedLetter && (
-                  <button
-                    onClick={() => setSelectedLetter(null)}
-                    className="text-[10px] text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-0.5"
-                  >
-                    Clear
-                  </button>
-                )}
+              {/* A–Z below filters — round shapes, highlight from scroll position */}
+              <div className="flex flex-wrap gap-1 py-1.5">
                 {alphabet.map(letter => (
                   <button
                     key={letter}
-                    onClick={() => setSelectedLetter(selectedLetter === letter ? null : letter)}
+                    type="button"
+                    onClick={() => scrollToLetter(letter)}
                     className={cn(
-                      'w-6 h-6 rounded flex items-center justify-center text-xs font-medium transition-all shrink-0',
-                      selectedLetter === letter
-                        ? 'bg-black text-white dark:bg-white dark:text-black'
-                        : 'bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-black/50 text-gray-700 dark:text-gray-300'
+                      'w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-all shrink-0 border-2',
+                      highlightedLetter === letter
+                        ? 'bg-black text-white border-black dark:bg-white dark:text-black dark:border-white'
+                        : 'bg-white dark:bg-black/30 border-black/10 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-black/50 text-gray-700 dark:text-gray-300'
                     )}
                   >
                     {letter}
                   </button>
                 ))}
               </div>
-              <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
-                <div className="flex-1 min-h-0 overflow-hidden">
-                  <div className="grid grid-cols-2 gap-2 p-2 h-full content-start">
+            </div>
+            {/* Scrollable word list with letter section headers — 3 cards per row */}
+            <div ref={wordsScrollRef} className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
+              <div className="grid grid-cols-3 gap-2 p-2">
                     {isLoadingWords ? (
-                      <div className="col-span-2 py-6 text-center text-gray-500 dark:text-gray-400">Loading words...</div>
+                      <div className="col-span-3 py-6 text-center text-gray-500 dark:text-gray-400">Loading words...</div>
                     ) : loadError ? (
-                      <div className="col-span-2 py-6 text-center">
+                      <div className="col-span-3 py-6 text-center">
                         <p className="text-amber-500 dark:text-amber-400">{loadError}</p>
                         <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Please try again later</p>
                       </div>
                     ) : filteredWords.length === 0 ? (
-                      <div className="col-span-2 py-6 text-center text-gray-500 dark:text-gray-400">No words found. Try adjusting filters or search.</div>
+                      <div className="col-span-3 py-6 text-center text-gray-500 dark:text-gray-400">No words found. Try adjusting filters or search.</div>
                     ) : (
-                      pageWords.map(word => {
+                      byLetter.flatMap(([letter, letterWords]) => [
+                        <div key={`h-${letter}`} data-letter-section data-letter={letter} className="col-span-3 pt-3 pb-1 flex items-center gap-2">
+                          <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">{letter}</span>
+                          <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
+                        </div>,
+                        ...letterWords.map(word => {
                     const isAssigned = words.includes(word.word)
                     const canAssign = isAssigned || words.filter(w => w).length < focusNodesCount
                     return (
@@ -582,34 +610,9 @@ export function SessionDurationDialog({
                       </button>
                     )
                   })
-                )}
+                      ])
+                    )}
                   </div>
-                </div>
-                {/* Pagination: back / next — no scroll */}
-                <div className="shrink-0 flex items-center justify-center gap-4 py-2 border-t border-black/5 dark:border-white/10">
-                  <button
-                    type="button"
-                    onClick={() => setWordsPage(p => Math.max(1, p - 1))}
-                    disabled={safePage <= 1}
-                    className="p-2 rounded-lg bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-black/50 transition-colors"
-                    aria-label="Previous page"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Page {safePage} of {totalPages}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setWordsPage(p => Math.min(totalPages, p + 1))}
-                    disabled={safePage >= totalPages}
-                    className="p-2 rounded-lg bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-black/50 transition-colors"
-                    aria-label="Next page"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </Motion.div>
