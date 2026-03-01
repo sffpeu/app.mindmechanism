@@ -592,7 +592,7 @@ export function SessionDurationDialog({
                           <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 pt-2 first:pt-0 sticky top-0 bg-white/95 dark:bg-black/95 py-1 z-10 backdrop-blur-sm">
                             {letter}
                           </div>
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {sectionWords.map(word => {
                               const isAssigned = words.includes(word.word)
                               const canAssign = isAssigned || selectedFocusNodeIndex !== null
@@ -657,9 +657,9 @@ export function SessionDurationDialog({
               </div>
             </div>
         </Motion.div>
-        {/* Right half: selected clock (60%) — grid column 2, always visible */}
-        <div className="min-w-0 flex flex-col items-center justify-start min-h-0 overflow-hidden gap-4">
-          <div className="w-full max-w-[560px] aspect-square relative flex-shrink-0">
+        {/* Right half: selected clock — grid column 2, always visible */}
+        <div className="min-w-0 flex items-center justify-center min-h-0 overflow-hidden">
+          <div className="w-[560px] h-[560px] relative flex items-center justify-center flex-shrink-0">
             <div className="w-[75%] h-[75%] relative rounded-full overflow-hidden">
               <div
                 className="absolute inset-0"
@@ -761,61 +761,6 @@ export function SessionDurationDialog({
               </div>
             </div>
           </div>
-          {/* Under clock: sentiment counts, Random, Default, Trash (no Glossary) */}
-          {(() => {
-            const assignedWithRating = words.filter(w => w.trim()).map(wordStr => glossaryWords.find(g => g.word === wordStr)?.rating).filter((r): r is '+' | '~' | '-' => r != null)
-            const positiveCount = assignedWithRating.filter(r => r === '+').length
-            const neutralCount = assignedWithRating.filter(r => r === '~').length
-            const negativeCount = assignedWithRating.filter(r => r === '-').length
-            return (
-              <div className="w-full max-w-[560px] flex flex-col gap-2 shrink-0">
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600 dark:text-gray-400">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500" aria-hidden />
-                    <span className="font-medium text-emerald-600 dark:text-emerald-400">{positiveCount}</span>
-                    <span>Positive</span>
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-slate-400" aria-hidden />
-                    <span className="font-medium text-slate-600 dark:text-slate-400">{neutralCount}</span>
-                    <span>Neutral</span>
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-rose-500" aria-hidden />
-                    <span className="font-medium text-rose-600 dark:text-rose-400">{negativeCount}</span>
-                    <span>Negative</span>
-                  </span>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => { playClick(); handleRandomize() }}
-                    className="px-3 py-1.5 rounded-lg text-sm font-medium bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-black/50 text-gray-700 dark:text-gray-300 flex items-center gap-1.5"
-                    aria-label="Fill with random words"
-                  >
-                    <Shuffle className="w-4 h-4" />
-                    Random
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { playClick(); handleRandomDefaultWords() }}
-                    className="px-3 py-1.5 rounded-lg text-sm font-medium bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-black/50 text-gray-700 dark:text-gray-300 flex items-center gap-1.5"
-                    aria-label="Fill with default words"
-                  >
-                    Default
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { playClick(); handleResetAllWords() }}
-                    className="p-1.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-black/50 border border-transparent hover:border-black/10 dark:hover:border-white/10"
-                    aria-label="Clear all words"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            )
-          })()}
         </div>
       </div>
     )
