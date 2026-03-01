@@ -132,7 +132,7 @@ export function SessionDurationDialog({
       (entries) => {
         const visible = entries.filter((e) => e.isIntersecting && e.intersectionRatio >= 0.05)
         if (visible.length === 0) return
-        const byTop = [...visible].sort((a, b) => a.boundingClientRect().top - b.boundingClientRect().top)
+        const byTop = [...visible].sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
         const letter = byTop[0].target.id.replace('letter-', '')
         setScrollLetter(letter)
       },
