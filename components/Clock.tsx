@@ -808,9 +808,13 @@ export default function Clock({
     setHoveredNodeIndex(null); // Reset hover state on click
   };
 
+  // Assign-words order: node 1 at 12 o'clock, then clockwise (matches SessionDurationDialog layout)
+  const SESSION_WORDS_START_DEGREE = 270;
+
   const renderFocusNodes = (clockRotation: number, clockFocusNodes: number, clockStartingDegree: number, clockId: number, isSessionActive = false) => {
-    // Adjust starting degree for specific clocks to align with their SVGs
+    // When in session, use Assign-words order (1 at 12 o'clock, clockwise); otherwise use clock-specific alignment
     const adjustedStartingDegree = (() => {
+      if (isSessionActive && customWords.length > 0) return SESSION_WORDS_START_DEGREE;
       switch (clockId) {
         case 0: return clockStartingDegree + 45; // Clock 1 (/0)
         case 1: return clockStartingDegree + 45; // Clock 2 (/1)
@@ -860,11 +864,13 @@ export default function Clock({
     });
     const nodeRadius = getNodeRadius(id, isMultiView);
     const wordsPerNode = Math.ceil(customWords.length / focusNodes);
+    // Session: use Assign-words order (1 at 12 o'clock, clockwise); otherwise use clock startingDegree
+    const wordsStartingDegree = duration != null ? SESSION_WORDS_START_DEGREE : startingDegree;
 
     return (
       <div className="absolute inset-0 pointer-events-none">
         {Array.from({ length: focusNodes }).map((_, nodeIndex) => {
-          const nodeAngle = (nodeIndex * (360 / focusNodes) + startingDegree) % 360;
+          const nodeAngle = (nodeIndex * (360 / focusNodes) + wordsStartingDegree) % 360;
           const words = customWords.slice(nodeIndex * wordsPerNode, (nodeIndex + 1) * wordsPerNode);
           
           return words.map((word, wordIndex) => {
