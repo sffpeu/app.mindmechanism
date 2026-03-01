@@ -77,7 +77,8 @@ export function useSessionTimer(
     }
 
     tick()
-    timerRef.current = setInterval(tick, 1000)
+    // Tick every 250ms so progress ring moves in real time with timer
+    timerRef.current = setInterval(tick, 250)
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)

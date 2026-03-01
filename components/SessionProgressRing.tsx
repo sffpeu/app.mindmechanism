@@ -2,7 +2,8 @@
 
 import { useMemo } from 'react'
 
-const RING_RADIUS = 48 // viewBox 0 0 100 100; same as set-duration viz
+// At edge of viewBox so ring sits further outside focus nodes
+const RING_RADIUS = 50
 const CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS
 
 interface SessionProgressRingProps {
@@ -52,7 +53,7 @@ export function SessionProgressRing({
           strokeWidth="1.5"
           className="text-black/10 dark:text-white/10"
         />
-        {/* Progress arc — fills as session runs; stops when paused */}
+        {/* Progress arc — moves in real time with timer; stops when paused */}
         <circle
           cx="50"
           cy="50"
@@ -62,7 +63,7 @@ export function SessionProgressRing({
           strokeWidth="2"
           strokeDasharray={`${dash} ${CIRCUMFERENCE}`}
           strokeLinecap="round"
-          className="transition-[stroke-dasharray] duration-1000 ease-linear"
+          className="transition-[stroke-dasharray] duration-[150ms] ease-linear"
           style={{ opacity: isPaused ? 0.7 : 0.9 }}
         />
       </svg>
