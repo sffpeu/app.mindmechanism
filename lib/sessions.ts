@@ -139,19 +139,18 @@ export async function updateSession(
       actualDuration = now.getTime() - sessionData.start_time.toDate().getTime() - pausedDuration;
     }
 
-    const updateData: Record<string, unknown> = {
-      ...data,
+    const lastActive = data.last_active_time ? Timestamp.fromDate(new Date(data.last_active_time)) : Timestamp.now();
+    const { end_time: _endTime, ...rest } = data;
+    const updateData = {
+      ...rest,
       actual_duration: actualDuration,
-      last_active_time: data.last_active_time ? Timestamp.fromDate(new Date(data.last_active_time)) : Timestamp.now()
+      last_active_time: lastActive,
+      ...(data.status === 'completed' || data.status === 'aborted'
+        ? { end_time: data.end_time ? Timestamp.fromDate(new Date(data.end_time)) : Timestamp.now() }
+        : {})
     };
-    // Only set end_time when session is completed or aborted (so leaving mid-session doesn't overwrite)
-    if (data.status === 'completed' || data.status === 'aborted') {
-      updateData.end_time = data.end_time ? Timestamp.fromDate(new Date(data.end_time)) : Timestamp.now();
-    } else {
-      delete updateData.end_time;
-    }
 
-    await updateDoc(sessionRef, updateData);
+    await updateDoc(sessionRef, updateData as Parameters<typeof updateDoc>[1]);
   } catch (error) {
     console.error('Error in updateSession:', error);
     throw error;
