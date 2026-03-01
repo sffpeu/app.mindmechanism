@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { motion as Motion, AnimatePresence } from 'framer-motion'
-import { Timer, ChevronRight, InfinityIcon, X, Check, ArrowLeft, PenLine, Search, Shuffle, Trash2, Layers, UserCircle2 } from 'lucide-react'
+import { Timer, ChevronRight, InfinityIcon, X, Check, ArrowLeft, PenLine, Search, Shuffle, Trash2, Layers, UserCircle2, BookOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { clockSettings } from '@/lib/clockSettings'
 import { GlossaryWord } from '@/types/Glossary'
@@ -328,6 +328,19 @@ export function SessionDurationDialog({
 
   const handleResetAllWords = () => {
     setWords(Array(words.length).fill(''))
+  }
+
+  /** Fill all slots at once with default words for the current clock. */
+  const handleFillAllDefaultWords = () => {
+    const defaultWords = glossaryWords.filter(
+      (word) => word.clock_id != null && word.clock_id >= 0 && word.clock_id <= 8 && word.clock_id === clockId
+    )
+    if (defaultWords.length === 0) return
+    const focusNodesCount = clockSettings[clockId]?.focusNodes ?? 0
+    const newWords = Array(focusNodesCount)
+      .fill('')
+      .map((_, i) => defaultWords[i]?.word ?? '')
+    setWords(newWords)
   }
 
   const handleWordSelect = (word: GlossaryWord) => {
@@ -793,22 +806,64 @@ export function SessionDurationDialog({
               </div>
             </div>
           </div>
-          {/* Sentiment counts for assigned words — below clock, right side of popup */}
-          <div className="flex items-center gap-4 shrink-0">
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-emerald-500" aria-hidden />
-              <span className="text-emerald-600 dark:text-emerald-400 font-medium">{assignedPositive}</span>
-              <span className="text-gray-600 dark:text-gray-400 text-sm">Positive</span>
+          {/* Spacer to move counter and actions further down below clock */}
+          <div className="min-h-[24px]" aria-hidden />
+          {/* Sentiment counts + Glossary — below clock, moved further down */}
+          <div className="flex flex-col items-center gap-3 shrink-0 mt-2">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-emerald-500" aria-hidden />
+                <span className="text-emerald-600 dark:text-emerald-400 font-medium">{assignedPositive}</span>
+                <span className="text-gray-600 dark:text-gray-400 text-sm">Positive</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500" aria-hidden />
+                <span className="text-gray-700 dark:text-gray-300 font-medium">{assignedNeutral}</span>
+                <span className="text-gray-600 dark:text-gray-400 text-sm">Neutral</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-rose-500" aria-hidden />
+                <span className="text-rose-600 dark:text-rose-400 font-medium">{assignedNegative}</span>
+                <span className="text-gray-600 dark:text-gray-400 text-sm">Negative</span>
+              </div>
+              <a
+                href="/glossary"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors ml-2"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span className="text-sm">Glossary</span>
+              </a>
             </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500" aria-hidden />
-              <span className="text-gray-700 dark:text-gray-300 font-medium">{assignedNeutral}</span>
-              <span className="text-gray-600 dark:text-gray-400 text-sm">Neutral</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-rose-500" aria-hidden />
-              <span className="text-rose-600 dark:text-rose-400 font-medium">{assignedNegative}</span>
-              <span className="text-gray-600 dark:text-gray-400 text-sm">Negative</span>
+            {/* Random, Default, Delete — match image layout */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => { playClick(); handleRandomWords(); }}
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-white dark:bg-black/40 border border-black/10 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
+                title="Randomly fill empty slots with words from the glossary"
+              >
+                <Shuffle className="w-4 h-4" />
+                Random
+              </button>
+              <button
+                type="button"
+                onClick={() => { playClick(); handleFillAllDefaultWords(); }}
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-white dark:bg-black/40 border border-black/10 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
+                title="Fill all slots at once with default words for this clock"
+              >
+                Default
+              </button>
+              <button
+                type="button"
+                onClick={() => { playClick(); handleResetAllWords(); }}
+                className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-700 dark:hover:text-white transition-colors"
+                title="Clear all assigned words"
+                aria-label="Delete all words"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense, useRef, useCallback, useMemo } from 'react'
+import { useState, useEffect, Suspense, useRef, useCallback } from 'react'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
@@ -33,20 +33,15 @@ import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useLocation } from '@/lib/hooks/useLocation'
 import DotNavigation from '@/components/DotNavigation'
 import { clockTitles } from '@/lib/clockTitles'
-import { ChordDiagram } from '@/components/ChordDiagram'
-import type { FocusWordWithValue } from '@/types/Chord'
-import { wordRatingToValue } from '@/types/Chord'
-
-// Test words for each node (with example impact values -5 to +5)
-const testWordsWithValues: { word: string; value: number }[] = [
-  { word: 'Relativity', value: 4 },
-  { word: 'Spacetime', value: 3 },
-  { word: 'Gravity', value: -2 },
-  { word: 'Energy', value: 5 },
-  { word: 'Matter', value: 0 },
-  { word: 'Momentum', value: 2 },
+// Test words for each node
+const testWords = [
+  'Relativity',
+  'Spacetime',
+  'Gravity',
+  'Energy',
+  'Matter',
+  'Momentum'
 ]
-const testWords = testWordsWithValues.map((w) => w.word)
 
 // Weather and Moon data interfaces
 interface WeatherResponse {
@@ -120,13 +115,6 @@ function NodesPageContent() {
   const [showWords, setShowWords] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('showWords')
-      return saved ? JSON.parse(saved) : true
-    }
-    return true
-  })
-  const [showChord, setShowChord] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('showChord')
       return saved ? JSON.parse(saved) : true
     }
     return true
@@ -358,19 +346,6 @@ function NodesPageContent() {
     setSelectedNodeIndex(selectedNodeIndex === index ? null : index)
   }
 
-  // Words for chord: value -5..+5, node index. Build from custom words (glossary rating) or test words.
-  const chordWords = useMemo((): FocusWordWithValue[] => {
-    const list = customWords.length > 0 ? customWords : testWords
-    return list.map((word, i) => {
-      const nodeIndex = i % focusNodes
-      const glossary = glossaryWords.find((g) => g.word.toLowerCase() === word.toLowerCase())
-      const value = glossary
-        ? wordRatingToValue(glossary.grade, glossary.rating)
-        : testWordsWithValues.find((w) => w.word === word)?.value ?? 0
-      return { word, value, nodeIndex }
-    })
-  }, [customWords, glossaryWords, focusNodes])
-
   const getWordContainerStyle = (angle: number, isSelected: boolean) => {
     const isLeftSide = angle > 90 && angle < 270
     // Calculate the total rotation needed to counter both the clock rotation and image orientation
@@ -413,13 +388,6 @@ function NodesPageContent() {
     setShowWords(checked)
     if (typeof window !== 'undefined') {
       localStorage.setItem('showWords', JSON.stringify(checked))
-    }
-  }
-
-  const handleChordChange = (checked: boolean) => {
-    setShowChord(checked)
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('showChord', JSON.stringify(checked))
     }
   }
 
@@ -526,16 +494,6 @@ function NodesPageContent() {
                 <Switch
                   checked={showWords}
                   onCheckedChange={handleWordsChange}
-                />
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
-                <div className="flex items-center gap-2">
-                  <Compass className="h-4 w-4" />
-                  <span>Chord diagram</span>
-                </div>
-                <Switch
-                  checked={showChord}
-                  onCheckedChange={handleChordChange}
                 />
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -790,17 +748,6 @@ function NodesPageContent() {
             >
               <div className="absolute inset-0" style={{ transform: `rotate(${clock6.imageOrientation}deg)`, pointerEvents: 'auto' }}>
                 <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
-                  {/* Chord diagram: word power (-5..+5) in center, density by focus nodes */}
-                  <ChordDiagram
-                    focusNodes={focusNodes}
-                    words={chordWords}
-                    size={380}
-                    innerRadius={52}
-                    outerRadius={120}
-                    rotationDeg={startingDegree + 45 + focusNodesOffset}
-                    visible={showChord && chordWords.length > 0}
-                    animationKey={`chord-${chordWords.length}-${focusNodes}`}
-                  />
                   {Array.from({ length: focusNodes }).map((_, index) => {
                     const angle = ((360 / focusNodes) * index + startingDegree + 45 + focusNodesOffset) % 360
                     const radians = angle * (Math.PI / 180)
