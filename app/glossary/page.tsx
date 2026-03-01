@@ -290,14 +290,14 @@ export default function GlossaryPage() {
             )}
           </div>
           {showAzFilter && (
-            <div id="az-filter" className="flex flex-wrap gap-1" role="region" aria-label="Filter by letter">
+            <div id="az-filter" className="flex flex-wrap gap-1.5" role="region" aria-label="Filter by letter">
               {alphabet.map(letter => (
                 <button
                   key={letter}
                   onClick={() => setSelectedLetter(selectedLetter === letter ? null : letter)}
-                  className={`w-7 h-7 rounded flex items-center justify-center text-sm font-medium transition-all ${
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all shrink-0 border ${
                     selectedLetter === letter
-                      ? 'bg-black text-white dark:bg-white dark:text-black'
+                      ? 'bg-black text-white dark:bg-white dark:text-black border-transparent'
                       : 'bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-black/50 text-gray-700 dark:text-gray-300'
                   }`}
                 >

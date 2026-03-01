@@ -67,6 +67,8 @@ export function SessionDurationDialog({
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false)
   const [selectedWordIndex, setSelectedWordIndex] = useState<number | null>(null)
   const [selectedFocusNodeIndex, setSelectedFocusNodeIndex] = useState<number | null>(null)
+  const [scrollLetter, setScrollLetter] = useState<string | null>(null)
+  const sectionRefsMap = useRef<Record<string, HTMLDivElement | null>>({})
   const { playClick } = useSoundEffects()
   const [hasInteracted, setHasInteracted] = useState(false)
   const router = useRouter()
@@ -109,6 +111,8 @@ export function SessionDurationDialog({
       setWords(Array(focusNodesCount).fill(''))
       setSelectedFocusNodeIndex(0)
       setLoadError(null)
+    } else {
+      setScrollLetter(null)
     }
   }, [step, clockId])
 
@@ -117,6 +121,29 @@ export function SessionDurationDialog({
       playClick()
     }
   }, [open, playClick])
+
+  // Scroll-linked A–Z: highlight letter whose section is in view
+  useEffect(() => {
+    if (step !== 'words' || !wordsScrollRef.current) return
+    const container = wordsScrollRef.current
+    const sections = container.querySelectorAll('[id^="letter-"]')
+    if (sections.length === 0) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((e) => e.isIntersecting && e.intersectionRatio >= 0.05)
+        if (visible.length === 0) return
+        const byTop = [...visible].sort((a, b) => a.boundingClientRect().top - b.boundingClientRect().top)
+        const letter = byTop[0].target.id.replace('letter-', '')
+        setScrollLetter(letter)
+      },
+      { root: container, rootMargin: '-10% 0px -70% 0px', threshold: [0, 0.05, 0.2, 0.5, 1] }
+    )
+    sections.forEach((el) => observer.observe(el))
+    return () => {
+      sections.forEach((el) => observer.unobserve(el))
+      observer.disconnect()
+    }
+  }, [step, glossaryWords.length, searchQuery, scopeFilter, selectedSentiment, selectedLetter])
 
 
   const loadGlossaryWords = async () => {
@@ -377,6 +404,21 @@ export function SessionDurationDialog({
       })
       .sort((a, b) => a.word.localeCompare(b.word))
 
+    const letterSections = (() => {
+      const map: Record<string, GlossaryWord[]> = {}
+      filteredWords.forEach(w => {
+        const letter = w.word[0]?.toUpperCase() || '#'
+        if (!map[letter]) map[letter] = []
+        map[letter].push(w)
+      })
+      return Object.entries(map).sort(([a], [b]) => a.localeCompare(b))
+    })()
+
+    const scrollToLetter = (letter: string) => {
+      const el = sectionRefsMap.current[`letter-${letter}`] ?? document.getElementById(`letter-${letter}`)
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+
     const handleWordClick = (word: GlossaryWord) => {
       const focusNodesCount = clock.focusNodes
       const isAssigned = words.includes(word.word)
@@ -494,14 +536,14 @@ export function SessionDurationDialog({
                   </button>
                 ))}
               </div>
-              {/* A–Z collapsible — match /glossary */}
+              {/* A–Z collapsible — round buttons, scroll-linked highlight in clock color */}
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setShowAzFilter(!showAzFilter)}
                   className={cn(
                     'px-2.5 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-all',
-                    showAzFilter || selectedLetter
+                    showAzFilter || selectedLetter || scrollLetter
                       ? 'bg-black/10 dark:bg-white/10 text-gray-800 dark:text-gray-200'
                       : 'bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                   )}
@@ -510,7 +552,9 @@ export function SessionDurationDialog({
                 >
                   {showAzFilter ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   A–Z
-                  {selectedLetter && <span className="text-xs opacity-80">({selectedLetter})</span>}
+                  {(selectedLetter || scrollLetter) && (
+                    <span className="text-xs opacity-80">({selectedLetter || scrollLetter})</span>
+                  )}
                 </button>
                 {showAzFilter && selectedLetter && (
                   <button
@@ -523,22 +567,30 @@ export function SessionDurationDialog({
                 )}
               </div>
               {showAzFilter && (
-                <div id="az-filter-words" className="flex flex-wrap gap-1" role="region" aria-label="Filter by letter">
-                  {alphabet.map(letter => (
-                    <button
-                      key={letter}
-                      type="button"
-                      onClick={() => setSelectedLetter(selectedLetter === letter ? null : letter)}
-                      className={cn(
-                        'w-7 h-7 rounded flex items-center justify-center text-sm font-medium transition-all shrink-0',
-                        selectedLetter === letter
-                          ? 'bg-black text-white dark:bg-white dark:text-black'
-                          : 'bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-black/50 text-gray-700 dark:text-gray-300'
-                      )}
-                    >
-                      {letter}
-                    </button>
-                  ))}
+                <div id="az-filter-words" className="flex flex-wrap gap-1.5" role="region" aria-label="Filter by letter">
+                  {alphabet.map(letter => {
+                    const isActive = selectedLetter === letter || (!selectedLetter && scrollLetter === letter)
+                    return (
+                      <button
+                        key={letter}
+                        type="button"
+                        onClick={() => {
+                          const next = selectedLetter === letter ? null : letter
+                          setSelectedLetter(next)
+                          if (next) scrollToLetter(next)
+                        }}
+                        className={cn(
+                          'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all shrink-0 border',
+                          isActive
+                            ? 'text-white border-transparent'
+                            : 'bg-white dark:bg-black/30 border-black/5 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-black/50 text-gray-700 dark:text-gray-300'
+                        )}
+                        style={isActive ? { backgroundColor: clockHex, color: '#fff' } : undefined}
+                      >
+                        {letter}
+                      </button>
+                    )
+                  })}
                 </div>
               )}
             </div>
@@ -550,74 +602,86 @@ export function SessionDurationDialog({
                 style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
                 onWheel={(e) => e.stopPropagation()}
               >
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+              <div className="p-4 space-y-6">
                     {isLoadingWords ? (
-                      <div className="col-span-full text-center py-8 text-gray-500 dark:text-gray-400">Loading words...</div>
+                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">Loading words...</div>
                     ) : loadError ? (
-                      <div className="col-span-full text-center py-8">
+                      <div className="text-center py-8">
                         <p className="text-amber-500 dark:text-amber-400">{loadError}</p>
                         <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Please try again later</p>
                       </div>
-                    ) : filteredWords.length === 0 ? (
-                      <div className="col-span-full text-center py-8 text-gray-500 dark:text-gray-400">No words found</div>
+                    ) : letterSections.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">No words found</div>
                     ) : (
-                      filteredWords.map(word => {
-                        const isAssigned = words.includes(word.word)
-                        const canAssign = isAssigned || selectedFocusNodeIndex !== null
-                        return (
-                          <button
-                            key={word.id}
-                            type="button"
-                            onClick={() => canAssign && handleWordClick(word)}
-                            disabled={!canAssign && !isAssigned}
-                            className={cn(
-                              'rounded-lg text-left transition-all border p-4 backdrop-blur-lg',
-                              isAssigned
-                                ? 'border-black/20 dark:border-white/30 ring-2 ring-black/10 dark:ring-white/20 bg-gray-50 dark:bg-white/5'
-                                : 'bg-white dark:bg-black/40 border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20',
-                              !canAssign && !isAssigned && 'opacity-60 cursor-not-allowed'
-                            )}
-                          >
-                            <div className="flex justify-between items-start">
-                              <div className="flex-1 min-w-0">
-                                <h3 className="text-lg font-medium text-black dark:text-white mb-0.5 truncate">{word.word}</h3>
-                                {word.phonetic_spelling && (
-                                  <span className="text-sm text-gray-500 dark:text-gray-400 block">{word.phonetic_spelling}</span>
-                                )}
-                              </div>
-                              <div className="flex items-center ml-4 space-x-1.5 shrink-0">
-                                <div className={cn(
-                                  'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
-                                  word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
-                                  word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
-                                  'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                                )}>
-                                  {word.grade}
-                                </div>
-                                <div className={cn(
-                                  'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
-                                  word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
-                                  word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
-                                  'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                                )}>
-                                  {word.rating}
-                                </div>
-                                {word.source === 'user' ? (
-                                  <UserCircle2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                                ) : (
-                                  <div
-                                    className={cn('w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium shrink-0', getDefaultIconStyle(word.clock_id) ? '' : 'bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300')}
-                                    style={getDefaultIconStyle(word.clock_id) ?? undefined}
-                                  >
-                                    D
+                      letterSections.map(([letter, sectionWords]) => (
+                        <div
+                          key={letter}
+                          id={`letter-${letter}`}
+                          ref={(el) => { sectionRefsMap.current[`letter-${letter}`] = el }}
+                        >
+                          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 pt-2 first:pt-0 sticky top-0 bg-white/95 dark:bg-black/95 py-1 z-10 backdrop-blur-sm">
+                            {letter}
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {sectionWords.map(word => {
+                              const isAssigned = words.includes(word.word)
+                              const canAssign = isAssigned || selectedFocusNodeIndex !== null
+                              return (
+                                <button
+                                  key={word.id}
+                                  type="button"
+                                  onClick={() => canAssign && handleWordClick(word)}
+                                  disabled={!canAssign && !isAssigned}
+                                  className={cn(
+                                    'rounded-lg text-left transition-all border p-4 backdrop-blur-lg',
+                                    !isAssigned && 'bg-white dark:bg-black/40 border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20',
+                                    !canAssign && !isAssigned && 'opacity-60 cursor-not-allowed'
+                                  )}
+                                  style={isAssigned ? { backgroundColor: `${clockHex}18`, borderColor: `${clockHex}80`, boxShadow: `0 0 0 2px ${clockHex}50` } : undefined}
+                                >
+                                  <div className="flex justify-between items-start">
+                                    <div className="flex-1 min-w-0">
+                                      <h3 className="text-lg font-medium text-black dark:text-white mb-0.5 truncate">{word.word}</h3>
+                                      {word.phonetic_spelling && (
+                                        <span className="text-sm text-gray-500 dark:text-gray-400 block">{word.phonetic_spelling}</span>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center ml-4 space-x-1.5 shrink-0">
+                                      <div className={cn(
+                                        'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
+                                        word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
+                                        word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
+                                        'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                                      )}>
+                                        {word.grade}
+                                      </div>
+                                      <div className={cn(
+                                        'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
+                                        word.rating === '+' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
+                                        word.rating === '-' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
+                                        'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                                      )}>
+                                        {word.rating}
+                                      </div>
+                                      {word.source === 'user' ? (
+                                        <UserCircle2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                                      ) : (
+                                        <div
+                                          className={cn('w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium shrink-0', getDefaultIconStyle(word.clock_id) ? '' : 'bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300')}
+                                          style={getDefaultIconStyle(word.clock_id) ?? undefined}
+                                        >
+                                          D
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
-                                )}
-                              </div>
-                            </div>
-                            <p className="text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-2">{word.definition}</p>
-                          </button>
-                        )
-                      })
+                                  <p className="text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-2">{word.definition}</p>
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      ))
                     )}
                   </div>
               </div>
@@ -672,12 +736,13 @@ export function SessionDurationDialog({
                         className={cn(
                           'absolute w-3 h-3 rounded-full cursor-pointer pointer-events-auto transition-all',
                           bgColorClass,
-                          isSelected && 'ring-4 ring-gray-400 dark:ring-gray-500 ring-offset-2 ring-offset-white dark:ring-offset-black scale-125'
+                          isSelected && 'ring-offset-2 ring-offset-white dark:ring-offset-black scale-125'
                         )}
                         style={{
                           left: `${x}%`,
                           top: `${y}%`,
                           transform: 'translate(-50%, -50%)',
+                          ...(isSelected && { boxShadow: `0 0 0 2px ${clockHex}` }),
                         }}
                         onClick={() => {
                           playClick()
@@ -697,7 +762,7 @@ export function SessionDurationDialog({
                       {wordLabel && (
                         <div
                           className={cn(
-                            'absolute pointer-events-none px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap max-w-[80px] truncate',
+                            'absolute pointer-events-none px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap',
                             'bg-white/95 dark:bg-gray-800/95 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-600 shadow-sm'
                           )}
                           style={{
@@ -705,7 +770,7 @@ export function SessionDurationDialog({
                             top: `${y}%`,
                             transform: (() => {
                               const t = 'translate(-50%, -50%)'
-                              const off = 18
+                              const off = 36
                               if (pillPlacement === 'top') return `${t} translateY(-${off}px)`
                               if (pillPlacement === 'bottom') return `${t} translateY(${off}px)`
                               if (pillPlacement === 'left') return `${t} translateX(-${off}px)`
