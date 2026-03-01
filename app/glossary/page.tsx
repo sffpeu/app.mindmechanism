@@ -18,13 +18,15 @@ export default function GlossaryPage() {
   const [scopeFilter, setScopeFilter] = useState<'All' | 'Default' | 'My Words'>('All')
   const [selectedClockId, setSelectedClockId] = useState<number | null>(null)
   const [selectedSentiment, setSelectedSentiment] = useState<'+' | '~' | '-' | null>(null)
-  const [selectedLetter, setSelectedLetter] = useState<string | null>('A')
+  const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
   const [words, setWords] = useState<GlossaryWord[]>([])
   const [loading, setLoading] = useState(true)
   const [isAddWordOpen, setIsAddWordOpen] = useState(false)
   const [selectedCard, setSelectedCard] = useState<GlossaryWord | null>(null)
   const [editWord, setEditWord] = useState<GlossaryWord | null>(null)
   const sectionRefsMap = useRef<Record<string, HTMLDivElement | null>>({})
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null)
+  const lettersListRef = useRef<string[]>([])
 
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
 
@@ -91,9 +93,6 @@ export default function GlossaryPage() {
     // Sentiment (Positive / Neutral / Negative)
     if (selectedSentiment !== null && word.rating !== selectedSentiment) return false
     return true
-  }).filter(word => {
-    if (!selectedLetter) return true
-    return word.word.toUpperCase().startsWith(selectedLetter)
   })
 
   // When switching away from Default, clear clock selection
@@ -116,11 +115,36 @@ export default function GlossaryPage() {
     })
     return Object.entries(map).sort(([a], [b]) => a.localeCompare(b))
   })()
+  lettersListRef.current = letterSections.map(([letter]) => letter)
 
   const scrollToLetter = (letter: string) => {
+    setSelectedLetter(letter)
     const el = sectionRefsMap.current[`letter-${letter}`] ?? document.getElementById(`letter-${letter}`)
     el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
+
+  // Scroll spy: highlight the letter whose section is currently in view
+  useEffect(() => {
+    const container = scrollContainerRef.current
+    if (!container) return
+    const onScroll = () => {
+      const letters = lettersListRef.current
+      const scrollTop = container.scrollTop
+      const threshold = 80
+      let active: string | null = null
+      for (let i = letters.length - 1; i >= 0; i--) {
+        const el = sectionRefsMap.current[`letter-${letters[i]}`]
+        if (el && el.offsetTop <= scrollTop + threshold) {
+          active = letters[i]
+          break
+        }
+      }
+      if (active) setSelectedLetter(active)
+    }
+    container.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => container.removeEventListener('scroll', onScroll)
+  }, [])
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95">
@@ -300,24 +324,22 @@ export default function GlossaryPage() {
                 })}
               </div>
             )}
-            {/* Letter filter — click letter to filter/scroll, click again to clear */}
+            {/* Letter anchor — click to scroll to section; highlight shows section currently in view (scroll spy) */}
             <div className="flex flex-wrap items-center gap-2">
-              <div id="az-filter-glossary" className="flex flex-wrap gap-1.5" role="region" aria-label="Filter by letter">
+              <div id="az-filter-glossary" className="flex flex-wrap gap-1.5" role="region" aria-label="Jump to letter">
                 {alphabet.map(letter => (
                   <button
                     key={letter}
                     type="button"
-                    onClick={() => {
-                      const next = selectedLetter === letter ? null : letter
-                      setSelectedLetter(next)
-                      if (next) scrollToLetter(next)
-                    }}
+                    onClick={() => scrollToLetter(letter)}
                     className={cn(
                       'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all shrink-0 border',
                       selectedLetter === letter
                         ? 'bg-black text-white dark:bg-white dark:text-black border-transparent'
                         : 'bg-white dark:bg-black/30 border-black/5 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-black/50 text-gray-700 dark:text-gray-300'
                     )}
+                    aria-label={`Jump to ${letter}`}
+                    aria-current={selectedLetter === letter ? 'true' : undefined}
                   >
                     {letter}
                   </button>
@@ -328,6 +350,7 @@ export default function GlossaryPage() {
           {/* Scrollable letter sections — same as Assign Words popup */}
           <div className="flex-1 min-h-0 relative flex flex-col">
             <div
+              ref={scrollContainerRef}
               className="absolute inset-0 overflow-y-auto overflow-x-hidden overscroll-contain scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800 touch-pan-y"
               style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
             >
