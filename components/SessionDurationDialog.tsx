@@ -394,14 +394,14 @@ export function SessionDurationDialog({
     }
 
     return (
-      <div className="w-full h-[calc(100%-1rem)] px-6 overflow-hidden flex gap-6">
-        {/* Left half: glossary (in sync with /glossary, Default = current clock only) */}
+      <div className="w-full h-[calc(100%-1rem)] px-6 overflow-hidden grid grid-cols-[1fr_1fr] gap-6">
+        {/* Left half: glossary — grid column 1 so right column is always reserved */}
         <Motion.div
           key="words"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
-          className="flex-1 min-w-0 flex flex-col overflow-hidden"
+          className="min-w-0 flex flex-col overflow-hidden"
         >
           <div className="min-w-0 bg-white dark:bg-black/40 border border-black/5 dark:border-white/10 rounded-xl overflow-hidden flex flex-col h-full backdrop-blur-lg">
             <div className="p-3 border-b border-black/5 dark:border-white/10 space-y-2 shrink-0">
@@ -586,8 +586,8 @@ export function SessionDurationDialog({
             </div>
           </div>
         </Motion.div>
-        {/* Right half: selected clock (double size like /sessions cards) */}
-        <div className="flex-shrink-0 w-1/2 flex items-center justify-center min-h-0">
+        {/* Right half: selected clock — grid column 2, always visible */}
+        <div className="min-w-0 flex items-center justify-center min-h-0 overflow-hidden">
           <div className="w-[560px] h-[560px] relative flex items-center justify-center flex-shrink-0">
             <div className="w-[75%] h-[75%] relative rounded-full overflow-hidden">
               <div
