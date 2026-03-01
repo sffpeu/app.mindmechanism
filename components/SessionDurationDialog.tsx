@@ -431,6 +431,12 @@ export function SessionDurationDialog({
       return m
     })()
     const assignedPositive = words.filter(w => w.trim() && wordToRating[w.trim()] === '+').length
+    // Sentiment colors for cards and clock labels (positive=green, negative=red, neutral=gray)
+    const getSentimentStyle = (rating: '+' | '~' | '-' | undefined) => {
+      if (rating === '+') return { bg: '#10b981', border: '#059669', shadow: '#34d399' }   // emerald
+      if (rating === '-') return { bg: '#f43f5e', border: '#e11d48', shadow: '#fb7185' }   // rose
+      return { bg: '#94a3b8', border: '#64748b', shadow: '#cbd5e1' }                        // slate/neutral
+    }
     const assignedNeutral = words.filter(w => w.trim() && wordToRating[w.trim()] === '~').length
     const assignedNegative = words.filter(w => w.trim() && wordToRating[w.trim()] === '-').length
 
@@ -623,7 +629,10 @@ export function SessionDurationDialog({
                                     !isAssigned && 'bg-white dark:bg-black/40 border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20',
                                     !canAssign && !isAssigned && 'opacity-60 cursor-not-allowed'
                                   )}
-                                  style={isAssigned ? { backgroundColor: `${clockHex}18`, borderColor: `${clockHex}80`, boxShadow: `0 0 0 2px ${clockHex}50` } : undefined}
+                                  style={isAssigned ? (() => {
+                                    const s = getSentimentStyle(word.rating)
+                                    return { backgroundColor: `${s.bg}18`, borderColor: `${s.border}80`, boxShadow: `0 0 0 2px ${s.shadow}50` }
+                                  })() : undefined}
                                 >
                                   <div className="flex justify-between items-start">
                                     <div className="flex-1 min-w-0">
@@ -692,7 +701,7 @@ export function SessionDurationDialog({
                     src={clock.imageUrl}
                     alt={`Clock ${clockId + 1}`}
                     fill
-                    className="object-cover rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none"
+                    className="object-cover rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none opacity-50"
                     priority
                     loading="eager"
                   />
@@ -748,29 +757,36 @@ export function SessionDurationDialog({
                           }
                         }}
                       />
-                      {wordLabel && (
-                        <div
-                          className={cn(
-                            'absolute pointer-events-none px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap',
-                            'bg-white/95 dark:bg-gray-800/95 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-600 shadow-sm'
-                          )}
-                          style={{
-                            left: `${x}%`,
-                            top: `${y}%`,
-                            transform: (() => {
-                              // Same offset on all sides so left mirrors right and top/bottom are even
-                              const offsetPx = 36
-                              if (pillPlacement === 'top') return `translate(-50%, -50%) translateY(-${offsetPx}px)`
-                              if (pillPlacement === 'bottom') return `translate(-50%, -50%) translateY(${offsetPx}px)`
-                              if (pillPlacement === 'left') return `translate(-100%, -50%) translateX(-${offsetPx}px)`
-                              return `translate(0, -50%) translateX(${offsetPx}px)`
-                            })(),
-                          }}
-                          title={wordLabel}
-                        >
-                          {wordLabel}
-                        </div>
-                      )}
+                      {wordLabel && (() => {
+                        const rating = wordToRating[wordLabel.trim()]
+                        const sentimentClasses = rating === '+'
+                          ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-500/50'
+                          : rating === '-'
+                            ? 'bg-rose-50 dark:bg-rose-900/30 text-rose-800 dark:text-rose-200 border-rose-200 dark:border-rose-500/50'
+                            : 'bg-slate-100 dark:bg-slate-700/50 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-500/50'
+                        return (
+                          <div
+                            className={cn(
+                              'absolute pointer-events-none px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap border shadow-sm',
+                              sentimentClasses
+                            )}
+                            style={{
+                              left: `${x}%`,
+                              top: `${y}%`,
+                              transform: (() => {
+                                const offsetPx = 36
+                                if (pillPlacement === 'top') return `translate(-50%, -50%) translateY(-${offsetPx}px)`
+                                if (pillPlacement === 'bottom') return `translate(-50%, -50%) translateY(${offsetPx}px)`
+                                if (pillPlacement === 'left') return `translate(-100%, -50%) translateX(-${offsetPx}px)`
+                                return `translate(0, -50%) translateX(${offsetPx}px)`
+                              })(),
+                            }}
+                            title={wordLabel}
+                          >
+                            {wordLabel}
+                          </div>
+                        )
+                      })()}
                     </React.Fragment>
                   )
                 })}
