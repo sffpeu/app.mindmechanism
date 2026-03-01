@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -331,17 +332,70 @@ export function SessionDurationDialog({
     setScopeFilter(scope)
   }
 
-  const renderWordsStep = () => (
-    <div className="w-full h-[calc(100%-1rem)] px-6 overflow-hidden">
-      <Motion.div
-        key="words"
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -20 }}
-        className="w-full h-full"
-      />
-    </div>
-  )
+  const renderWordsStep = () => {
+    const clock = clockId != null ? clockSettings[clockId] : null
+    if (!clock) return null
+    return (
+      <div className="w-full h-[calc(100%-1rem)] px-6 overflow-hidden flex gap-6">
+        <Motion.div
+          key="words"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          className="flex-1 min-w-0 h-full"
+        />
+        {/* Right half: selected clock (double size like /sessions cards) */}
+        <div className="flex-shrink-0 w-1/2 flex items-center justify-center min-h-0">
+          <div className="w-[560px] h-[560px] relative flex items-center justify-center flex-shrink-0">
+            <div className="w-[75%] h-[75%] relative rounded-full overflow-hidden">
+              <div
+                className="absolute inset-0"
+                style={{ transform: `rotate(${clock.imageOrientation}deg)` }}
+              >
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) scale(${clock.imageScale})`,
+                    transformOrigin: 'center',
+                  }}
+                >
+                  <Image
+                    src={clock.imageUrl}
+                    alt={`Clock ${clockId + 1}`}
+                    fill
+                    className="object-cover rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none"
+                    priority
+                    loading="eager"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-[90%] h-[90%] rounded-full relative">
+                {Array.from({ length: clock.focusNodes }).map((_, index) => {
+                  const angle = (index * 360) / clock.focusNodes
+                  const radius = 48
+                  const x = 50 + radius * Math.cos((angle - 90) * (Math.PI / 180))
+                  const y = 50 + radius * Math.sin((angle - 90) * (Math.PI / 180))
+                  return (
+                    <div
+                      key={index}
+                      className={cn('absolute w-3 h-3 rounded-full', bgColorClass)}
+                      style={{
+                        left: `${x}%`,
+                        top: `${y}%`,
+                        transform: 'translate(-50%, -50%)',
+                      }}
+                    />
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const handleDurationSelected = async (duration: number | null, words: string[]) => {
     if (clockId !== null && duration !== null && user?.uid) {
