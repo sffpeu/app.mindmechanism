@@ -451,6 +451,7 @@ export default function Clock({
   const [imageError, setImageError] = useState(false);
   const animationRef = useRef<number>();
   const lastRotation = useRef(rotation);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [showInfoCards, setShowInfoCards] = useState(true);
   const [infoCardsHiddenByNode, setInfoCardsHiddenByNode] = useState(false);
   const [displayState, setDisplayState] = useState<DisplayState>('info');
@@ -519,11 +520,11 @@ export default function Clock({
     }
   }, [duration, sessionId, playClick]);
 
-  // Timer effect with auto-save
+  // Timer effect with auto-save — start counting down as soon as session begins
   useEffect(() => {
     if (!initialDuration || isPaused || !sessionStartTime) return;
 
-    const timer = setInterval(() => {
+    const tick = () => {
       const elapsed = Date.now() - sessionStartTime;
       const remaining = initialDuration - elapsed;
       setRemainingTime(remaining);
@@ -541,12 +542,19 @@ export default function Clock({
       }
 
       if (remaining <= 0) {
-        clearInterval(timer);
+        if (timerRef.current) clearInterval(timerRef.current);
+        timerRef.current = null;
         handleSessionComplete();
       }
-    }, 1000);
-    
-    return () => clearInterval(timer);
+    };
+
+    tick(); // Run immediately when session begins so countdown starts right away
+    timerRef.current = setInterval(tick, 1000);
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      timerRef.current = null;
+    };
   }, [initialDuration, isPaused, sessionStartTime, lastAutoSave, sessionId, handleSessionComplete]);
 
   // Enhanced handlePauseResume with better state persistence

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Timer from './Timer'
 import { useSoundEffects } from '@/lib/sounds'
 
@@ -12,13 +12,17 @@ export function SessionTimer({ duration, sessionId, onSessionComplete }: Session
   const [remainingTime, setRemainingTime] = useState<number | null>(null)
   const [isPaused, setIsPaused] = useState(false)
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null)
+  const initialDurationRef = useRef<number | null>(null)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const { playClick } = useSoundEffects()
 
   // Initialize timer from duration or saved session
   useEffect(() => {
     if (duration) {
+      const now = Date.now()
       setRemainingTime(duration)
-      setSessionStartTime(Date.now())
+      setSessionStartTime(now)
+      initialDurationRef.current = duration
       setIsPaused(false)
       playClick()
 
@@ -27,7 +31,7 @@ export function SessionTimer({ duration, sessionId, onSessionComplete }: Session
         localStorage.setItem('pendingSession', JSON.stringify({
           sessionId,
           remaining: duration,
-          timestamp: Date.now()
+          timestamp: now
         }))
       }
     } else if (sessionId) {
@@ -38,7 +42,8 @@ export function SessionTimer({ duration, sessionId, onSessionComplete }: Session
           const { sessionId: savedId, remaining, timestamp } = JSON.parse(savedSession)
           if (savedId === sessionId && Date.now() - timestamp < 24 * 60 * 60 * 1000) {
             setRemainingTime(remaining)
-            setSessionStartTime(Date.now() - (remaining - remaining))
+            initialDurationRef.current = remaining
+            setSessionStartTime(Date.now())
             setIsPaused(false)
           } else {
             localStorage.removeItem('pendingSession')
@@ -57,23 +62,28 @@ export function SessionTimer({ duration, sessionId, onSessionComplete }: Session
     playClick()
   }
 
-  // Timer countdown effect
+  // Timer countdown effect — start counting down as soon as session begins
   useEffect(() => {
-    if (!remainingTime || isPaused || !sessionStartTime) return
+    if (remainingTime == null || isPaused || !sessionStartTime || initialDurationRef.current == null) return
 
-    const timer = setInterval(() => {
+    const tick = () => {
       const elapsed = Date.now() - sessionStartTime
-      const remaining = Math.max(0, remainingTime - elapsed)
-      
+      const remaining = Math.max(0, initialDurationRef.current! - elapsed)
       setRemainingTime(remaining)
-
       if (remaining <= 0) {
-        clearInterval(timer)
+        if (timerRef.current) clearInterval(timerRef.current)
+        timerRef.current = null
         onSessionComplete?.()
       }
-    }, 1000)
+    }
 
-    return () => clearInterval(timer)
+    tick() // Run immediately when session begins so countdown starts right away
+    timerRef.current = setInterval(tick, 1000)
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+      timerRef.current = null
+    }
   }, [remainingTime, isPaused, sessionStartTime, onSessionComplete])
 
   // Save session state when leaving
