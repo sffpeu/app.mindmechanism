@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense, useRef, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
@@ -142,7 +143,9 @@ function NodesPageContent() {
   const [glossaryWords, setGlossaryWords] = useState<GlossaryWord[]>([])
   const [loadingGlossary, setLoadingGlossary] = useState(true)
   const [selectedWord, setSelectedWord] = useState<string | null>(null)
-  const [wordPillHovered, setWordPillHovered] = useState(false)
+  const [pillHoveredWord, setPillHoveredWord] = useState<string | null>(null)
+  const [cardPosition, setCardPosition] = useState<{ x: number; y: number } | null>(null)
+  const dragRef = useRef<{ startX: number; startY: number; startLeft: number; startTop: number } | null>(null)
   const [customWords, setCustomWords] = useState<string[]>([])
   const [duration, setDuration] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -369,6 +372,14 @@ function NodesPageContent() {
     return { ...base, transform: `translate(0, -50%) translateX(${offsetPx}px) scale(${scale}) rotate(${counterRotation}deg)` }
   }
 
+  const getSentimentStyles = (rating: '+' | '~' | '-' | undefined) => {
+    const r = rating ?? '~'
+    if (r === '+') return { pillFillClass: 'bg-emerald-100/90 dark:bg-emerald-500/20', cardOutline: '0 0 0 2px #10b981' }
+    if (r === '-') return { pillFillClass: 'bg-rose-100/90 dark:bg-rose-500/20', cardOutline: '0 0 0 2px #f43f5e' }
+    return { pillFillClass: 'bg-slate-100/90 dark:bg-slate-500/20', cardOutline: '0 0 0 2px #64748b' }
+  }
+  useEffect(() => { if (selectedWord) { if (typeof window !== 'undefined') setCardPosition({ x: Math.max(0, window.innerWidth / 2 - 140), y: Math.max(0, window.innerHeight / 2 - 120) }) } else setCardPosition(null) }, [selectedWord])
+  const handleCardDragStart = useCallback((e: React.MouseEvent) => { e.preventDefault(); if (!cardPosition) return; dragRef.current = { startX: e.clientX, startY: e.clientY, startLeft: cardPosition.x, startTop: cardPosition.y }; const onMove = (e: MouseEvent) => { if (!dragRef.current) return; setCardPosition({ x: dragRef.current.startLeft + e.clientX - dragRef.current.startX, y: dragRef.current.startTop + e.clientY - dragRef.current.startY }) }; const onUp = () => { dragRef.current = null; window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp) }; window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp) }, [cardPosition])
   const getFocusNodeStyle = (index: number, isSelected: boolean, isSessionActive?: boolean) => {
     const color = '#541b96' // Dot menu hover color for clock 6 (purple)
     if (isSessionActive) {
@@ -803,75 +814,20 @@ function NodesPageContent() {
                           >
                             <div className="pointer-events-auto">
                               <AnimatePresence mode="wait">
-                                {selectedWord === word ? (
-                                  <motion.div
-                                    key="card"
-                                    initial={{ opacity: 0, scale: 0.85 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.85 }}
-                                    transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-                                    className="rounded-xl border border-black/10 dark:border-white/20 bg-white/95 dark:bg-black/90 backdrop-blur-lg shadow-lg p-4 min-w-[240px] max-w-[280px] text-left relative"
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <button
-                                      type="button"
-                                      onClick={(e) => { e.stopPropagation(); setSelectedWord(null) }}
-                                      className="absolute top-2 right-2 p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-700 dark:hover:text-white transition-colors"
-                                      aria-label="Close card"
-                                    >
-                                      <X className="w-4 h-4" />
-                                    </button>
-                                    {(() => {
-                                      const gw = glossaryWords.find(w => w.word === word)
-                                      return gw ? (
-                                        <>
-                                          <div className="flex justify-between items-start gap-2 mb-2 pr-6">
-                                            <div className="flex-1 min-w-0">
-                                              <h3 className="text-lg font-medium text-black dark:text-white truncate">{gw.word}</h3>
-                                              {gw.phonetic_spelling && (
-                                                <span className="text-sm text-gray-500 dark:text-gray-400 block">{gw.phonetic_spelling}</span>
-                                              )}
-                                            </div>
-                                            <div className="flex items-center gap-1.5 shrink-0">
-                                              <span className={cn(
-                                                'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
-                                                gw.rating === '+' ? 'bg-emerald-100 dark:bg-emerald-500/25 text-emerald-700 dark:text-emerald-300' :
-                                                gw.rating === '-' ? 'bg-rose-100 dark:bg-rose-500/25 text-rose-700 dark:text-rose-300' :
-                                                'bg-slate-100 dark:bg-slate-500/20 text-slate-700 dark:text-slate-300'
-                                              )}>{gw.grade}</span>
-                                              <span className={cn(
-                                                'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
-                                                gw.rating === '+' ? 'bg-emerald-100 dark:bg-emerald-500/25 text-emerald-700 dark:text-emerald-300' :
-                                                gw.rating === '-' ? 'bg-rose-100 dark:bg-rose-500/25 text-rose-700 dark:text-rose-300' :
-                                                'bg-slate-100 dark:bg-slate-500/20 text-slate-700 dark:text-slate-300'
-                                              )}>{gw.rating}</span>
-                                            </div>
-                                          </div>
-                                          <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{gw.definition}</p>
-                                        </>
-                                      ) : (
-                                        <>
-                                          <h3 className="text-lg font-medium text-black dark:text-white mb-1 pr-6">{word}</h3>
-                                          <p className="text-sm text-gray-500 dark:text-gray-400">No definition in glossary</p>
-                                        </>
-                                      )
-                                    })()}
-                                  </motion.div>
-                                ) : (
+                                {selectedWord === word ? null : (
                                   <motion.button
                                     key="pill"
                                     type="button"
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
-                                    className="whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm shadow-sm outline outline-1 outline-black/10 dark:outline-white/20 text-black/90 dark:text-white/90 hover:bg-white dark:hover:bg-black/80 transition-colors"
-                                    style={{ ...(wordPillHovered && { outline: `2px solid ${clockHex}`, outlineOffset: 4 }) }}
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      setSelectedWord(word)
-                                    }}
-                                    onMouseEnter={() => setWordPillHovered(true)}
-                                    onMouseLeave={() => setWordPillHovered(false)}
+                                    className={cn(
+                                      'whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-medium backdrop-blur-sm shadow-sm outline outline-1 outline-black/10 dark:outline-white/20 text-black/90 dark:text-white/90 transition-colors',
+                                      pillHoveredWord === word ? getSentimentStyles(glossaryWords.find(w => w.word === word)?.rating).pillFillClass : 'bg-white/90 dark:bg-black/90 hover:bg-white dark:hover:bg-black/80'
+                                    )}
+                                    onClick={(e) => { e.stopPropagation(); setSelectedWord(word) }}
+                                    onMouseEnter={() => setPillHoveredWord(word)}
+                                    onMouseLeave={() => setPillHoveredWord(null)}
                                   >
                                     {word}
                                   </motion.button>
@@ -888,6 +844,49 @@ function NodesPageContent() {
             </motion.div>
           </div>
         </div>
+
+        {/* Draggable word card (portal) */}
+        {mounted && selectedWord && cardPosition && typeof document !== 'undefined' && createPortal(
+          <motion.div
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+            className="rounded-xl border border-black/10 dark:border-white/20 bg-white/95 dark:bg-black/90 backdrop-blur-lg shadow-lg min-w-[240px] max-w-[280px] text-left overflow-hidden cursor-grab active:cursor-grabbing"
+            style={{ position: 'fixed', left: cardPosition.x, top: cardPosition.y, zIndex: 10000, boxShadow: getSentimentStyles(glossaryWords.find(w => w.word === selectedWord)?.rating).cardOutline }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {(() => {
+              const gw = glossaryWords.find(w => w.word === selectedWord)
+              return (
+                <>
+                  <div className="p-4 pb-2 pr-10 cursor-grab active:cursor-grabbing select-none" onMouseDown={handleCardDragStart}>
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-medium text-black dark:text-white truncate">{gw?.word ?? selectedWord}</h3>
+                        {gw?.phonetic_spelling && <span className="text-sm text-gray-500 dark:text-gray-400 block">{gw.phonetic_spelling}</span>}
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {gw && (
+                          <>
+                            <span className={cn('w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium', gw.rating === '+' ? 'bg-emerald-100 dark:bg-emerald-500/25 text-emerald-700 dark:text-emerald-300' : gw.rating === '-' ? 'bg-rose-100 dark:bg-rose-500/25 text-rose-700 dark:text-rose-300' : 'bg-slate-100 dark:bg-slate-500/20 text-slate-700 dark:text-slate-300')}>{gw.grade}</span>
+                            <span className={cn('w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium', gw.rating === '+' ? 'bg-emerald-100 dark:bg-emerald-500/25 text-emerald-700 dark:text-emerald-300' : gw.rating === '-' ? 'bg-rose-100 dark:bg-rose-500/25 text-rose-700 dark:text-rose-300' : 'bg-slate-100 dark:bg-slate-500/20 text-slate-700 dark:text-slate-300')}>{gw.rating}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <button type="button" onClick={(e) => { e.stopPropagation(); setSelectedWord(null) }} className="absolute top-2 right-2 p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-700 dark:hover:text-white transition-colors" aria-label="Close card">
+                    <X className="w-4 h-4" />
+                  </button>
+                  <div className="px-4 pb-4 pt-0 cursor-default">
+                    {gw ? <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{gw.definition}</p> : <p className="text-sm text-gray-500 dark:text-gray-400">No definition in glossary</p>}
+                  </div>
+                </>
+              )
+            })()}
+          </motion.div>,
+          document.body
+        )}
 
         {/* Dot Navigation */}
         <div className="fixed inset-0 pointer-events-none z-[999]">
