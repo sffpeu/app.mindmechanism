@@ -142,7 +142,7 @@ function NodesPageContent() {
   const [glossaryWords, setGlossaryWords] = useState<GlossaryWord[]>([])
   const [loadingGlossary, setLoadingGlossary] = useState(true)
   const [selectedWord, setSelectedWord] = useState<string | null>(null)
-  const [wordCardHovered, setWordCardHovered] = useState(false)
+  const [wordPillHovered, setWordPillHovered] = useState(false)
   const [customWords, setCustomWords] = useState<string[]>([])
   const [duration, setDuration] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -358,19 +358,16 @@ function NodesPageContent() {
   }
 
   const getWordContainerStyle = (angle: number, isSelected: boolean) => {
-    const isLeftSide = angle > 90 && angle < 270
-    // Calculate the total rotation needed to counter both the clock rotation and image orientation
+    const a = ((angle % 360) + 360) % 360
+    const placement = a > 315 || a < 45 ? 'top' : a <= 135 ? 'right' : a < 225 ? 'bottom' : 'left'
     const counterRotation = -rotation - clock1.imageOrientation
-    return {
-      position: 'absolute' as const,
-      left: isLeftSide ? 'auto' : '100%',
-      right: isLeftSide ? '100%' : 'auto',
-      top: '50%',
-      marginLeft: isLeftSide ? '-1.5rem' : '1.5rem',
-      marginRight: isLeftSide ? '1.5rem' : '-1.5rem',
-      transform: `translateY(-50%) scale(${isSelected ? 1.1 : 1}) rotate(${counterRotation}deg)`,
-      transformOrigin: isLeftSide ? 'right' : 'left',
-    }
+    const offsetPx = 28
+    const base = { position: 'absolute' as const, left: '50%', top: '50%', transformOrigin: 'center center' as const }
+    const scale = isSelected ? 1.1 : 1
+    if (placement === 'top') return { ...base, transform: `translate(-50%, -50%) translateY(-${offsetPx}px) scale(${scale}) rotate(${counterRotation}deg)` }
+    if (placement === 'bottom') return { ...base, transform: `translate(-50%, -50%) translateY(${offsetPx}px) scale(${scale}) rotate(${counterRotation}deg)` }
+    if (placement === 'left') return { ...base, transform: `translate(-100%, -50%) translateX(-${offsetPx}px) scale(${scale}) rotate(${counterRotation}deg)` }
+    return { ...base, transform: `translate(0, -50%) translateX(${offsetPx}px) scale(${scale}) rotate(${counterRotation}deg)` }
   }
 
   const getFocusNodeStyle = (index: number, isSelected: boolean, isSessionActive?: boolean) => {
@@ -789,6 +786,9 @@ function NodesPageContent() {
                           left: `${x}%`,
                           top: `${y}%`,
                           ...getFocusNodeStyle(index, isSelected, duration != null),
+                          ...(duration != null && hoveredNodeIndex === index && {
+                            boxShadow: `0 0 0 2px rgba(255,255,255,0.95), 0 0 0 4px ${clockHex}`,
+                          }),
                         }}
                         onClick={() => handleNodeClick(index)}
                         onMouseEnter={() => setHoveredNodeIndex(index)}
@@ -812,10 +812,7 @@ function NodesPageContent() {
                                     exit={{ opacity: 0, scale: 0.85 }}
                                     transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
                                     className="rounded-xl border border-black/10 dark:border-white/20 bg-white/95 dark:bg-black/90 backdrop-blur-lg shadow-lg p-4 min-w-[240px] max-w-[280px] text-left relative"
-                                    style={{ outline: wordCardHovered ? `2px solid ${clockHex}` : 'none', outlineOffset: 4 }}
                                     onClick={(e) => e.stopPropagation()}
-                                    onMouseEnter={() => setWordCardHovered(true)}
-                                    onMouseLeave={() => setWordCardHovered(false)}
                                   >
                                     <button
                                       type="button"
@@ -869,10 +866,13 @@ function NodesPageContent() {
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
                                     className="whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm shadow-sm outline outline-1 outline-black/10 dark:outline-white/20 text-black/90 dark:text-white/90 hover:bg-white dark:hover:bg-black/80 transition-colors"
+                                    style={{ ...(wordPillHovered && { outline: `2px solid ${clockHex}`, outlineOffset: 4 }) }}
                                     onClick={(e) => {
                                       e.stopPropagation()
                                       setSelectedWord(word)
                                     }}
+                                    onMouseEnter={() => setWordPillHovered(true)}
+                                    onMouseLeave={() => setWordPillHovered(false)}
                                   >
                                     {word}
                                   </motion.button>
