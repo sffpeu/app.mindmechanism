@@ -653,7 +653,7 @@ export function SessionDurationDialog({
                                   onClick={() => canAssign && handleWordClick(word)}
                                   disabled={!canAssign && !isAssigned}
                                   className={cn(
-                                    'rounded-lg text-left transition-all border p-6 backdrop-blur-lg',
+                                    'rounded-lg text-left transition-all border p-4 backdrop-blur-lg',
                                     !isAssigned && 'bg-white dark:bg-black/40 border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20',
                                     !canAssign && !isAssigned && 'opacity-60 cursor-not-allowed'
                                   )}
@@ -664,7 +664,7 @@ export function SessionDurationDialog({
                                 >
                                   <div className="flex justify-between items-start">
                                     <div className="flex-1 min-w-0">
-                                      <h3 className="text-2xl font-medium text-black dark:text-white mb-0.5 truncate">{word.word}</h3>
+                                      <h3 className="text-lg font-medium text-black dark:text-white mb-0.5 truncate">{word.word}</h3>
                                       {word.phonetic_spelling && (
                                         <span className="text-sm text-gray-500 dark:text-gray-400 block">{word.phonetic_spelling}</span>
                                       )}
@@ -698,7 +698,7 @@ export function SessionDurationDialog({
                                       ) : null}
                                     </div>
                                   </div>
-                                  <p className="text-gray-600 dark:text-gray-400 text-base mt-2 line-clamp-2">{word.definition}</p>
+                                  <p className="text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-2">{word.definition}</p>
                                 </button>
                               )
                             })}

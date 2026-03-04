@@ -7,7 +7,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { motion, AnimatePresence } from 'framer-motion'
 import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
-import { Settings, List, Info, Satellite, Clock as ClockIcon, Calendar, RotateCw, Timer as TimerIcon, Compass, HelpCircle, Book, User, Edit, LogOut, Play, BookOpen, Library, Sun, Moon, MapPin, Cloud, Droplets, Wind, Minus, Plus } from 'lucide-react'
+import { Settings, List, Info, Satellite, Clock as ClockIcon, Calendar, RotateCw, Timer as TimerIcon, Compass, HelpCircle, Book, User, Edit, LogOut, Play, BookOpen, Library, Sun, Moon, MapPin, Cloud, Droplets, Wind, Minus, Plus, X } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Timer from '@/components/Timer'
@@ -83,6 +83,10 @@ interface MoonData {
   next_new_moon: string
 }
 
+// Clock color for this page (clock 1)
+const CLOCK_HEX = ['#fd290a', '#fba63b', '#f7da5f', '#6dc037', '#156fde', '#941952', '#541b96', '#ee5fa7', '#56c1ff']
+const clockHex = CLOCK_HEX[1]
+
 // Satellite configurations for clock 1
 const satelliteConfigs = [
   { rotationTime: 450 * 1000, rotationDirection: 'clockwise' },
@@ -138,6 +142,7 @@ function NodesPageContent() {
   const [glossaryWords, setGlossaryWords] = useState<GlossaryWord[]>([])
   const [loadingGlossary, setLoadingGlossary] = useState(true)
   const [selectedWord, setSelectedWord] = useState<string | null>(null)
+  const [wordCardHovered, setWordCardHovered] = useState(false)
   const [customWords, setCustomWords] = useState<string[]>([])
   const [duration, setDuration] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -806,14 +811,25 @@ function NodesPageContent() {
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.85 }}
                                     transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-                                    className="rounded-xl border border-black/10 dark:border-white/20 bg-white/95 dark:bg-black/90 backdrop-blur-lg shadow-lg p-4 min-w-[240px] max-w-[280px] text-left hover:outline hover:outline-2 hover:outline-red-500 hover:outline-offset-1"
+                                    className="rounded-xl border border-black/10 dark:border-white/20 bg-white/95 dark:bg-black/90 backdrop-blur-lg shadow-lg p-4 min-w-[240px] max-w-[280px] text-left relative"
+                                    style={{ outline: wordCardHovered ? `2px solid ${clockHex}` : 'none', outlineOffset: 4 }}
                                     onClick={(e) => e.stopPropagation()}
+                                    onMouseEnter={() => setWordCardHovered(true)}
+                                    onMouseLeave={() => setWordCardHovered(false)}
                                   >
+                                    <button
+                                      type="button"
+                                      onClick={(e) => { e.stopPropagation(); setSelectedWord(null) }}
+                                      className="absolute top-2 right-2 p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-700 dark:hover:text-white transition-colors"
+                                      aria-label="Close card"
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </button>
                                     {(() => {
                                       const gw = glossaryWords.find(w => w.word === word)
                                       return gw ? (
                                         <>
-                                          <div className="flex justify-between items-start gap-2 mb-2">
+                                          <div className="flex justify-between items-start gap-2 mb-2 pr-6">
                                             <div className="flex-1 min-w-0">
                                               <h3 className="text-lg font-medium text-black dark:text-white truncate">{gw.word}</h3>
                                               {gw.phonetic_spelling && (
@@ -839,18 +855,11 @@ function NodesPageContent() {
                                         </>
                                       ) : (
                                         <>
-                                          <h3 className="text-lg font-medium text-black dark:text-white mb-1">{word}</h3>
+                                          <h3 className="text-lg font-medium text-black dark:text-white mb-1 pr-6">{word}</h3>
                                           <p className="text-sm text-gray-500 dark:text-gray-400">No definition in glossary</p>
                                         </>
                                       )
                                     })()}
-                                    <button
-                                      type="button"
-                                      onClick={(e) => { e.stopPropagation(); setSelectedWord(null) }}
-                                      className="mt-2 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                                    >
-                                      Close
-                                    </button>
                                   </motion.div>
                                 ) : (
                                   <motion.button
