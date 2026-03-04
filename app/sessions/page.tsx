@@ -256,16 +256,16 @@ export default function SessionsPage() {
                 </div>
                 <div className={isCreateListView ? "space-y-4" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-1"}>
                   {clockData.map((clock, i) => (
-                    <div key={i} className={`p-6 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border transition-all group relative ${clock.color.includes('red') ? 'border-black/5 dark:border-white/10 hover:border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.3)]' :
-                        clock.color.includes('orange') ? 'border-black/5 dark:border-white/10 hover:border-orange-500/50 hover:shadow-[0_0_15px_rgba(249,115,22,0.3)]' :
-                          clock.color.includes('yellow') ? 'border-black/5 dark:border-white/10 hover:border-yellow-500/50 hover:shadow-[0_0_15px_rgba(234,179,8,0.3)]' :
-                            clock.color.includes('green') ? 'border-black/5 dark:border-white/10 hover:border-green-500/50 hover:shadow-[0_0_15px_rgba(34,197,94,0.3)]' :
-                              clock.color.includes('blue') ? 'border-black/5 dark:border-white/10 hover:border-blue-500/50 hover:shadow-[0_0_15px_rgba(59,130,246,0.3)]' :
-                                clock.color.includes('pink') ? 'border-black/5 dark:border-white/10 hover:border-pink-500/50 hover:shadow-[0_0_15px_rgba(236,72,153,0.3)]' :
-                                  clock.color.includes('purple') ? 'border-black/5 dark:border-white/10 hover:border-purple-500/50 hover:shadow-[0_0_15px_rgba(147,51,234,0.3)]' :
-                                    clock.color.includes('indigo') ? 'border-black/5 dark:border-white/10 hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.3)]' :
-                                      'border-black/5 dark:border-white/10 hover:border-cyan-500/50 hover:shadow-[0_0_15px_rgba(6,182,212,0.3)]'
-                      } ${isCreateListView ? 'flex gap-8 items-start' : 'flex flex-col'}`}>
+<div key={i} className={`p-6 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border-0 transition-all group relative ${clock.color.includes('red') ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.3)]' :
+                        clock.color.includes('orange') ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.3)]' :
+                          clock.color.includes('yellow') ? 'hover:shadow-[0_0_15px_rgba(234,179,8,0.3)]' :
+                            clock.color.includes('green') ? 'hover:shadow-[0_0_15px_rgba(34,197,94,0.3)]' :
+                              clock.color.includes('blue') ? 'hover:shadow-[0_0_15px_rgba(59,130,246,0.3)]' :
+                                clock.color.includes('pink') ? 'hover:shadow-[0_0_15px_rgba(236,72,153,0.3)]' :
+                                  clock.color.includes('purple') ? 'hover:shadow-[0_0_15px_rgba(147,51,234,0.3)]' :
+                                    clock.color.includes('indigo') ? 'hover:shadow-[0_0_15px_rgba(99,102,241,0.3)]' :
+                                      'hover:shadow-[0_0_15px_rgba(6,182,212,0.3)]'
+                    } ${isCreateListView ? 'flex gap-8 items-start' : 'flex flex-col'}`}>
                       <div className={`aspect-square relative flex items-center justify-center ${isCreateListView ? 'w-28 shrink-0' : ''}`}>
                         <div className="w-[75%] h-[75%] relative rounded-full overflow-hidden">
                           <div
