@@ -653,7 +653,7 @@ export function SessionDurationDialog({
                                   onClick={() => canAssign && handleWordClick(word)}
                                   disabled={!canAssign && !isAssigned}
                                   className={cn(
-                                    'rounded-lg text-left transition-all border p-4 backdrop-blur-lg',
+                                    'rounded-lg text-left transition-all border p-5 backdrop-blur-lg',
                                     !isAssigned && 'bg-white dark:bg-black/40 border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20',
                                     !canAssign && !isAssigned && 'opacity-60 cursor-not-allowed'
                                   )}
@@ -664,7 +664,7 @@ export function SessionDurationDialog({
                                 >
                                   <div className="flex justify-between items-start">
                                     <div className="flex-1 min-w-0">
-                                      <h3 className="text-lg font-medium text-black dark:text-white mb-0.5 truncate">{word.word}</h3>
+                                      <h3 className="text-xl font-medium text-black dark:text-white mb-0.5 truncate">{word.word}</h3>
                                       {word.phonetic_spelling && (
                                         <span className="text-sm text-gray-500 dark:text-gray-400 block">{word.phonetic_spelling}</span>
                                       )}
@@ -791,12 +791,12 @@ export function SessionDurationDialog({
                       </div>
                       {wordLabel && (
                           <div
-                            className="absolute pointer-events-none px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap outline outline-1 outline-black/10 dark:outline-white/20 bg-white/90 dark:bg-black/90 text-gray-800 dark:text-gray-200 shadow-sm"
+                            className="absolute pointer-events-none px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap outline outline-1 outline-black/10 dark:outline-white/20 bg-white/90 dark:bg-black/90 text-gray-800 dark:text-gray-200 shadow-sm"
                             style={{
                               left: `${x}%`,
                               top: `${y}%`,
                               transform: (() => {
-                                const offsetPx = 36
+                                const offsetPx = 44
                                 if (pillPlacement === 'top') return `translate(-50%, -50%) translateY(-${offsetPx}px)`
                                 if (pillPlacement === 'bottom') return `translate(-50%, -50%) translateY(${offsetPx}px)`
                                 if (pillPlacement === 'left') return `translate(-100%, -50%) translateX(-${offsetPx}px)`
