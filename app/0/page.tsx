@@ -889,7 +889,7 @@ function NodesPageContent() {
                                     exit={{ opacity: 0 }}
                                     className={cn(
                                       'whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-medium backdrop-blur-sm shadow-sm outline outline-1 outline-black/10 dark:outline-white/20 text-black/90 dark:text-white/90 transition-colors',
-                                      (pillHoveredWord === word || selectedWord === word) ? getSentimentStyles(glossaryWords.find(w => w.word === word)?.rating).pillFillClass : 'bg-white/90 dark:bg-black/90 hover:bg-white dark:hover:bg-black/80'
+                                      pillHoveredWord === word ? 'bg-gray-100/90 dark:bg-gray-500/20' : 'bg-white/90 dark:bg-black/90 hover:bg-white dark:hover:bg-black/80'
                                     )}
                                     onClick={(e) => {
                                       e.stopPropagation()
@@ -926,7 +926,7 @@ function NodesPageContent() {
               left: cardPosition.x,
               top: cardPosition.y,
               zIndex: 10000,
-              boxShadow: getSentimentStyles(glossaryWords.find(w => w.word === selectedWord)?.rating).cardOutline,
+              boxShadow: `0 0 0 2px ${clockHex}`,
             }}
             onClick={(e) => e.stopPropagation()}
           >
