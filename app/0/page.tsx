@@ -827,7 +827,7 @@ function NodesPageContent() {
                         <span className="absolute inset-0 flex items-center justify-center text-white text-[10px] font-medium pointer-events-none select-none">
                           {index + 1}
                         </span>
-                        {showWords && (hoveredNodeIndex === index || isSelected) && word && (
+                        {showWords && isSelected && word && (
                           <div 
                             className="absolute pointer-events-none min-w-0"
                             style={getWordContainerStyle(angle, isSelected)}
@@ -841,7 +841,7 @@ function NodesPageContent() {
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.85 }}
                                     transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-                                    className="rounded-xl border border-black/10 dark:border-white/20 bg-white/95 dark:bg-black/90 backdrop-blur-lg shadow-lg p-4 min-w-[240px] max-w-[280px] text-left"
+                                    className="rounded-xl border border-black/10 dark:border-white/20 bg-white/95 dark:bg-black/90 backdrop-blur-lg shadow-lg p-4 min-w-[240px] max-w-[280px] text-left hover:outline hover:outline-2 hover:outline-red-500 hover:outline-offset-1"
                                     onClick={(e) => e.stopPropagation()}
                                   >
                                     {(() => {
