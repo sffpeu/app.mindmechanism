@@ -35,6 +35,7 @@ import { useSessionTimer } from '@/lib/useSessionTimer'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useLocation } from '@/lib/hooks/useLocation'
 import { useClockEntrance } from '@/lib/hooks/useClockEntrance'
+import { useMenu } from '@/app/MenuContext'
 import DotNavigation from '@/components/DotNavigation'
 import { clockTitles } from '@/lib/clockTitles'
 import { cn } from '@/lib/utils'
@@ -154,6 +155,9 @@ function NodesPageContent() {
   const [pillHoveredWord, setPillHoveredWord] = useState<string | null>(null)
   const [cardPosition, setCardPosition] = useState<{ x: number; y: number } | null>(null)
   const dragRef = useRef<{ startX: number; startY: number; startLeft: number; startTop: number } | null>(null)
+  const isMountedRef = useRef(true)
+  const dragListenersRef = useRef<{ onMove: ((e: MouseEvent) => void) | null; onUp: (() => void) | null }>({ onMove: null, onUp: null })
+  const { isMenuOpen } = useMenu()
   const [customWords, setCustomWords] = useState<string[]>([])
   const [duration, setDuration] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -393,12 +397,29 @@ function NodesPageContent() {
     }
   }, [selectedWord])
 
+  // Close card when menu/side panel opens to avoid portal + menu interaction crashes
+  useEffect(() => {
+    if (isMenuOpen) setSelectedWord(null)
+  }, [isMenuOpen])
+
+  // Clean up drag listeners and mark unmounted
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+      const { onMove, onUp } = dragListenersRef.current
+      if (onMove) window.removeEventListener('mousemove', onMove)
+      if (onUp) window.removeEventListener('mouseup', onUp)
+      dragListenersRef.current = { onMove: null, onUp: null }
+    }
+  }, [])
+
   const handleCardDragStart = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
     if (!cardPosition) return
     dragRef.current = { startX: e.clientX, startY: e.clientY, startLeft: cardPosition.x, startTop: cardPosition.y }
     const onMove = (e: MouseEvent) => {
-      if (!dragRef.current) return
+      if (!dragRef.current || !isMountedRef.current) return
       setCardPosition({
         x: dragRef.current.startLeft + e.clientX - dragRef.current.startX,
         y: dragRef.current.startTop + e.clientY - dragRef.current.startY,
@@ -408,7 +429,9 @@ function NodesPageContent() {
       dragRef.current = null
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mouseup', onUp)
+      dragListenersRef.current = { onMove: null, onUp: null }
     }
+    dragListenersRef.current = { onMove, onUp }
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseup', onUp)
   }, [cardPosition])
@@ -926,7 +949,7 @@ function NodesPageContent() {
               left: cardPosition.x,
               top: cardPosition.y,
               zIndex: 10000,
-              boxShadow: `0 0 0 2px ${clockHex}`,
+              boxShadow: `0 0 0 2px rgba(255,255,255,0.95), 0 0 0 6px ${clockHex}`,
             }}
             onClick={(e) => e.stopPropagation()}
           >

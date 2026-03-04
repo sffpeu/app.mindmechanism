@@ -34,6 +34,7 @@ import { useSessionTimer } from '@/lib/useSessionTimer'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useLocation } from '@/lib/hooks/useLocation'
 import { useClockEntrance } from '@/lib/hooks/useClockEntrance'
+import { useMenu } from '@/app/MenuContext'
 import DotNavigation from '@/components/DotNavigation'
 import { clockTitles } from '@/lib/clockTitles'
 import { cn } from '@/lib/utils'
@@ -146,6 +147,9 @@ function NodesPageContent() {
   const [pillHoveredWord, setPillHoveredWord] = useState<string | null>(null)
   const [cardPosition, setCardPosition] = useState<{ x: number; y: number } | null>(null)
   const dragRef = useRef<{ startX: number; startY: number; startLeft: number; startTop: number } | null>(null)
+  const isMountedRef = useRef(true)
+  const dragListenersRef = useRef<{ onMove: ((e: MouseEvent) => void) | null; onUp: (() => void) | null }>({ onMove: null, onUp: null })
+  const { isMenuOpen } = useMenu()
   const [customWords, setCustomWords] = useState<string[]>([])
   const [duration, setDuration] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -380,7 +384,9 @@ function NodesPageContent() {
     return { pillFillClass: 'bg-slate-100/90 dark:bg-slate-500/20', cardOutline: '0 0 0 2px #64748b' }
   }
   useEffect(() => { if (selectedWord) { if (typeof window !== 'undefined') setCardPosition({ x: Math.max(0, window.innerWidth / 2 - 140), y: Math.max(0, window.innerHeight / 2 - 120) }) } else setCardPosition(null) }, [selectedWord])
-  const handleCardDragStart = useCallback((e: React.MouseEvent) => { e.preventDefault(); if (!cardPosition) return; dragRef.current = { startX: e.clientX, startY: e.clientY, startLeft: cardPosition.x, startTop: cardPosition.y }; const onMove = (e: MouseEvent) => { if (!dragRef.current) return; setCardPosition({ x: dragRef.current.startLeft + e.clientX - dragRef.current.startX, y: dragRef.current.startTop + e.clientY - dragRef.current.startY }) }; const onUp = () => { dragRef.current = null; window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp) }; window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp) }, [cardPosition])
+  useEffect(() => { if (isMenuOpen) setSelectedWord(null) }, [isMenuOpen])
+  useEffect(() => { isMountedRef.current = true; return () => { isMountedRef.current = false; const { onMove, onUp } = dragListenersRef.current; if (onMove) window.removeEventListener('mousemove', onMove); if (onUp) window.removeEventListener('mouseup', onUp); dragListenersRef.current = { onMove: null, onUp: null } } }, [])
+  const handleCardDragStart = useCallback((e: React.MouseEvent) => { e.preventDefault(); if (!cardPosition) return; dragRef.current = { startX: e.clientX, startY: e.clientY, startLeft: cardPosition.x, startTop: cardPosition.y }; const onMove = (e: MouseEvent) => { if (!dragRef.current || !isMountedRef.current) return; setCardPosition({ x: dragRef.current.startLeft + e.clientX - dragRef.current.startX, y: dragRef.current.startTop + e.clientY - dragRef.current.startY }) }; const onUp = () => { dragRef.current = null; window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); dragListenersRef.current = { onMove: null, onUp: null } }; dragListenersRef.current = { onMove, onUp }; window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp) }, [cardPosition])
   const getFocusNodeStyle = (index: number, isSelected: boolean, isSessionActive?: boolean) => {
     const color = '#56c1ff' // Dot menu hover color for clock 8 (light blue)
     if (isSessionActive) {
@@ -853,7 +859,7 @@ function NodesPageContent() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
             className="rounded-xl border border-black/10 dark:border-white/20 bg-white/95 dark:bg-black/90 backdrop-blur-lg shadow-lg min-w-[240px] max-w-[280px] text-left overflow-hidden cursor-grab active:cursor-grabbing"
-            style={{ position: 'fixed', left: cardPosition.x, top: cardPosition.y, zIndex: 10000, boxShadow: `0 0 0 2px ${clockHex}` }}
+            style={{ position: 'fixed', left: cardPosition.x, top: cardPosition.y, zIndex: 10000, boxShadow: `0 0 0 2px rgba(255,255,255,0.95), 0 0 0 6px ${clockHex}` }}
             onClick={(e) => e.stopPropagation()}
           >
             {(() => {
