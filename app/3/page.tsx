@@ -37,16 +37,8 @@ import { useClockEntrance } from '@/lib/hooks/useClockEntrance'
 import { useMenu } from '@/app/MenuContext'
 import DotNavigation from '@/components/DotNavigation'
 import { clockTitles } from '@/lib/clockTitles'
+import { DEFAULT_WORDS_BY_CLOCK } from '@/lib/defaultWordsByClock'
 import { cn } from '@/lib/utils'
-// Test words for each node
-const testWords = [
-  'Relativity',
-  'Spacetime',
-  'Gravity',
-  'Energy',
-  'Matter',
-  'Momentum'
-]
 
 // Weather and Moon data interfaces
 interface WeatherResponse {
@@ -388,31 +380,19 @@ function NodesPageContent() {
   useEffect(() => { if (isMenuOpen) setSelectedWord(null) }, [isMenuOpen])
   useEffect(() => { isMountedRef.current = true; return () => { isMountedRef.current = false; const { onMove, onUp } = dragListenersRef.current; if (onMove) window.removeEventListener('mousemove', onMove); if (onUp) window.removeEventListener('mouseup', onUp); dragListenersRef.current = { onMove: null, onUp: null } } }, [])
   const handleCardDragStart = useCallback((e: React.MouseEvent) => { e.preventDefault(); if (!cardPosition) return; dragRef.current = { startX: e.clientX, startY: e.clientY, startLeft: cardPosition.x, startTop: cardPosition.y }; const onMove = (e: MouseEvent) => { if (!dragRef.current || !isMountedRef.current) return; setCardPosition({ x: dragRef.current.startLeft + e.clientX - dragRef.current.startX, y: dragRef.current.startTop + e.clientY - dragRef.current.startY }) }; const onUp = () => { dragRef.current = null; window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); dragListenersRef.current = { onMove: null, onUp: null } }; dragListenersRef.current = { onMove, onUp }; window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp) }, [cardPosition])
-  const getFocusNodeStyle = (index: number, isSelected: boolean, isSessionActive?: boolean) => {
+  const defaultWords = DEFAULT_WORDS_BY_CLOCK[3] ?? []
+  const getFocusNodeStyle = (index: number, isSelected: boolean) => {
     const color = '#6dc037' // Dot menu hover color for clock 3 (green)
-    if (isSessionActive) {
-      return {
-        backgroundColor: color,
-        border: `2px solid ${color}`,
-        width: '18px',
-        height: '18px',
-        opacity: 1,
-        transform: 'translate(-50%, -50%)',
-        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-        zIndex: isSelected ? 400 : 200,
-        boxShadow: isSelected ? '0 0 0 2px rgba(255,255,255,0.9), 0 0 12px rgba(0,0,0,0.2)' : '0 0 8px rgba(0, 0, 0, 0.2)',
-      }
-    }
     return {
-      backgroundColor: isSelected ? color : 'transparent',
+      backgroundColor: color,
       border: `2px solid ${color}`,
       width: '18px',
       height: '18px',
-      opacity: isSelected ? 1 : 0.9,
+      opacity: 1,
       transform: 'translate(-50%, -50%)',
       transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
       zIndex: isSelected ? 400 : 200,
-      boxShadow: isSelected ? `0 0 16px ${color}60` : '0 0 8px rgba(0, 0, 0, 0.2)',
+      boxShadow: isSelected ? '0 0 0 2px rgba(255,255,255,0.9), 0 0 12px rgba(0,0,0,0.2)' : '0 0 8px rgba(0, 0, 0, 0.2)',
     }
   }
 
@@ -872,7 +852,7 @@ function NodesPageContent() {
                     const x = 50 + nodeRadius * Math.cos(radians)
                     const y = 50 + nodeRadius * Math.sin(radians)
                     const isSelected = selectedNodeIndex === index
-                    const word = (duration != null && customWords[index]) ? customWords[index] : testWords[index]
+                    const word = customWords[index] || defaultWords[index]
 
                     return (
                       <motion.div
@@ -881,7 +861,7 @@ function NodesPageContent() {
                         style={{
                           left: `${x}%`,
                           top: `${y}%`,
-                          ...getFocusNodeStyle(index, isSelected, duration != null),
+                          ...getFocusNodeStyle(index, isSelected),
                           ...(duration != null && hoveredNodeIndex === index && {
                             boxShadow: `0 0 0 2px rgba(255,255,255,0.95), 0 0 0 4px ${clockHex}`,
                           }),
@@ -908,7 +888,7 @@ function NodesPageContent() {
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
                                     className={cn(
-                                      'whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-medium backdrop-blur-sm shadow-sm outline outline-1 outline-black/10 dark:outline-white/20 text-black/90 dark:text-white/90 transition-colors',
+                                      'whitespace-nowrap px-5 py-2.5 rounded-full text-base font-medium shadow-sm outline outline-1 outline-black/10 dark:outline-white/20 text-gray-800 dark:text-gray-200 transition-colors',
                                       pillHoveredWord === word ? 'bg-gray-100/90 dark:bg-gray-500/20' : 'bg-white/90 dark:bg-black/90 hover:bg-white dark:hover:bg-black/80'
                                     )}
                                     onClick={(e) => { e.stopPropagation(); setSelectedWord(word) }}
