@@ -782,13 +782,13 @@ function NodesPageContent() {
               />
             )}
 
-            {/* Satellites layer (above clock face so trail + satellites visible) */}
+            {/* Satellites layer (top layer, overflow visible so trail not clipped by square) */}
             {showSatellites && (
               <motion.div 
-                className="absolute inset-0"
+                className="absolute inset-0 overflow-visible"
                 style={{ 
                   willChange: 'transform',
-                  zIndex: 150,
+                  zIndex: 300,
                 }}
               >
                 {renderSatellites()}
@@ -803,7 +803,7 @@ function NodesPageContent() {
                   const x = 50 + userSatRadius * Math.cos(radians)
                   const y = 50 + userSatRadius * Math.sin(radians)
                   const circumference = 2 * Math.PI * userSatRadius
-                  const trailStrokeWidth = 2.5
+                  const trailStrokeWidth = 1.5
                   const trailRadiusInViewBox = 91
                   const formatRemaining = (ms: number) => {
                     const totalSec = Math.max(0, Math.floor(ms / 1000))
@@ -813,12 +813,12 @@ function NodesPageContent() {
                   }
                   return (
                     <>
-                      {/* Trail behind user satellite: same orbit (65% radius), viewBox includes full arc so not clipped */}
+                      {/* Trail on top layer, overflow visible so no square clip */}
                       <svg
                         className="absolute inset-0 w-full h-full pointer-events-none"
                         viewBox="-20 -20 140 140"
                         preserveAspectRatio="xMidYMid meet"
-                        style={{ zIndex: 102 }}
+                        style={{ zIndex: 302, overflow: 'visible' }}
                       >
                         <circle
                           cx={50}
@@ -843,7 +843,7 @@ function NodesPageContent() {
                           left: `${x}%`,
                           top: `${y}%`,
                           transform: 'translate(-50%, -50%)',
-                          zIndex: 105,
+                          zIndex: 305,
                         }}
                         onClick={() => setShowUserSatelliteTime((s) => !s)}
                       >
@@ -857,16 +857,14 @@ function NodesPageContent() {
                       </motion.div>
                       {showUserSatelliteTime && (
                         <div
-                          className="absolute py-2 px-3 rounded-lg text-sm font-medium whitespace-nowrap shadow-lg backdrop-blur-sm z-[110] bg-white/95 dark:bg-black/90 text-black dark:text-white border border-black/10 dark:border-white/20"
+                          className="absolute text-sm font-medium whitespace-nowrap z-[310] text-black dark:text-white"
                           style={{
                             left: `${x}%`,
                             top: `${y}%`,
                             transform: 'translate(-50%, -120%)',
-                            borderColor: `${clockHex}80`,
                           }}
                         >
                           {formatRemaining(remaining)}
-                          <span className="block text-xs text-gray-500 dark:text-gray-400 mt-0.5">click to close</span>
                         </div>
                       )}
                     </>
