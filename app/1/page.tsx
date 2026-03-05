@@ -734,13 +734,13 @@ function NodesPageContent() {
               />
             )}
 
-            {/* Satellites layer */}
+            {/* Satellites layer (above clock face so trail + satellites visible) */}
             {showSatellites && (
               <motion.div 
                 className="absolute inset-0"
                 style={{ 
                   willChange: 'transform',
-                  zIndex: 100,
+                  zIndex: 150,
                 }}
               >
                 {renderSatellites()}
@@ -755,7 +755,8 @@ function NodesPageContent() {
                   const x = 50 + userSatRadius * Math.cos(radians)
                   const y = 50 + userSatRadius * Math.sin(radians)
                   const circumference = 2 * Math.PI * userSatRadius
-                  const trailStrokeWidth = 2
+                  const trailStrokeWidth = 2.5
+                  const trailRadiusInViewBox = 91
                   const formatRemaining = (ms: number) => {
                     const totalSec = Math.max(0, Math.floor(ms / 1000))
                     const min = Math.floor(totalSec / 60)
@@ -766,21 +767,21 @@ function NodesPageContent() {
                     <>
                       <svg
                         className="absolute inset-0 w-full h-full pointer-events-none"
-                        viewBox="0 0 100 100"
+                        viewBox="-20 -20 140 140"
                         preserveAspectRatio="xMidYMid meet"
                         style={{ zIndex: 102 }}
                       >
                         <circle
                           cx={50}
                           cy={50}
-                          r={userSatRadius}
+                          r={trailRadiusInViewBox}
                           fill="none"
                           stroke={clockHex}
                           strokeWidth={trailStrokeWidth}
                           strokeLinecap="round"
-                          strokeDasharray={`${progress * circumference} ${circumference}`}
+                          strokeDasharray={`${progress * 2 * Math.PI * trailRadiusInViewBox} ${2 * Math.PI * trailRadiusInViewBox}`}
                           transform="rotate(-90 50 50)"
-                          opacity={0.7}
+                          opacity={0.85}
                         />
                       </svg>
                       <motion.div
