@@ -151,14 +151,49 @@ export default function DashboardPage() {
 
           {/* Profile card */}
           <Card className="overflow-hidden rounded-2xl bg-white/90 dark:bg-white/5 border-0 shadow-xl shadow-gray-200/50 dark:shadow-none backdrop-blur-sm">
-            {/* Banner */}
+            {/* Banner — layered gradient with subtle radial orbs and soft pattern */}
             <div
-              className="h-28 sm:h-32 bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700 dark:from-indigo-800 dark:via-violet-800 dark:to-purple-900"
+              className="relative h-28 sm:h-36 overflow-hidden"
               aria-hidden
-            />
+            >
+              {/* Base gradient */}
+              <div
+                className="absolute inset-0 bg-gradient-to-br from-slate-800 via-indigo-900/95 to-violet-900 dark:from-slate-900 dark:via-indigo-950 dark:to-violet-950"
+                aria-hidden
+              />
+              {/* Soft radial orbs for depth */}
+              <div
+                className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-violet-500/30 dark:bg-violet-400/20 blur-3xl"
+                aria-hidden
+              />
+              <div
+                className="absolute top-1/2 -left-8 h-32 w-32 rounded-full bg-indigo-500/25 dark:bg-indigo-400/15 blur-2xl"
+                aria-hidden
+              />
+              {/* Subtle concentric arcs (clock / focus motif) */}
+              <svg
+                className="absolute inset-0 h-full w-full opacity-[0.07] dark:opacity-[0.12]"
+                aria-hidden
+              >
+                <defs>
+                  <linearGradient id="banner-arc" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="white" stopOpacity="0" />
+                    <stop offset="100%" stopColor="white" stopOpacity="1" />
+                  </linearGradient>
+                </defs>
+                <ellipse cx="50%" cy="60%" rx="55%" ry="45%" fill="none" stroke="url(#banner-arc)" strokeWidth="1.5" />
+                <ellipse cx="50%" cy="60%" rx="40%" ry="32%" fill="none" stroke="url(#banner-arc)" strokeWidth="1" />
+                <ellipse cx="50%" cy="60%" rx="25%" ry="20%" fill="none" stroke="url(#banner-arc)" strokeWidth="0.75" />
+              </svg>
+              {/* Top edge highlight */}
+              <div
+                className="absolute inset-x-0 top-0 h-px bg-white/20"
+                aria-hidden
+              />
+            </div>
 
             <div className="px-4 sm:px-6 pb-6">
-              <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-14 sm:-mt-16">
+              <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-14 sm:-mt-20">
                 <Avatar className="h-24 w-24 sm:h-28 sm:w-28 rounded-2xl border-4 border-white dark:border-gray-900 shadow-xl flex-shrink-0 ring-2 ring-black/5 dark:ring-white/10">
                   <AvatarImage src={user.photoURL || undefined} className="object-cover" />
                   <AvatarFallback className="rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-2xl font-semibold">
