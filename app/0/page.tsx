@@ -1080,8 +1080,8 @@ function NodesPageContent() {
           </div>
         </div>
 
-        {/* Position the timer in the bottom left corner */}
-        <div className="absolute bottom-4 left-4 z-50">
+        {/* Position the timer at the bottom center */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
           <SessionTimer
             duration={duration ?? undefined}
             sessionId={sessionId ?? undefined}
