@@ -358,6 +358,32 @@ const Satellite = ({ satellite, index, clockId, x, y, isMultiView }: {
   );
 };
 
+// User session satellite: one full rotation per session duration, starts at focus node 1, clock color, slightly outside
+const UserSatellite = ({ x, y, clockColorHex }: { x: number; y: number; clockColorHex: string }) => {
+  return (
+    <motion.div
+      className="absolute pointer-events-none"
+      initial={{ opacity: 0, scale: 0 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      style={{
+        left: `${x}%`,
+        top: `${y}%`,
+        transform: 'translate(-50%, -50%)',
+        zIndex: 55,
+      }}
+    >
+      <div
+        className="w-4 h-4 rounded-full"
+        style={{
+          backgroundColor: clockColorHex,
+          boxShadow: `0 0 12px ${clockColorHex}99, 0 0 4px ${clockColorHex}`,
+        }}
+      />
+    </motion.div>
+  );
+};
+
 const FocusNode = ({ 
   index, 
   angle, 
@@ -483,6 +509,7 @@ export default function Clock({
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const [pausedTimeRemaining, setPausedTimeRemaining] = useState<number | null>(null);
   const [initialDuration, setInitialDuration] = useState<number | null>(null);
+  const [sessionElapsedForSatellite, setSessionElapsedForSatellite] = useState<number>(0);
   const { user } = useAuth() as { user: { uid: string } | null }
   const { location } = useLocation();
 
@@ -950,6 +977,35 @@ export default function Clock({
     );
   };
 
+  // User satellite: one full rotation in initialDuration, starts at focus node 1 (270°), radius a bit outside
+  const USER_SATELLITE_RADIUS = 48; // slightly outside normal satellites (43)
+  const FOCUS_NODE_1_ANGLE = 270;   // session layout: focus node 1 at 12 o'clock
+
+  // Smooth position updates for user satellite (every 100ms when session active)
+  useEffect(() => {
+    if (duration == null || initialDuration == null || sessionStartTime == null) return;
+    setSessionElapsedForSatellite(0);
+    const interval = setInterval(() => {
+      if (isPaused && remainingTime != null) {
+        setSessionElapsedForSatellite(Math.max(0, initialDuration - remainingTime));
+      } else {
+        const elapsed = Math.min(Date.now() - sessionStartTime, initialDuration);
+        setSessionElapsedForSatellite(elapsed);
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, [duration, initialDuration, sessionStartTime, isPaused, remainingTime]);
+
+  const getUserSatellitePosition = (): { x: number; y: number } | null => {
+    if (duration == null || initialDuration == null || initialDuration <= 0) return null;
+    const elapsed = sessionElapsedForSatellite;
+    const angleDeg = (FOCUS_NODE_1_ANGLE + (elapsed / initialDuration) * 360) % 360;
+    const radians = (angleDeg * Math.PI) / 180;
+    const x = 50 + USER_SATELLITE_RADIUS * Math.cos(radians);
+    const y = 50 + USER_SATELLITE_RADIUS * Math.sin(radians);
+    return { x, y };
+  };
+
   // Update renderSatellites function
   const renderSatellites = (clockRotation: number, clockId: number) => {
     const clockSatelliteSettings = allClocks?.find(c => c.id === clockId)?.satellites || 
@@ -1033,6 +1089,13 @@ export default function Clock({
         {showSatellites && (
           <div className="absolute inset-[-20%]" style={{ pointerEvents: 'auto', zIndex: 50 }}>
             {renderSatellites(rotation, id)}
+            {/* User session satellite: rotates once per session duration, starts at focus node 1, clock color */}
+            {duration != null && (() => {
+              const pos = getUserSatellitePosition();
+              if (!pos) return null;
+              const clockColorHex = dotColors[id % dotColors.length].replace('bg-[', '').replace(']', '');
+              return <UserSatellite key="user-satellite" x={pos.x} y={pos.y} clockColorHex={clockColorHex} />;
+            })()}
           </div>
         )}
 

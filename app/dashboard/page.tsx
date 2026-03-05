@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Menu } from '@/components/Menu'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { User, Mail, Calendar, LogIn, Pencil, LogOut, LayoutDashboard } from 'lucide-react'
+import { User, Mail, Calendar, LogIn, Pencil, LogOut } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import Link from 'next/link'
@@ -134,19 +134,12 @@ export default function DashboardPage() {
         <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           {/* Dashboard title */}
           <header className="mb-8">
-            <div className="flex items-center gap-3 mb-1">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 dark:bg-indigo-400/10 text-indigo-600 dark:text-indigo-400">
-                <LayoutDashboard className="h-5 w-5" />
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-                  Dashboard
-                </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                  Your account and recent sessions at a glance.
-                </p>
-              </div>
-            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+              Dashboard
+            </h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+              Your account and recent sessions at a glance.
+            </p>
           </header>
 
           {/* Profile card */}
