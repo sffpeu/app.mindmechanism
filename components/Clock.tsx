@@ -309,7 +309,7 @@ const WordNode = ({ word, angle, nodeAngle, nodeRadius, isSelected, clockId, isM
       }}
     >
       <div 
-        className={`whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
+        className={`whitespace-nowrap pointer-events-none px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
         ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all`}
         style={{
           ...getWordContainerStyle(nodeAngle, isSelected, clockId, isMultiView),
@@ -430,7 +430,7 @@ const FocusNode = ({
     >
       {word && (isHovered || isSelected) && (
         <motion.div 
-          className="absolute whitespace-nowrap pointer-events-none px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
+          className="absolute whitespace-nowrap pointer-events-none px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
           shadow-sm transition-all"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}

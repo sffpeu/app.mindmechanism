@@ -755,7 +755,7 @@ function NodesPageContent() {
                   const x = 50 + userSatRadius * Math.cos(radians)
                   const y = 50 + userSatRadius * Math.sin(radians)
                   const circumference = 2 * Math.PI * userSatRadius
-                  const trailStrokeWidth = 5
+                  const trailStrokeWidth = 2
                   const formatRemaining = (ms: number) => {
                     const totalSec = Math.max(0, Math.floor(ms / 1000))
                     const min = Math.floor(totalSec / 60)
@@ -766,7 +766,7 @@ function NodesPageContent() {
                     <>
                       <svg
                         className="absolute inset-0 w-full h-full pointer-events-none"
-                        viewBox="-20 -20 140 140"
+                        viewBox="0 0 100 100"
                         preserveAspectRatio="xMidYMid meet"
                         style={{ zIndex: 102 }}
                       >
@@ -780,7 +780,7 @@ function NodesPageContent() {
                           strokeLinecap="round"
                           strokeDasharray={`${progress * circumference} ${circumference}`}
                           transform="rotate(-90 50 50)"
-                          opacity={0.6}
+                          opacity={0.7}
                         />
                       </svg>
                       <motion.div
@@ -878,7 +878,7 @@ function NodesPageContent() {
               <div className="absolute inset-0" style={{ transform: `rotate(${clock1.imageOrientation}deg)`, pointerEvents: 'auto' }}>
                 <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
                   {Array.from({ length: focusNodes }).map((_, index) => {
-                    const angle = (duration != null ? ((360 / focusNodes) * index + 270) % 360 : ((360 / focusNodes) * index + startingDegree + 45 + focusNodesOffset) % 360)
+                    const angle = ((360 / focusNodes) * index + 270 + focusNodesOffset) % 360
                     const radians = angle * (Math.PI / 180)
                     const nodeRadius = 55 // Increased from 48 to move nodes further out
                     const x = 50 + nodeRadius * Math.cos(radians)
@@ -920,7 +920,7 @@ function NodesPageContent() {
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
                                     className={cn(
-                                      'whitespace-nowrap px-5 py-2.5 rounded-full text-base font-medium shadow-sm outline outline-1 outline-black/10 dark:outline-white/20 text-gray-800 dark:text-gray-200 transition-colors',
+                                      'whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-medium shadow-sm outline outline-1 outline-black/10 dark:outline-white/20 text-gray-800 dark:text-gray-200 transition-colors',
                                       pillHoveredWord === word ? 'bg-gray-100/90 dark:bg-gray-500/20' : 'bg-white/90 dark:bg-black/90 hover:bg-white dark:hover:bg-black/80'
                                     )}
                                     onClick={(e) => { e.stopPropagation(); setSelectedWord(word) }}

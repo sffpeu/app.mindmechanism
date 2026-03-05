@@ -779,7 +779,7 @@ export function SessionDurationDialog({
                       </div>
                       {wordLabel && (
                           <div
-                            className="absolute pointer-events-none px-5 py-2.5 rounded-full text-base font-medium whitespace-nowrap outline outline-1 outline-black/10 dark:outline-white/20 bg-white/90 dark:bg-black/90 text-gray-800 dark:text-gray-200 shadow-sm"
+                            className="absolute pointer-events-none px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap outline outline-1 outline-black/10 dark:outline-white/20 bg-white/90 dark:bg-black/90 text-gray-800 dark:text-gray-200 shadow-sm"
                             style={{
                               left: `${x}%`,
                               top: `${y}%`,
