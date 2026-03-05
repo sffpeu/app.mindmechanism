@@ -813,6 +813,39 @@ function NodesPageContent() {
                 }}
               >
                 {renderSatellites()}
+                {/* User session satellite: one full rotation per session duration, starts at focus node 1, clock color */}
+                {duration != null && duration > 0 && (() => {
+                  const remaining = sessionState.remainingTime ?? duration
+                  const elapsed = duration - remaining
+                  const angleDeg = (270 + (elapsed / duration) * 360) % 360
+                  const radians = (angleDeg * Math.PI) / 180
+                  const userSatRadius = 65
+                  const x = 50 + userSatRadius * Math.cos(radians)
+                  const y = 50 + userSatRadius * Math.sin(radians)
+                  return (
+                    <motion.div
+                      key="user-satellite"
+                      className="absolute pointer-events-none"
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.4, ease: 'easeOut' }}
+                      style={{
+                        left: `${x}%`,
+                        top: `${y}%`,
+                        transform: 'translate(-50%, -50%)',
+                        zIndex: 105,
+                      }}
+                    >
+                      <div
+                        className="w-4 h-4 rounded-full"
+                        style={{
+                          backgroundColor: clockHex,
+                          boxShadow: `0 0 12px ${clockHex}99, 0 0 4px ${clockHex}`,
+                        }}
+                      />
+                    </motion.div>
+                  )
+                })()}
               </motion.div>
             )}
 
