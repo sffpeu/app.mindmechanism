@@ -429,7 +429,7 @@ function NodesPageContent() {
       return (
         <motion.div
           key={`satellite-${index}`}
-          className="absolute cursor-pointer"
+          className="absolute cursor-pointer pointer-events-auto"
           initial={{ opacity: 0, scale: 0 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{
@@ -701,11 +701,11 @@ function NodesPageContent() {
               />
             )}
 
-            {/* Satellites layer (top layer, overflow visible so trail not clipped by square) */}
+            {/* Satellites layer (top layer, overflow visible so trail not clipped by square; pointer-events none so focus nodes receive clicks) */}
             {showSatellites && (
-              <motion.div 
-                className="absolute inset-0 overflow-visible"
-                style={{ 
+              <motion.div
+                className="absolute inset-0 overflow-visible pointer-events-none"
+                style={{
                   willChange: 'transform',
                   zIndex: 300,
                 }}
@@ -753,7 +753,7 @@ function NodesPageContent() {
                       </svg>
                       <motion.div
                         key="user-satellite"
-                        className="absolute cursor-pointer"
+                        className="absolute cursor-pointer pointer-events-auto"
                         initial={{ opacity: 0, scale: 0 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.4, ease: 'easeOut' }}
