@@ -67,7 +67,6 @@ export function SessionDurationDialog({
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false)
   const [selectedWordIndex, setSelectedWordIndex] = useState<number | null>(null)
   const [selectedFocusNodeIndex, setSelectedFocusNodeIndex] = useState<number | null>(null)
-  const [scrollLetter, setScrollLetter] = useState<string | null>(null)
   const sectionRefsMap = useRef<Record<string, HTMLDivElement | null>>({})
   const { playClick } = useSoundEffects()
   const [hasInteracted, setHasInteracted] = useState(false)
@@ -117,8 +116,6 @@ export function SessionDurationDialog({
       setSelectedClockId(null)
       setSelectedLetter(null)
       setSearchQuery('')
-    } else {
-      setScrollLetter(null)
     }
   }, [step, clockId])
 
@@ -127,30 +124,6 @@ export function SessionDurationDialog({
       playClick()
     }
   }, [open, playClick])
-
-  // Scroll-linked A–Z: highlight letter whose section is in view
-  useEffect(() => {
-    if (step !== 'words' || !wordsScrollRef.current) return
-    const container = wordsScrollRef.current
-    const sections = container.querySelectorAll('[id^="letter-"]')
-    if (sections.length === 0) return
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries.filter((e) => e.isIntersecting && e.intersectionRatio >= 0.05)
-        if (visible.length === 0) return
-        const byTop = [...visible].sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
-        const letter = byTop[0].target.id.replace('letter-', '')
-        setScrollLetter(letter)
-      },
-      { root: container, rootMargin: '-10% 0px -70% 0px', threshold: [0, 0.05, 0.2, 0.5, 1] }
-    )
-    sections.forEach((el) => observer.observe(el))
-    return () => {
-      sections.forEach((el) => observer.unobserve(el))
-      observer.disconnect()
-    }
-  }, [step, glossaryWords.length, searchQuery, scopeFilter, selectedSentiment, selectedLetter])
-
 
   const loadGlossaryWords = async () => {
     try {
@@ -415,7 +388,6 @@ export function SessionDurationDialog({
           if (word.clock_id !== clockId) return false
         }
         if (selectedSentiment !== null && word.rating !== selectedSentiment) return false
-        if (selectedLetter && !word.word.toUpperCase().startsWith(selectedLetter)) return false
         return true
       })
       .sort((a, b) => a.word.localeCompare(b.word))
@@ -461,6 +433,7 @@ export function SessionDurationDialog({
           next[idx] = ''
           setWords(next)
           setSelectedFocusNodeIndex(idx)
+          setSelectedLetter(null)
         }
       } else {
         const targetIndex = selectedFocusNodeIndex ?? words.findIndex(w => !w)
@@ -471,11 +444,6 @@ export function SessionDurationDialog({
           const nextEmpty = next.findIndex((w, i) => i > targetIndex && !w)
           const nextEmptyFromStart = next.findIndex(w => !w)
           setSelectedFocusNodeIndex(nextEmpty >= 0 ? nextEmpty : (nextEmptyFromStart >= 0 ? nextEmptyFromStart : null))
-          // Update A–Z filter to match the selected word's first letter (no scroll — keep list position)
-          const letter = word.word.trim()[0]?.toUpperCase()
-          if (letter && alphabet.includes(letter)) {
-            setSelectedLetter(letter)
-          }
         }
       }
     }
@@ -573,11 +541,11 @@ export function SessionDurationDialog({
                   </button>
                 ))}
               </div>
-              {/* Letter filter — round buttons, scroll-linked highlight in clock color; click letter again to clear */}
+              {/* Letter buttons: jump to segment only (no filtering); no preselected letter */}
               <div className="flex flex-wrap items-center gap-2">
-                <div id="az-filter-words" className="flex flex-wrap gap-1.5" role="region" aria-label="Filter by letter">
+                <div id="az-filter-words" className="flex flex-wrap gap-1.5" role="region" aria-label="Jump to letter">
                   {alphabet.map(letter => {
-                    const isActive = selectedLetter === letter || (!selectedLetter && scrollLetter === letter)
+                    const isActive = selectedLetter === letter
                     return (
                       <button
                         key={letter}
@@ -761,6 +729,8 @@ export function SessionDurationDialog({
                         onClick={() => {
                           playClick()
                           setSelectedFocusNodeIndex(index)
+                          // Clear letter (and keep scope) so user always sees all words when picking for another node
+                          setSelectedLetter(null)
                         }}
                         role="button"
                         tabIndex={0}
@@ -770,6 +740,7 @@ export function SessionDurationDialog({
                             e.preventDefault()
                             playClick()
                             setSelectedFocusNodeIndex(index)
+                            setSelectedLetter(null)
                           }
                         }}
                       >
@@ -823,7 +794,7 @@ export function SessionDurationDialog({
                 <span className="text-gray-600 dark:text-gray-400 text-sm">Negative</span>
               </div>
             </div>
-            {/* Random, Default, Delete — round buttons; Random/Default overwrite all words */}
+            {/* Random, Delete — round buttons */}
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -833,14 +804,6 @@ export function SessionDurationDialog({
               >
                 <Shuffle className="w-4 h-4" />
                 Random
-              </button>
-              <button
-                type="button"
-                onClick={() => { playClick(); handleFillAllDefaultWords(); }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-white dark:bg-black/40 border border-black/10 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
-                title="Overwrite all slots with default words for this clock"
-              >
-                Default
               </button>
               <button
                 type="button"
