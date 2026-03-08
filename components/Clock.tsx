@@ -414,20 +414,34 @@ const FocusNode = ({
   const x = 50 + nodeRadius * Math.cos(radians);
   const y = 50 + nodeRadius * Math.sin(radians);
 
+  const nodeStyle = getFocusNodeStyle(index, isMultiView, selectedNodeIndex, clockId, isSessionActive);
   return (
     <motion.div
       key={`${clockId}-${index}`}
-      className="absolute rounded-full cursor-pointer"
+      className="absolute rounded-full cursor-pointer flex items-center justify-center"
       style={{
         left: `${x}%`,
         top: `${y}%`,
-        ...getFocusNodeStyle(index, isMultiView, selectedNodeIndex, clockId, isSessionActive),
+        minWidth: 44,
+        minHeight: 44,
+        transform: 'translate(-50%, -50%)',
+        zIndex: nodeStyle.zIndex,
       }}
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      whileHover={{ scale: 1.5 }}
+      whileHover={{ scale: 1.1 }}
     >
+      <span
+        className="rounded-full flex-shrink-0"
+        style={{
+          ...nodeStyle,
+          width: nodeStyle.width,
+          height: nodeStyle.height,
+          transform: 'none',
+        }}
+        aria-hidden
+      />
       {word && (isHovered || isSelected) && (
         <motion.div 
           className="absolute whitespace-nowrap pointer-events-none px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 

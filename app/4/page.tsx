@@ -854,6 +854,12 @@ function NodesPageContent() {
                     const isSelected = selectedNodeIndex === index
                     const word = customWords[index] || defaultWords[index]
 
+                    const nodeStyle = {
+                      ...getFocusNodeStyle(index, isSelected),
+                      ...(duration != null && hoveredNodeIndex === index && {
+                        boxShadow: `0 0 0 2px rgba(255,255,255,0.95), 0 0 0 4px ${clockHex}`,
+                      }),
+                    }
                     return (
                       <motion.div
                         key={index}
@@ -861,16 +867,24 @@ function NodesPageContent() {
                         style={{
                           left: `${x}%`,
                           top: `${y}%`,
-                          ...getFocusNodeStyle(index, isSelected),
-                          ...(duration != null && hoveredNodeIndex === index && {
-                            boxShadow: `0 0 0 2px rgba(255,255,255,0.95), 0 0 0 4px ${clockHex}`,
-                          }),
+                          minWidth: 44,
+                          minHeight: 44,
+                          transform: 'translate(-50%, -50%)',
+                          zIndex: nodeStyle.zIndex,
                         }}
                         onClick={() => handleNodeClick(index)}
                         onMouseEnter={() => setHoveredNodeIndex(index)}
                         onMouseLeave={() => setHoveredNodeIndex(null)}
                       >
-                        <span className="absolute inset-0 flex items-center justify-center text-white text-[10px] font-medium pointer-events-none select-none">
+                        <span
+                          className="flex-shrink-0 flex items-center justify-center text-white text-[10px] font-medium pointer-events-none select-none rounded-full"
+                          style={{
+                            ...getFocusNodeStyle(index, isSelected),
+                            width: 18,
+                            height: 18,
+                            transform: 'none',
+                          }}
+                        >
                           {index + 1}
                         </span>
                         {showWords && isSelected && word && (
@@ -878,28 +892,26 @@ function NodesPageContent() {
                             className="absolute pointer-events-none min-w-0"
                             style={getWordContainerStyle(angle, isSelected)}
                           >
-                            <div className="pointer-events-auto">
-                              <AnimatePresence mode="wait">
-                                {selectedWord === word ? null : (
-                                  <motion.button
-                                    key="pill"
-                                    type="button"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    className={cn(
-                                      'whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-medium shadow-sm outline outline-1 outline-black/10 dark:outline-white/20 text-gray-800 dark:text-gray-200 transition-colors',
-                                      pillHoveredWord === word ? 'bg-gray-100/90 dark:bg-gray-500/20' : 'bg-white/90 dark:bg-black/90 hover:bg-white dark:hover:bg-black/80'
-                                    )}
-                                    onClick={(e) => { e.stopPropagation(); setSelectedWord(word) }}
-                                    onMouseEnter={() => setPillHoveredWord(word)}
-                                    onMouseLeave={() => setPillHoveredWord(null)}
-                                  >
-                                    {word}
-                                  </motion.button>
-                                )}
-                              </AnimatePresence>
-                            </div>
+                            <AnimatePresence mode="wait">
+                              {selectedWord === word ? null : (
+                                <motion.button
+                                  key="pill"
+                                  type="button"
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                  exit={{ opacity: 0 }}
+                                  className={cn(
+                                    'whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-medium shadow-sm outline outline-1 outline-black/10 dark:outline-white/20 text-gray-800 dark:text-gray-200 transition-colors pointer-events-auto',
+                                    pillHoveredWord === word ? 'bg-gray-100/90 dark:bg-gray-500/20' : 'bg-white/90 dark:bg-black/90 hover:bg-white dark:hover:bg-black/80'
+                                  )}
+                                  onClick={(e) => { e.stopPropagation(); setSelectedWord(word) }}
+                                  onMouseEnter={() => setPillHoveredWord(word)}
+                                  onMouseLeave={() => setPillHoveredWord(null)}
+                                >
+                                  {word}
+                                </motion.button>
+                              )}
+                            </AnimatePresence>
                           </div>
                         )}
                       </motion.div>
