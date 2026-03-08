@@ -8,6 +8,7 @@ import { TimeTrackingProvider } from '@/lib/TimeTrackingContext';
 import { ToastProvider } from '@/components/ToastProvider';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { MenuProvider } from '@/app/MenuContext';
+import { BottomCircleMenu } from '@/components/BottomCircleMenu';
 
 function LayoutContentInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -20,6 +21,7 @@ function LayoutContentInner({ children }: { children: React.ReactNode }) {
       ) : (
         children
       )}
+      <BottomCircleMenu />
     </>
   );
 }

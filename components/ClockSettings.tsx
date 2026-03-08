@@ -14,15 +14,15 @@ import { Switch } from "./ui/switch"
 
 // Add dotColors constant at the top of the file
 const dotColors = [
-  'bg-[#fd290a]', // 1. Red
-  'bg-[#fba63b]', // 2. Orange
-  'bg-[#f7da5f]', // 3. Yellow
-  'bg-[#6dc037]', // 4. Green
-  'bg-[#156fde]', // 5. Blue
-  'bg-[#941952]', // 6. Dark Pink
-  'bg-[#541b96]', // 7. Purple
-  'bg-[#ee5fa7]', // 8. Pink
-  'bg-[#56c1ff]', // 9. Light Blue
+  'bg-[#fd290a]', // 1
+  'bg-[#fba63b]', // 2
+  'bg-[#f7da5f]', // 3
+  'bg-[#6dc037]', // 4
+  'bg-[#156fde]', // 5
+  'bg-[#941952]', // 6
+  'bg-[#541b96]', // 7
+  'bg-[#ee5fa7]', // 8
+  'bg-[#56c1ff]', // 9
 ];
 
 // Default emotional states

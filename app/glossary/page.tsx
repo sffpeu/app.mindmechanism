@@ -30,7 +30,7 @@ export default function GlossaryPage() {
 
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
 
-  // Clock 1–9 colors from Clock.tsx (ROOT → ETHERAL HEART)
+  // Clock 1–9 colors (hex palette)
   const CLOCK_HEX = ['#fd290a', '#fba63b', '#f7da5f', '#6dc037', '#156fde', '#941952', '#541b96', '#ee5fa7', '#56c1ff']
 
   const getDefaultIconStyle = (clockId: number | undefined) => {

@@ -28,7 +28,7 @@ interface SessionDurationDialogProps {
 
 const timePresets = [15, 30, 45, 60, 120]
 
-// Clock 1–9 colors (match /glossary)
+// Clock 1–9 colors (hex palette)
 const CLOCK_HEX = ['#fd290a', '#fba63b', '#f7da5f', '#6dc037', '#156fde', '#941952', '#541b96', '#ee5fa7', '#56c1ff']
 
 const getDefaultIconStyle = (clockId: number | undefined) => {

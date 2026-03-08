@@ -11,15 +11,15 @@ interface DotNavigationProps {
 }
 
 const dotColors = [
-  'bg-transparent border-[#fd290a] dark:border-[#fd290a]', // 1. Red
-  'bg-transparent border-[#fba63b] dark:border-[#fba63b]', // 2. Orange
-  'bg-transparent border-[#f7da5f] dark:border-[#f7da5f]', // 3. Yellow
-  'bg-transparent border-[#6dc037] dark:border-[#6dc037]', // 4. Green
-  'bg-transparent border-[#156fde] dark:border-[#156fde]', // 5. Blue
-  'bg-transparent border-[#941952] dark:border-[#941952]', // 6. Dark Pink
-  'bg-transparent border-[#541b96] dark:border-[#541b96]', // 7. Purple
-  'bg-transparent border-[#ee5fa7] dark:border-[#ee5fa7]', // 8. Pink
-  'bg-transparent border-[#56c1ff] dark:border-[#56c1ff]', // 9. Light Blue
+  'bg-transparent border-[#fd290a] dark:border-[#fd290a]', // 1
+  'bg-transparent border-[#fba63b] dark:border-[#fba63b]', // 2
+  'bg-transparent border-[#f7da5f] dark:border-[#f7da5f]', // 3
+  'bg-transparent border-[#6dc037] dark:border-[#6dc037]', // 4
+  'bg-transparent border-[#156fde] dark:border-[#156fde]', // 5
+  'bg-transparent border-[#941952] dark:border-[#941952]', // 6
+  'bg-transparent border-[#541b96] dark:border-[#541b96]', // 7
+  'bg-transparent border-[#ee5fa7] dark:border-[#ee5fa7]', // 8
+  'bg-transparent border-[#56c1ff] dark:border-[#56c1ff]', // 9
 ];
 
 const DotNavigation: React.FC<DotNavigationProps> = ({
