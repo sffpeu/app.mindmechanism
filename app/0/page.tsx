@@ -78,7 +78,7 @@ interface MoonData {
   next_new_moon: string
 }
 
-// Clock color for this page (clock 0)
+// Clock 1–9 hex palette; this page uses index 0 (clock 1)
 const CLOCK_HEX = ['#fd290a', '#fba63b', '#f7da5f', '#6dc037', '#156fde', '#941952', '#541b96', '#ee5fa7', '#56c1ff']
 const clockHex = CLOCK_HEX[0]
 
@@ -429,7 +429,7 @@ function NodesPageContent() {
 
   const defaultWords = DEFAULT_WORDS_BY_CLOCK[0] ?? []
   const getFocusNodeStyle = (index: number, isSelected: boolean) => {
-    const color = '#fd290a' // Color from clock 0
+    const color = clockHex
     return {
       backgroundColor: color,
       border: `2px solid ${color}`,
@@ -504,8 +504,8 @@ function NodesPageContent() {
     })
   }
 
-  // Get the RGB values for the glow effect
-  const clockColor = hexToRgb('#fd290a') // Red color from clock 0
+  // Get the RGB values for the glow effect (clock 1)
+  const clockColor = hexToRgb(clockHex)
 
   // Add getElapsedTime helper function
   const getElapsedTime = (startDateTime: Date): string => {
@@ -1070,14 +1070,12 @@ function NodesPageContent() {
 
         {/* Dot Navigation */}
         <div className="fixed inset-0 pointer-events-none z-[999]">
-          <div className="pointer-events-auto">
-            {showElements && (
-              <DotNavigation
-                activeDot={0}
-                isSmallMultiView={false}
-              />
-            )}
-          </div>
+          {showElements && (
+            <DotNavigation
+              activeDot={0}
+              isSmallMultiView={false}
+            />
+          )}
         </div>
 
         {/* Position the timer at the bottom center */}

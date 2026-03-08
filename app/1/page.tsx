@@ -77,7 +77,7 @@ interface MoonData {
   next_new_moon: string
 }
 
-// Clock color for this page (clock 1)
+// Clock 1–9 hex palette; this page uses index 1 (clock 2)
 const CLOCK_HEX = ['#fd290a', '#fba63b', '#f7da5f', '#6dc037', '#156fde', '#941952', '#541b96', '#ee5fa7', '#56c1ff']
 const clockHex = CLOCK_HEX[1]
 
@@ -489,8 +489,8 @@ function NodesPageContent() {
     })
   }
 
-  // Get the RGB values for the glow effect
-  const clockColor = hexToRgb('#fba63b') // Orange color for clock 1
+  // Get the RGB values for the glow effect (clock 2)
+  const clockColor = hexToRgb(clockHex)
 
   // Add getElapsedTime helper function
   const getElapsedTime = (startDateTime: Date): string => {
@@ -987,14 +987,12 @@ function NodesPageContent() {
 
         {/* Dot Navigation */}
         <div className="fixed inset-0 pointer-events-none z-[999]">
-          <div className="pointer-events-auto">
-            {showElements && (
-              <DotNavigation
-                activeDot={1}
-                isSmallMultiView={false}
-              />
-            )}
-          </div>
+          {showElements && (
+            <DotNavigation
+              activeDot={1}
+              isSmallMultiView={false}
+            />
+          )}
         </div>
 
         {/* Position the timer at the bottom center */}

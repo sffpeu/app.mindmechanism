@@ -65,6 +65,20 @@ const clockDescriptions = [
   "Medieval astronomical observations that bridged ancient and modern understanding of the cosmos."
 ]
 
+// Clock 1–9 hex palette (match Clock.tsx, glossary, SessionDurationDialog)
+const CLOCK_HEX = ['#fd290a', '#fba63b', '#f7da5f', '#6dc037', '#156fde', '#941952', '#541b96', '#ee5fa7', '#56c1ff']
+
+function hexToRgba(hex: string, alpha: number): string {
+  const n = parseInt(hex.slice(1), 16)
+  const r = (n >> 16) & 0xff
+  const g = (n >> 8) & 0xff
+  const b = n & 0xff
+  return `rgba(${r},${g},${b},${alpha})`
+}
+
+// Tailwind arbitrary classes from hex for text/bg (SessionDurationDialog compatible)
+const clockColors = CLOCK_HEX.map((hex) => `text-[${hex}] bg-[${hex}]`)
+
 export default function SessionsPage() {
   const { isDarkMode } = useTheme()
   const [showElements, setShowElements] = useState(true)
@@ -74,6 +88,7 @@ export default function SessionsPage() {
   const [selectedClockId, setSelectedClockId] = useState<number | null>(null)
   const [selectedClockColor, setSelectedClockColor] = useState<string>('')
   const [isDurationDialogOpen, setIsDurationDialogOpen] = useState(false)
+  const [hoveredCardIndex, setHoveredCardIndex] = useState<number | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
   const mode = searchParams.get('mode')
@@ -100,19 +115,6 @@ export default function SessionsPage() {
     const y = date.getFullYear()
     return `${d}.${m}.${y}`
   }
-
-  // Clock colors mapping
-  const clockColors = [
-    'text-red-500 bg-red-500',
-    'text-orange-500 bg-orange-500',
-    'text-yellow-500 bg-yellow-500',
-    'text-green-500 bg-green-500',
-    'text-blue-500 bg-blue-500',
-    'text-pink-500 bg-pink-500',
-    'text-purple-500 bg-purple-500',
-    'text-indigo-500 bg-indigo-500',
-    'text-cyan-500 bg-cyan-500'
-  ]
 
   // Map clockSettings to clockData
   const clockData: ClockData[] = clockSettings.map((clock, index) => {
@@ -256,16 +258,15 @@ export default function SessionsPage() {
                 </div>
                 <div className={isCreateListView ? "space-y-4" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-1"}>
                   {clockData.map((clock, i) => (
-<div key={i} className={`p-6 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border-0 transition-all group relative ${clock.color.includes('red') ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.3)]' :
-                        clock.color.includes('orange') ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.3)]' :
-                          clock.color.includes('yellow') ? 'hover:shadow-[0_0_15px_rgba(234,179,8,0.3)]' :
-                            clock.color.includes('green') ? 'hover:shadow-[0_0_15px_rgba(34,197,94,0.3)]' :
-                              clock.color.includes('blue') ? 'hover:shadow-[0_0_15px_rgba(59,130,246,0.3)]' :
-                                clock.color.includes('pink') ? 'hover:shadow-[0_0_15px_rgba(236,72,153,0.3)]' :
-                                  clock.color.includes('purple') ? 'hover:shadow-[0_0_15px_rgba(147,51,234,0.3)]' :
-                                    clock.color.includes('indigo') ? 'hover:shadow-[0_0_15px_rgba(99,102,241,0.3)]' :
-                                      'hover:shadow-[0_0_15px_rgba(6,182,212,0.3)]'
-                    } ${isCreateListView ? 'flex gap-8 items-start' : 'flex flex-col'}`}>
+                    <div
+                      key={i}
+                      className={`p-6 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border-0 transition-all group relative ${isCreateListView ? 'flex gap-8 items-start' : 'flex flex-col'}`}
+                      style={{
+                        boxShadow: hoveredCardIndex === i ? `0 0 15px ${hexToRgba(CLOCK_HEX[i], 0.3)}` : undefined,
+                      }}
+                      onMouseEnter={() => setHoveredCardIndex(i)}
+                      onMouseLeave={() => setHoveredCardIndex(null)}
+                    >
                       <div className={`aspect-square relative flex items-center justify-center ${isCreateListView ? 'w-28 shrink-0' : ''}`}>
                         <div className="w-[75%] h-[75%] relative rounded-full overflow-hidden">
                           <div
@@ -390,16 +391,10 @@ export default function SessionsPage() {
                         <div className={`flex gap-3 mt-auto items-center`}>
                           <Button
                             onClick={() => handleStartSession(clock.id, clock.color)}
-                            className={`flex-1 flex items-center justify-center px-6 py-4 rounded-lg text-center transition-all bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:bg-white dark:hover:bg-white/10 ${clock.color.includes('red') ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]' :
-                                clock.color.includes('orange') ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]' :
-                                  clock.color.includes('yellow') ? 'hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]' :
-                                    clock.color.includes('green') ? 'hover:shadow-[0_0_15px_rgba(34,197,94,0.1)]' :
-                                      clock.color.includes('blue') ? 'hover:shadow-[0_0_15px_rgba(59,130,246,0.1)]' :
-                                        clock.color.includes('pink') ? 'hover:shadow-[0_0_15px_rgba(236,72,153,0.1)]' :
-                                          clock.color.includes('purple') ? 'hover:shadow-[0_0_15px_rgba(147,51,234,0.1)]' :
-                                            clock.color.includes('indigo') ? 'hover:shadow-[0_0_15px_rgba(99,102,241,0.1)]' :
-                                              'hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
-                              }`}
+                            className="flex-1 flex items-center justify-center px-6 py-4 rounded-lg text-center transition-all bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:bg-white dark:hover:bg-white/10"
+                            style={{
+                              boxShadow: hoveredCardIndex === i ? `0 0 15px ${hexToRgba(CLOCK_HEX[i], 0.1)}` : undefined,
+                            }}
                           >
                             <span className={`text-base font-medium ${clock.color.split(' ')[0]}`}>
                               Start Session
@@ -407,16 +402,10 @@ export default function SessionsPage() {
                           </Button>
                           <Link
                             href={`/${clock.id}`}
-                            className={`h-[45px] w-[45px] flex items-center justify-center rounded-full transition-all bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:bg-white dark:hover:bg-white/10 ${clock.color.includes('red') ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]' :
-                                clock.color.includes('orange') ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.1)]' :
-                                  clock.color.includes('yellow') ? 'hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]' :
-                                    clock.color.includes('green') ? 'hover:shadow-[0_0_15px_rgba(34,197,94,0.1)]' :
-                                      clock.color.includes('blue') ? 'hover:shadow-[0_0_15px_rgba(59,130,246,0.1)]' :
-                                        clock.color.includes('pink') ? 'hover:shadow-[0_0_15px_rgba(236,72,153,0.1)]' :
-                                          clock.color.includes('purple') ? 'hover:shadow-[0_0_15px_rgba(147,51,234,0.1)]' :
-                                            clock.color.includes('indigo') ? 'hover:shadow-[0_0_15px_rgba(99,102,241,0.1)]' :
-                                              'hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
-                              }`}
+                            className="h-[45px] w-[45px] flex items-center justify-center rounded-full transition-all bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:bg-white dark:hover:bg-white/10"
+                            style={{
+                              boxShadow: hoveredCardIndex === i ? `0 0 15px ${hexToRgba(CLOCK_HEX[i], 0.1)}` : undefined,
+                            }}
                           >
                             <Play className={`h-4 w-4 ${clock.color.split(' ')[0]}`} />
                           </Link>

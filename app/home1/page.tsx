@@ -382,20 +382,18 @@ export default function Home1Page() {
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-black/90">
       {/* Navigation Layer */}
       <div className="fixed inset-0 pointer-events-none z-[999]">
-        <div className="pointer-events-auto">
-          {showElements && (
-            <DotNavigation
-              activeDot={9}
-              isSmallMultiView={false}
-              onDotHover={setHoveredClockIndex}
-            />
-          )}
-          <Menu
-            showElements={showElements}
-            onToggleShow={() => setShowElements(!showElements)}
-            position="left"
+        {showElements && (
+          <DotNavigation
+            activeDot={9}
+            isSmallMultiView={false}
+            onDotHover={setHoveredClockIndex}
           />
-        </div>
+        )}
+        <Menu
+          showElements={showElements}
+          onToggleShow={() => setShowElements(!showElements)}
+          position="left"
+        />
       </div>
 
       {/* Content Layer - Multiview */}

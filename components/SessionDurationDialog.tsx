@@ -76,6 +76,9 @@ export function SessionDurationDialog({
 
   const textColorClass = clockColor?.split(' ')?.[0] || 'text-gray-500'
   const bgColorClass = clockColor?.split(' ')?.[1] || 'bg-gray-500'
+  // When sessions page passes hex-based classes (e.g. text-[#fd290a] bg-[#fd290a]), use hex for stroke
+  const clockHexFromProp = clockColor?.match(/#[\da-fA-F]{6}/)?.[0]
+  const strokeColor = clockHexFromProp ?? 'rgb(107, 114, 128)'
 
   const presets = [5, 10, 15, 20, 25, 30]
 
@@ -994,7 +997,7 @@ export function SessionDurationDialog({
                               cy="50"
                               r="48"
                               fill="none"
-                              stroke={bgColorClass.split('-')[1]}
+                              stroke={strokeColor}
                               strokeWidth={hoveredPreset !== null ? "2" : "1.5"}
                               strokeDasharray={`${(rotationDegrees / 360) * 302} 302`}
                               style={{ opacity: hoveredPreset !== null ? 0.9 : 0.8 }}
@@ -1009,7 +1012,7 @@ export function SessionDurationDialog({
                               cy="50"
                               r="48"
                               fill="none"
-                              stroke={bgColorClass.split('-')[1]}
+                              stroke={strokeColor}
                               strokeWidth={hoveredPreset !== null ? "2" : "1.5"}
                               strokeDasharray={`${(rotationDegrees / 360) * 302} 302`}
                               transform="rotate(180 50 50)"

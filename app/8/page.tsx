@@ -77,7 +77,7 @@ interface MoonData {
   next_new_moon: string
 }
 
-// Clock color for this page (clock 8)
+// Clock 1–9 hex palette; this page uses index 8 (clock 9)
 const CLOCK_HEX = ['#fd290a', '#fba63b', '#f7da5f', '#6dc037', '#156fde', '#941952', '#541b96', '#ee5fa7', '#56c1ff']
 const clockHex = CLOCK_HEX[8]
 
@@ -382,7 +382,7 @@ function NodesPageContent() {
   const handleCardDragStart = useCallback((e: React.MouseEvent) => { e.preventDefault(); if (!cardPosition) return; dragRef.current = { startX: e.clientX, startY: e.clientY, startLeft: cardPosition.x, startTop: cardPosition.y }; const onMove = (e: MouseEvent) => { if (!dragRef.current || !isMountedRef.current) return; setCardPosition({ x: dragRef.current.startLeft + e.clientX - dragRef.current.startX, y: dragRef.current.startTop + e.clientY - dragRef.current.startY }) }; const onUp = () => { dragRef.current = null; window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); dragListenersRef.current = { onMove: null, onUp: null } }; dragListenersRef.current = { onMove, onUp }; window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp) }, [cardPosition])
   const defaultWords = DEFAULT_WORDS_BY_CLOCK[8] ?? []
   const getFocusNodeStyle = (index: number, isSelected: boolean) => {
-    const color = '#56c1ff' // Dot menu hover color for clock 8 (light blue)
+    const color = clockHex
     return {
       backgroundColor: color,
       border: `2px solid ${color}`,
@@ -458,7 +458,7 @@ function NodesPageContent() {
   }
 
   // Get the RGB values for the glow effect
-  const clockColor = hexToRgb('#56c1ff') // Dot menu color for clock 8 (light blue)
+  const clockColor = hexToRgb(clockHex)
 
   // Add getElapsedTime helper function
   const getElapsedTime = (startDateTime: Date): string => {
@@ -953,16 +953,14 @@ function NodesPageContent() {
           document.body
         )}
 
-        {/* Dot Navigation */}
+        {/* Dot Navigation - wrapper is pointer-events-none so only the nav strip receives clicks */}
         <div className="fixed inset-0 pointer-events-none z-[999]">
-          <div className="pointer-events-auto">
-            {showElements && (
-              <DotNavigation
-                activeDot={8}
-                isSmallMultiView={false}
-              />
-            )}
-          </div>
+          {showElements && (
+            <DotNavigation
+              activeDot={8}
+              isSmallMultiView={false}
+            />
+          )}
         </div>
 
         {/* Position the timer at the bottom center */}

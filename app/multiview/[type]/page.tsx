@@ -208,18 +208,16 @@ export default function MultiViewPage() {
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-black/90">
       {/* Navigation Layer */}
       <div className="fixed inset-0 pointer-events-none z-[999]">
-        <div className="pointer-events-auto">
-          {showElements && (
-            <DotNavigation
-              activeDot={9}
-              isSmallMultiView={type === 2}
-            />
-          )}
-          <Menu
-            showElements={showElements}
-            onToggleShow={() => setShowElements(!showElements)}
+        {showElements && (
+          <DotNavigation
+            activeDot={9}
+            isSmallMultiView={type === 2}
           />
-        </div>
+        )}
+        <Menu
+          showElements={showElements}
+          onToggleShow={() => setShowElements(!showElements)}
+        />
       </div>
 
       {/* Content Layer */}

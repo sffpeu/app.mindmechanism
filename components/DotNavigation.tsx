@@ -10,17 +10,15 @@ interface DotNavigationProps {
   onDotHover?: (index: number | null) => void;
 }
 
-const dotColors = [
-  'bg-transparent border-[#fd290a] dark:border-[#fd290a]', // 1
-  'bg-transparent border-[#fba63b] dark:border-[#fba63b]', // 2
-  'bg-transparent border-[#f7da5f] dark:border-[#f7da5f]', // 3
-  'bg-transparent border-[#6dc037] dark:border-[#6dc037]', // 4
-  'bg-transparent border-[#156fde] dark:border-[#156fde]', // 5
-  'bg-transparent border-[#941952] dark:border-[#941952]', // 6
-  'bg-transparent border-[#541b96] dark:border-[#541b96]', // 7
-  'bg-transparent border-[#ee5fa7] dark:border-[#ee5fa7]', // 8
-  'bg-transparent border-[#56c1ff] dark:border-[#56c1ff]', // 9
-];
+// Clock 1–9 hex palette (match Clock.tsx, glossary, sessions)
+const DOT_HEX = ['#fd290a', '#fba63b', '#f7da5f', '#6dc037', '#156fde', '#941952', '#541b96', '#ee5fa7', '#56c1ff'] as const;
+
+const dotColors = DOT_HEX.map(
+  (hex) => `bg-transparent border-[${hex}] dark:border-[${hex}]`
+);
+const dotColorsFilled = DOT_HEX.map(
+  (hex) => `bg-[${hex}] border-[${hex}] dark:bg-[${hex}] dark:border-[${hex}]`
+);
 
 const DotNavigation: React.FC<DotNavigationProps> = ({
   activeDot, 
@@ -115,10 +113,10 @@ const DotNavigation: React.FC<DotNavigationProps> = ({
               index === 9
                 ? 'bg-black dark:bg-white border-black dark:border-white'
                 : index === activeDot
-                  ? dotColors[index]
+                  ? dotColorsFilled[index]
                   : hoveredDot === index
-                    ? dotColors[index]
-                    : 'bg-transparent border-gray-300 dark:border-gray-600'
+                    ? dotColorsFilled[index]
+                    : dotColors[index]
             } touch-manipulation pointer-events-auto`}
           />
         </DotContainer>
