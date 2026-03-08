@@ -361,8 +361,8 @@ function NodesPageContent() {
     const a = ((angle % 360) + 360) % 360
     const placement = a > 315 || a < 45 ? 'top' : a <= 135 ? 'right' : a < 225 ? 'bottom' : 'left'
     const counterRotation = -rotation - clock4.imageOrientation
-    const offsetPx = 28
-    const base = { position: 'absolute' as const, left: '50%', top: '50%', transformOrigin: 'center center' as const }
+    const offsetPx = 50
+    const base = { position: 'absolute' as const, left: '50%', top: '50%', transformOrigin: 'center center' as const, zIndex: 500 }
     const scale = isSelected ? 1.1 : 1
     if (placement === 'top') return { ...base, transform: `translate(-50%, -50%) translateY(-${offsetPx}px) scale(${scale}) rotate(${counterRotation}deg)` }
     if (placement === 'bottom') return { ...base, transform: `translate(-50%, -50%) translateY(${offsetPx}px) scale(${scale}) rotate(${counterRotation}deg)` }
@@ -833,7 +833,7 @@ function NodesPageContent() {
               className="absolute inset-0"
               style={{ 
                 willChange: 'transform',
-                zIndex: 200,
+                zIndex: 400,
                 pointerEvents: 'none',
               }}
               animate={{ rotate: rotation + entranceOffset }}

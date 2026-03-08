@@ -270,19 +270,17 @@ const getFocusNodeStyle = (
   };
 };
 
-const getWordContainerStyle = (angle: number, isSelected: boolean, clockId: number, isMultiView: boolean): React.CSSProperties => {
-  const isLeftSide = angle > 90 && angle < 270;
-  return {
-    position: 'absolute',
-    left: isLeftSide ? 'auto' : '100%',
-    right: isLeftSide ? '100%' : 'auto',
-    top: '50%',
-    marginLeft: isLeftSide ? '-0.75rem' : '0.75rem',
-    marginRight: isLeftSide ? '0.75rem' : '-0.75rem',
-    transform: `translateY(-50%) scale(${isSelected ? 1.1 : 1})`,
-    transformOrigin: isLeftSide ? 'right' : 'left',
-    textAlign: isLeftSide ? 'right' as const : 'left' as const,
-  };
+// Assign Words–style: word pill always outward from node (50px), never behind; z-index above nodes
+const getWordContainerStyle = (angle: number, isSelected: boolean, clockId: number, isMultiView: boolean, counterRotationDeg: number): React.CSSProperties => {
+  const a = ((angle % 360) + 360) % 360;
+  const placement = a > 315 || a < 45 ? 'top' : a <= 135 ? 'right' : a < 225 ? 'bottom' : 'left';
+  const offsetPx = 50;
+  const scale = isSelected ? 1.1 : 1;
+  const base: React.CSSProperties = { position: 'absolute', left: '50%', top: '50%', transformOrigin: 'center center', zIndex: 500 };
+  if (placement === 'top') return { ...base, transform: `translate(-50%, -50%) translateY(-${offsetPx}px) scale(${scale}) rotate(${counterRotationDeg}deg)` };
+  if (placement === 'bottom') return { ...base, transform: `translate(-50%, -50%) translateY(${offsetPx}px) scale(${scale}) rotate(${counterRotationDeg}deg)` };
+  if (placement === 'left') return { ...base, transform: `translate(-100%, -50%) translateX(-${offsetPx}px) scale(${scale}) rotate(${counterRotationDeg}deg)` };
+  return { ...base, transform: `translate(0, -50%) translateX(${offsetPx}px) scale(${scale}) rotate(${counterRotationDeg}deg)` };
 };
 
 // Add these new components before the main Clock component
@@ -312,7 +310,7 @@ const WordNode = ({ word, angle, nodeAngle, nodeRadius, isSelected, clockId, isM
         className={`whitespace-nowrap pointer-events-none px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
         ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all`}
         style={{
-          ...getWordContainerStyle(nodeAngle, isSelected, clockId, isMultiView),
+          ...getWordContainerStyle(nodeAngle, isSelected, clockId, isMultiView, 0),
         }}
       >
         <span className="text-black/90 dark:text-white/90">{word}</span>
@@ -450,8 +448,7 @@ const FocusNode = ({
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.8 }}
           style={{
-            ...getWordContainerStyle(angle, isSelected, clockId, isMultiView),
-            transform: `translateY(-50%) scale(${isSelected ? 1.1 : 1}) rotate(${-rotation}deg)`,
+            ...getWordContainerStyle(angle, isSelected, clockId, isMultiView, -rotation),
           }}
         >
           <span className="text-black/90 dark:text-white/90">{word}</span>
@@ -1145,12 +1142,12 @@ export default function Clock({
           </motion.div>
         </div>
 
-        {/* Focus nodes layer */}
+        {/* Focus nodes layer — above other layers so every node is clickable */}
         <motion.div 
           className="absolute inset-0"
           style={{ 
             willChange: 'transform',
-            zIndex: 200,
+            zIndex: 400,
             pointerEvents: 'none',
           }}
           animate={{ rotate: rotation }}
