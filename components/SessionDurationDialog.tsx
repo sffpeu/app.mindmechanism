@@ -370,6 +370,7 @@ export function SessionDurationDialog({
   const setScope = (scope: 'All' | 'Default' | 'My Words') => {
     if (scope !== 'Default') setSelectedClockId(null)
     setScopeFilter(scope)
+    if (scope === 'Default') handleFillAllDefaultWords()
   }
 
   const renderWordsStep = () => {
