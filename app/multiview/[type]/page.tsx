@@ -204,7 +204,7 @@ export default function MultiViewPage() {
     'bg-[#56c1ff]', // 9. Light Blue
   ]
 
-  // Match Clock.tsx focus node alignment (adjustedStartingDegree) so mini clocks match clock pages / session cards
+  // Match Clock.tsx: focus node angle offset per clock (so mini clocks match clock pages / session cards)
   const getFocusNodeStartingDegree = (clockId: number, startingDegree: number) => {
     switch (clockId) {
       case 0: return startingDegree + 45
@@ -213,6 +213,22 @@ export default function MultiViewPage() {
       case 3: return startingDegree + 180
       case 4: return startingDegree + 11
       default: return startingDegree
+    }
+  }
+
+  // Match Clock.tsx getNodeRadius (per-clock radius so nodes sit on same ring as full clock page)
+  const getNodeRadius = (clockId: number) => {
+    switch (clockId) {
+      case 0: return 52
+      case 1: return 54
+      case 2: return 53
+      case 3: return 55
+      case 4: return 54
+      case 5: return 53
+      case 6: return 54
+      case 7: return 55
+      case 8: return 53
+      default: return 53
     }
   }
 
@@ -505,45 +521,43 @@ export default function MultiViewPage() {
                           />
                         </div>
                       </motion.div>
-                      {/* Focus nodes visible on hover - aligned to match clock pages / session cards (same angle formula as Clock.tsx) */}
+                      {/* Focus nodes on hover - same layout as Clock.tsx (angle + radius) so mini matches clock pages */}
                       <motion.div
-                        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                        className="absolute inset-0 pointer-events-none"
                         style={{ transformOrigin: 'center center', willChange: 'transform' }}
                         animate={{ rotate: clockRotation }}
                         transition={{ type: 'tween', duration: 0.016, ease: 'linear' }}
                       >
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-full h-full rounded-full relative" style={{ aspectRatio: '1' }}>
-                            {Array.from({ length: clock.focusNodes }).map((_, nodeIndex) => {
-                              const adjustedStart = getFocusNodeStartingDegree(clock.id, clock.startingDegree ?? 0)
-                              const angle = ((360 / Math.max(1, clock.focusNodes)) * nodeIndex + adjustedStart) % 360
-                              const radians = angle * (Math.PI / 180)
-                              const nodeRadius = 48
-                              const nodeX = 50 + nodeRadius * Math.cos(radians)
-                              const nodeY = 50 + nodeRadius * Math.sin(radians)
-                              return (
-                                <motion.div
-                                  key={nodeIndex}
-                                  className={`absolute w-1.5 h-1.5 rounded-full ${focusNodeColors[index]} dark:brightness-150`}
-                                  style={{
-                                    left: `${nodeX}%`,
-                                    top: `${nodeY}%`,
-                                    transform: 'translate(-50%, -50%)',
-                                    mixBlendMode: isDarkMode ? 'screen' : 'multiply',
-                                    boxShadow: isDarkMode
-                                      ? '0 0 3px rgba(255, 255, 255, 0.3)'
-                                      : '0 0 3px rgba(0, 0, 0, 0.2)',
-                                  }}
-                                  initial={false}
-                                  animate={{
-                                    opacity: hoveredOuterClockIndex === index ? 1 : 0,
-                                    scale: hoveredOuterClockIndex === index ? 1 : 0.5,
-                                  }}
-                                  transition={{ duration: 0.15, ease: 'easeOut' }}
-                                />
-                              )
-                            })}
-                          </div>
+                        <div className="absolute inset-0">
+                          {Array.from({ length: clock.focusNodes }).map((_, nodeIndex) => {
+                            const adjustedStart = getFocusNodeStartingDegree(clock.id, clock.startingDegree ?? 0)
+                            const angle = ((360 / Math.max(1, clock.focusNodes)) * nodeIndex + adjustedStart) % 360
+                            const radians = angle * (Math.PI / 180)
+                            const nodeRadius = getNodeRadius(clock.id)
+                            const nodeX = 50 + nodeRadius * Math.cos(radians)
+                            const nodeY = 50 + nodeRadius * Math.sin(radians)
+                            return (
+                              <motion.div
+                                key={nodeIndex}
+                                className={`absolute w-1.5 h-1.5 rounded-full ${focusNodeColors[index]} dark:brightness-150`}
+                                style={{
+                                  left: `${nodeX}%`,
+                                  top: `${nodeY}%`,
+                                  transform: 'translate(-50%, -50%)',
+                                  mixBlendMode: isDarkMode ? 'screen' : 'multiply',
+                                  boxShadow: isDarkMode
+                                    ? '0 0 3px rgba(255, 255, 255, 0.3)'
+                                    : '0 0 3px rgba(0, 0, 0, 0.2)',
+                                }}
+                                initial={false}
+                                animate={{
+                                  opacity: hoveredOuterClockIndex === index ? 1 : 0,
+                                  scale: hoveredOuterClockIndex === index ? 1 : 0.5,
+                                }}
+                                transition={{ duration: 0.15, ease: 'easeOut' }}
+                              />
+                            )
+                          })}
                         </div>
                       </motion.div>
                       {hoveredOuterClockIndex === index && currentTime != null && (
