@@ -480,13 +480,14 @@ export default function MultiViewPage() {
                         <div
                           className="absolute inset-0"
                           style={{
-                            transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) rotate(${clock.imageOrientation}deg) scale(${clock.imageScale})`,
+                            transform: `translate(${clock.imageX ?? 0}%, ${clock.imageY ?? 0}%) rotate(${clock.imageOrientation ?? 0}deg) scale(${clock.imageScale ?? 1})`,
+                            willChange: 'transform',
                             transformOrigin: 'center',
                             mixBlendMode: 'multiply',
                           }}
                         >
                           <Image 
-                            src={`/clock_${index + 1}.svg`}
+                            src={clock.imageUrl}
                             alt={`Clock ${index + 1}`}
                             fill
                             className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
@@ -495,28 +496,28 @@ export default function MultiViewPage() {
                           />
                         </div>
                       </motion.div>
-                      {/* Focus nodes on hover — same as clock pages 0–8: angle 270 + step, radius 55, inner rotate(imageOrientation) */}
+                      {/* Focus nodes on hover — mirror clock pages 0–8: same DOM order and transform (rotate then imageOrientation) */}
                       <motion.div
                         className="absolute inset-0 pointer-events-none"
-                        style={{ transformOrigin: 'center center', willChange: 'transform' }}
+                        style={{ willChange: 'transform' }}
                         animate={{ rotate: clockRotation }}
                         transition={{ type: 'tween', duration: 0.016, ease: 'linear' }}
                       >
-                        <div className="absolute inset-0" style={{ transform: `rotate(${clock.imageOrientation ?? 0}deg)`, transformOrigin: 'center center' }}>
+                        <div className="absolute inset-0" style={{ transform: `rotate(${clock.imageOrientation ?? 0}deg)`, transformOrigin: 'center' }}>
                           <div className="absolute inset-0">
                             {Array.from({ length: clock.focusNodes }).map((_, nodeIndex) => {
                               const angle = ((360 / Math.max(1, clock.focusNodes)) * nodeIndex + 270) % 360
                               const radians = angle * (Math.PI / 180)
                               const nodeRadius = 55
-                              const nodeX = 50 + nodeRadius * Math.cos(radians)
-                              const nodeY = 50 + nodeRadius * Math.sin(radians)
+                              const x = 50 + nodeRadius * Math.cos(radians)
+                              const y = 50 + nodeRadius * Math.sin(radians)
                               return (
                                 <motion.div
                                   key={nodeIndex}
                                   className={`absolute w-1.5 h-1.5 rounded-full ${focusNodeColors[index]} dark:brightness-150`}
                                   style={{
-                                    left: `${nodeX}%`,
-                                    top: `${nodeY}%`,
+                                    left: `${x}%`,
+                                    top: `${y}%`,
                                     transform: 'translate(-50%, -50%)',
                                     mixBlendMode: isDarkMode ? 'screen' : 'multiply',
                                     boxShadow: isDarkMode
