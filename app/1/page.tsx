@@ -709,11 +709,47 @@ function NodesPageContent() {
 
         <div className="flex-grow flex items-center justify-center min-h-screen">
           <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px]">
+            {/* Session progress ring — one layer above background, behind pulsing glow; pointer-events-none so focus nodes stay clickable */}
+            {duration != null && duration > 0 && (() => {
+              const remaining = sessionState.remainingTime ?? duration
+              const progress = Math.min(1, (duration - remaining) / duration)
+              const trailRadiusInViewBox = 91
+              return (
+                <motion.div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{ zIndex: 5 }}
+                  animate={{ rotate: rotation + entranceOffset }}
+                  transition={{ type: 'tween', duration: entranceOffset > 0 ? 0 : 0.016, ease: 'linear' }}
+                >
+                  <svg
+                    className="absolute inset-0 w-full h-full"
+                    viewBox="-20 -20 140 140"
+                    preserveAspectRatio="xMidYMid meet"
+                    style={{ overflow: 'visible' }}
+                  >
+                    <circle
+                      cx={50}
+                      cy={50}
+                      r={trailRadiusInViewBox}
+                      fill="none"
+                      stroke={clockHex}
+                      strokeWidth={1.5}
+                      strokeLinecap="round"
+                      strokeDasharray={`${progress * 2 * Math.PI * trailRadiusInViewBox} ${2 * Math.PI * trailRadiusInViewBox}`}
+                      transform="rotate(-90 50 50)"
+                      opacity={0.85}
+                    />
+                  </svg>
+                </motion.div>
+              )
+            })()}
+
             {/* Pulsing glow (color-matched to dot menu) */}
             {clockColor && (
               <motion.div
                 className="absolute inset-0 rounded-full"
                 style={{
+                  zIndex: 10,
                   '--shadow-color': `${clockColor.r}, ${clockColor.g}, ${clockColor.b}`,
                 } as React.CSSProperties}
                 animate={{
