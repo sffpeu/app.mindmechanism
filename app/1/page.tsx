@@ -734,7 +734,7 @@ function NodesPageContent() {
               />
             )}
 
-            {/* Satellites layer (top layer, overflow visible so trail not clipped by square; pointer-events none so focus nodes receive clicks) */}
+            {/* Satellites layer (no session progress on clock — progress bar is at bottom of page so it never blocks focus nodes) */}
             {showSatellites && (
               <motion.div
                 className="absolute inset-0 overflow-visible pointer-events-none"
@@ -744,83 +744,6 @@ function NodesPageContent() {
                 }}
               >
                 {renderSatellites()}
-                {/* User session satellite: trail + dot; one full rotation per session duration, starts at focus node 1, clock color */}
-                {duration != null && duration > 0 && (() => {
-                  const remaining = sessionState.remainingTime ?? duration
-                  const elapsed = duration - remaining
-                  const progress = Math.min(1, elapsed / duration)
-                  const angleDeg = (270 + (elapsed / duration) * 360) % 360
-                  const radians = (angleDeg * Math.PI) / 180
-                  const userSatRadius = 65
-                  const x = 50 + userSatRadius * Math.cos(radians)
-                  const y = 50 + userSatRadius * Math.sin(radians)
-                  const circumference = 2 * Math.PI * userSatRadius
-                  const trailStrokeWidth = 1.5
-                  const trailRadiusInViewBox = 91
-                  const formatRemaining = (ms: number) => {
-                    const totalSec = Math.max(0, Math.floor(ms / 1000))
-                    const min = Math.floor(totalSec / 60)
-                    const sec = totalSec % 60
-                    return `${min} min ${sec} sec left`
-                  }
-                  return (
-                    <>
-                      <svg
-                        className="absolute inset-0 w-full h-full pointer-events-none"
-                        viewBox="-20 -20 140 140"
-                        preserveAspectRatio="xMidYMid meet"
-                        style={{ zIndex: 302, overflow: 'visible' }}
-                      >
-                        <circle
-                          cx={50}
-                          cy={50}
-                          r={trailRadiusInViewBox}
-                          fill="none"
-                          stroke={clockHex}
-                          strokeWidth={trailStrokeWidth}
-                          strokeLinecap="round"
-                          strokeDasharray={`${progress * 2 * Math.PI * trailRadiusInViewBox} ${2 * Math.PI * trailRadiusInViewBox}`}
-                          transform="rotate(-90 50 50)"
-                          opacity={0.85}
-                        />
-                      </svg>
-                      <motion.div
-                        key="user-satellite"
-                        className="absolute cursor-pointer pointer-events-auto"
-                        initial={{ opacity: 0, scale: 0 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.4, ease: 'easeOut' }}
-                        style={{
-                          left: `${x}%`,
-                          top: `${y}%`,
-                          transform: 'translate(-50%, -50%)',
-                          zIndex: 305,
-                        }}
-                        onClick={() => setShowUserSatelliteTime((s) => !s)}
-                      >
-                        <div
-                          className="w-4 h-4 rounded-full"
-                          style={{
-                            backgroundColor: clockHex,
-                            boxShadow: `0 0 12px ${clockHex}99, 0 0 4px ${clockHex}`,
-                          }}
-                        />
-                      </motion.div>
-                      {showUserSatelliteTime && (
-                        <div
-                          className="absolute text-sm font-medium whitespace-nowrap z-[310] text-black dark:text-white"
-                          style={{
-                            left: `${x}%`,
-                            top: `${y}%`,
-                            transform: 'translate(-50%, -120%)',
-                          }}
-                        >
-                          {formatRemaining(remaining)}
-                        </div>
-                      )}
-                    </>
-                  )
-                })()}
               </motion.div>
             )}
 
@@ -1016,6 +939,7 @@ function NodesPageContent() {
             remainingTime={duration != null ? sessionState.remainingTime : undefined}
             isPaused={duration != null ? sessionState.isPaused : undefined}
             onPauseResume={duration != null ? sessionState.onPauseResume : undefined}
+            initialDuration={duration ?? undefined}
           />
         </div>
 
