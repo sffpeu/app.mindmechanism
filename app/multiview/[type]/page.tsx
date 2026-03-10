@@ -191,7 +191,7 @@ export default function MultiViewPage() {
       : (clock.startingDegree - calculatedRotation + 360) % 360
   }
 
-  // Focus node colors from individual clocks
+  // Focus node colors from individual clocks (match Clock.tsx dotColors)
   const focusNodeColors = [
     'bg-[#fd290a]', // 1. Red
     'bg-[#fba63b]', // 2. Orange
@@ -203,6 +203,18 @@ export default function MultiViewPage() {
     'bg-[#ee5fa7]', // 8. Pink
     'bg-[#56c1ff]', // 9. Light Blue
   ]
+
+  // Match Clock.tsx focus node alignment (adjustedStartingDegree) so mini clocks match clock pages / session cards
+  const getFocusNodeStartingDegree = (clockId: number, startingDegree: number) => {
+    switch (clockId) {
+      case 0: return startingDegree + 45
+      case 1: return startingDegree + 45
+      case 2: return startingDegree + 9
+      case 3: return startingDegree + 180
+      case 4: return startingDegree + 11
+      default: return startingDegree
+    }
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-black/90">
@@ -493,7 +505,7 @@ export default function MultiViewPage() {
                           />
                         </div>
                       </motion.div>
-                      {/* Focus nodes visible on hover - smaller and aligned for outer clocks */}
+                      {/* Focus nodes visible on hover - aligned to match clock pages / session cards (same angle formula as Clock.tsx) */}
                       <motion.div
                         className="absolute inset-0 flex items-center justify-center pointer-events-none"
                         style={{ transformOrigin: 'center center', willChange: 'transform' }}
@@ -503,10 +515,12 @@ export default function MultiViewPage() {
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div className="w-full h-full rounded-full relative" style={{ aspectRatio: '1' }}>
                             {Array.from({ length: clock.focusNodes }).map((_, nodeIndex) => {
-                              const nodeAngle = (nodeIndex * 360) / clock.focusNodes
-                              const radius = 48
-                              const nodeX = 50 + radius * Math.cos((nodeAngle - 90) * (Math.PI / 180))
-                              const nodeY = 50 + radius * Math.sin((nodeAngle - 90) * (Math.PI / 180))
+                              const adjustedStart = getFocusNodeStartingDegree(clock.id, clock.startingDegree ?? 0)
+                              const angle = ((360 / Math.max(1, clock.focusNodes)) * nodeIndex + adjustedStart) % 360
+                              const radians = angle * (Math.PI / 180)
+                              const nodeRadius = 48
+                              const nodeX = 50 + nodeRadius * Math.cos(radians)
+                              const nodeY = 50 + nodeRadius * Math.sin(radians)
                               return (
                                 <motion.div
                                   key={nodeIndex}
