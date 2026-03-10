@@ -382,11 +382,7 @@ function NodesPageContent() {
   }
 
   useEffect(() => {
-    if (selectedWord) {
-      if (typeof window !== 'undefined') setCardPosition({ x: Math.max(0, window.innerWidth / 2 - 140), y: Math.max(0, window.innerHeight / 2 - 120) })
-    } else {
-      setCardPosition(null)
-    }
+    if (!selectedWord) setCardPosition(null)
   }, [selectedWord])
 
   // Close card when menu/side panel opens to avoid portal + menu interaction crashes
@@ -945,6 +941,8 @@ function NodesPageContent() {
                                   )}
                                   onClick={(e) => {
                                     e.stopPropagation()
+                                    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+                                    setCardPosition({ x: rect.left, y: rect.top })
                                     setSelectedWord(word)
                                   }}
                                   onMouseEnter={() => setPillHoveredWord(word)}
@@ -971,13 +969,12 @@ function NodesPageContent() {
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-            className="rounded-xl border border-black/10 dark:border-white/20 bg-white/95 dark:bg-black/90 backdrop-blur-lg shadow-lg min-w-[240px] max-w-[280px] text-left overflow-hidden cursor-grab active:cursor-grabbing"
+            className="rounded-xl border-0 bg-white/95 dark:bg-black/90 backdrop-blur-lg shadow-lg min-w-[240px] max-w-[280px] text-left overflow-hidden cursor-grab active:cursor-grabbing"
             style={{
               position: 'fixed',
               left: cardPosition.x,
               top: cardPosition.y,
               zIndex: 10000,
-              boxShadow: `0 0 0 2px rgba(255,255,255,0.95), 0 0 0 6px ${clockHex}`,
             }}
             onClick={(e) => e.stopPropagation()}
           >

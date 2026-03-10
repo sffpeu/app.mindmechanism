@@ -377,9 +377,7 @@ function NodesPageContent() {
     return { pillFillClass: 'bg-slate-100/90 dark:bg-slate-500/20', cardOutline: '0 0 0 2px #64748b' }
   }
   useEffect(() => {
-    if (selectedWord) {
-      if (typeof window !== 'undefined') setCardPosition({ x: Math.max(0, window.innerWidth / 2 - 140), y: Math.max(0, window.innerHeight / 2 - 120) })
-    } else setCardPosition(null)
+    if (!selectedWord) setCardPosition(null)
   }, [selectedWord])
   useEffect(() => {
     if (isMenuOpen) setSelectedWord(null)
@@ -894,7 +892,7 @@ function NodesPageContent() {
                                     'whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-medium shadow-sm outline outline-1 outline-black/10 dark:outline-white/20 text-gray-800 dark:text-gray-200 transition-colors pointer-events-auto',
                                     pillHoveredWord === word ? 'bg-gray-100/90 dark:bg-gray-500/20' : 'bg-white/90 dark:bg-black/90 hover:bg-white dark:hover:bg-black/80'
                                   )}
-                                  onClick={(e) => { e.stopPropagation(); setSelectedWord(word) }}
+                                  onClick={(e) => { e.stopPropagation(); const rect = (e.currentTarget as HTMLElement).getBoundingClientRect(); setCardPosition({ x: rect.left, y: rect.top }); setSelectedWord(word) }}
                                   onMouseEnter={() => setPillHoveredWord(word)}
                                   onMouseLeave={() => setPillHoveredWord(null)}
                                 >
@@ -919,8 +917,8 @@ function NodesPageContent() {
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-            className="rounded-xl border border-black/10 dark:border-white/20 bg-white/95 dark:bg-black/90 backdrop-blur-lg shadow-lg min-w-[240px] max-w-[280px] text-left overflow-hidden cursor-grab active:cursor-grabbing"
-            style={{ position: 'fixed', left: cardPosition.x, top: cardPosition.y, zIndex: 10000, boxShadow: `0 0 0 2px rgba(255,255,255,0.95), 0 0 0 6px ${clockHex}` }}
+            className="rounded-xl border-0 bg-white/95 dark:bg-black/90 backdrop-blur-lg shadow-lg min-w-[240px] max-w-[280px] text-left overflow-hidden cursor-grab active:cursor-grabbing"
+            style={{ position: 'fixed', left: cardPosition.x, top: cardPosition.y, zIndex: 10000 }}
             onClick={(e) => e.stopPropagation()}
           >
             {(() => {
