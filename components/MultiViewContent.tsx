@@ -82,7 +82,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
   const isMultiView2 = type === 2
   const [hoveredOuterClockIndex, setHoveredOuterClockIndex] = useState<number | null>(null)
-  const [focusedOuterClockIndex, setFocusedOuterClockIndex] = useState<number | null>(null)
+  const [focusedOuterClockIndices, setFocusedOuterClockIndices] = useState<Set<number>>(new Set())
   const [rotationValues, setRotationValues] = useState<Record<number, number[]>>({})
   const animationRef = useRef<number>()
 
@@ -451,7 +451,15 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                 const x = 50 + radius * Math.cos(radians);
                 const y = 50 + radius * Math.sin(radians);
 
-                const isHighlighted = hoveredOuterClockIndex === index || focusedOuterClockIndex === index
+                const isHighlighted = hoveredOuterClockIndex === index || focusedOuterClockIndices.has(index)
+                const toggleFocused = () => {
+                  setFocusedOuterClockIndices((prev) => {
+                    const next = new Set(prev)
+                    if (next.has(index)) next.delete(index)
+                    else next.add(index)
+                    return next
+                  })
+                }
                 return (
                   <div
                     key={index}
@@ -465,7 +473,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                     }}
                     onMouseEnter={() => setHoveredOuterClockIndex(index)}
                     onMouseLeave={() => setHoveredOuterClockIndex(null)}
-                    onClick={() => setFocusedOuterClockIndex((prev) => (prev === index ? null : index))}
+                    onClick={toggleFocused}
                   >
                     <div className="relative w-full h-full">
                       <motion.div
@@ -487,7 +495,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                             src={clock.imageUrl}
                             alt={`Clock ${index + 1}`}
                             fill
-                            className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
+                            className={`object-cover rounded-full ${isHighlighted ? 'dark:brightness-100' : 'dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none'}`}
                             priority
                             loading="eager"
                           />
@@ -510,7 +518,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                               return (
                                 <div
                                   key={nodeIndex}
-                                  className={`absolute w-2 h-2 rounded-full ${focusNodeColors[index]} dark:brightness-150`}
+                                  className={`absolute w-1.5 h-1.5 rounded-full ${focusNodeColors[index]} dark:brightness-150`}
                                   style={{
                                     left: `${x}%`,
                                     top: `${y}%`,
