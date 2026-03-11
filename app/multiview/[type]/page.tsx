@@ -7,7 +7,10 @@ import DotNavigation from '@/components/DotNavigation'
 import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import type { ClockSettings } from '@/types/ClockSettings'
+
+export interface MultiViewContentProps {
+  type: number
+}
 
 // Default satellite configurations for all clocks
 const defaultSatelliteConfigs: Record<number, Array<{ rotationTime: number, rotationDirection: 'clockwise' | 'counterclockwise' }>> = {
@@ -74,9 +77,7 @@ const clockSatellites: Record<number, number> = {
   8: 1, // Clock 9
 };
 
-export default function MultiViewPage() {
-  const params = useParams()
-  const type = parseInt(params.type as string)
+export function MultiViewContent({ type }: MultiViewContentProps) {
   const [showElements, setShowElements] = useState(true)
   const { isDarkMode } = useTheme()
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
@@ -524,6 +525,15 @@ export default function MultiViewPage() {
                           </div>
                         )}
                       </motion.div>
+                      {hoveredOuterClockIndex === index && currentTime != null && (
+                        <div className="absolute left-1/2 top-full -translate-x-1/2 mt-1.5 text-center text-xs font-mono tabular-nums text-gray-700 dark:text-gray-300 whitespace-nowrap z-50 pointer-events-none">
+                          {(() => {
+                            const r = clockRotation
+                            const signed = r > 180 ? r - 360 : r
+                            return `${signed.toFixed(3)}°`
+                          })()}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -534,4 +544,10 @@ export default function MultiViewPage() {
       </div>
     </div>
   )
+}
+
+export default function MultiViewPage() {
+  const params = useParams()
+  const type = parseInt(params.type as string)
+  return <MultiViewContent type={type} />
 }

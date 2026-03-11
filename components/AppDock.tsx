@@ -18,7 +18,7 @@ import { useState } from 'react';
 import { SettingsDialog } from '@/components/settings/SettingsDialog';
 
 const navItems = [
-  { title: 'Home', href: '/home', icon: Home },
+  { title: 'Home', href: '/layers', icon: Home },
   { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { title: 'Sessions', href: '/sessions', icon: Clock },
   { title: 'Notes', href: '/notes', icon: ClipboardList },

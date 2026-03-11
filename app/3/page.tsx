@@ -473,7 +473,7 @@ function NodesPageContent() {
 
   return (
     <ProtectedRoute>
-      <div className="h-full overflow-hidden bg-gray-50 dark:bg-black/95">
+      <div className="h-full overflow-hidden flex flex-col bg-gray-50 dark:bg-black/95">
         {/* Settings Dropdown */}
         <div className="fixed top-4 right-4 z-50">
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>

@@ -175,10 +175,10 @@ export function Menu({
             <div className="flex-1 overflow-y-auto">
               <MenuSection title="Navigation">
                 <MenuItem
-                  href="/home"
+                  href="/layers"
                   icon={Home}
-                  isActive={isActive('/home')}
-                  onClick={() => handleNavigation('/home')}
+                  isActive={isActive('/layers')}
+                  onClick={() => handleNavigation('/layers')}
                 >
                   Home
                 </MenuItem>
