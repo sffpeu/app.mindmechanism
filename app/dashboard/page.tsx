@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Menu } from '@/components/Menu'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { User, Mail, Calendar, LogIn, Pencil, LogOut } from 'lucide-react'
@@ -130,7 +129,6 @@ export default function DashboardPage() {
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100/80 dark:from-black dark:to-gray-950/50">
-        <Menu />
         <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           {/* Dashboard title */}
           <header className="mb-8">

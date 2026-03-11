@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Menu } from '@/components/Menu'
 import { Card } from '@/components/ui/card'
 import { RotateCcw, PenLine, Files, Clock, ArrowUpDown, Save, Edit, X, Cloud, Thermometer, Droplets, Sun, Gauge, Wind, Moon, MapPin, Timer } from 'lucide-react'
 import { useTheme } from '@/app/ThemeContext'
@@ -284,12 +283,6 @@ export default function NotesPage() {
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-black/95">
-        <Menu
-          showElements={showElements}
-          onToggleShow={() => setShowElements(!showElements)}
-          showSatellites={showSatellites}
-          onSatellitesChange={setShowSatellites}
-        />
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="text-center py-8">
             <h2 className="text-xl font-medium text-black dark:text-white mb-2">Sign In Required</h2>
@@ -302,13 +295,6 @@ export default function NotesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95">
-      <Menu
-        showElements={showElements}
-        onToggleShow={() => setShowElements(!showElements)}
-        showSatellites={showSatellites}
-        onSatellitesChange={setShowSatellites}
-      />
-
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
           {/* Left Column: Saved Notes */}

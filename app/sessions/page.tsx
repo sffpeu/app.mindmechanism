@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { Play, Clock, RotateCw, Timer, Compass, LayoutGrid, List, ChevronUp, ChevronDown } from 'lucide-react'
 import Image from 'next/image'
@@ -220,12 +219,6 @@ export default function SessionsPage() {
             />
           </div>
         )}
-        <Menu
-          showElements={showElements}
-          onToggleShow={() => setShowElements(!showElements)}
-          showSatellites={showSatellites}
-          onSatellitesChange={setShowSatellites}
-        />
 
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="space-y-8">

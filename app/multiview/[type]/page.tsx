@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { useParams } from 'next/navigation'
 import DotNavigation from '@/components/DotNavigation'
@@ -215,10 +214,6 @@ export default function MultiViewPage() {
             isSmallMultiView={type === 2}
           />
         )}
-        <Menu
-          showElements={showElements}
-          onToggleShow={() => setShowElements(!showElements)}
-        />
       </div>
 
       {/* Content Layer */}

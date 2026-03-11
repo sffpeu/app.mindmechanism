@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { useRouter } from 'next/navigation'
 import DotNavigation from '@/components/DotNavigation'
@@ -389,11 +388,6 @@ export default function Home1Page() {
             onDotHover={setHoveredClockIndex}
           />
         )}
-        <Menu
-          showElements={showElements}
-          onToggleShow={() => setShowElements(!showElements)}
-          position="left"
-        />
       </div>
 
       {/* Content Layer - Multiview */}

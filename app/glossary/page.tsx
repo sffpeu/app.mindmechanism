@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { Menu } from '@/components/Menu'
 import { Search, Plus, UserCircle2, Pencil, Layers } from 'lucide-react'
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords, searchWords } from '@/lib/glossary'
@@ -148,12 +147,6 @@ export default function GlossaryPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black/95">
-      <Menu
-        showElements={showElements}
-        onToggleShow={() => setShowElements(!showElements)}
-        showSatellites={showSatellites}
-        onSatellitesChange={setShowSatellites}
-      />
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="mb-6">
           <h1 className="text-2xl font-semibold dark:text-white mb-2">Glossary</h1>

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, Suspense, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
-import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -34,7 +33,6 @@ import { useSessionTimer } from '@/lib/useSessionTimer'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useLocation } from '@/lib/hooks/useLocation'
 import { useClockEntrance } from '@/lib/hooks/useClockEntrance'
-import { useMenu } from '@/app/MenuContext'
 import DotNavigation from '@/components/DotNavigation'
 import { clockTitles } from '@/lib/clockTitles'
 import { DEFAULT_WORDS_BY_CLOCK } from '@/lib/defaultWordsByClock'
@@ -141,7 +139,6 @@ function NodesPageContent() {
   const dragRef = useRef<{ startX: number; startY: number; startLeft: number; startTop: number } | null>(null)
   const isMountedRef = useRef(true)
   const dragListenersRef = useRef<{ onMove: ((e: MouseEvent) => void) | null; onUp: (() => void) | null }>({ onMove: null, onUp: null })
-  const { isMenuOpen } = useMenu()
   const [customWords, setCustomWords] = useState<string[]>([])
   const [duration, setDuration] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -377,7 +374,6 @@ function NodesPageContent() {
     return { pillFillClass: 'bg-slate-100/90 dark:bg-slate-500/20', cardOutline: '0 0 0 2px #64748b' }
   }
   useEffect(() => { if (!selectedWord) setCardPosition(null) }, [selectedWord])
-  useEffect(() => { if (isMenuOpen) setSelectedWord(null) }, [isMenuOpen])
   useEffect(() => { isMountedRef.current = true; return () => { isMountedRef.current = false; const { onMove, onUp } = dragListenersRef.current; if (onMove) window.removeEventListener('mousemove', onMove); if (onUp) window.removeEventListener('mouseup', onUp); dragListenersRef.current = { onMove: null, onUp: null } } }, [])
   const handleCardDragStart = useCallback((e: React.MouseEvent) => { e.preventDefault(); if (!cardPosition) return; dragRef.current = { startX: e.clientX, startY: e.clientY, startLeft: cardPosition.x, startTop: cardPosition.y }; const onMove = (e: MouseEvent) => { if (!dragRef.current || !isMountedRef.current) return; setCardPosition({ x: dragRef.current.startLeft + e.clientX - dragRef.current.startX, y: dragRef.current.startTop + e.clientY - dragRef.current.startY }) }; const onUp = () => { dragRef.current = null; window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); dragListenersRef.current = { onMove: null, onUp: null } }; dragListenersRef.current = { onMove, onUp }; window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp) }, [cardPosition])
   const defaultWords = DEFAULT_WORDS_BY_CLOCK[2] ?? []
@@ -478,14 +474,6 @@ function NodesPageContent() {
   return (
     <ProtectedRoute>
       <div className="h-screen overflow-hidden bg-gray-50 dark:bg-black/95">
-        <Menu
-          showElements={showElements}
-          onToggleShow={() => setShowElements(!showElements)}
-          showSatellites={showSatellites}
-          onSatellitesChange={setShowSatellites}
-          position="left"
-        />
-
         {/* Settings Dropdown */}
         <div className="fixed top-4 right-4 z-50">
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>

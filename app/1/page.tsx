@@ -2,7 +2,6 @@
 
 import { useState, useEffect, Suspense, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
-import { Menu } from '@/components/Menu'
 import { useTheme } from '@/app/ThemeContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -34,7 +33,6 @@ import { useSessionTimer } from '@/lib/useSessionTimer'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useLocation } from '@/lib/hooks/useLocation'
 import { useClockEntrance } from '@/lib/hooks/useClockEntrance'
-import { useMenu } from '@/app/MenuContext'
 import DotNavigation from '@/components/DotNavigation'
 import { clockTitles } from '@/lib/clockTitles'
 import { DEFAULT_WORDS_BY_CLOCK } from '@/lib/defaultWordsByClock'
@@ -141,7 +139,6 @@ function NodesPageContent() {
   const dragRef = useRef<{ startX: number; startY: number; startLeft: number; startTop: number } | null>(null)
   const isMountedRef = useRef(true)
   const dragListenersRef = useRef<{ onMove: ((e: MouseEvent) => void) | null; onUp: (() => void) | null }>({ onMove: null, onUp: null })
-  const { isMenuOpen } = useMenu()
   const [customWords, setCustomWords] = useState<string[]>([])
   const [duration, setDuration] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -380,9 +377,6 @@ function NodesPageContent() {
     if (!selectedWord) setCardPosition(null)
   }, [selectedWord])
   useEffect(() => {
-    if (isMenuOpen) setSelectedWord(null)
-  }, [isMenuOpen])
-  useEffect(() => {
     isMountedRef.current = true
     return () => {
       isMountedRef.current = false
@@ -508,14 +502,6 @@ function NodesPageContent() {
   return (
     <ProtectedRoute>
       <div className="h-screen overflow-hidden bg-gray-50 dark:bg-black/95">
-        <Menu
-          showElements={showElements}
-          onToggleShow={() => setShowElements(!showElements)}
-          showSatellites={showSatellites}
-          onSatellitesChange={setShowSatellites}
-          position="left"
-        />
-
         {/* Settings Dropdown */}
         <div className="fixed top-4 right-4 z-50">
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
