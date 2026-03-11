@@ -82,6 +82,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
   const isMultiView2 = type === 2
   const [hoveredOuterClockIndex, setHoveredOuterClockIndex] = useState<number | null>(null)
+  const [focusedOuterClockIndex, setFocusedOuterClockIndex] = useState<number | null>(null)
   const [rotationValues, setRotationValues] = useState<Record<number, number[]>>({})
   const animationRef = useRef<number>()
 
@@ -450,10 +451,11 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                 const x = 50 + radius * Math.cos(radians);
                 const y = 50 + radius * Math.sin(radians);
 
+                const isHighlighted = hoveredOuterClockIndex === index || focusedOuterClockIndex === index
                 return (
                   <div
                     key={index}
-                    className="absolute aspect-square transition-transform duration-200 pointer-events-auto"
+                    className="absolute aspect-square transition-transform duration-200 pointer-events-auto cursor-pointer"
                     style={{
                       width: '28%',
                       left: `${x}%`,
@@ -463,6 +465,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                     }}
                     onMouseEnter={() => setHoveredOuterClockIndex(index)}
                     onMouseLeave={() => setHoveredOuterClockIndex(null)}
+                    onClick={() => setFocusedOuterClockIndex((prev) => (prev === index ? null : index))}
                   >
                     <div className="relative w-full h-full">
                       <motion.div
@@ -472,12 +475,12 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                         transition={{ type: 'tween', duration: 0.016, ease: 'linear' }}
                       >
                         <div
-                          className="absolute inset-0"
+                          className="absolute inset-0 transition-[filter,opacity] duration-200"
                           style={{
                             transform: `translate(${clock.imageX ?? 0}%, ${clock.imageY ?? 0}%) rotate(${clock.imageOrientation ?? 0}deg) scale(${clock.imageScale ?? 1})`,
                             willChange: 'transform',
                             transformOrigin: 'center',
-                            mixBlendMode: 'multiply',
+                            mixBlendMode: isHighlighted ? 'normal' : 'multiply',
                           }}
                         >
                           <Image 
@@ -489,8 +492,8 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                             loading="eager"
                           />
                         </div>
-                        {/* Focus nodes — 1:1 with clock pages; only visible on hover */}
-                        {hoveredOuterClockIndex === index && (
+                        {/* Focus nodes — visible on hover or when clock is focused (clicked) */}
+                        {isHighlighted && (
                           <div
                             className="absolute inset-0 pointer-events-none"
                             style={{
@@ -523,7 +526,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                           </div>
                         )}
                       </motion.div>
-                      {hoveredOuterClockIndex === index && currentTime != null && (
+                      {isHighlighted && currentTime != null && (
                         <div className="absolute left-1/2 top-full -translate-x-1/2 mt-1.5 text-center text-xs font-mono tabular-nums text-gray-700 dark:text-gray-300 whitespace-nowrap z-50 pointer-events-none">
                           {(() => {
                             const r = clockRotation
