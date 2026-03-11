@@ -143,7 +143,7 @@ export function RecentSessions() {
         })();
 
     if (durationToUse > 0) {
-      router.push(`/${session.clock_id}?duration=${durationToUse}&sessionId=${session.id}&words=${encodedWords}`);
+      router.push(`/${session.clock_id}?duration=${durationToUse}&sessionId=${session.id}&words=${encodedWords}&originalDuration=${session.duration}`);
       localStorage.removeItem('pendingSession');
     } else {
       router.push(`/${session.clock_id}?duration=${session.duration}&words=${encodedWords}`);

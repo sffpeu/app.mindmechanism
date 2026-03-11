@@ -147,6 +147,7 @@ function NodesPageContent() {
   const dragListenersRef = useRef<{ onMove: ((e: MouseEvent) => void) | null; onUp: (() => void) | null }>({ onMove: null, onUp: null })
   const [customWords, setCustomWords] = useState<string[]>([])
   const [duration, setDuration] = useState<number | null>(null)
+  const [originalDuration, setOriginalDuration] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [showUserSatelliteTime, setShowUserSatelliteTime] = useState(false)
   
@@ -199,11 +200,15 @@ function NodesPageContent() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const durationParam = params.get('duration')
+    const originalDurationParam = params.get('originalDuration')
     const sessionIdParam = params.get('sessionId')
     const wordsParam = params.get('words')
     
     if (durationParam) {
       setDuration(parseInt(durationParam, 10))
+    }
+    if (originalDurationParam) {
+      setOriginalDuration(parseInt(originalDurationParam, 10))
     }
     if (sessionIdParam) {
       setSessionId(sessionIdParam)
@@ -741,7 +746,8 @@ function NodesPageContent() {
             {/* Session progress ring — one layer above background, behind pulsing glow; pointer-events-none so focus nodes stay clickable */}
             {duration != null && duration > 0 && (() => {
               const remaining = sessionState.remainingTime ?? duration
-              const progress = Math.min(1, (duration - remaining) / duration)
+              const totalForProgress = originalDuration ?? duration
+              const progress = Math.min(1, (totalForProgress - remaining) / totalForProgress)
               const trailRadiusInViewBox = 91
               return (
                 <motion.div
