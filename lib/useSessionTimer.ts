@@ -113,11 +113,52 @@ export function useSessionTimer(
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
   }, [sessionId])
 
-  // Save on page close / navigate away
+  // Save on page close, reload, or browser/tab close (pagehide fires for all of these)
   useEffect(() => {
     if (!sessionId) return
 
+    const saveProgress = (current: number) => {
+      localStorage.setItem('pendingSession', JSON.stringify({
+        sessionId,
+        remaining: current,
+        timestamp: Date.now()
+      }))
+      updateSessionProgress(sessionId, {
+        remaining_time_ms: current,
+        last_active_time: new Date().toISOString()
+      }).catch((err) => console.error('Error saving session progress:', err))
+    }
+
     const handlePageHide = () => {
+      const current = remainingTimeRef.current
+      if (current != null && current > 0) saveProgress(current)
+    }
+
+    // beforeunload: sync localStorage only (async Firestore may not complete on reload/close)
+    const handleBeforeUnload = () => {
+      const current = remainingTimeRef.current
+      if (current != null && current > 0) {
+        localStorage.setItem('pendingSession', JSON.stringify({
+          sessionId,
+          remaining: current,
+          timestamp: Date.now()
+        }))
+      }
+    }
+
+    window.addEventListener('pagehide', handlePageHide)
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => {
+      window.removeEventListener('pagehide', handlePageHide)
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+  }, [sessionId])
+
+  // Save when leaving via in-app navigation (menu, link, back) — component unmounts, no pagehide
+  useEffect(() => {
+    if (!sessionId) return
+
+    return () => {
       const current = remainingTimeRef.current
       if (current != null && current > 0) {
         localStorage.setItem('pendingSession', JSON.stringify({
@@ -128,12 +169,9 @@ export function useSessionTimer(
         updateSessionProgress(sessionId, {
           remaining_time_ms: current,
           last_active_time: new Date().toISOString()
-        }).catch((err) => console.error('Error saving session progress:', err))
+        }).catch((err) => console.error('Error saving session progress on unmount:', err))
       }
     }
-
-    window.addEventListener('pagehide', handlePageHide)
-    return () => window.removeEventListener('pagehide', handlePageHide)
   }, [sessionId])
 
   // Auto-save periodically (localStorage + Firestore); use ref so we save current value
