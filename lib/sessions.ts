@@ -264,6 +264,21 @@ export async function getPublicSessions(): Promise<Session[]> {
   }
 }
 
+/** Get a single session by ID (e.g. for clock page progress ring to use same total as dashboard). */
+export async function getSession(sessionId: string): Promise<Session | null> {
+  try {
+    if (!db || !sessionId) return null;
+    const sessionRef = doc(db, 'sessions', sessionId);
+    const sessionDoc = await getDoc(sessionRef);
+    if (!sessionDoc.exists()) return null;
+    const data = sessionDoc.data();
+    return { id: sessionDoc.id, ...data, start_time: data.start_time, end_time: data.end_time, last_active_time: data.last_active_time } as Session;
+  } catch (error) {
+    console.error('Error in getSession:', error);
+    return null;
+  }
+}
+
 export async function joinSession(sessionId: string): Promise<void> {
   try {
     if (!db) throw new Error('Firestore is not initialized');

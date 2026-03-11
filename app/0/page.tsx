@@ -38,6 +38,7 @@ import DotNavigation from '@/components/DotNavigation'
 import { clockTitles } from '@/lib/clockTitles'
 import { DEFAULT_WORDS_BY_CLOCK } from '@/lib/defaultWordsByClock'
 import { cn } from '@/lib/utils'
+import { getSession } from '@/lib/sessions'
 
 // Weather and Moon data interfaces
 interface WeatherResponse {
@@ -156,6 +157,7 @@ function NodesPageContent() {
     const n = parseInt(v, 10)
     return !Number.isNaN(n) && n > 0 ? n : null
   })
+  const [sessionTotalDuration, setSessionTotalDuration] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [showUserSatelliteTime, setShowUserSatelliteTime] = useState(false)
   
@@ -232,6 +234,15 @@ function NodesPageContent() {
     }
     setIsLoading(false)
   }, [])
+
+  useEffect(() => {
+    if (!sessionId) return
+    getSession(sessionId).then((session) => {
+      if (session?.duration != null && session.duration > 0) {
+        setSessionTotalDuration(session.duration)
+      }
+    })
+  }, [sessionId])
 
   // Handle mounting
   useEffect(() => {
@@ -752,7 +763,7 @@ function NodesPageContent() {
 
         <div className="flex-grow flex items-center justify-center min-h-0">
           <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px]">
-            {/* Session progress ring (clock page) — matches timer; when continuing, uses originalDuration so ring starts where user left off */}
+            {/* Session progress ring (clock page) — same formula as dashboard: progress = (total - remaining) / total; total from session when continuing */}
             {duration != null && duration > 0 && (() => {
               const remaining = sessionState.remainingTime ?? duration
               const urlOriginal = typeof window !== 'undefined' ? (() => {
@@ -761,7 +772,7 @@ function NodesPageContent() {
                 const n = v ? parseInt(v, 10) : NaN
                 return !Number.isNaN(n) && n > 0 ? n : null
               })() : null
-              const totalForProgress = urlOriginal ?? originalDurationFromUrl ?? originalDuration ?? duration
+              const totalForProgress = sessionTotalDuration ?? urlOriginal ?? originalDurationFromUrl ?? originalDuration ?? duration
               const progress = totalForProgress > 0 ? Math.min(1, Math.max(0, (totalForProgress - remaining) / totalForProgress)) : 0
               const trailRadiusInViewBox = 91
               return (
