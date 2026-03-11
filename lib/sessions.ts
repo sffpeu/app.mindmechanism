@@ -54,6 +54,8 @@ export interface Session extends SessionData {
   end_time?: Timestamp;
   last_active_time?: Timestamp;
   paused_duration?: number;
+  /** Time left when user last left (ms); used by Continue to restore countdown */
+  remaining_time_ms?: number;
 }
 
 function validateSession(data: Partial<SessionData>): void {
@@ -78,7 +80,8 @@ export async function createSession(data: SessionData): Promise<Session> {
       ...data,
       start_time: Timestamp.now(),
       status: 'in_progress' as const,
-      actual_duration: 0
+      actual_duration: 0,
+      remaining_time_ms: data.duration
     };
 
     const docRef = await addDoc(collection(db, 'sessions'), sessionData);
@@ -477,6 +480,28 @@ export async function updateSessionActivity(sessionId: string): Promise<void> {
     });
   } catch (error) {
     console.error('Error updating session activity:', error);
+    throw error;
+  }
+}
+
+/** Save progress when user leaves: remaining time (ms) so Continue can restore countdown. */
+export async function updateSessionProgress(
+  sessionId: string,
+  data: { remaining_time_ms: number; last_active_time?: string }
+): Promise<void> {
+  try {
+    if (!db) throw new Error('Firestore is not initialized');
+    if (!sessionId) throw new Error('Session ID is required');
+
+    const sessionRef = doc(db, 'sessions', sessionId);
+    await updateDoc(sessionRef, {
+      remaining_time_ms: data.remaining_time_ms,
+      last_active_time: data.last_active_time
+        ? Timestamp.fromDate(new Date(data.last_active_time))
+        : Timestamp.now()
+    });
+  } catch (error) {
+    console.error('Error in updateSessionProgress:', error);
     throw error;
   }
 }

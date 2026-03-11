@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useSoundEffects } from '@/lib/sounds'
+import { updateSessionProgress } from '@/lib/sessions'
 
 export function useSessionTimer(
   duration: number | null,
@@ -13,8 +14,11 @@ export function useSessionTimer(
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null)
   const [initialDuration, setInitialDuration] = useState<number | null>(null)
   const initialDurationRef = useRef<number | null>(null)
+  const remainingTimeRef = useRef<number | null>(null)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const { playClick } = useSoundEffects()
+
+  remainingTimeRef.current = remainingTime
 
   // Initialize timer from duration or saved session
   useEffect(() => {
@@ -86,38 +90,72 @@ export function useSessionTimer(
     }
   }, [remainingTime, isPaused, sessionStartTime, onSessionComplete])
 
-  // Save session state when leaving
+  // Save session state when leaving (localStorage + Firestore so Continue uses correct time)
   useEffect(() => {
-    if (!sessionId || !remainingTime) return
+    if (!sessionId) return
 
     const handleVisibilityChange = () => {
-      if (document.hidden) {
+      const current = remainingTimeRef.current
+      if (document.hidden && current != null && current > 0) {
         localStorage.setItem('pendingSession', JSON.stringify({
           sessionId,
-          remaining: remainingTime,
+          remaining: current,
           timestamp: Date.now()
         }))
+        updateSessionProgress(sessionId, {
+          remaining_time_ms: current,
+          last_active_time: new Date().toISOString()
+        }).catch((err) => console.error('Error saving session progress:', err))
       }
     }
 
     document.addEventListener('visibilitychange', handleVisibilityChange)
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
-  }, [sessionId, remainingTime])
+  }, [sessionId])
 
-  // Auto-save periodically
+  // Save on page close / navigate away
   useEffect(() => {
-    if (!sessionId || !remainingTime || isPaused) return
+    if (!sessionId) return
+
+    const handlePageHide = () => {
+      const current = remainingTimeRef.current
+      if (current != null && current > 0) {
+        localStorage.setItem('pendingSession', JSON.stringify({
+          sessionId,
+          remaining: current,
+          timestamp: Date.now()
+        }))
+        updateSessionProgress(sessionId, {
+          remaining_time_ms: current,
+          last_active_time: new Date().toISOString()
+        }).catch((err) => console.error('Error saving session progress:', err))
+      }
+    }
+
+    window.addEventListener('pagehide', handlePageHide)
+    return () => window.removeEventListener('pagehide', handlePageHide)
+  }, [sessionId])
+
+  // Auto-save periodically (localStorage + Firestore); use ref so we save current value
+  useEffect(() => {
+    if (!sessionId || isPaused) return
 
     const autoSaveInterval = setInterval(() => {
+      const current = remainingTimeRef.current
+      if (current == null || current <= 0) return
       localStorage.setItem('pendingSession', JSON.stringify({
         sessionId,
-        remaining: remainingTime,
+        remaining: current,
         timestamp: Date.now()
       }))
+      updateSessionProgress(sessionId, {
+        remaining_time_ms: current,
+        last_active_time: new Date().toISOString()
+      }).catch((err) => console.error('Error auto-saving session progress:', err))
     }, 30000)
 
     return () => clearInterval(autoSaveInterval)
-  }, [sessionId, remainingTime, isPaused])
+  }, [sessionId, isPaused])
 
   return {
     remainingTime,

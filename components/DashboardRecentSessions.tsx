@@ -184,27 +184,33 @@ export function DashboardRecentSessions({ sessions: propSessions }: DashboardRec
   };
 
   const handleContinueSession = (session: Session) => {
-    if (session.status === 'in_progress' || session.status === 'aborted') {
-      const now = new Date().getTime();
-      const startTime = session.start_time.toDate().getTime();
-      const lastActiveTime = session.last_active_time?.toDate().getTime() || startTime;
-      const pausedDuration = session.paused_duration || 0;
+    if (session.status !== 'in_progress' && session.status !== 'aborted') return;
 
-      // Use saved actual_duration when available (set when user left session); else compute from timestamps
-      const timeSpent = session.status === 'aborted'
-        ? (session.actual_duration ?? 0)
-        : (session.actual_duration ?? (lastActiveTime - startTime - pausedDuration));
+    const now = new Date().getTime();
+    const lastActiveTime = session.last_active_time?.toDate().getTime() ?? session.start_time.toDate().getTime();
+    const sessionAge = now - lastActiveTime;
+    const encodedWords = encodeURIComponent(JSON.stringify(session.words || []));
 
-      const remainingTime = Math.max(0, session.duration - timeSpent);
-      const sessionAge = now - lastActiveTime;
+    // Prefer saved remaining_time_ms (set when user left) so Continue starts where they left off
+    const savedRemaining = session.remaining_time_ms;
+    const useSaved = savedRemaining != null && savedRemaining > 0 && sessionAge < 24 * 60 * 60 * 1000;
 
-      if (remainingTime > 0 && sessionAge < 24 * 60 * 60 * 1000) {
-        const encodedWords = encodeURIComponent(JSON.stringify(session.words || []));
-        router.push(`/${session.clock_id}?duration=${remainingTime}&words=${encodedWords}&sessionId=${session.id}`);
-        localStorage.removeItem('pendingSession');
-      } else {
-        router.push(`/${session.clock_id}?duration=${session.duration}&words=${encodeURIComponent(JSON.stringify(session.words || []))}`);
-      }
+    const durationToUse = useSaved
+      ? savedRemaining
+      : (() => {
+          const startTime = session.start_time.toDate().getTime();
+          const pausedDuration = session.paused_duration || 0;
+          const timeSpent = session.status === 'aborted'
+            ? (session.actual_duration ?? 0)
+            : (session.actual_duration ?? (lastActiveTime - startTime - pausedDuration));
+          return Math.max(0, session.duration - timeSpent);
+        })();
+
+    if (durationToUse > 0) {
+      router.push(`/${session.clock_id}?duration=${durationToUse}&words=${encodedWords}&sessionId=${session.id}`);
+      localStorage.removeItem('pendingSession');
+    } else {
+      router.push(`/${session.clock_id}?duration=${session.duration}&words=${encodedWords}`);
     }
   };
 
@@ -218,20 +224,23 @@ export function DashboardRecentSessions({ sessions: propSessions }: DashboardRec
     const lastActiveTime = session.last_active_time?.toDate() || startTime;
     const pausedDuration = session.paused_duration ?? 0;
 
-    // Use saved actual_duration when available (set when user left), else compute from timestamps
-    const timeSpent = session.status === 'completed'
-      ? (session.actual_duration ?? 0)
-      : session.status === 'aborted'
-        ? (session.actual_duration ?? 0)
-        : (session.actual_duration ?? (lastActiveTime.getTime() - startTime.getTime() - pausedDuration));
-
+    // Prefer remaining_time_ms (saved when user left) for accurate "time left" and progress
+    const timeLeft = session.status === 'completed'
+      ? 0
+      : (session.remaining_time_ms != null && session.remaining_time_ms > 0)
+        ? session.remaining_time_ms
+        : (() => {
+            const timeSpent = session.status === 'aborted'
+              ? (session.actual_duration ?? 0)
+              : (session.actual_duration ?? (lastActiveTime.getTime() - startTime.getTime() - pausedDuration));
+            return Math.max(0, session.duration - timeSpent);
+          })();
+    const timeSpent = session.duration - timeLeft;
     const progress = session.status === 'completed' ? 100 :
       Math.min((timeSpent / session.duration) * 100, 100);
 
     const canContinue = session.status === 'in_progress' || session.status === 'aborted';
     const isCompleted = session.status === 'completed';
-    const timeLeft = Math.max(0, session.duration - timeSpent);
-
     const timeLabel = isCompleted
       ? `${formatTime(session.actual_duration ?? 0)} completed`
       : `${formatTime(timeLeft)} left`;

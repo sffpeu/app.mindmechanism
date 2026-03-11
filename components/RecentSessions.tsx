@@ -123,19 +123,27 @@ export function RecentSessions() {
     if (session.status !== 'in_progress' && session.status !== 'aborted') return;
 
     const now = new Date().getTime();
-    const startTime = session.start_time.toDate().getTime();
-    const lastActiveTime = session.last_active_time?.toDate().getTime() || startTime;
-    const pausedDuration = session.paused_duration || 0;
-
-    const timeSpent = session.status === 'aborted'
-      ? (session.actual_duration ?? 0)
-      : (session.actual_duration ?? (lastActiveTime - startTime - pausedDuration));
-    const remainingTime = Math.max(0, session.duration - timeSpent);
+    const lastActiveTime = session.last_active_time?.toDate().getTime() ?? session.start_time.toDate().getTime();
     const sessionAge = now - lastActiveTime;
     const encodedWords = encodeURIComponent(JSON.stringify(session.words || []));
 
-    if (remainingTime > 0 && sessionAge < 24 * 60 * 60 * 1000) {
-      router.push(`/${session.clock_id}?duration=${remainingTime}&sessionId=${session.id}&words=${encodedWords}`);
+    // Prefer saved remaining_time_ms (set when user left) so Continue starts where they left off
+    const savedRemaining = session.remaining_time_ms;
+    const useSaved = savedRemaining != null && savedRemaining > 0 && sessionAge < 24 * 60 * 60 * 1000;
+
+    const durationToUse = useSaved
+      ? savedRemaining
+      : (() => {
+          const startTime = session.start_time.toDate().getTime();
+          const pausedDuration = session.paused_duration || 0;
+          const timeSpent = session.status === 'aborted'
+            ? (session.actual_duration ?? 0)
+            : (session.actual_duration ?? (lastActiveTime - startTime - pausedDuration));
+          return Math.max(0, session.duration - timeSpent);
+        })();
+
+    if (durationToUse > 0) {
+      router.push(`/${session.clock_id}?duration=${durationToUse}&sessionId=${session.id}&words=${encodedWords}`);
       localStorage.removeItem('pendingSession');
     } else {
       router.push(`/${session.clock_id}?duration=${session.duration}&words=${encodedWords}`);
@@ -152,14 +160,20 @@ export function RecentSessions() {
     const lastActiveTime = session.last_active_time?.toDate() || startTime;
     const pausedDuration = session.paused_duration || 0;
 
-    const timeSpent = session.status === 'completed'
-      ? (session.actual_duration ?? 0)
-      : session.status === 'aborted'
-        ? (session.actual_duration ?? 0)
-        : (session.actual_duration ?? (lastActiveTime.getTime() - startTime.getTime() - pausedDuration));
+    // Prefer remaining_time_ms (saved when user left) for accurate "time left" and progress
+    const timeLeft = session.status === 'completed'
+      ? 0
+      : (session.remaining_time_ms != null && session.remaining_time_ms > 0)
+        ? session.remaining_time_ms
+        : (() => {
+            const timeSpent = session.status === 'aborted'
+              ? (session.actual_duration ?? 0)
+              : (session.actual_duration ?? (lastActiveTime.getTime() - startTime.getTime() - pausedDuration));
+            return Math.max(0, session.duration - timeSpent);
+          })();
+    const timeSpent = session.duration - timeLeft;
     const progress = session.status === 'completed' ? 100 :
       Math.min((timeSpent / session.duration) * 100, 100);
-    const timeLeft = Math.max(0, session.duration - timeSpent);
     const isCompleted = session.status === 'completed';
     const timeLabel = isCompleted
       ? `${formatTime(session.actual_duration ?? 0)} completed`
