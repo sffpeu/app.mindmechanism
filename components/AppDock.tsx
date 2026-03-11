@@ -87,8 +87,7 @@ export function AppDock() {
               aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               <DockItem className="aspect-square rounded-full bg-gray-200 dark:bg-neutral-800 hover:bg-gray-300 dark:hover:bg-neutral-700">
-                <DockLabel={isDarkMode ? 'Light mode' : 'Dark mode'}
-                </DockLabel>
+                <DockLabel>{isDarkMode ? 'Light mode' : 'Dark mode'}</DockLabel>
                 <DockIcon>
                   {isDarkMode ? (
                     <Sun className="h-full w-full text-neutral-600 dark:text-neutral-300" />
