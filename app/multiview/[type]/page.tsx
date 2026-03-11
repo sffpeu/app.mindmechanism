@@ -84,7 +84,6 @@ export default function MultiViewPage() {
   const isMultiView2 = type === 2
   const [rotationValues, setRotationValues] = useState<Record<number, number[]>>({})
   const animationRef = useRef<number>()
-  const [hoveredOuterClockIndex, setHoveredOuterClockIndex] = useState<number | null>(null)
 
   // Initialize and update current time with optimized animation frame
   useEffect(() => {
@@ -467,8 +466,6 @@ export default function MultiViewPage() {
                       transform: 'translate(-50%, -50%)',
                       zIndex: 30,
                     }}
-                    onMouseEnter={() => setHoveredOuterClockIndex(index)}
-                    onMouseLeave={() => setHoveredOuterClockIndex(null)}
                   >
                     <div className="relative w-full h-full">
                       <motion.div
@@ -496,55 +493,6 @@ export default function MultiViewPage() {
                           />
                         </div>
                       </motion.div>
-                      {/* Focus nodes on hover — mirror clock pages 0–8: same DOM order and transform (rotate then imageOrientation) */}
-                      <motion.div
-                        className="absolute inset-0 pointer-events-none"
-                        style={{ willChange: 'transform' }}
-                        animate={{ rotate: clockRotation }}
-                        transition={{ type: 'tween', duration: 0.016, ease: 'linear' }}
-                      >
-                        <div className="absolute inset-0" style={{ transform: `rotate(${clock.imageOrientation ?? 0}deg)`, transformOrigin: 'center' }}>
-                          <div className="absolute inset-0">
-                            {Array.from({ length: clock.focusNodes }).map((_, nodeIndex) => {
-                              const angle = ((360 / Math.max(1, clock.focusNodes)) * nodeIndex + 270) % 360
-                              const radians = angle * (Math.PI / 180)
-                              const nodeRadius = 55
-                              const x = 50 + nodeRadius * Math.cos(radians)
-                              const y = 50 + nodeRadius * Math.sin(radians)
-                              return (
-                                <motion.div
-                                  key={nodeIndex}
-                                  className={`absolute w-1.5 h-1.5 rounded-full ${focusNodeColors[index]} dark:brightness-150`}
-                                  style={{
-                                    left: `${x}%`,
-                                    top: `${y}%`,
-                                    transform: 'translate(-50%, -50%)',
-                                    mixBlendMode: isDarkMode ? 'screen' : 'multiply',
-                                    boxShadow: isDarkMode
-                                      ? '0 0 3px rgba(255, 255, 255, 0.3)'
-                                      : '0 0 3px rgba(0, 0, 0, 0.2)',
-                                  }}
-                                  initial={false}
-                                  animate={{
-                                    opacity: hoveredOuterClockIndex === index ? 1 : 0,
-                                    scale: hoveredOuterClockIndex === index ? 1 : 0.5,
-                                  }}
-                                  transition={{ duration: 0.15, ease: 'easeOut' }}
-                                />
-                              )
-                            })}
-                          </div>
-                        </div>
-                      </motion.div>
-                      {hoveredOuterClockIndex === index && currentTime != null && (
-                        <div className="absolute left-1/2 top-full -translate-x-1/2 mt-1 text-center text-xs font-mono tabular-nums text-gray-700 dark:text-gray-300 whitespace-nowrap z-50">
-                          {(() => {
-                            const r = clockRotation
-                            const signed = r > 180 ? r - 360 : r
-                            return `${signed.toFixed(3)}°`
-                          })()}
-                        </div>
-                      )}
                     </div>
                   </div>
                 );
