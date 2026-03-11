@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Session, getUserSessions } from '@/lib/sessions';
+import { Session, getUserSessions, deleteSession } from '@/lib/sessions';
 import { useAuth } from '@/lib/FirebaseAuthContext';
-import { RefreshCw, Play } from 'lucide-react';
+import { RefreshCw, Play, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
+import { toast } from 'react-hot-toast';
 
 import { clockTitles } from '@/lib/clockTitles';
 import { clockSettings } from '@/lib/clockSettings';
@@ -183,6 +184,18 @@ export function DashboardRecentSessions({ sessions: propSessions }: DashboardRec
     router.push(`/${session.clock_id}?duration=${session.duration}&words=${encodedWords}&sessionId=${session.id}`);
   };
 
+  const handleRemoveSession = async (session: Session, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await deleteSession(session.id);
+      setSessions((prev) => prev.filter((s) => s.id !== session.id));
+      toast.success('Session removed');
+    } catch (error) {
+      console.error('Error removing session:', error);
+      toast.error('Could not remove session');
+    }
+  };
+
   const handleContinueSession = (session: Session) => {
     if (session.status !== 'in_progress' && session.status !== 'aborted') return;
 
@@ -246,7 +259,16 @@ export function DashboardRecentSessions({ sessions: propSessions }: DashboardRec
       : `${formatTime(timeLeft)} left`;
 
     return (
-      <div className="flex flex-col items-center p-4 rounded-2xl bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-black/5 dark:border-white/10 min-w-[128px] max-w-[168px] shadow-sm hover:shadow-md transition-shadow">
+      <div className="relative flex flex-col items-center p-4 rounded-2xl bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-black/5 dark:border-white/10 min-w-[128px] max-w-[168px] shadow-sm hover:shadow-md transition-shadow">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-2 right-2 h-7 w-7 rounded-full opacity-70 hover:opacity-100 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          onClick={(e) => handleRemoveSession(session, e)}
+          aria-label="Remove session"
+        >
+          <X className="h-3.5 w-3.5" />
+        </Button>
         <MiniClockWithNodes
           progress={progress}
           strokeColor={strokeColor}
