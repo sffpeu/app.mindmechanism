@@ -104,8 +104,8 @@ function Dock({
         scrollbarWidth: 'none',
       }}
       className={cn(
-        'mx-2 flex overflow-x-auto overflow-y-auto',
-        isVertical ? 'flex-col items-start max-h-full' : 'max-w-full items-end'
+        'mx-2 flex',
+        isVertical ? 'flex-col items-start max-h-full overflow-visible' : 'max-w-full items-end overflow-x-auto overflow-y-auto'
       )}
     >
       <motion.div
@@ -121,7 +121,7 @@ function Dock({
         }}
         className={cn(
           'flex gap-4 rounded-2xl px-4',
-          isVertical && 'flex-col py-4 w-fit',
+          isVertical && 'flex-col py-4 w-fit overflow-visible',
           !isVertical && 'mx-auto w-fit',
           className
         )}
@@ -213,7 +213,7 @@ function DockLabel({ children, className, ...rest }: DockLabelProps) {
           exit={{ opacity: 0, x: isVertical ? 10 : 0, y: isVertical ? 0 : 0 }}
           transition={{ duration: 0.2 }}
           className={cn(
-            'absolute w-fit whitespace-pre rounded-md border border-gray-200 bg-gray-100 px-2 py-0.5 text-xs text-neutral-700 dark:border-neutral-900 dark:bg-neutral-800 dark:text-white',
+            'absolute z-[1000] w-fit max-w-[200px] whitespace-normal rounded-md border border-gray-200 bg-gray-100 px-2 py-1 text-xs text-neutral-700 shadow-md dark:border-neutral-900 dark:bg-neutral-800 dark:text-white',
             isVertical ? 'left-full ml-2 top-1/2 -translate-y-1/2' : '-top-6 left-1/2',
             className
           )}
