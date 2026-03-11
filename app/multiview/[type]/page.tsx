@@ -464,7 +464,7 @@ export default function MultiViewPage() {
                   >
                     <div className="relative w-full h-full">
                       <motion.div
-                        className="absolute inset-0 rounded-full overflow-hidden"
+                        className="absolute inset-0 rounded-full overflow-visible"
                         style={{ transformOrigin: 'center', willChange: 'transform' }}
                         animate={{ rotate: clockRotation }}
                         transition={{ type: 'tween', duration: 0.016, ease: 'linear' }}
@@ -486,6 +486,37 @@ export default function MultiViewPage() {
                             priority
                             loading="eager"
                           />
+                        </div>
+                        {/* Focus nodes — 1:1 with clock pages: 12 o'clock (270°) then evenly spaced; radius 55; layer rotated by imageOrientation */}
+                        <div
+                          className="absolute inset-0 pointer-events-none"
+                          style={{
+                            transform: `rotate(${clock.imageOrientation ?? 0}deg)`,
+                            transformOrigin: 'center',
+                          }}
+                        >
+                          {Array.from({ length: clock.focusNodes }).map((_, nodeIndex) => {
+                            const angle = ((360 / clock.focusNodes) * nodeIndex + 270) % 360
+                            const radians = angle * (Math.PI / 180)
+                            const nodeRadius = 55
+                            const x = 50 + nodeRadius * Math.cos(radians)
+                            const y = 50 + nodeRadius * Math.sin(radians)
+                            return (
+                              <div
+                                key={nodeIndex}
+                                className={`absolute w-2 h-2 rounded-full ${focusNodeColors[index]} dark:brightness-150`}
+                                style={{
+                                  left: `${x}%`,
+                                  top: `${y}%`,
+                                  transform: 'translate(-50%, -50%)',
+                                  mixBlendMode: isDarkMode ? 'screen' : 'multiply',
+                                  boxShadow: isDarkMode
+                                    ? '0 0 4px rgba(255, 255, 255, 0.3)'
+                                    : '0 0 4px rgba(0, 0, 0, 0.2)',
+                                }}
+                              />
+                            )
+                          })}
                         </div>
                       </motion.div>
                     </div>
