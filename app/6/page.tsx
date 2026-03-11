@@ -678,10 +678,16 @@ function NodesPageContent() {
 
         <div className="flex-grow flex items-center justify-center min-h-0">
           <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px]">
-            {/* Session progress ring (clock page) — matches timer; when continuing, uses originalDuration so ring starts at correct position (e.g. half when 1 min left of 2 min) */}
+            {/* Session progress ring (clock page) — matches timer; when continuing, uses originalDuration so ring starts where user left off */}
             {duration != null && duration > 0 && (() => {
               const remaining = sessionState.remainingTime ?? duration
-              const totalForProgress = originalDurationFromUrl ?? originalDuration ?? duration
+              const urlOriginal = typeof window !== 'undefined' ? (() => {
+                const p = new URLSearchParams(window.location.search)
+                const v = p.get('originalDuration')
+                const n = v ? parseInt(v, 10) : NaN
+                return !Number.isNaN(n) && n > 0 ? n : null
+              })() : null
+              const totalForProgress = urlOriginal ?? originalDurationFromUrl ?? originalDuration ?? duration
               const progress = totalForProgress > 0 ? Math.min(1, Math.max(0, (totalForProgress - remaining) / totalForProgress)) : 0
               const trailRadiusInViewBox = 91
               return (
