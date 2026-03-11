@@ -148,6 +148,14 @@ function NodesPageContent() {
   const [customWords, setCustomWords] = useState<string[]>([])
   const [duration, setDuration] = useState<number | null>(null)
   const [originalDuration, setOriginalDuration] = useState<number | null>(null)
+  const [originalDurationFromUrl] = useState<number | null>(() => {
+    if (typeof window === 'undefined') return null
+    const p = new URLSearchParams(window.location.search)
+    const v = p.get('originalDuration')
+    if (!v) return null
+    const n = parseInt(v, 10)
+    return !Number.isNaN(n) && n > 0 ? n : null
+  })
   const [isLoading, setIsLoading] = useState(true)
   const [showUserSatelliteTime, setShowUserSatelliteTime] = useState(false)
   
@@ -744,14 +752,11 @@ function NodesPageContent() {
 
         <div className="flex-grow flex items-center justify-center min-h-0">
           <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px]">
-            {/* Session progress ring — one layer above background, behind pulsing glow; pointer-events-none so focus nodes stay clickable */}
+            {/* Session progress ring (clock page) — matches timer; when continuing, uses originalDuration so ring starts at correct position (e.g. half when 1 min left of 2 min) */}
             {duration != null && duration > 0 && (() => {
               const remaining = sessionState.remainingTime ?? duration
-              const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
-              const originalFromUrl = urlParams?.get('originalDuration')
-              const parsed = originalFromUrl ? parseInt(originalFromUrl, 10) : NaN
-              const totalForProgress = (!Number.isNaN(parsed) && parsed > 0 ? parsed : null) ?? originalDuration ?? duration
-              const progress = Math.min(1, Math.max(0, (totalForProgress - remaining) / totalForProgress))
+              const totalForProgress = originalDurationFromUrl ?? originalDuration ?? duration
+              const progress = totalForProgress > 0 ? Math.min(1, Math.max(0, (totalForProgress - remaining) / totalForProgress)) : 0
               const trailRadiusInViewBox = 91
               return (
                 <motion.div
