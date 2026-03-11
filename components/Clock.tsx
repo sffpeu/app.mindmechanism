@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -589,7 +589,7 @@ export default function Clock({
       const remaining = initialDuration - elapsed;
       setRemainingTime(remaining);
 
-      // Auto-save every minute
+      // Auto-save every minute to localStorage and Firestore (so dashboard shows correct "X left")
       if (Date.now() - lastAutoSave >= 60000) {
         setLastAutoSave(Date.now());
         if (sessionId) {
@@ -598,6 +598,13 @@ export default function Clock({
             remaining,
             timestamp: Date.now()
           }));
+          const timeSpent = Math.max(0, initialDuration - remaining);
+          updateSession(sessionId, {
+            status: 'in_progress',
+            actual_duration: timeSpent,
+            last_active_time: new Date().toISOString(),
+            progress: Math.round((timeSpent / initialDuration) * 100)
+          }).catch((err) => console.error('Error auto-saving session progress:', err));
         }
       }
 
@@ -640,18 +647,19 @@ export default function Clock({
         setIsPaused(false);
         setLastAutoSave(now);
       } else {
-        // Pausing - save current state
+        // Pausing - save current state (actual_duration = time spent so far)
         const elapsed = now - (sessionStartTime || now);
-        
+        const remaining = Math.max(0, initialDuration! - elapsed);
+
         await updateSession(sessionId, {
           status: 'in_progress',
-          actual_duration: initialDuration! - elapsed,
+          actual_duration: elapsed,
           last_active_time: new Date(now).toISOString(),
-          progress: Math.round(((initialDuration! - elapsed) / initialDuration!) * 100)
+          progress: Math.round((elapsed / initialDuration!) * 100)
         });
-        
+
         setIsPaused(true);
-        setPausedTimeRemaining(elapsed);
+        setPausedTimeRemaining(remaining);
       }
     } catch (error) {
       console.error('Error updating session pause state:', error);
@@ -697,30 +705,37 @@ export default function Clock({
     return () => clearInterval(activityInterval);
   }, [sessionId, isPaused, remainingTime]);
 
-  // Enhanced page visibility handler
+  // Save session progress to Firestore (time left, so dashboard shows correct "X left")
+  const saveSessionProgress = useCallback(async () => {
+    if (!sessionId || remainingTime == null || !initialDuration) return;
+    const timeSpent = Math.max(0, initialDuration - remainingTime);
+    try {
+      await updateSession(sessionId, {
+        status: 'in_progress',
+        actual_duration: timeSpent,
+        last_active_time: new Date().toISOString(),
+        progress: Math.round((timeSpent / initialDuration) * 100)
+      });
+    } catch (error) {
+      console.error('Error saving session progress:', error);
+    }
+  }, [sessionId, remainingTime, initialDuration]);
+
+  // Enhanced page visibility handler — save progress when user leaves tab
   useEffect(() => {
     if (!sessionId) return;
 
     const handleVisibilityChange = async () => {
-      if (document.hidden && !isPaused) {
+      if (document.hidden && !isPaused && remainingTime != null && initialDuration) {
         try {
-          const now = new Date();
-          await updateSession(sessionId, {
-            status: 'in_progress',
-            actual_duration: initialDuration! - (remainingTime || 0),
-            last_active_time: new Date(now).toISOString(),
-            paused_duration: (pausedTimeRemaining || 0) + (now.getTime() - (sessionStartTime || now.getTime()))
-          });
-          
+          await saveSessionProgress();
           setIsPaused(true);
           setPausedTimeRemaining(remainingTime);
-          
-          // Save to localStorage as fallback
           localStorage.setItem('pendingSession', JSON.stringify({
             sessionId,
             remaining: remainingTime,
             original: initialDuration,
-            timestamp: now.getTime()
+            timestamp: Date.now()
           }));
         } catch (error) {
           console.error('Error handling visibility change:', error);
@@ -730,7 +745,27 @@ export default function Clock({
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [sessionId, isPaused, remainingTime, initialDuration, sessionStartTime, pausedTimeRemaining]);
+  }, [sessionId, isPaused, remainingTime, initialDuration, saveSessionProgress]);
+
+  // Save progress when user closes tab or navigates away
+  useEffect(() => {
+    if (!sessionId) return;
+
+    const handlePageHide = () => {
+      if (!isPaused && remainingTime != null && initialDuration) {
+        saveSessionProgress();
+        localStorage.setItem('pendingSession', JSON.stringify({
+          sessionId,
+          remaining: remainingTime,
+          original: initialDuration,
+          timestamp: Date.now()
+        }));
+      }
+    };
+
+    window.addEventListener('pagehide', handlePageHide);
+    return () => window.removeEventListener('pagehide', handlePageHide);
+  }, [sessionId, isPaused, remainingTime, initialDuration, saveSessionProgress]);
 
   // Add session recovery on mount
   useEffect(() => {

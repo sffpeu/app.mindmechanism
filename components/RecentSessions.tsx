@@ -120,24 +120,25 @@ export function RecentSessions() {
   };
 
   const handleContinueSession = (session: Session) => {
+    if (session.status !== 'in_progress' && session.status !== 'aborted') return;
+
     const now = new Date().getTime();
     const startTime = session.start_time.toDate().getTime();
     const lastActiveTime = session.last_active_time?.toDate().getTime() || startTime;
     const pausedDuration = session.paused_duration || 0;
 
-    const timeSpent = session.status === 'aborted' ?
-      session.actual_duration || 0 :
-      lastActiveTime - startTime - pausedDuration;
-
+    const timeSpent = session.status === 'aborted'
+      ? (session.actual_duration ?? 0)
+      : (session.actual_duration ?? (lastActiveTime - startTime - pausedDuration));
     const remainingTime = Math.max(0, session.duration - timeSpent);
     const sessionAge = now - lastActiveTime;
+    const encodedWords = encodeURIComponent(JSON.stringify(session.words || []));
 
     if (remainingTime > 0 && sessionAge < 24 * 60 * 60 * 1000) {
-      const encodedWords = encodeURIComponent(JSON.stringify(session.words || []));
       router.push(`/${session.clock_id}?duration=${remainingTime}&sessionId=${session.id}&words=${encodedWords}`);
       localStorage.removeItem('pendingSession');
     } else {
-      router.push(`/${session.clock_id}?duration=${session.duration}&words=${encodeURIComponent(JSON.stringify(session.words || []))}`);
+      router.push(`/${session.clock_id}?duration=${session.duration}&words=${encodedWords}`);
     }
   };
 
@@ -151,10 +152,18 @@ export function RecentSessions() {
     const lastActiveTime = session.last_active_time?.toDate() || startTime;
     const pausedDuration = session.paused_duration || 0;
 
+    const timeSpent = session.status === 'completed'
+      ? (session.actual_duration ?? 0)
+      : session.status === 'aborted'
+        ? (session.actual_duration ?? 0)
+        : (session.actual_duration ?? (lastActiveTime.getTime() - startTime.getTime() - pausedDuration));
     const progress = session.status === 'completed' ? 100 :
-      session.status === 'aborted' ?
-        Math.min((session.actual_duration / session.duration) * 100, 100) :
-        Math.min(((lastActiveTime.getTime() - startTime.getTime() - pausedDuration) / session.duration) * 100, 100);
+      Math.min((timeSpent / session.duration) * 100, 100);
+    const timeLeft = Math.max(0, session.duration - timeSpent);
+    const isCompleted = session.status === 'completed';
+    const timeLabel = isCompleted
+      ? `${formatTime(session.actual_duration ?? 0)} completed`
+      : `${formatTime(timeLeft)} left`;
 
     const canContinue = session.status === 'in_progress' || session.status === 'aborted';
 
@@ -164,8 +173,8 @@ export function RecentSessions() {
         <h3 className={`text-xs font-medium mt-2 text-center line-clamp-2 ${textColor}`}>
           {clockType}
         </h3>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-          {formatTime(session.duration)}
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 tabular-nums">
+          {timeLabel}
         </p>
         <div className="flex gap-1.5 mt-2 w-full justify-center flex-wrap">
           {canContinue && (
