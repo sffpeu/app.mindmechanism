@@ -701,7 +701,8 @@ function NodesPageContent() {
             {/* Session progress ring — one layer above background, behind pulsing glow; pointer-events-none so focus nodes stay clickable */}
             {duration != null && duration > 0 && (() => {
               const remaining = sessionState.remainingTime ?? duration
-              const totalForProgress = originalDuration ?? duration
+              const originalFromUrl = searchParams.get('originalDuration')
+              const totalForProgress = (originalFromUrl ? parseInt(originalFromUrl, 10) : null) ?? originalDuration ?? duration
               const progress = Math.min(1, (totalForProgress - remaining) / totalForProgress)
               const trailRadiusInViewBox = 91
               return (
