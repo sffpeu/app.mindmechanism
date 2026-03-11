@@ -168,7 +168,7 @@ function NodesPageContent() {
   const [rotation, setRotation] = useState(startingDegree)
   const [currentDegree, setCurrentDegree] = useState(startingDegree)
   const [focusNodesOffset, setFocusNodesOffset] = useState(0)
-  const entranceOffset = useClockEntrance()
+  const [entranceOffset, triggerCompleteSpin] = useClockEntrance()
 
   // Helper functions
   const handleSignOut = async () => {
@@ -271,6 +271,7 @@ function NodesPageContent() {
   // Handle session completion
   const handleSessionComplete = () => {
     localStorage.removeItem('pendingSession')
+    triggerCompleteSpin()
   }
 
   const sessionState = useSessionTimer(duration, sessionId, handleSessionComplete)
@@ -701,9 +702,11 @@ function NodesPageContent() {
             {/* Session progress ring — one layer above background, behind pulsing glow; pointer-events-none so focus nodes stay clickable */}
             {duration != null && duration > 0 && (() => {
               const remaining = sessionState.remainingTime ?? duration
-              const originalFromUrl = searchParams.get('originalDuration')
-              const totalForProgress = (originalFromUrl ? parseInt(originalFromUrl, 10) : null) ?? originalDuration ?? duration
-              const progress = Math.min(1, (totalForProgress - remaining) / totalForProgress)
+              const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+              const originalFromUrl = urlParams?.get('originalDuration')
+              const parsed = originalFromUrl ? parseInt(originalFromUrl, 10) : NaN
+              const totalForProgress = (!Number.isNaN(parsed) && parsed > 0 ? parsed : null) ?? originalDuration ?? duration
+              const progress = Math.min(1, Math.max(0, (totalForProgress - remaining) / totalForProgress))
               const trailRadiusInViewBox = 91
               return (
                 <motion.div
