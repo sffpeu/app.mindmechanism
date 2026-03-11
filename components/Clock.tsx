@@ -1341,8 +1341,10 @@ export default function Clock({
               // Skip the 9th clock as it's part of the center stack
               if (index >= 8) return null;
 
+              // Swap position of mini clock 6 (index 5) and mini clock 0 (index 0)
+              const positionIndex = index === 0 ? 5 : index === 5 ? 0 : index;
               // Calculate position for each outer clock
-              const angle = (360 / 8) * index;
+              const angle = (360 / 8) * positionIndex;
               const radius = 35; // Distance from center
               const radians = (angle * Math.PI) / 180;
               const x = 50 + radius * Math.cos(radians);
