@@ -64,7 +64,7 @@ function HomeLoginContent() {
   }
 
   return (
-    <div className="min-h-screen flex bg-white dark:bg-[hsl(var(--background))]">
+    <div className="h-full flex bg-white dark:bg-[hsl(var(--background))]">
       {/* Left: 60% - Dashboard preview image */}
       <div className="hidden md:block md:w-[60%] relative overflow-hidden bg-gray-100 dark:bg-black/80">
         <Image
@@ -126,7 +126,7 @@ export default function HomePage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-white dark:bg-[hsl(var(--background))] flex items-center justify-center">
+        <div className="h-full bg-white dark:bg-[hsl(var(--background))] flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-300 dark:border-white/20 border-t-red-600 dark:border-t-red-500" />
         </div>
       }

@@ -15,12 +15,14 @@ function LayoutContentInner({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <div className="min-h-screen pb-24">
-        {isProtectedRoute ? (
-          <ProtectedRoute>{children}</ProtectedRoute>
-        ) : (
-          children
-        )}
+      <div className="h-screen overflow-hidden flex flex-col pl-20">
+        <div className="flex-1 min-h-0 overflow-hidden">
+          {isProtectedRoute ? (
+            <ProtectedRoute>{children}</ProtectedRoute>
+          ) : (
+            children
+          )}
+        </div>
       </div>
       <AppDock />
     </>

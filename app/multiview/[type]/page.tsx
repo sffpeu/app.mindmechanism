@@ -205,7 +205,7 @@ export default function MultiViewPage() {
   // Match clock pages 0–8: focus nodes at 12 o'clock (270°) then evenly spaced; radius 55; focus node layer rotated by imageOrientation
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-black/90">
+    <div className="h-full flex flex-col bg-gray-50 dark:bg-black/90 overflow-hidden">
       {/* Navigation Layer */}
       <div className="fixed inset-0 pointer-events-none z-[999]">
         {showElements && (

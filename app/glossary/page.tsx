@@ -146,15 +146,15 @@ export default function GlossaryPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black/95">
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="mb-6">
+    <div className="h-full overflow-hidden flex flex-col bg-gray-50 dark:bg-black/95">
+      <div className="flex-1 min-h-0 flex flex-col max-w-7xl mx-auto w-full px-4 py-6">
+        <div className="mb-6 shrink-0">
           <h1 className="text-2xl font-semibold dark:text-white mb-2">Glossary</h1>
           <p className="text-gray-600 dark:text-gray-400">Browse and search through meditation focus words</p>
         </div>
 
         {/* Single card: same look as Assign Words popup glossary */}
-        <div className="rounded-xl border border-black/5 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-lg overflow-hidden flex flex-col min-h-[calc(100vh-12rem)]">
+        <div className="rounded-xl border border-black/5 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-lg overflow-hidden flex flex-col flex-1 min-h-0">
           {/* Header: search + filters */}
           <div className="p-3 border-b border-black/5 dark:border-white/10 space-y-2 shrink-0 flex-shrink-0">
             <div className="flex-1 relative flex items-center gap-3">

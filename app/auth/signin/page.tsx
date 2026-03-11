@@ -14,7 +14,7 @@ function SignInRedirectContent() {
   }, [router, searchParams])
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black/95 flex items-center justify-center">
+    <div className="h-full bg-gray-50 dark:bg-black/95 flex items-center justify-center">
       <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-300 dark:border-white/20 border-t-black dark:border-t-white" />
     </div>
   )
@@ -24,7 +24,7 @@ function SignInRedirectContent() {
 export default function SignInRedirect() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 dark:bg-black/95 flex items-center justify-center">
+      <div className="h-full bg-gray-50 dark:bg-black/95 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-300 dark:border-white/20 border-t-black dark:border-t-white" />
       </div>
     }>

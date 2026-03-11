@@ -472,7 +472,7 @@ function NodesPageContent() {
 
   return (
     <ProtectedRoute>
-      <div className="h-screen overflow-hidden bg-gray-50 dark:bg-black/95">
+      <div className="h-full overflow-hidden bg-gray-50 dark:bg-black/95">
         {/* Settings Dropdown */}
         <div className="fixed top-4 right-4 z-50">
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
@@ -662,7 +662,7 @@ function NodesPageContent() {
           </div>
         </div>
 
-        <div className="flex-grow flex items-center justify-center min-h-screen">
+        <div className="flex-grow flex items-center justify-center min-h-0">
           <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px]">
             {/* Session progress ring — one layer above background, behind pulsing glow; pointer-events-none so focus nodes stay clickable */}
             {duration != null && duration > 0 && (() => {

@@ -282,19 +282,22 @@ export default function NotesPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-black/95">
+      <div className="h-full overflow-hidden flex flex-col bg-gray-50 dark:bg-black/95">
+        <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="text-center py-8">
             <h2 className="text-xl font-medium text-black dark:text-white mb-2">Sign In Required</h2>
             <p className="text-gray-500 dark:text-gray-400">Please sign in to view and manage your notes.</p>
           </div>
         </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black/95">
+    <div className="h-full overflow-hidden flex flex-col bg-gray-50 dark:bg-black/95">
+      <div className="flex-1 min-h-0 overflow-y-auto">
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
           {/* Left Column: Saved Notes */}

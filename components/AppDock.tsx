@@ -32,9 +32,9 @@ export function AppDock() {
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 z-[999] flex justify-center pointer-events-none">
-        <div className="pointer-events-auto pb-3">
-          <Dock className="items-end pb-3">
+      <div className="fixed left-0 top-0 bottom-0 z-[999] flex items-center pointer-events-none pl-3">
+        <div className="pointer-events-auto">
+          <Dock orientation="vertical" className="items-start">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;

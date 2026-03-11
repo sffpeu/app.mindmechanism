@@ -210,7 +210,7 @@ export default function SessionsPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50 dark:bg-black/95">
+      <div className="h-full overflow-hidden flex flex-col bg-gray-50 dark:bg-black/95">
         {showElements && (
           <div className="fixed right-8 top-8 z-50">
             <DotNavigation
@@ -220,7 +220,8 @@ export default function SessionsPage() {
           </div>
         )}
 
-        <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="space-y-8">
             {/* Create Session Section */}
             {!isClockMode && (
@@ -409,6 +410,7 @@ export default function SessionsPage() {
                 </div>
               </div>
             )}
+          </div>
           </div>
         </div>
         <SessionDurationDialog

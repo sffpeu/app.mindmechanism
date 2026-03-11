@@ -90,7 +90,7 @@ export default function DashboardPage() {
 
   if (isInitializing || authLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50/80 dark:bg-black/95">
+      <div className="h-full flex items-center justify-center bg-gray-50/80 dark:bg-black/95">
         <LoadingSpinner size="lg" isLoading={isInitializing || authLoading} />
       </div>
     )
@@ -98,7 +98,7 @@ export default function DashboardPage() {
 
   if (authError) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-black/95">
+      <div className="h-full flex items-center justify-center bg-gray-50 dark:bg-black/95">
         <div className="text-center px-4">
           <div className="text-red-500 mb-4">
             <XCircle className="h-12 w-12 mx-auto" />
@@ -128,8 +128,9 @@ export default function DashboardPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100/80 dark:from-black dark:to-gray-950/50">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <div className="h-full overflow-hidden flex flex-col bg-gradient-to-b from-gray-50 to-gray-100/80 dark:from-black dark:to-gray-950/50">
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           {/* Dashboard title */}
           <header className="mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
@@ -263,6 +264,7 @@ export default function DashboardPage() {
               <DashboardRecentSessions />
             </Card>
           </section>
+          </div>
         </div>
       </div>
     </ProtectedRoute>
