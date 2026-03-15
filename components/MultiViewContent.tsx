@@ -372,7 +372,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
               </div>
             </motion.div>
 
-            {/* Large hovered mini-clock — one layer above background, centered on edge, ~5x size */}
+            {/* Large hovered mini-clock — one layer above background, ~4x size, center on right (next to nav), 5% opacity */}
             {(hoveredOuterClockIndex !== null || focusedOuterClockIndex !== null) && (() => {
               const index = hoveredOuterClockIndex ?? focusedOuterClockIndex ?? 0
               const clock = clockSettings[index]
@@ -381,14 +381,14 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
               return (
                 <motion.div
                   key={`large-hover-clock-${index}`}
-                  className="absolute inset-0 pointer-events-none"
+                  className="fixed inset-0 pointer-events-none"
                   style={{ zIndex: 25 }}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.2 }}
                 >
                   <div
-                    className="absolute top-1/2 right-0 w-[140%] aspect-square max-w-[630px]"
+                    className="fixed top-1/2 right-8 w-[500px] aspect-square"
                     style={{
                       transform: 'translate(50%, -50%)',
                       transformOrigin: 'center',
@@ -401,7 +401,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                       transition={{ type: 'tween', duration: 0.016, ease: 'linear' }}
                     >
                       <div
-                        className="absolute inset-0 opacity-90"
+                        className="absolute inset-0 opacity-[0.05]"
                         style={{
                           transform: `translate(${clock.imageX ?? 0}%, ${clock.imageY ?? 0}%) rotate(${clock.imageOrientation ?? 0}deg) scale(${clock.imageScale ?? 1})`,
                           willChange: 'transform',
