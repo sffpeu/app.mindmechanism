@@ -372,12 +372,12 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
               </div>
             </motion.div>
 
-            {/* Large hovered mini-clock — one layer above background, ~4x size, center on right (next to nav), 5% opacity */}
+            {/* Large hovered mini-clock — one layer above background, center on right (next to nav), 6% opacity; straight (0°) when focused */}
             {(hoveredOuterClockIndex !== null || focusedOuterClockIndex !== null) && (() => {
               const index = hoveredOuterClockIndex ?? focusedOuterClockIndex ?? 0
               const clock = clockSettings[index]
               if (!clock) return null
-              const clockRotation = getClockRotation(clock)
+              const clockRotation = focusedOuterClockIndex === index ? 0 : getClockRotation(clock)
               return (
                 <motion.div
                   key={`large-hover-clock-${index}`}
@@ -398,10 +398,10 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                       className="absolute inset-0 rounded-full overflow-visible"
                       style={{ transformOrigin: 'center', willChange: 'transform' }}
                       animate={{ rotate: clockRotation }}
-                      transition={{ type: 'tween', duration: 0.016, ease: 'linear' }}
+                      transition={{ type: 'tween', duration: focusedOuterClockIndex === index ? 0.3 : 0.016, ease: 'linear' }}
                     >
                       <div
-                        className="absolute inset-0 opacity-[0.10]"
+                        className="absolute inset-0 opacity-[0.06]"
                         style={{
                           transform: `translate(${clock.imageX ?? 0}%, ${clock.imageY ?? 0}%) rotate(${clock.imageOrientation ?? 0}deg) scale(${clock.imageScale ?? 1})`,
                           willChange: 'transform',
@@ -482,7 +482,8 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
               transition={{ duration: 0.3, delay: 0.5 }}
             >
               {clockSettings.slice(0, 9).map((clock, index) => {
-                const clockRotation = getClockRotation(clock);
+                const liveRotation = getClockRotation(clock)
+                const clockRotation = focusedOuterClockIndex === index ? 0 : liveRotation
                 
                 // Map indices to arrange clocks in specific order (clock 6 and 0 positions swapped)
                 const positionIndex = index === 0 ? 0 : // Clock 1 to position 1
@@ -524,7 +525,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                         className="absolute inset-0 rounded-full overflow-visible"
                         style={{ transformOrigin: 'center', willChange: 'transform' }}
                         animate={{ rotate: clockRotation }}
-                        transition={{ type: 'tween', duration: 0.016, ease: 'linear' }}
+                        transition={{ type: 'tween', duration: focusedOuterClockIndex === index ? 0.3 : 0.016, ease: 'linear' }}
                       >
                         <div
                           className="absolute inset-0 transition-[filter,opacity] duration-200"
