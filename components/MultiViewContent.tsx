@@ -372,6 +372,58 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
               </div>
             </motion.div>
 
+            {/* Large hovered mini-clock — one layer above background, centered on edge, ~5x size */}
+            {(hoveredOuterClockIndex !== null || focusedOuterClockIndex !== null) && (() => {
+              const index = hoveredOuterClockIndex ?? focusedOuterClockIndex ?? 0
+              const clock = clockSettings[index]
+              if (!clock) return null
+              const clockRotation = getClockRotation(clock)
+              return (
+                <motion.div
+                  key={`large-hover-clock-${index}`}
+                  className="absolute inset-0 pointer-events-none"
+                  style={{ zIndex: 25 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div
+                    className="absolute top-1/2 right-0 w-[140%] aspect-square max-w-[630px]"
+                    style={{
+                      transform: 'translate(50%, -50%)',
+                      transformOrigin: 'center',
+                    }}
+                  >
+                    <motion.div
+                      className="absolute inset-0 rounded-full overflow-visible"
+                      style={{ transformOrigin: 'center', willChange: 'transform' }}
+                      animate={{ rotate: clockRotation }}
+                      transition={{ type: 'tween', duration: 0.016, ease: 'linear' }}
+                    >
+                      <div
+                        className="absolute inset-0 opacity-90"
+                        style={{
+                          transform: `translate(${clock.imageX ?? 0}%, ${clock.imageY ?? 0}%) rotate(${clock.imageOrientation ?? 0}deg) scale(${clock.imageScale ?? 1})`,
+                          willChange: 'transform',
+                          transformOrigin: 'center',
+                          mixBlendMode: isDarkMode ? 'screen' : 'multiply',
+                        }}
+                      >
+                        <Image
+                          src={clock.imageUrl}
+                          alt=""
+                          fill
+                          className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
+                          priority
+                          loading="eager"
+                        />
+                      </div>
+                    </motion.div>
+                  </div>
+                </motion.div>
+              )
+            })()}
+
             {/* Center layered clocks with optimized rendering */}
             <motion.div 
               className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] aspect-square" 
