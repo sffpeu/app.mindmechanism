@@ -485,13 +485,13 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                 const liveRotation = getClockRotation(clock)
                 const clockRotation = focusedOuterClockIndex === index ? 0 : liveRotation
                 
-                // Map indices to arrange clocks in specific order (Clock 1/6 swapped, Clock 1/7 swapped)
-                const positionIndex = index === 0 ? 4 : // Clock 1 to position 5
+                // Map indices: Clock 1/6 swapped; Clock 7 in position of 1, Clock 1 in position of 7
+                const positionIndex = index === 0 ? 5 : // Clock 1 in position of 7
                                     index === 5 ? 0 : // Clock 6 to position 1
                                     index === 3 ? 1 : // Clock 4 to position 2
                                     index === 8 ? 2 : // Clock 9 to position 3
                                     index === 2 ? 3 : // Clock 3 to position 4
-                                    index === 6 ? 5 : // Clock 7 to position 6
+                                    index === 6 ? 4 : // Clock 7 in position of 1
                                     index === 4 ? 6 : // Clock 5 to position 7
                                     index === 1 ? 7 : // Clock 2 to position 8
                                     index === 7 ? 8 : // Clock 8 to position 9
