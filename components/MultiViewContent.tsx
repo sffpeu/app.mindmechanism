@@ -388,7 +388,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                   transition={{ duration: 0.2 }}
                 >
                   <div
-                    className="fixed top-1/2 right-8 w-[500px] aspect-square"
+                    className="fixed top-1/2 right-8 w-[2500px] aspect-square"
                     style={{
                       transform: 'translate(50%, -50%)',
                       transformOrigin: 'center',
@@ -401,7 +401,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                       transition={{ type: 'tween', duration: 0.016, ease: 'linear' }}
                     >
                       <div
-                        className="absolute inset-0 opacity-[0.05]"
+                        className="absolute inset-0 opacity-[0.10]"
                         style={{
                           transform: `translate(${clock.imageX ?? 0}%, ${clock.imageY ?? 0}%) rotate(${clock.imageOrientation ?? 0}deg) scale(${clock.imageScale ?? 1})`,
                           willChange: 'transform',
@@ -544,39 +544,42 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                             loading="eager"
                           />
                         </div>
-                        {/* Focus nodes — visible on hover or when clock is focused (clicked) */}
-                        {isHighlighted && (
-                          <div
-                            className="absolute inset-0 pointer-events-none"
-                            style={{
-                              transform: `rotate(${clock.imageOrientation ?? 0}deg)`,
-                              transformOrigin: 'center',
-                            }}
-                          >
-                            {Array.from({ length: clock.focusNodes }).map((_, nodeIndex) => {
-                              const angle = ((360 / clock.focusNodes) * nodeIndex + 270) % 360
-                              const radians = angle * (Math.PI / 180)
-                              const nodeRadius = 55
-                              const x = 50 + nodeRadius * Math.cos(radians)
-                              const y = 50 + nodeRadius * Math.sin(radians)
-                              return (
-                                <div
-                                  key={nodeIndex}
-                                  className={`absolute w-2 h-2 rounded-full ${focusNodeColors[index]} dark:brightness-150`}
-                                  style={{
-                                    left: `${x}%`,
-                                    top: `${y}%`,
-                                    transform: 'translate(-50%, -50%)',
-                                    mixBlendMode: isDarkMode ? 'screen' : 'multiply',
-                                    boxShadow: isDarkMode
-                                      ? '0 0 4px rgba(255, 255, 255, 0.3)'
-                                      : '0 0 4px rgba(0, 0, 0, 0.2)',
-                                  }}
-                                />
-                              )
-                            })}
-                          </div>
-                        )}
+                        {/* Focus nodes — always visible: greyed by default, color on hover, full color on enter (focus) */}
+                        <div
+                          className="absolute inset-0 pointer-events-none transition-[filter,opacity] duration-200"
+                          style={{
+                            transform: `rotate(${clock.imageOrientation ?? 0}deg)`,
+                            transformOrigin: 'center',
+                          }}
+                        >
+                          {Array.from({ length: clock.focusNodes }).map((_, nodeIndex) => {
+                            const angle = ((360 / clock.focusNodes) * nodeIndex + 270) % 360
+                            const radians = angle * (Math.PI / 180)
+                            const nodeRadius = 55
+                            const x = 50 + nodeRadius * Math.cos(radians)
+                            const y = 50 + nodeRadius * Math.sin(radians)
+                            const showColor = isHighlighted
+                            return (
+                              <div
+                                key={nodeIndex}
+                                className={`absolute w-2 h-2 rounded-full transition-all duration-200 ${
+                                  showColor ? `${focusNodeColors[index]} dark:brightness-150` : 'bg-gray-400 dark:bg-gray-500 opacity-60'
+                                }`}
+                                style={{
+                                  left: `${x}%`,
+                                  top: `${y}%`,
+                                  transform: 'translate(-50%, -50%)',
+                                  mixBlendMode: showColor ? (isDarkMode ? 'screen' : 'multiply') : 'normal',
+                                  boxShadow: showColor
+                                    ? (isDarkMode
+                                        ? '0 0 4px rgba(255, 255, 255, 0.3)'
+                                        : '0 0 4px rgba(0, 0, 0, 0.2)')
+                                    : 'none',
+                                }}
+                              />
+                            )
+                          })}
+                        </div>
                       </motion.div>
                       {isHighlighted && currentTime != null && (
                         <div className="absolute left-1/2 top-full -translate-x-1/2 mt-1.5 text-center text-xs font-mono tabular-nums text-gray-700 dark:text-gray-300 whitespace-nowrap z-50 pointer-events-none">
