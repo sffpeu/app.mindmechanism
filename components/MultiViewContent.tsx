@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, Fragment } from 'react'
 import { useTheme } from '@/app/ThemeContext'
 import DotNavigation from '@/components/DotNavigation'
 import { clockSettings } from '@/lib/clockSettings'
@@ -505,23 +505,38 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                 const y = 50 + radius * Math.sin(radians);
 
                 const isHighlighted = hoveredOuterClockIndex === index || focusedOuterClockIndex === index
+                const labelRadius = 82
+                const labelX = 50 + labelRadius * Math.cos(radians)
+                const labelY = 50 + labelRadius * Math.sin(radians)
                 return (
-                  <div
-                    key={index}
-                    className="absolute aspect-square transition-transform duration-200 pointer-events-auto cursor-pointer"
-                    style={{
-                      width: '28%',
-                      left: `${x}%`,
-                      top: `${y}%`,
-                      transform: 'translate(-50%, -50%)',
-                      zIndex: 30,
-                    }}
-                    onMouseEnter={() => setHoveredOuterClockIndex(index)}
-                    onMouseLeave={() => setHoveredOuterClockIndex(null)}
-                    onClick={() => setFocusedOuterClockIndex((prev) => (prev === index ? null : index))}
-                  >
-                    <div className="relative w-full h-full">
-                      <motion.div
+                  <Fragment key={index}>
+                    {/* Clock number label outside ring, corresponding to this mini clock */}
+                    <div
+                      className="absolute flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-400 pointer-events-none"
+                      style={{
+                        left: `${labelX}%`,
+                        top: `${labelY}%`,
+                        transform: 'translate(-50%, -50%)',
+                        zIndex: 55,
+                      }}
+                    >
+                      {index + 1}
+                    </div>
+                    <div
+                      className="absolute aspect-square transition-transform duration-200 pointer-events-auto cursor-pointer"
+                      style={{
+                        width: '28%',
+                        left: `${x}%`,
+                        top: `${y}%`,
+                        transform: 'translate(-50%, -50%)',
+                        zIndex: 30,
+                      }}
+                      onMouseEnter={() => setHoveredOuterClockIndex(index)}
+                      onMouseLeave={() => setHoveredOuterClockIndex(null)}
+                      onClick={() => setFocusedOuterClockIndex((prev) => (prev === index ? null : index))}
+                    >
+                      <div className="relative w-full h-full">
+                        <motion.div
                         className="absolute inset-0 rounded-full overflow-visible"
                         style={{ transformOrigin: 'center', willChange: 'transform' }}
                         animate={{ rotate: clockRotation }}
@@ -593,6 +608,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                       )}
                     </div>
                   </div>
+                  </Fragment>
                 );
               })}
             </motion.div>
