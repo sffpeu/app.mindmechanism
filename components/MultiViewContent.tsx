@@ -372,7 +372,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
               </div>
             </motion.div>
 
-            {/* Large hovered mini-clock — one layer above background, center on right (next to nav), 6% opacity; straight (0°) when focused */}
+            {/* Large hovered mini-clock — one layer above background, center on right (next to nav), 1% opacity; straight (0°) when focused */}
             {(hoveredOuterClockIndex !== null || focusedOuterClockIndex !== null) && (() => {
               const index = hoveredOuterClockIndex ?? focusedOuterClockIndex ?? 0
               const clock = clockSettings[index]
@@ -401,7 +401,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                       transition={{ type: 'tween', duration: focusedOuterClockIndex === index ? 0.3 : 0.016, ease: 'linear' }}
                     >
                       <div
-                        className="absolute inset-0 opacity-[0.06]"
+                        className="absolute inset-0 opacity-[0.01]"
                         style={{
                           transform: `translate(${clock.imageX ?? 0}%, ${clock.imageY ?? 0}%) rotate(${clock.imageOrientation ?? 0}deg) scale(${clock.imageScale ?? 1})`,
                           willChange: 'transform',
