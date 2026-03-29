@@ -1,14 +1,14 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { Search, Plus, UserCircle2, Pencil, Layers, List, Cloud } from 'lucide-react'
+import { Search, Plus, UserCircle2, Pencil, Layers, Network } from 'lucide-react'
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords, searchWords } from '@/lib/glossary'
 import { clockTitles } from '@/lib/clockTitles'
 import { AddWordDialog } from '@/components/AddWordDialog'
-import { GlossaryWordCloud } from '@/components/GlossaryWordCloud'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { cn } from '@/lib/utils'
+import { GlossaryRadialTree } from '@/components/GlossaryRadialTree'
 
 export default function GlossaryPage() {
   const { user } = useAuth()
@@ -20,11 +20,13 @@ export default function GlossaryPage() {
   const [selectedSentiment, setSelectedSentiment] = useState<'+' | '~' | '-' | null>(null)
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
   const [words, setWords] = useState<GlossaryWord[]>([])
+  /** Full glossary (ignores search) so radial view can always show all default words. */
+  const [fullWordList, setFullWordList] = useState<GlossaryWord[]>([])
   const [loading, setLoading] = useState(true)
+  const [visualMode, setVisualMode] = useState(false)
   const [isAddWordOpen, setIsAddWordOpen] = useState(false)
   const [selectedCard, setSelectedCard] = useState<GlossaryWord | null>(null)
   const [editWord, setEditWord] = useState<GlossaryWord | null>(null)
-  const [visualMode, setVisualMode] = useState(false)
   const sectionRefsMap = useRef<Record<string, HTMLDivElement | null>>({})
   const scrollContainerRef = useRef<HTMLDivElement | null>(null)
   const lettersListRef = useRef<string[]>([])
@@ -63,6 +65,7 @@ export default function GlossaryPage() {
       const allWords = await getAllWords()
       console.log('Fetched words:', allWords.length)
       setWords(allWords)
+      setFullWordList(allWords)
     } catch (error) {
       console.error('Error loading words:', error)
     }
@@ -127,7 +130,7 @@ export default function GlossaryPage() {
   // Scroll spy: highlight the letter whose section is currently in view
   useEffect(() => {
     const container = scrollContainerRef.current
-    if (!container || visualMode) return
+    if (!container) return
     const onScroll = () => {
       const letters = lettersListRef.current
       const scrollTop = container.scrollTop
@@ -145,7 +148,7 @@ export default function GlossaryPage() {
     container.addEventListener('scroll', onScroll, { passive: true })
     onScroll()
     return () => container.removeEventListener('scroll', onScroll)
-  }, [visualMode, letterSections.length])
+  }, [])
 
   return (
     <div className="h-full overflow-hidden flex flex-col bg-gray-50 dark:bg-black/95">
@@ -177,27 +180,18 @@ export default function GlossaryPage() {
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   type="button"
-                  onClick={() => setVisualMode((v) => !v)}
+                  onClick={() => setVisualMode(v => !v)}
                   className={cn(
-                    'px-3 py-1.5 rounded-lg text-sm border flex items-center gap-1.5 shrink-0',
+                    'px-3 py-1.5 rounded-lg text-sm border flex items-center gap-1.5 shrink-0 transition-all',
                     visualMode
-                      ? 'bg-gray-200 dark:bg-white/15 text-gray-800 dark:text-gray-100 border-gray-300 dark:border-white/20'
+                      ? 'bg-slate-900 text-white dark:bg-white dark:text-black border-transparent'
                       : 'bg-white dark:bg-black/30 border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 text-gray-700 dark:text-gray-300'
                   )}
                   aria-pressed={visualMode}
-                  aria-label={visualMode ? 'Switch to list view' : 'Switch to word cloud view'}
+                  aria-label={visualMode ? 'Switch to list view' : 'Switch to radial tree view'}
                 >
-                  {visualMode ? (
-                    <>
-                      <List className="w-4 h-4" />
-                      List
-                    </>
-                  ) : (
-                    <>
-                      <Cloud className="w-4 h-4" />
-                      Visual
-                    </>
-                  )}
+                  <Network className="w-4 h-4" />
+                  {visualMode ? 'List view' : 'Visual'}
                 </button>
                 {selectedCard && (
                   <button
@@ -343,85 +337,43 @@ export default function GlossaryPage() {
                 })}
               </div>
             )}
-            {/* Letter anchor — list view only */}
+            {/* Letter anchor — click to scroll to section; highlight shows section currently in view (scroll spy) */}
             {!visualMode && (
-              <div className="flex flex-wrap items-center gap-2">
-                <div id="az-filter-glossary" className="flex flex-wrap gap-1.5" role="region" aria-label="Jump to letter">
-                  {alphabet.map(letter => (
-                    <button
-                      key={letter}
-                      type="button"
-                      onClick={() => scrollToLetter(letter)}
-                      className={cn(
-                        'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all shrink-0 border',
-                        selectedLetter === letter
-                          ? 'bg-black text-white dark:bg-white dark:text-black border-transparent'
-                          : 'bg-white dark:bg-black/30 border-black/5 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-black/50 text-gray-700 dark:text-gray-300'
-                      )}
-                      aria-label={`Jump to ${letter}`}
-                      aria-current={selectedLetter === letter ? 'true' : undefined}
-                    >
-                      {letter}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            {/* Word cloud legend */}
-            {visualMode && (
-              <div
-                className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] sm:text-xs text-gray-600 dark:text-gray-400 border-t border-black/5 dark:border-white/10 pt-2"
-                role="region"
-                aria-label="Word cloud color key"
-              >
-                <span className="font-semibold text-gray-700 dark:text-gray-300 shrink-0">Sentiment</span>
-                <span className="flex items-center gap-1 shrink-0">
-                  <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400" aria-hidden />
-                  Positive
-                </span>
-                <span className="flex items-center gap-1 shrink-0">
-                  <span className="w-2 h-2 rounded-full bg-slate-500 dark:bg-slate-400" aria-hidden />
-                  Neutral
-                </span>
-                <span className="flex items-center gap-1 shrink-0">
-                  <span className="w-2 h-2 rounded-full bg-rose-600 dark:bg-rose-400" aria-hidden />
-                  Negative
-                </span>
-                <span className="w-px h-3 bg-gray-200 dark:bg-white/10 shrink-0" aria-hidden />
-                <span className="font-semibold text-gray-700 dark:text-gray-300 shrink-0">Outline</span>
-                <span className="flex items-center gap-1 shrink-0">
-                  <span className="w-2 h-2 rounded-full bg-purple-500" aria-hidden />
-                  My words
-                </span>
-                {clockTitles.map((title, id) => (
-                  <span key={title} className="flex items-center gap-1 shrink-0 max-w-[10rem] sm:max-w-none">
-                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: CLOCK_HEX[id] }} aria-hidden />
-                    <span className="truncate">{title}</span>
-                  </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <div id="az-filter-glossary" className="flex flex-wrap gap-1.5" role="region" aria-label="Jump to letter">
+                {alphabet.map(letter => (
+                  <button
+                    key={letter}
+                    type="button"
+                    onClick={() => scrollToLetter(letter)}
+                    className={cn(
+                      'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all shrink-0 border',
+                      selectedLetter === letter
+                        ? 'bg-black text-white dark:bg-white dark:text-black border-transparent'
+                        : 'bg-white dark:bg-black/30 border-black/5 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-black/50 text-gray-700 dark:text-gray-300'
+                    )}
+                    aria-label={`Jump to ${letter}`}
+                    aria-current={selectedLetter === letter ? 'true' : undefined}
+                  >
+                    {letter}
+                  </button>
                 ))}
               </div>
+            </div>
             )}
           </div>
-          {/* List or word cloud */}
-          <div className="flex-1 min-h-0 relative flex flex-col min-h-[280px]">
+          {/* Scrollable letter sections — same as Assign Words popup */}
+          <div className="flex-1 min-h-0 relative flex flex-col min-h-[320px]">
             {visualMode ? (
               loading ? (
-                <div className="flex-1 flex items-center justify-center py-12 text-gray-500 dark:text-gray-400">
-                  Loading words...
-                </div>
-              ) : sortedWords.length === 0 ? (
-                <div className="flex-1 flex items-center justify-center py-12 text-gray-500 dark:text-gray-400">
-                  No words found
-                </div>
+                <div className="flex items-center justify-center py-16 text-gray-500 dark:text-gray-400">Loading words...</div>
               ) : (
-                <div className="flex-1 min-h-0 relative">
-                  <GlossaryWordCloud
-                    words={filteredWords}
-                    clockHex={CLOCK_HEX}
-                    selectedId={selectedCard?.id ?? null}
-                    onWordSelect={setSelectedCard}
-                  />
-                </div>
+                <GlossaryRadialTree
+                  words={fullWordList}
+                  selectedWordId={selectedCard?.id ?? null}
+                  onSelectWord={w => setSelectedCard(prev => (prev?.id === w.id ? null : w))}
+                  className="min-h-[480px]"
+                />
               )
             ) : (
             <div
