@@ -6,97 +6,119 @@ import {
   type ComponentPropsWithoutRef,
   type CSSProperties,
   type ElementRef,
+  type ReactNode,
 } from 'react'
 import { Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import {
-  DropdownMenuContent,
-} from '@/components/ui/dropdown-menu'
+import { DropdownMenuContent } from '@/components/ui/dropdown-menu'
 
 export type ClockPageSettingsTriggerProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   clockHex: string
 }
 
-type DropdownContentProps = ComponentPropsWithoutRef<typeof DropdownMenuContent> & {
+type ChromeButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   clockHex: string
+  children: ReactNode
+}
+
+function chromeButtonBaseStyle(clockHex: string): CSSProperties {
+  return {
+    borderColor: clockHex,
+    backgroundColor: `${clockHex}4d`,
+    color: clockHex,
+  }
 }
 
 /**
- * Compact settings control: small icon, clock-tinted border/background and icon always visible; stronger on hover.
+ * Small clock-colored control (gear). Menu panel is neutral — only this button uses clock color.
  */
 export const ClockPageSettingsTrigger = forwardRef<HTMLButtonElement, ClockPageSettingsTriggerProps>(
   function ClockPageSettingsTrigger({ clockHex, className, onMouseEnter, onMouseLeave, style, ...rest }, ref) {
-    const base: CSSProperties = {
-      borderColor: `${clockHex}cc`,
-      backgroundColor: `${clockHex}1f`,
-    }
+    const base = chromeButtonBaseStyle(clockHex)
 
     return (
       <button
         ref={ref}
         type="button"
         className={cn(
-          'rounded-md border-2 p-0.5 backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-200',
-          'shadow-sm dark:shadow-black/30',
+          'inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border p-0 backdrop-blur-sm transition-[filter,opacity,transform] duration-150',
+          'hover:brightness-110 active:scale-95 dark:hover:brightness-125',
           className
         )}
         style={{ ...base, ...style }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = clockHex
-          e.currentTarget.style.backgroundColor = `${clockHex}38`
-          e.currentTarget.style.boxShadow = `0 0 0 1px ${clockHex}55, 0 4px 14px -2px ${clockHex}44`
-          const svg = e.currentTarget.querySelector('svg')
-          if (svg) (svg as SVGSVGElement).style.color = clockHex
+          e.currentTarget.style.backgroundColor = `${clockHex}85`
           onMouseEnter?.(e)
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = `${clockHex}cc`
-          e.currentTarget.style.backgroundColor = `${clockHex}1f`
-          e.currentTarget.style.boxShadow = ''
-          const svg = e.currentTarget.querySelector('svg')
-          if (svg) (svg as SVGSVGElement).style.color = clockHex
+          e.currentTarget.style.backgroundColor = `${clockHex}4d`
           onMouseLeave?.(e)
         }}
         {...rest}
       >
-        <Settings
-          className="h-2 w-2 shrink-0 transition-colors duration-200"
-          style={{ color: clockHex }}
-          aria-hidden
-        />
+        <Settings className="h-2.5 w-2.5 shrink-0" style={{ color: 'currentColor' }} aria-hidden />
       </button>
     )
   }
 )
 
 /**
- * Small clock-colored dropdown panel for Satellites / Focus Words (overflow visible so labels are not clipped).
+ * Same compact clock-colored chrome as settings (e.g. Info button).
  */
-export const ClockPageDropdownMenuContent = forwardRef<
-  ElementRef<typeof DropdownMenuContent>,
-  DropdownContentProps
->(function ClockPageDropdownMenuContent({ clockHex, className, style, children, ...rest }, ref) {
-  return (
-    <DropdownMenuContent
-      ref={ref}
-      align="end"
-      sideOffset={6}
-      className={cn(
-        'z-[400] min-w-[11rem] max-w-[min(calc(100vw-1.5rem),16rem)] overflow-visible py-1',
-        'border-2 bg-white/96 text-[11px] leading-tight shadow-xl backdrop-blur-md',
-        'dark:bg-black/92 dark:text-white',
-        className
-      )}
-      style={{
-        borderColor: clockHex,
-        boxShadow: `0 10px 28px -6px ${clockHex}40, 0 4px 12px -4px rgba(0,0,0,0.12)`,
-        ...style,
-      }}
-      {...rest}
-    >
-      {children}
-    </DropdownMenuContent>
-  )
-})
+export const ClockPageIconButton = forwardRef<HTMLButtonElement, ChromeButtonProps>(
+  function ClockPageIconButton({ clockHex, className, children, onMouseEnter, onMouseLeave, style, ...rest }, ref) {
+    const base = chromeButtonBaseStyle(clockHex)
 
-ClockPageDropdownMenuContent.displayName = 'ClockPageDropdownMenuContent'
+    return (
+      <button
+        ref={ref}
+        type="button"
+        className={cn(
+          'inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border p-0 backdrop-blur-sm transition-[filter,opacity,transform] duration-150',
+          'hover:brightness-110 active:scale-95 dark:hover:brightness-125',
+          className
+        )}
+        style={{ ...base, ...style }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = `${clockHex}85`
+          onMouseEnter?.(e)
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = `${clockHex}4d`
+          onMouseLeave?.(e)
+        }}
+        {...rest}
+      >
+        {children}
+      </button>
+    )
+  }
+)
+
+type MenuContentProps = ComponentPropsWithoutRef<typeof DropdownMenuContent>
+
+/**
+ * Compact settings menu only — no clock tint on the panel (neutral popover).
+ */
+export const ClockPageMenuContent = forwardRef<ElementRef<typeof DropdownMenuContent>, MenuContentProps>(
+  function ClockPageMenuContent({ className, children, ...rest }, ref) {
+    return (
+      <DropdownMenuContent
+        ref={ref}
+        align="end"
+        sideOffset={6}
+        className={cn(
+          'z-[400] min-w-[11rem] max-w-[min(calc(100vw-1.5rem),16rem)] overflow-visible py-1 text-[11px] leading-tight',
+          className
+        )}
+        {...rest}
+      >
+        {children}
+      </DropdownMenuContent>
+    )
+  }
+)
+
+ClockPageMenuContent.displayName = 'ClockPageMenuContent'
+ClockPageSettingsTrigger.displayName = 'ClockPageSettingsTrigger'
+ClockPageIconButton.displayName = 'ClockPageIconButton'

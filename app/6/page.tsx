@@ -6,7 +6,7 @@ import { useTheme } from '@/app/ThemeContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { ClockBreathingTone } from '@/components/ClockBreathingTone'
 import { ClockFocusNodeAppear } from '@/components/ClockFocusNodeAppear'
-import { ClockPageSettingsTrigger, ClockPageDropdownMenuContent } from '@/components/ClockPageSettingsTrigger'
+import { ClockPageSettingsTrigger, ClockPageMenuContent, ClockPageIconButton } from '@/components/ClockPageSettingsTrigger'
 import { motion, AnimatePresence } from 'framer-motion'
 import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
@@ -507,13 +507,13 @@ function NodesPageContent() {
             <DropdownMenuTrigger asChild>
               <ClockPageSettingsTrigger clockHex={clockHex} />
             </DropdownMenuTrigger>
-            <ClockPageDropdownMenuContent clockHex={clockHex}>
+            <ClockPageMenuContent>
               <DropdownMenuItem
                 className="flex cursor-pointer items-center justify-between gap-1.5 px-2 py-1.5 text-[11px] focus:bg-black/5 dark:focus:bg-white/10"
                 onSelect={(e) => e.preventDefault()}
               >
                 <div className="flex min-w-0 flex-1 items-center gap-1.5 pr-0.5">
-                  <Satellite className="h-3 w-3 shrink-0" style={{ color: clockHex }} />
+                  <Satellite className="h-3 w-3 shrink-0 text-muted-foreground" />
                   <span className="leading-snug">Satellites</span>
                 </div>
                 <Switch
@@ -527,7 +527,7 @@ function NodesPageContent() {
                 onSelect={(e) => e.preventDefault()}
               >
                 <div className="flex min-w-0 flex-1 items-center gap-1.5 pr-0.5">
-                  <List className="h-3 w-3 shrink-0" style={{ color: clockHex }} />
+                  <List className="h-3 w-3 shrink-0 text-muted-foreground" />
                   <span className="leading-snug">Focus Words</span>
                 </div>
                 <Switch
@@ -536,7 +536,7 @@ function NodesPageContent() {
                   onCheckedChange={handleWordsChange}
                 />
               </DropdownMenuItem>
-            </ClockPageDropdownMenuContent>
+            </ClockPageMenuContent>
           </DropdownMenu>
         </div>
 
@@ -550,12 +550,9 @@ function NodesPageContent() {
             />
           )}
           <div className="group relative">
-            <button 
-              className="rounded-md border border-black/10 bg-white/85 p-1 backdrop-blur-sm transition-colors hover:bg-white/95 dark:border-white/15 dark:bg-black/85 dark:hover:bg-black/90"
-              aria-label="Clock Information"
-            >
-              <Info className="h-3 w-3 text-black/75 dark:text-white/75" />
-            </button>
+            <ClockPageIconButton clockHex={clockHex} aria-label="Clock Information">
+              <Info className="h-2.5 w-2.5" style={{ color: 'currentColor' }} />
+            </ClockPageIconButton>
             <div className="absolute bottom-full left-0 mb-2 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 origin-bottom-left">
               <Card className="w-[300px] bg-white/90 dark:bg-black/90 backdrop-blur-sm border-black/5 dark:border-white/10">
                 <CardContent className="p-4">

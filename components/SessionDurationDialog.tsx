@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { motion as Motion, AnimatePresence } from 'framer-motion'
-import { Timer, ChevronRight, InfinityIcon, X, Check, ArrowLeft, PenLine, Search, Shuffle, Trash2, Layers, UserCircle2 } from 'lucide-react'
+import { Timer, ChevronRight, InfinityIcon, X, Check, ArrowLeft, PenLine, Search, Shuffle, Trash2, Layers, UserCircle2, Plus, Minus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { clockSettings } from '@/lib/clockSettings'
 import { DEFAULT_WORDS_BY_CLOCK } from '@/lib/defaultWordsByClock'
@@ -60,7 +60,6 @@ export function SessionDurationDialog({
   const [searchQuery, setSearchQuery] = useState('')
   const [scopeFilter, setScopeFilter] = useState<'All' | 'Default' | 'My Words'>('All')
   const [selectedSentiment, setSelectedSentiment] = useState<'+' | '~' | '-' | null>(null)
-  const [selectedClockId, setSelectedClockId] = useState<number | null>(null)
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
   const wordsScrollRef = useRef<HTMLDivElement>(null)
   const [hoveredWord, setHoveredWord] = useState<string | null>(null)
@@ -116,7 +115,6 @@ export function SessionDurationDialog({
       // Reset filters to default when entering Assign Words
       setScopeFilter('All')
       setSelectedSentiment(null)
-      setSelectedClockId(null)
       setSelectedLetter(null)
       setSearchQuery('')
     }
@@ -371,7 +369,6 @@ export function SessionDurationDialog({
   }
 
   const setScope = (scope: 'All' | 'Default' | 'My Words') => {
-    if (scope !== 'Default') setSelectedClockId(null)
     setScopeFilter(scope)
     if (scope === 'Default') handleFillAllDefaultWords()
   }
@@ -463,29 +460,15 @@ export function SessionDurationDialog({
           className="min-w-0 min-h-0 flex flex-col overflow-hidden rounded-xl border border-black/5 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-lg relative"
         >
             <div className="p-3 border-b border-black/5 dark:border-white/10 space-y-2 shrink-0 flex-shrink-0">
-              <div className="flex-1 relative">
-                <input
-                  type="text"
-                  placeholder="Search words or definitions"
-                  className="w-full pl-10 pr-4 py-2 rounded-lg bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  aria-label="Search words or definitions"
-                />
-                <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400 dark:text-gray-500" />
-                <span className="absolute right-3 top-2.5 text-sm text-gray-400 dark:text-gray-500">
-                  {filteredWords.length} words
-                </span>
-              </div>
-              {/* Scope + Sentiment — match /glossary layout; Default uses clock color */}
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap items-center gap-2 gap-y-2">
+                <div className="flex flex-wrap gap-1">
                   {(['All', 'Default', 'My Words'] as const).map(scope => (
                     <button
                       key={scope}
+                      type="button"
                       onClick={() => setScope(scope)}
                       className={cn(
-                        'px-3 py-1.5 rounded-lg text-sm font-medium transition-all shrink-0 flex items-center gap-1 border',
+                        'px-2.5 py-1 rounded-md text-xs font-medium transition-all shrink-0 flex items-center gap-1 border',
                         scopeFilter === scope
                           ? scope === 'All'
                             ? 'bg-gray-200 dark:bg-white/15 text-gray-800 dark:text-gray-100 border-gray-300 dark:border-white/20'
@@ -510,44 +493,48 @@ export function SessionDurationDialog({
                         }
                       }}
                     >
-                      {scope === 'Default' && <Layers className="w-3.5 h-3.5 shrink-0" />}
-                      {scope === 'My Words' && <UserCircle2 className="w-3.5 h-3.5 shrink-0" />}
+                      {scope === 'Default' && <Layers className="w-3 h-3 shrink-0" />}
+                      {scope === 'My Words' && <UserCircle2 className="w-3 h-3 shrink-0" />}
                       {scope}
                     </button>
                   ))}
                 </div>
-                <span className="w-px h-4 bg-gray-200 dark:bg-white/10" aria-hidden />
-                {[
-                  { value: '+' as const, label: 'Positive' },
-                  { value: '~' as const, label: 'Neutral' },
-                  { value: '-' as const, label: 'Negative' },
-                ].map(({ value, label }) => (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() => setSelectedSentiment(selectedSentiment === value ? null : value)}
-                    className={cn(
-                      'px-3 py-1.5 rounded-full text-sm font-medium transition-all shrink-0',
-                      selectedSentiment === value
-                        ? value === '+'
-                          ? 'bg-emerald-100 dark:bg-emerald-500/25 text-emerald-800 dark:text-emerald-200 ring-1 ring-emerald-200 dark:ring-emerald-500/40'
-                          : value === '-'
-                            ? 'bg-rose-100 dark:bg-rose-500/25 text-rose-800 dark:text-rose-200 ring-1 ring-rose-200 dark:ring-rose-500/40'
-                            : 'bg-slate-100 dark:bg-slate-500/20 text-slate-700 dark:text-slate-200 ring-1 ring-slate-200 dark:ring-slate-500/30'
-                        : value === '+'
-                          ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20'
-                          : value === '-'
-                            ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20'
-                            : 'bg-slate-50 dark:bg-slate-500/10 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-500/20'
-                    )}
-                  >
-                    {label}
-                  </button>
-                ))}
+                <span className="w-px h-4 bg-gray-200 dark:bg-white/10 shrink-0" aria-hidden />
+                <div className="flex items-center gap-1 shrink-0">
+                  {([
+                    { value: '+' as const, icon: 'plus' as const, label: 'Positive' },
+                    { value: '~' as const, icon: 'tilde' as const, label: 'Neutral' },
+                    { value: '-' as const, icon: 'minus' as const, label: 'Negative' },
+                  ] as const).map(({ value, icon, label }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setSelectedSentiment(selectedSentiment === value ? null : value)}
+                      title={label}
+                      aria-label={`${label} sentiment`}
+                      aria-pressed={selectedSentiment === value}
+                      className={cn(
+                        'w-9 h-9 rounded-lg flex items-center justify-center text-sm font-medium transition-all shrink-0 border',
+                        selectedSentiment === value
+                          ? value === '+'
+                            ? 'bg-emerald-100 dark:bg-emerald-500/25 text-emerald-800 dark:text-emerald-200 border-emerald-300 dark:border-emerald-500/40'
+                            : value === '-'
+                              ? 'bg-rose-100 dark:bg-rose-500/25 text-rose-800 dark:text-rose-200 border-rose-300 dark:border-rose-500/40'
+                              : 'bg-slate-100 dark:bg-slate-500/20 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-500/40'
+                          : value === '+'
+                            ? 'bg-emerald-50/80 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200/60 dark:border-emerald-500/20 hover:bg-emerald-100 dark:hover:bg-emerald-500/20'
+                            : value === '-'
+                              ? 'bg-rose-50/80 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200/60 dark:border-rose-500/20 hover:bg-rose-100 dark:hover:bg-rose-500/20'
+                              : 'bg-slate-50/80 dark:bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-200/60 dark:border-slate-500/20 hover:bg-slate-100 dark:hover:bg-slate-500/20'
+                      )}
+                    >
+                      {icon === 'plus' ? <Plus className="w-4 h-4" strokeWidth={2.5} /> : icon === 'minus' ? <Minus className="w-4 h-4" strokeWidth={2.5} /> : <span className="text-base leading-none">~</span>}
+                    </button>
+                  ))}
+                </div>
               </div>
-              {/* Letter buttons: jump to segment only (no filtering); no preselected letter */}
               <div className="flex flex-wrap items-center gap-2">
-                <div id="az-filter-words" className="flex flex-wrap gap-1.5" role="region" aria-label="Jump to letter">
+                <div id="az-filter-words" className="flex flex-wrap gap-1" role="region" aria-label="Jump to letter">
                   {alphabet.map(letter => {
                     const isActive = selectedLetter === letter
                     return (
@@ -560,7 +547,7 @@ export function SessionDurationDialog({
                           if (next) scrollToLetter(next)
                         }}
                         className={cn(
-                          'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all shrink-0 border',
+                          'w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-all shrink-0 border',
                           isActive
                             ? 'text-white border-transparent'
                             : 'bg-white dark:bg-black/30 border-black/5 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-black/50 text-gray-700 dark:text-gray-300'
@@ -667,6 +654,22 @@ export function SessionDurationDialog({
                       ))
                     )}
                   </div>
+              </div>
+            </div>
+            <div className="p-3 border-t border-black/5 dark:border-white/10 shrink-0 bg-white/90 dark:bg-black/50 backdrop-blur-sm">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search words or definitions"
+                  className="w-full pl-10 pr-24 py-2 rounded-lg bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all text-sm text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  aria-label="Search words or definitions"
+                />
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
+                <span className="absolute right-3 top-2 text-xs text-gray-400 dark:text-gray-500 tabular-nums">
+                  {filteredWords.length} words
+                </span>
               </div>
             </div>
         </Motion.div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { Search, Plus, UserCircle2, Pencil, Layers, Network } from 'lucide-react'
+import { Search, Plus, Minus, UserCircle2, Pencil, Layers, Network } from 'lucide-react'
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords, searchWords } from '@/lib/glossary'
 import { clockTitles } from '@/lib/clockTitles'
@@ -12,8 +12,6 @@ import { GlossaryRadialTree } from '@/components/GlossaryRadialTree'
 
 export default function GlossaryPage() {
   const { user } = useAuth()
-  const [showElements, setShowElements] = useState(true)
-  const [showSatellites, setShowSatellites] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [scopeFilter, setScopeFilter] = useState<'All' | 'Default' | 'My Words'>('All')
   const [selectedClockId, setSelectedClockId] = useState<number | null>(null)
@@ -158,73 +156,18 @@ export default function GlossaryPage() {
           <p className="text-gray-600 dark:text-gray-400">Browse and search through meditation focus words</p>
         </div>
 
-        {/* Single card: same look as Assign Words popup glossary */}
+        {/* Single card: filters on top, search at bottom */}
         <div className="rounded-xl border border-black/5 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-lg overflow-hidden flex flex-col flex-1 min-h-0">
-          {/* Header: search + filters */}
           <div className="p-3 border-b border-black/5 dark:border-white/10 space-y-2 shrink-0 flex-shrink-0">
-            <div className="flex-1 relative flex items-center gap-3">
-              <div className="flex-1 relative">
-                <input
-                  type="text"
-                  placeholder="Search words or definitions"
-                  className="w-full pl-10 pr-4 py-2 rounded-lg bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  aria-label="Search words or definitions"
-                />
-                <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400 dark:text-gray-500" />
-                <span className="absolute right-3 top-2.5 text-sm text-gray-400 dark:text-gray-500">
-                  {sortedWords.length} words
-                </span>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setVisualMode(v => !v)}
-                  className={cn(
-                    'px-3 py-1.5 rounded-lg text-sm border flex items-center gap-1.5 shrink-0 transition-all',
-                    visualMode
-                      ? 'bg-slate-900 text-white dark:bg-white dark:text-black border-transparent'
-                      : 'bg-white dark:bg-black/30 border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 text-gray-700 dark:text-gray-300'
-                  )}
-                  aria-pressed={visualMode}
-                  aria-label={visualMode ? 'Switch to list view' : 'Switch to radial tree view'}
-                >
-                  <Network className="w-4 h-4" />
-                  {visualMode ? 'List view' : 'Visual'}
-                </button>
-                {selectedCard && (
-                  <button
-                    type="button"
-                    onClick={() => { setEditWord(selectedCard); setIsAddWordOpen(true) }}
-                    className="px-3 py-1.5 rounded-lg text-sm bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 text-gray-700 dark:text-gray-300 flex items-center gap-1.5"
-                    aria-label="Edit word"
-                  >
-                    <Pencil className="w-4 h-4" />
-                    Edit
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => setIsAddWordOpen(true)}
-                  className="px-3 py-1.5 rounded-lg text-sm bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 text-gray-700 dark:text-gray-300 flex items-center gap-1.5"
-                  aria-label="Add word"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add
-                </button>
-              </div>
-            </div>
-            {/* Scope + Sentiment — match Assign Words popup; Default uses clock color when selected */}
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap items-center gap-2 gap-y-2">
+              <div className="flex flex-wrap gap-1">
                 {(['All', 'Default', 'My Words'] as const).map(scope => (
                   <button
                     key={scope}
                     type="button"
                     onClick={() => setScope(scope)}
                     className={cn(
-                      'px-3 py-1.5 rounded-lg text-sm font-medium transition-all shrink-0 flex items-center gap-1 border',
+                      'px-2.5 py-1 rounded-md text-xs font-medium transition-all shrink-0 flex items-center gap-1 border',
                       scopeFilter === scope
                         ? scope === 'All'
                           ? 'bg-gray-200 dark:bg-white/15 text-gray-800 dark:text-gray-100 border-gray-300 dark:border-white/20'
@@ -249,117 +192,124 @@ export default function GlossaryPage() {
                       }
                     }}
                   >
-                    {scope === 'Default' && <Layers className="w-3.5 h-3.5 shrink-0" />}
-                    {scope === 'My Words' && <UserCircle2 className="w-3.5 h-3.5 shrink-0" />}
+                    {scope === 'Default' && <Layers className="w-3 h-3 shrink-0" />}
+                    {scope === 'My Words' && <UserCircle2 className="w-3 h-3 shrink-0" />}
                     {scope}
                   </button>
                 ))}
               </div>
-              <span className="w-px h-4 bg-gray-200 dark:bg-white/10" aria-hidden />
-              {[
-                { value: '+' as const, label: 'Positive' },
-                { value: '~' as const, label: 'Neutral' },
-                { value: '-' as const, label: 'Negative' },
-              ].map(({ value, label }) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => setSelectedSentiment(selectedSentiment === value ? null : value)}
-                  className={cn(
-                    'px-3 py-1.5 rounded-full text-sm font-medium transition-all shrink-0',
-                    selectedSentiment === value
-                      ? value === '+'
-                        ? 'bg-emerald-100 dark:bg-emerald-500/25 text-emerald-800 dark:text-emerald-200 ring-1 ring-emerald-200 dark:ring-emerald-500/40'
-                        : value === '-'
-                          ? 'bg-rose-100 dark:bg-rose-500/25 text-rose-800 dark:text-rose-200 ring-1 ring-rose-200 dark:ring-rose-500/40'
-                          : 'bg-slate-100 dark:bg-slate-500/20 text-slate-700 dark:text-slate-200 ring-1 ring-slate-200 dark:ring-slate-500/30'
-                      : value === '+'
-                        ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20'
-                        : value === '-'
-                          ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20'
-                          : 'bg-slate-50 dark:bg-slate-500/10 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-500/20'
-                  )}
+              {scopeFilter === 'Default' && (
+                <select
+                  value={selectedClockId === null ? '' : String(selectedClockId)}
+                  onChange={(e) => {
+                    const v = e.target.value
+                    setSelectedClockId(v === '' ? null : Number(v))
+                  }}
+                  className="text-xs rounded-md border border-black/5 dark:border-white/10 bg-white dark:bg-black/30 text-gray-800 dark:text-gray-200 px-2 py-1 max-w-[10rem] sm:max-w-[14rem] focus:outline-none focus:ring-1 focus:ring-black/20 dark:focus:ring-white/30"
+                  aria-label="Filter by chakra"
                 >
-                  {label}
-                </button>
-              ))}
-            </div>
-            {/* Default: clock sub-filter — same pill style as popup context */}
-            {scopeFilter === 'Default' && (
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedClockId(null)}
-                  className={cn(
-                    'px-3 py-1.5 rounded-lg text-sm font-medium transition-all border',
-                    selectedClockId === null
-                      ? 'bg-gray-200 dark:bg-white/20 text-gray-800 dark:text-gray-100 border-gray-300 dark:border-white/20'
-                      : 'bg-white dark:bg-black/30 border-black/5 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-                  )}
-                >
-                  All
-                </button>
-                {clockTitles.map((title, id) => {
-                  const hex = CLOCK_HEX[id]
-                  const selected = selectedClockId === id
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => setSelectedClockId(selected ? null : id)}
-                      className={cn(
-                        'px-3 py-1.5 rounded-lg text-sm font-medium transition-all border shrink-0',
-                        'bg-white dark:bg-black/30 border-black/5 dark:border-white/10 text-gray-500 dark:text-gray-400'
-                      )}
-                      style={selected && hex ? { borderColor: hex, color: hex, backgroundColor: `${hex}15` } : undefined}
-                      onMouseEnter={(e) => {
-                        if (hex) {
-                          e.currentTarget.style.borderColor = hex
-                          e.currentTarget.style.color = hex
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!hex) return
-                        if (selectedClockId === id) {
-                          e.currentTarget.style.borderColor = hex
-                          e.currentTarget.style.color = hex
-                          e.currentTarget.style.backgroundColor = `${hex}15`
-                        } else {
-                          e.currentTarget.style.borderColor = ''
-                          e.currentTarget.style.color = ''
-                          e.currentTarget.style.backgroundColor = ''
-                        }
-                      }}
-                    >
+                  <option value="">All chakras</option>
+                  {clockTitles.map((title, id) => (
+                    <option key={id} value={id}>
                       {title}
-                    </button>
-                  )
-                })}
-              </div>
-            )}
-            {/* Letter anchor — click to scroll to section; highlight shows section currently in view (scroll spy) */}
-            {!visualMode && (
-            <div className="flex flex-wrap items-center gap-2">
-              <div id="az-filter-glossary" className="flex flex-wrap gap-1.5" role="region" aria-label="Jump to letter">
-                {alphabet.map(letter => (
+                    </option>
+                  ))}
+                </select>
+              )}
+              <span className="w-px h-4 bg-gray-200 dark:bg-white/10 shrink-0" aria-hidden />
+              <div className="flex items-center gap-1 shrink-0">
+                {([
+                  { value: '+' as const, icon: 'plus' as const, label: 'Positive' },
+                  { value: '~' as const, icon: 'tilde' as const, label: 'Neutral' },
+                  { value: '-' as const, icon: 'minus' as const, label: 'Negative' },
+                ] as const).map(({ value, icon, label }) => (
                   <button
-                    key={letter}
+                    key={value}
                     type="button"
-                    onClick={() => scrollToLetter(letter)}
+                    onClick={() => setSelectedSentiment(selectedSentiment === value ? null : value)}
+                    title={label}
+                    aria-label={`${label} sentiment`}
+                    aria-pressed={selectedSentiment === value}
                     className={cn(
-                      'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all shrink-0 border',
-                      selectedLetter === letter
-                        ? 'bg-black text-white dark:bg-white dark:text-black border-transparent'
-                        : 'bg-white dark:bg-black/30 border-black/5 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-black/50 text-gray-700 dark:text-gray-300'
+                      'w-9 h-9 rounded-lg flex items-center justify-center text-sm font-medium transition-all shrink-0 border',
+                      selectedSentiment === value
+                        ? value === '+'
+                          ? 'bg-emerald-100 dark:bg-emerald-500/25 text-emerald-800 dark:text-emerald-200 border-emerald-300 dark:border-emerald-500/40'
+                          : value === '-'
+                            ? 'bg-rose-100 dark:bg-rose-500/25 text-rose-800 dark:text-rose-200 border-rose-300 dark:border-rose-500/40'
+                            : 'bg-slate-100 dark:bg-slate-500/20 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-500/40'
+                        : value === '+'
+                          ? 'bg-emerald-50/80 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200/60 dark:border-emerald-500/20 hover:bg-emerald-100 dark:hover:bg-emerald-500/20'
+                          : value === '-'
+                            ? 'bg-rose-50/80 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200/60 dark:border-rose-500/20 hover:bg-rose-100 dark:hover:bg-rose-500/20'
+                            : 'bg-slate-50/80 dark:bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-200/60 dark:border-slate-500/20 hover:bg-slate-100 dark:hover:bg-slate-500/20'
                     )}
-                    aria-label={`Jump to ${letter}`}
-                    aria-current={selectedLetter === letter ? 'true' : undefined}
                   >
-                    {letter}
+                    {icon === 'plus' ? <Plus className="w-4 h-4" strokeWidth={2.5} /> : icon === 'minus' ? <Minus className="w-4 h-4" strokeWidth={2.5} /> : <span className="text-base leading-none">~</span>}
                   </button>
                 ))}
               </div>
+              <div className="flex-1 min-w-2" aria-hidden />
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setVisualMode(v => !v)}
+                  className={cn(
+                    'px-2.5 py-1.5 rounded-lg text-xs border flex items-center gap-1 shrink-0 transition-all',
+                    visualMode
+                      ? 'bg-slate-900 text-white dark:bg-white dark:text-black border-transparent'
+                      : 'bg-white dark:bg-black/30 border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 text-gray-700 dark:text-gray-300'
+                  )}
+                  aria-pressed={visualMode}
+                  aria-label={visualMode ? 'Switch to list view' : 'Switch to radial tree view'}
+                >
+                  <Network className="w-3.5 h-3.5" />
+                  {visualMode ? 'List' : 'Visual'}
+                </button>
+                {selectedCard && (
+                  <button
+                    type="button"
+                    onClick={() => { setEditWord(selectedCard); setIsAddWordOpen(true) }}
+                    className="px-2.5 py-1.5 rounded-lg text-xs bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 text-gray-700 dark:text-gray-300 flex items-center gap-1"
+                    aria-label="Edit word"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                    Edit
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setIsAddWordOpen(true)}
+                  className="px-2.5 py-1.5 rounded-lg text-xs bg-white dark:bg-black/30 border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 text-gray-700 dark:text-gray-300 flex items-center gap-1"
+                  aria-label="Add word"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Add
+                </button>
+              </div>
             </div>
+            {!visualMode && (
+              <div className="flex flex-wrap items-center gap-2">
+                <div id="az-filter-glossary" className="flex flex-wrap gap-1" role="region" aria-label="Jump to letter">
+                  {alphabet.map(letter => (
+                    <button
+                      key={letter}
+                      type="button"
+                      onClick={() => scrollToLetter(letter)}
+                      className={cn(
+                        'w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-all shrink-0 border',
+                        selectedLetter === letter
+                          ? 'bg-black text-white dark:bg-white dark:text-black border-transparent'
+                          : 'bg-white dark:bg-black/30 border-black/5 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-black/50 text-gray-700 dark:text-gray-300'
+                      )}
+                      aria-label={`Jump to ${letter}`}
+                      aria-current={selectedLetter === letter ? 'true' : undefined}
+                    >
+                      {letter}
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
           {/* Scrollable letter sections — same as Assign Words popup */}
@@ -460,6 +410,22 @@ export default function GlossaryPage() {
               </div>
             </div>
             )}
+          </div>
+          <div className="p-3 border-t border-black/5 dark:border-white/10 shrink-0 bg-white/90 dark:bg-black/50 backdrop-blur-sm">
+            <div className="relative w-full">
+              <input
+                type="text"
+                placeholder="Search words or definitions"
+                className="w-full pl-10 pr-24 py-2 rounded-lg bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all text-sm text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="Search words or definitions"
+              />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
+              <span className="absolute right-3 top-2 text-xs text-gray-400 dark:text-gray-500 tabular-nums">
+                {sortedWords.length} words
+              </span>
+            </div>
           </div>
         </div>
       </div>
