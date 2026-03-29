@@ -212,12 +212,10 @@ export default function SessionsPage() {
     <ProtectedRoute>
       <div className="h-full overflow-hidden flex flex-col bg-gray-50 dark:bg-black/95">
         {showElements && (
-          <div className="fixed right-8 top-8 z-50">
-            <DotNavigation
-              activeDot={9}
-              isSmallMultiView={false}
-            />
-          </div>
+          <DotNavigation
+            activeDot={9}
+            isSmallMultiView={false}
+          />
         )}
 
         <div className="flex-1 min-h-0 overflow-y-auto">

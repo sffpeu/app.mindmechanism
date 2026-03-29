@@ -35,6 +35,8 @@ type DockProps = {
   magnification?: number;
   spring?: SpringOptions;
   orientation?: 'horizontal' | 'vertical';
+  /** Vertical dock only: `left` = default (AppDock); `right` = mirrored strip on screen edge so tooltips open toward center. */
+  dockEdge?: 'left' | 'right';
 };
 type DockItemProps = {
   className?: string;
@@ -57,6 +59,7 @@ type DocContextType = {
   magnification: number;
   distance: number;
   orientation: 'horizontal' | 'vertical';
+  dockEdge: 'left' | 'right';
 };
 type DockProviderProps = {
   children: React.ReactNode;
@@ -85,6 +88,7 @@ function Dock({
   distance = DEFAULT_DISTANCE,
   panelHeight = DEFAULT_PANEL_HEIGHT,
   orientation = 'horizontal',
+  dockEdge = 'left',
 }: DockProps) {
   const mouseX = useMotionValue(Infinity);
   const mouseY = useMotionValue(Infinity);
@@ -98,6 +102,7 @@ function Dock({
   const height = useSpring(heightRow, spring);
 
   const isVertical = orientation === 'vertical';
+  const verticalOuterAlign = isVertical && dockEdge === 'right' ? 'items-end' : 'items-start';
 
   return (
     <motion.div
@@ -107,7 +112,9 @@ function Dock({
       }}
       className={cn(
         'mx-2 flex',
-        isVertical ? 'flex-col items-start max-h-full overflow-visible' : 'max-w-full items-end overflow-x-auto overflow-y-auto'
+        isVertical
+          ? cn('flex-col max-h-full overflow-visible', verticalOuterAlign)
+          : 'max-w-full items-end overflow-x-auto overflow-y-auto'
       )}
     >
       <motion.div
@@ -131,7 +138,9 @@ function Dock({
         role='toolbar'
         aria-label='Application dock'
       >
-        <DockProvider value={{ mouseX, mouseY, spring, distance, magnification, orientation }}>
+        <DockProvider
+          value={{ mouseX, mouseY, spring, distance, magnification, orientation, dockEdge }}
+        >
           {children}
         </DockProvider>
       </motion.div>
@@ -142,7 +151,7 @@ function Dock({
 function DockItem({ children, className, style }: DockItemProps) {
   const ref = useRef<HTMLDivElement>(null);
 
-  const { distance, magnification, mouseX, mouseY, spring, orientation } = useDock();
+  const { distance, magnification, mouseX, mouseY, spring, orientation, dockEdge } = useDock();
   const isVertical = orientation === 'vertical';
 
   const isHovered = useMotionValue(0);
@@ -187,7 +196,12 @@ function DockItem({ children, className, style }: DockItemProps) {
       aria-haspopup='true'
     >
       {Children.map(children, (child) =>
-        cloneElement(child as React.ReactElement, { width: size, isHovered, orientation })
+        cloneElement(child as React.ReactElement, {
+          width: size,
+          isHovered,
+          orientation,
+          dockEdge,
+        })
       )}
     </motion.div>
   );
@@ -197,8 +211,11 @@ function DockLabel({ children, className, ...rest }: DockLabelProps) {
   const restProps = rest as Record<string, unknown>;
   const isHovered = restProps['isHovered'] as MotionValue<number>;
   const orientation = restProps['orientation'] as 'horizontal' | 'vertical' | undefined;
+  const dockEdge = (restProps['dockEdge'] as 'left' | 'right' | undefined) ?? 'left';
   const [isVisible, setIsVisible] = useState(false);
   const isVertical = orientation === 'vertical';
+  const labelOnRight = isVertical && dockEdge === 'left';
+  const labelOnLeft = isVertical && dockEdge === 'right';
 
   useEffect(() => {
     if (!isHovered) return;
@@ -213,13 +230,27 @@ function DockLabel({ children, className, ...rest }: DockLabelProps) {
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ opacity: 0, x: isVertical ? 10 : 0, y: isVertical ? 0 : 10 }}
-          animate={{ opacity: 1, x: isVertical ? 0 : 0, y: isVertical ? 0 : -10 }}
-          exit={{ opacity: 0, x: isVertical ? 10 : 0, y: isVertical ? 0 : 0 }}
+          initial={{
+            opacity: 0,
+            x: isVertical ? (labelOnLeft ? -10 : 10) : 0,
+            y: isVertical ? 0 : 10,
+          }}
+          animate={{
+            opacity: 1,
+            x: isVertical ? 0 : 0,
+            y: isVertical ? 0 : -10,
+          }}
+          exit={{
+            opacity: 0,
+            x: isVertical ? (labelOnLeft ? -10 : 10) : 0,
+            y: isVertical ? 0 : 0,
+          }}
           transition={{ duration: 0.2 }}
           className={cn(
             'absolute z-[1000] w-fit max-w-[200px] whitespace-normal rounded-md border border-gray-200 bg-gray-100 px-2 py-1 text-xs text-neutral-700 shadow-md dark:border-neutral-900 dark:bg-neutral-800 dark:text-white',
-            isVertical ? 'left-full ml-2 top-1/2 -translate-y-1/2' : '-top-6 left-1/2',
+            labelOnRight && 'left-full ml-2 top-1/2 -translate-y-1/2',
+            labelOnLeft && 'right-full mr-2 top-1/2 -translate-y-1/2',
+            !isVertical && '-top-6 left-1/2',
             className
           )}
           role='tooltip'
