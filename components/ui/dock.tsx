@@ -247,7 +247,7 @@ function DockLabel({ children, className, ...rest }: DockLabelProps) {
           }}
           transition={{ duration: 0.2 }}
           className={cn(
-            'absolute z-[1000] w-fit max-w-[200px] whitespace-normal rounded-md border border-gray-200 bg-gray-100 px-2 py-1 text-xs text-neutral-700 shadow-md dark:border-neutral-900 dark:bg-neutral-800 dark:text-white',
+            'absolute z-[1000] w-fit max-w-[min(240px,calc(100vw-3rem))] overflow-visible whitespace-normal break-words rounded-md border border-gray-200 bg-gray-100 px-2 py-1 text-xs text-neutral-700 shadow-md dark:border-neutral-900 dark:bg-neutral-800 dark:text-white',
             labelOnRight && 'left-full ml-2 top-1/2 -translate-y-1/2',
             labelOnLeft && 'right-full mr-2 top-1/2 -translate-y-1/2',
             !isVertical && '-top-6 left-1/2',

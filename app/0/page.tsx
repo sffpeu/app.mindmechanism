@@ -6,7 +6,7 @@ import { useTheme } from '@/app/ThemeContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { ClockBreathingTone } from '@/components/ClockBreathingTone'
 import { ClockFocusNodeAppear } from '@/components/ClockFocusNodeAppear'
-import { ClockPageSettingsTrigger } from '@/components/ClockPageSettingsTrigger'
+import { ClockPageSettingsTrigger, ClockPageDropdownMenuContent } from '@/components/ClockPageSettingsTrigger'
 import { motion, AnimatePresence } from 'framer-motion'
 import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
@@ -16,7 +16,6 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Timer from '@/components/Timer'
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -389,7 +388,7 @@ function NodesPageContent() {
     const a = ((angle % 360) + 360) % 360
     const placement = a > 315 || a < 45 ? 'top' : a <= 135 ? 'right' : a < 225 ? 'bottom' : 'left'
     const counterRotation = -rotation
-    const offsetPx = 50
+    const offsetPx = 62
     const base = { position: 'absolute' as const, left: '50%', top: '50%', transformOrigin: 'center center' as const, zIndex: 900 }
     const scale = isSelected ? 1.1 : 1
     if (placement === 'top') return { ...base, transform: `translate(-50%, -50%) translateY(-${offsetPx}px) scale(${scale}) rotate(${counterRotation}deg)` }
@@ -582,28 +581,36 @@ function NodesPageContent() {
             <DropdownMenuTrigger asChild>
               <ClockPageSettingsTrigger clockHex={clockHex} />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 z-[300]">
-              <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
-                <div className="flex items-center gap-2">
-                  <Satellite className="h-4 w-4" />
-                  <span>Satellites</span>
+            <ClockPageDropdownMenuContent clockHex={clockHex}>
+              <DropdownMenuItem
+                className="flex cursor-pointer items-center justify-between gap-1.5 px-2 py-1.5 text-[11px] focus:bg-black/5 dark:focus:bg-white/10"
+                onSelect={(e) => e.preventDefault()}
+              >
+                <div className="flex min-w-0 flex-1 items-center gap-1.5 pr-0.5">
+                  <Satellite className="h-3 w-3 shrink-0" style={{ color: clockHex }} />
+                  <span className="leading-snug">Satellites</span>
                 </div>
                 <Switch
+                  className="origin-right scale-[0.72] shrink-0"
                   checked={showSatellites}
                   onCheckedChange={handleSatellitesChange}
                 />
               </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
-                <div className="flex items-center gap-2">
-                  <List className="h-4 w-4" />
-                  <span>Focus Words</span>
+              <DropdownMenuItem
+                className="flex cursor-pointer items-center justify-between gap-1.5 px-2 py-1.5 text-[11px] focus:bg-black/5 dark:focus:bg-white/10"
+                onSelect={(e) => e.preventDefault()}
+              >
+                <div className="flex min-w-0 flex-1 items-center gap-1.5 pr-0.5">
+                  <List className="h-3 w-3 shrink-0" style={{ color: clockHex }} />
+                  <span className="leading-snug">Focus Words</span>
                 </div>
                 <Switch
+                  className="origin-right scale-[0.72] shrink-0"
                   checked={showWords}
                   onCheckedChange={handleWordsChange}
                 />
               </DropdownMenuItem>
-            </DropdownMenuContent>
+            </ClockPageDropdownMenuContent>
           </DropdownMenu>
         </div>
 
@@ -618,10 +625,10 @@ function NodesPageContent() {
           )}
           <div className="group relative">
             <button 
-              className="p-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors"
+              className="rounded-md border border-black/10 bg-white/85 p-1 backdrop-blur-sm transition-colors hover:bg-white/95 dark:border-white/15 dark:bg-black/85 dark:hover:bg-black/90"
               aria-label="Clock Information"
             >
-              <Info className="h-4 w-4 text-black/70 dark:text-white/70" />
+              <Info className="h-3 w-3 text-black/75 dark:text-white/75" />
             </button>
             <div className="absolute bottom-full left-0 mb-2 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 origin-bottom-left">
               <Card className="w-[300px] bg-white/90 dark:bg-black/90 backdrop-blur-sm border-black/5 dark:border-white/10">
@@ -943,7 +950,7 @@ function NodesPageContent() {
                         </span>
                         {showWords && isSelected && word && (
                           <div 
-                            className="absolute pointer-events-none z-[800] min-w-max max-w-[min(90vw,20rem)]"
+                            className="absolute pointer-events-none z-[900] min-w-0 max-w-[min(92vw,18rem)] sm:max-w-[20rem]"
                             style={getWordContainerStyle(angle, isSelected)}
                           >
                             <AnimatePresence mode="wait">
@@ -955,7 +962,7 @@ function NodesPageContent() {
                                   animate={{ opacity: 1 }}
                                   exit={{ opacity: 0 }}
                                   className={cn(
-                                    'whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-medium shadow-sm outline outline-1 outline-black/10 dark:outline-white/20 text-gray-800 dark:text-gray-200 transition-colors pointer-events-auto',
+                                    'max-w-full whitespace-normal break-words px-2.5 py-1 text-left text-xs font-medium leading-snug shadow-sm outline outline-1 outline-black/15 dark:outline-white/25 text-gray-800 dark:text-gray-200 transition-colors pointer-events-auto rounded-full',
                                     pillHoveredWord === word ? 'bg-gray-100/90 dark:bg-gray-500/20' : 'bg-white/90 dark:bg-black/90 hover:bg-white dark:hover:bg-black/80'
                                   )}
                                   onClick={(e) => {

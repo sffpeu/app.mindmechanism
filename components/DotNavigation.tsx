@@ -90,10 +90,10 @@ const DotNavigation: React.FC<DotNavigationProps> = ({ activeDot, onDotHover }) 
 
       <Link href="/multiview/1" className="outline-none border-none no-underline">
         <DockItem
-          className={`aspect-square rounded-full transition-colors ${
+          className={`aspect-square rounded-full ring-2 ring-inset ring-offset-0 transition-colors ${
             isM1Active
-              ? 'bg-black dark:bg-white'
-              : 'bg-gray-200 dark:bg-neutral-800 hover:bg-gray-300 dark:hover:bg-neutral-700'
+              ? 'bg-black dark:bg-white ring-white dark:ring-black'
+              : 'bg-gray-200 ring-black dark:bg-neutral-800 dark:ring-white hover:bg-gray-300 dark:hover:bg-neutral-700'
           }`}
         >
           <DockLabel>M1</DockLabel>
@@ -111,10 +111,10 @@ const DotNavigation: React.FC<DotNavigationProps> = ({ activeDot, onDotHover }) 
 
       <Link href="/multiview/2" className="outline-none border-none no-underline">
         <DockItem
-          className={`aspect-square rounded-full transition-colors ${
+          className={`aspect-square rounded-full ring-2 ring-inset ring-offset-0 transition-colors ${
             isM2Active
-              ? 'bg-black dark:bg-white'
-              : 'bg-gray-200 dark:bg-neutral-800 hover:bg-gray-300 dark:hover:bg-neutral-700'
+              ? 'bg-black dark:bg-white ring-white dark:ring-black'
+              : 'bg-gray-200 ring-black dark:bg-neutral-800 dark:ring-white hover:bg-gray-300 dark:hover:bg-neutral-700'
           }`}
         >
           <DockLabel>M2</DockLabel>
