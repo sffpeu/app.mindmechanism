@@ -1,5 +1,6 @@
 'use client'
 
+import type { CSSProperties } from 'react'
 import { ChevronDown, Layers } from 'lucide-react'
 import { clockTitles } from '@/lib/clockTitles'
 import { cn } from '@/lib/utils'
@@ -32,6 +33,11 @@ export function GlossaryDefaultChakraDropdown({
   const label =
     isDefault && selectedClockId != null ? clockTitles[selectedClockId] ?? 'Default' : 'Default'
 
+  const chakraHover =
+    isDefault && selectedClockId != null
+      ? 'hover:border-[color:var(--chakra-hover)] hover:text-[color:var(--chakra-hover)] hover:bg-[color:color-mix(in_srgb,var(--chakra-hover)_14%,transparent)] dark:hover:bg-[color:color-mix(in_srgb,var(--chakra-hover)_20%,transparent)]'
+      : 'hover:border-black/20 dark:hover:border-white/20'
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -39,17 +45,12 @@ export function GlossaryDefaultChakraDropdown({
           type="button"
           className={cn(
             'px-2.5 py-1 rounded-md text-xs font-medium transition-all shrink-0 inline-flex items-center gap-1 border min-h-[1.75rem]',
-            isDefault
-              ? 'border-transparent'
-              : 'bg-white dark:bg-black/30 border-black/5 dark:border-white/10 text-gray-600 dark:text-gray-400 hover:border-black/20 dark:hover:border-white/20'
+            'bg-white dark:bg-black/30 border-black/5 dark:border-white/10 text-gray-600 dark:text-gray-400',
+            chakraHover
           )}
           style={
-            isDefault
-              ? {
-                  backgroundColor: `${clockHex}20`,
-                  color: clockHex,
-                  borderColor: clockHex,
-                }
+            isDefault && selectedClockId != null
+              ? ({ ['--chakra-hover' as string]: clockHex } as CSSProperties)
               : undefined
           }
           aria-label="Default glossary scope and chakra filter"
@@ -69,16 +70,25 @@ export function GlossaryDefaultChakraDropdown({
         >
           All default words
         </DropdownMenuItem>
-        {clockTitles.map((title, id) => (
-          <DropdownMenuItem
-            key={id}
-            onClick={() => onSelectChakra(id)}
-            className={cn(isDefault && selectedClockId === id && 'bg-accent')}
-          >
-            <span className="mr-2 inline-block h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: CLOCK_HEX[id] }} />
-            {title}
-          </DropdownMenuItem>
-        ))}
+        {clockTitles.map((title, id) => {
+          const hex = CLOCK_HEX[id]
+          return (
+            <DropdownMenuItem
+              key={id}
+              onClick={() => onSelectChakra(id)}
+              style={{ ['--clock-hex' as string]: hex } as CSSProperties}
+              className={cn(
+                'transition-colors',
+                'hover:bg-[color:color-mix(in_srgb,var(--clock-hex)_14%,transparent)] hover:text-[color:var(--clock-hex)]',
+                'focus:bg-[color:color-mix(in_srgb,var(--clock-hex)_14%,transparent)] focus:text-[color:var(--clock-hex)]',
+                'dark:hover:bg-[color:color-mix(in_srgb,var(--clock-hex)_20%,transparent)] dark:focus:bg-[color:color-mix(in_srgb,var(--clock-hex)_20%,transparent)]',
+                isDefault && selectedClockId === id && 'bg-accent text-accent-foreground'
+              )}
+            >
+              {title}
+            </DropdownMenuItem>
+          )
+        })}
       </DropdownMenuContent>
     </DropdownMenu>
   )
