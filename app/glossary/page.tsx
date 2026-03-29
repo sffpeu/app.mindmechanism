@@ -372,6 +372,10 @@ export default function GlossaryPage() {
                   words={fullWordList}
                   selectedWordId={selectedCard?.id ?? null}
                   onSelectWord={w => setSelectedCard(prev => (prev?.id === w.id ? null : w))}
+                  onSelectClockSector={(clockId) => {
+                    setScopeFilter('Default')
+                    setSelectedClockId(clockId)
+                  }}
                   className="min-h-[480px]"
                   visualFilters={{
                     scopeFilter: scopeFilter,
