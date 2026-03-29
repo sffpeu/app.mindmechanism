@@ -186,6 +186,8 @@ export type GlossaryRadialTreeProps = {
   className?: string
   /** When set, diagram reflects glossary filters (clock color, sector, enlargement). */
   visualFilters?: GlossaryVisualFilters
+  /** Full-bleed diagram: no card border/background (visual glossary mode). */
+  variant?: 'card' | 'fullscreen'
 }
 
 export function GlossaryRadialTree({
@@ -194,6 +196,7 @@ export function GlossaryRadialTree({
   onSelectWord,
   className,
   visualFilters,
+  variant = 'card',
 }: GlossaryRadialTreeProps) {
   const scopeFilter = visualFilters?.scopeFilter ?? 'All'
   const filterClockId = visualFilters?.selectedClockId ?? null
@@ -230,7 +233,13 @@ export function GlossaryRadialTree({
     return m
   }, [layout.leaves])
 
-  const highlightIds = useMemo(() => pathNodeIdsForWord(selectedWordId, leafById), [selectedWordId, leafById])
+  const [hoveredWordId, setHoveredWordId] = useState<string | null>(null)
+  const highlightWordId = selectedWordId ?? hoveredWordId
+
+  const highlightIds = useMemo(
+    () => pathNodeIdsForWord(highlightWordId, leafById),
+    [highlightWordId, leafById]
+  )
 
   const linkHighlighted = useCallback(
     (link: LayoutLink) => {
@@ -340,24 +349,33 @@ export function GlossaryRadialTree({
 
   const innerSectorR = useMemo(() => layout.clocks[0] ? Math.hypot(layout.clocks[0].x, layout.clocks[0].y) * 0.35 : 80, [layout.clocks])
 
+  const isFullscreen = variant === 'fullscreen'
+
   return (
     <div
       ref={containerRef}
       className={cn(
-        'relative w-full flex-1 min-h-0 rounded-lg border border-black/5 dark:border-white/10 bg-white dark:bg-black/20 overflow-hidden',
+        'relative w-full flex-1 min-h-0 overflow-hidden',
+        isFullscreen
+          ? 'rounded-none border-0 bg-transparent dark:bg-transparent'
+          : 'rounded-lg border border-black/5 dark:border-white/10 bg-white dark:bg-black/20',
         myWordsScopeDim && 'opacity-40',
         className
       )}
     >
-      <p className="absolute top-2 left-2 z-10 text-xs text-gray-500 dark:text-gray-400 pointer-events-none select-none max-w-[min(100%,220px)]">
-        Scroll to zoom · drag to pan
-        {focusClockId !== null && (
-          <span className="block mt-0.5 font-medium" style={{ color: CLOCK_HEX[focusClockId] }}>
-            {clockTitles[focusClockId]} — enlarged
-          </span>
-        )}
-        {myWordsScopeDim && <span className="block mt-0.5 text-amber-700 dark:text-amber-300">My Words: tree shows default glossary only</span>}
-      </p>
+      {!isFullscreen && (
+        <p className="absolute top-2 left-2 z-10 text-xs text-gray-500 dark:text-gray-400 pointer-events-none select-none max-w-[min(100%,220px)]">
+          Scroll to zoom · drag to pan
+          {focusClockId !== null && (
+            <span className="block mt-0.5 font-medium" style={{ color: CLOCK_HEX[focusClockId] }}>
+              {clockTitles[focusClockId]} — enlarged
+            </span>
+          )}
+          {myWordsScopeDim && (
+            <span className="block mt-0.5 text-amber-700 dark:text-amber-300">My Words: tree shows default glossary only</span>
+          )}
+        </p>
+      )}
       <svg
         ref={svgRef}
         className="w-full h-full touch-none cursor-grab active:cursor-grabbing block"
@@ -471,37 +489,49 @@ export function GlossaryRadialTree({
               let rotDeg = (ang * 180) / Math.PI
               if (Math.cos(ang) < 0) rotDeg += 180
 
-              const labelR = 9
+              const fs =
+                5 * Math.max(5.2, Math.min(8.5, 480 / Math.sqrt(defaultWords.length + 40)))
+              const labelR = Math.max(14, fs * 0.22)
               const lx = leaf.x + Math.cos(ang) * labelR
               const ly = leaf.y + Math.sin(ang) * labelR
-              const fs = Math.max(5.2, Math.min(8.5, 480 / Math.sqrt(defaultWords.length + 40)))
 
               const groupOp = dim ? 0.38 : sentDim ? 0.22 : 1
 
               return (
-                <g key={leaf.id} opacity={groupOp}>
+                <g
+                  key={leaf.id}
+                  opacity={groupOp}
+                  className="cursor-pointer"
+                  onPointerEnter={() => setHoveredWordId(leaf.id)}
+                  onPointerLeave={() => setHoveredWordId((h) => (h === leaf.id ? null : h))}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onSelectWord?.(leaf.word)
+                  }}
+                >
+                  <circle r={Math.max(22, fs * 0.45)} cx={leaf.x} cy={leaf.y} fill="transparent" />
                   <circle
-                    r={hi ? 5 : 3.5}
+                    r={hi ? 6.5 : 4.5}
                     cx={leaf.x}
                     cy={leaf.y}
                     fill={hi ? `${hx}55` : `${CLOCK_HEX[leaf.clockId]}18`}
                     stroke={hi ? hx : CLOCK_HEX[leaf.clockId]}
                     strokeWidth={hi ? 2 : 1}
-                    className="cursor-pointer"
-                    onClick={() => onSelectWord?.(leaf.word)}
+                    pointerEvents="none"
                   />
                   <text
                     x={lx}
                     y={ly}
                     fontSize={fs}
                     className={cn(
-                      'pointer-events-none select-none fill-gray-900 dark:fill-gray-100',
+                      'select-none fill-gray-900 dark:fill-gray-100 pointer-events-none',
                       hi && 'font-semibold'
                     )}
                     style={{
                       paintOrder: 'stroke fill',
                       stroke: hi ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.45)',
-                      strokeWidth: hi ? 2.5 : 0.8,
+                      strokeWidth: hi ? 3 : 1,
                     }}
                     transform={`rotate(${rotDeg} ${lx} ${ly})`}
                     textAnchor="middle"
