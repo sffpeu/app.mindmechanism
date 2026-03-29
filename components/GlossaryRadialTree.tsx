@@ -102,68 +102,6 @@ function sectorAnnulusPath(sectorStart: number, sectorSpan: number, innerR: numb
 /** Pixels beyond the sector annulus outer edge where word dots sit (labels sit further via radial offset). */
 const LEAF_OUTSET = 72
 
-/** All / Default (all) / My Words: three wedges from center — neutral, positive, negative. */
-const SENTIMENT_RATINGS: readonly ('~' | '+' | '-')[] = ['~', '+', '-']
-const SENTIMENT_HEX = ['#22c55e', '#2563eb', '#dc2626'] as const
-
-type SentimentSector = {
-  index: number
-  sectorStart: number
-  sectorSpan: number
-  rating: '~' | '+' | '-'
-}
-
-type SentimentLayout = {
-  links: LayoutLink[]
-  leaves: LayoutLeaf[]
-  sectors: SentimentSector[]
-}
-
-function buildSentimentLayout(filteredWords: GlossaryWord[], leafRadius: number): SentimentLayout {
-  const byRating: Record<'~' | '+' | '-', GlossaryWord[]> = { '~': [], '+': [], '-': [] }
-  for (const w of filteredWords) {
-    const r = w.rating
-    if (r === '~' || r === '+' || r === '-') byRating[r].push(w)
-    else byRating['~'].push(w)
-  }
-  for (const r of SENTIMENT_RATINGS) {
-    byRating[r].sort((a, b) => a.word.localeCompare(b.word))
-  }
-
-  const links: LayoutLink[] = []
-  const leaves: LayoutLeaf[] = []
-  const sectors: SentimentSector[] = []
-
-  for (let s = 0; s < 3; s++) {
-    const rating = SENTIMENT_RATINGS[s]
-    const sectorStart = -Math.PI / 2 + (TAU * s) / 3
-    const sectorSpan = TAU / 3
-    sectors.push({ index: s, sectorStart, sectorSpan, rating })
-
-    const bucket = byRating[rating]
-    const n = bucket.length
-    for (let i = 0; i < n; i++) {
-      const t = n === 1 ? 0.5 : (i + 0.5) / n
-      const angle = sectorStart + sectorSpan * t
-      const [wx, wy] = pointOnCircle(angle, leafRadius)
-      const w = bucket[i]
-      leaves.push({ id: w.id, x: wx, y: wy, word: w, clockId: s, angle })
-      links.push({
-        id: `root-word-${w.id}`,
-        fromId: 'root',
-        toId: w.id,
-        x1: 0,
-        y1: 0,
-        x2: wx,
-        y2: wy,
-        clockId: s,
-      })
-    }
-  }
-
-  return { links, leaves, sectors }
-}
-
 function buildLayout(
   defaultWords: GlossaryWord[],
   rClock: number,
@@ -235,18 +173,94 @@ function buildLayout(
   return { links, clocks, leaves }
 }
 
-function pathNodeIdsForWord(
-  wordId: string | null,
-  leafById: Map<string, LayoutLeaf>,
-  layoutKind: 'clock' | 'sentiment'
-): Set<string> | null {
+/** All-scope visual: user words only, three sectors (~, +, -) with green / blue / red. */
+const SENTIMENT_ORDER = ['~', '+', '-'] as const
+type SentimentRating = (typeof SENTIMENT_ORDER)[number]
+const SENTIMENT_HEX: Record<SentimentRating, string> = {
+  '~': '#22c55e',
+  '+': '#2563eb',
+  '-': '#dc2626',
+}
+
+type SentimentLayoutLink = {
+  id: string
+  fromId: 'root'
+  toId: string
+  x2: number
+  y2: number
+  rating: SentimentRating
+}
+
+type SentimentLayoutLeaf = {
+  id: string
+  x: number
+  y: number
+  word: GlossaryWord
+  rating: SentimentRating
+  angle: number
+}
+
+type SentimentSector = {
+  sectorStart: number
+  sectorSpan: number
+  rating: SentimentRating
+}
+
+function buildSentimentLayout(userWords: GlossaryWord[], leafRadius: number) {
+  const byRating: Record<SentimentRating, GlossaryWord[]> = { '~': [], '+': [], '-': [] }
+  for (const w of userWords) {
+    const r = w.rating
+    if (r === '~' || r === '+' || r === '-') byRating[r].push(w)
+  }
+  for (const k of SENTIMENT_ORDER) {
+    byRating[k].sort((a, b) => a.word.localeCompare(b.word))
+  }
+
+  const sectorSpan = TAU / 3
+  const links: SentimentLayoutLink[] = []
+  const leaves: SentimentLayoutLeaf[] = []
+  const sectors: SentimentSector[] = SENTIMENT_ORDER.map((rating, s) => ({
+    sectorStart: -Math.PI / 2 + s * sectorSpan,
+    sectorSpan,
+    rating,
+  }))
+
+  let sectorIndex = 0
+  for (const rating of SENTIMENT_ORDER) {
+    const sectorStart = -Math.PI / 2 + sectorIndex * sectorSpan
+    const bucket = byRating[rating]
+    const n = bucket.length
+    const angleMargin = sectorSpan * 0.08
+    const usable = sectorSpan - 2 * angleMargin
+    for (let i = 0; i < n; i++) {
+      const t = n === 1 ? 0.5 : (i + 0.5) / n
+      const angle = sectorStart + angleMargin + usable * t
+      const [wx, wy] = pointOnCircle(angle, leafRadius)
+      const w = bucket[i]
+      leaves.push({ id: w.id, x: wx, y: wy, word: w, rating, angle })
+      links.push({ id: `root-word-${w.id}`, fromId: 'root', toId: w.id, x2: wx, y2: wy, rating })
+    }
+    sectorIndex++
+  }
+
+  const innerSectorR = leafRadius * 0.14
+  const outerSectorR = leafRadius * 0.88
+  return { links, leaves, sectors, innerSectorR, outerSectorR }
+}
+
+function pathNodeIdsForWord(wordId: string | null, leafById: Map<string, LayoutLeaf>): Set<string> | null {
   if (!wordId) return null
   const leaf = leafById.get(wordId)
   if (!leaf) return null
-  if (layoutKind === 'sentiment') {
-    return new Set<string>(['root', leaf.id])
-  }
-  return new Set<string>(['root', `clock-${leaf.clockId}`, leaf.id])
+  const set = new Set<string>(['root', `clock-${leaf.clockId}`, leaf.id])
+  return set
+}
+
+function pathNodeIdsForSentimentWord(wordId: string | null, leafById: Map<string, SentimentLayoutLeaf>): Set<string> | null {
+  if (!wordId) return null
+  const leaf = leafById.get(wordId)
+  if (!leaf) return null
+  return new Set<string>(['root', leaf.id])
 }
 
 export type GlossaryVisualFilters = {
@@ -278,63 +292,87 @@ export function GlossaryRadialTree({
   const filterClockId = visualFilters?.selectedClockId ?? null
   const selectedSentiment = visualFilters?.selectedSentiment ?? null
 
-  /** 9-clock wheel only when Default + a specific chakra is chosen. All / My Words / Default (all) use sentiment wedges. */
-  const useClockWheel =
+  /** Default scope + a specific clock pill → focus that sector (enlarge + color). */
+  const focusClockId =
     scopeFilter === 'Default' && filterClockId !== null && filterClockId >= 0 && filterClockId < NUM_CLOCKS
+      ? filterClockId
+      : null
 
-  const focusClockId = useClockWheel && filterClockId != null ? filterClockId : null
+  const myWordsScopeDim = scopeFilter === 'My Words'
+
+  /** Scope "All" → user-word sentiment sunburst; Default / My Words → chakra tree (My Words dims diagram). */
+  const layoutKind = scopeFilter === 'All' ? ('sentiment' as const) : ('chakra' as const)
 
   const defaultWords = useMemo(
     () => words.filter(w => w.clock_id != null && w.clock_id >= 0 && w.clock_id < NUM_CLOCKS),
     [words]
   )
 
-  const layoutBundle = useMemo(() => {
-    if (useClockWheel) {
-      const n = defaultWords.length
-      const rWordBase = Math.max(1400, 520 + Math.sqrt(Math.max(n, 1)) * 42) * (focusClockId !== null ? 1.06 : 1)
-      const rClock = rWordBase * 0.38
-      const sectorScale = focusClockId !== null ? FOCUS_RADIAL_SCALE : 1
-      const outerR = rWordBase * sectorScale + 80
-      const leafRadius = outerR + LEAF_OUTSET
-      const layout = buildLayout(defaultWords, rClock, leafRadius)
-      const pad = 200
-      const extent = leafRadius + pad
-      return { kind: 'clock' as const, layout, extent, outerSectorR: outerR }
-    }
-    const n = words.length
-    const rWordBase = Math.max(1400, 520 + Math.sqrt(Math.max(n, 1)) * 42)
-    const outerR = rWordBase + 80
+  const userWordsAll = useMemo(() => words.filter(w => w.source === 'user'), [words])
+
+  const chakraLayout = useMemo(() => {
+    const n = defaultWords.length
+    const rWordBase = Math.max(1400, 520 + Math.sqrt(Math.max(n, 1)) * 42) * (focusClockId !== null ? 1.06 : 1)
+    const rClock = rWordBase * 0.38
+    const sectorScale = focusClockId !== null ? FOCUS_RADIAL_SCALE : 1
+    const outerR = rWordBase * sectorScale + 80
     const leafRadius = outerR + LEAF_OUTSET
-    const sentiment = buildSentimentLayout(words, leafRadius)
+    const L = buildLayout(defaultWords, rClock, leafRadius)
     const pad = 200
     const extent = leafRadius + pad
-    return { kind: 'sentiment' as const, sentiment, extent, outerSectorR: outerR }
-  }, [words, defaultWords, useClockWheel, focusClockId])
+    const outerSectorR = outerR
+    return { layout: L, extent, outerSectorR }
+  }, [defaultWords, focusClockId])
 
-  const extent = layoutBundle.extent
-  const outerSectorR = layoutBundle.outerSectorR
+  const sentimentLayout = useMemo(() => {
+    const n = userWordsAll.length
+    const rWordBase = Math.max(1200, 480 + Math.sqrt(Math.max(n, 1)) * 36)
+    const leafRadius = rWordBase + LEAF_OUTSET
+    const L = buildSentimentLayout(userWordsAll, leafRadius)
+    const pad = 200
+    const extent = leafRadius + pad
+    return { layout: L, extent, outerSectorR: L.outerSectorR, innerSectorR: L.innerSectorR }
+  }, [userWordsAll])
 
-  const leaves = layoutBundle.kind === 'clock' ? layoutBundle.layout.leaves : layoutBundle.sentiment.leaves
+  const { layout: chakraL, extent: chakraExtent, outerSectorR: chakraOuterSectorR } = chakraLayout
+  const { layout: sentimentL, extent: sentimentExtent, outerSectorR: sentimentOuterSectorR, innerSectorR: sentimentInnerSectorR } =
+    sentimentLayout
 
-  const leafById = useMemo(() => {
+  const extent = layoutKind === 'sentiment' ? sentimentExtent : chakraExtent
+  const outerSectorR = layoutKind === 'sentiment' ? sentimentOuterSectorR : chakraOuterSectorR
+
+  const leafByIdChakra = useMemo(() => {
     const m = new Map<string, LayoutLeaf>()
-    for (const leaf of leaves) m.set(leaf.id, leaf)
+    for (const leaf of chakraL.leaves) m.set(leaf.id, leaf)
     return m
-  }, [leaves])
+  }, [chakraL.leaves])
+
+  const leafByIdSentiment = useMemo(() => {
+    const m = new Map<string, SentimentLayoutLeaf>()
+    for (const leaf of sentimentL.leaves) m.set(leaf.id, leaf)
+    return m
+  }, [sentimentL.leaves])
 
   const [hoveredWordId, setHoveredWordId] = useState<string | null>(null)
 
   /** Path/root/clock highlights follow selection only — not hover. */
-  const selectionPathIds = useMemo(
-    () => pathNodeIdsForWord(selectedWordId, leafById, layoutBundle.kind),
-    [selectedWordId, leafById, layoutBundle.kind]
-  )
+  const selectionPathIds = useMemo(() => {
+    if (layoutKind === 'sentiment') return pathNodeIdsForSentimentWord(selectedWordId, leafByIdSentiment)
+    return pathNodeIdsForWord(selectedWordId, leafByIdChakra)
+  }, [layoutKind, selectedWordId, leafByIdChakra, leafByIdSentiment])
 
-  const linkHighlighted = useCallback(
+  const linkHighlightedChakra = useCallback(
     (link: LayoutLink) => {
       if (!selectionPathIds) return false
       return selectionPathIds.has(link.fromId) && selectionPathIds.has(link.toId)
+    },
+    [selectionPathIds]
+  )
+
+  const linkHighlightedSentiment = useCallback(
+    (link: SentimentLayoutLink) => {
+      if (!selectionPathIds) return false
+      return selectionPathIds.has('root') && selectionPathIds.has(link.toId)
     },
     [selectionPathIds]
   )
@@ -347,21 +385,13 @@ export function GlossaryRadialTree({
     [selectionPathIds]
   )
 
-  const sectorDimmedClock = useCallback(
+  const sectorDimmed = useCallback(
     (clockId: number) => {
+      if (myWordsScopeDim) return true
       if (focusClockId === null) return false
       return clockId !== focusClockId
     },
-    [focusClockId]
-  )
-
-  const sectorDimmedSentiment = useCallback(
-    (sectorIndex: number) => {
-      if (selectedSentiment === null) return false
-      const idx = SENTIMENT_RATINGS.indexOf(selectedSentiment)
-      return idx >= 0 && sectorIndex !== idx
-    },
-    [selectedSentiment]
+    [focusClockId, myWordsScopeDim]
   )
 
   const leafSentimentDimmed = useCallback(
@@ -391,17 +421,6 @@ export function GlossaryRadialTree({
     ro.observe(el)
     return () => ro.disconnect()
   }, [extent])
-
-  useEffect(() => {
-    const el = containerRef.current
-    if (!el) return
-    const w = el.clientWidth
-    const h = el.clientHeight
-    if (!w || !h) return
-    const size = layoutBundle.extent * 2
-    const k = Math.min(w, h) / size
-    setTransform({ k, tx: w / 2, ty: h / 2 })
-  }, [scopeFilter, filterClockId, layoutBundle.kind, layoutBundle.extent])
 
   useEffect(() => {
     const svg = svgRef.current
@@ -441,19 +460,11 @@ export function GlossaryRadialTree({
     }
   }, [])
 
-  const highlightStrokeClock = (clockId: number) => CLOCK_HEX[clockId] ?? '#156fde'
-  const highlightStrokeSentiment = (sectorIndex: number) => SENTIMENT_HEX[sectorIndex] ?? '#156fde'
+  const highlightStroke = (clockId: number) => CLOCK_HEX[clockId] ?? '#156fde'
 
-  const linkStrokeClock = (clockId: number, dim: boolean, hi: boolean) => {
-    if (hi) return highlightStrokeClock(clockId)
+  const linkStrokeForClock = (clockId: number, dim: boolean, hi: boolean) => {
+    if (hi) return highlightStroke(clockId)
     const hex = CLOCK_HEX[clockId] ?? DEFAULT_LINK
-    if (dim) return '#e2e8f0'
-    return hex
-  }
-
-  const linkStrokeSentiment = (sectorIndex: number, dim: boolean, hi: boolean) => {
-    if (hi) return highlightStrokeSentiment(sectorIndex)
-    const hex = SENTIMENT_HEX[sectorIndex] ?? DEFAULT_LINK
     if (dim) return '#e2e8f0'
     return hex
   }
@@ -461,17 +472,14 @@ export function GlossaryRadialTree({
   const linkOpacity = (dim: boolean, hi: boolean) => {
     if (hi) return 1
     if (dim) return 0.28
-    if (layoutBundle.kind === 'sentiment') return 0.88
     return scopeFilter === 'Default' || scopeFilter === 'All' ? 0.88 : 0.55
   }
 
   const innerSectorR = useMemo(() => {
-    if (layoutBundle.kind === 'clock') {
-      const c = layoutBundle.layout.clocks[0]
-      return c ? Math.hypot(c.x, c.y) * 0.35 : 80
-    }
-    return layoutBundle.outerSectorR * 0.14
-  }, [layoutBundle])
+    if (layoutKind === 'sentiment') return sentimentInnerSectorR
+    const c0 = chakraL.clocks[0]
+    return c0 ? Math.hypot(c0.x, c0.y) * 0.35 : 80
+  }, [layoutKind, sentimentInnerSectorR, chakraL.clocks])
 
   const isFullscreen = variant === 'fullscreen'
 
@@ -483,21 +491,20 @@ export function GlossaryRadialTree({
         isFullscreen
           ? 'rounded-none border-0 bg-transparent dark:bg-transparent'
           : 'rounded-lg border border-black/5 dark:border-white/10 bg-white dark:bg-black/20',
+        myWordsScopeDim && 'opacity-40',
         className
       )}
     >
       {!isFullscreen && (
         <p className="absolute top-2 left-2 z-10 text-xs text-gray-500 dark:text-gray-400 pointer-events-none select-none max-w-[min(100%,220px)]">
           Scroll to zoom · drag to pan
-          {layoutBundle.kind === 'sentiment' && (
-            <span className="block mt-0.5 text-gray-600 dark:text-gray-300">
-              Neutral · positive · negative (center outward)
-            </span>
-          )}
-          {layoutBundle.kind === 'clock' && focusClockId !== null && (
+          {focusClockId !== null && (
             <span className="block mt-0.5 font-medium" style={{ color: CLOCK_HEX[focusClockId] }}>
               {clockTitles[focusClockId]} — enlarged
             </span>
+          )}
+          {myWordsScopeDim && (
+            <span className="block mt-0.5 text-amber-700 dark:text-amber-300">My Words: tree shows default glossary only</span>
           )}
         </p>
       )}
@@ -511,10 +518,134 @@ export function GlossaryRadialTree({
       >
         <g transform={`translate(${transform.tx},${transform.ty}) scale(${transform.k})`}>
           <g>
-            {layoutBundle.kind === 'clock' ? (
+            {layoutKind === 'sentiment' ? (
               <>
-                {layoutBundle.layout.clocks.map(c => {
-                  const dim = sectorDimmedClock(c.clockId)
+                {sentimentL.sectors.map((sec, i) => {
+                  const hex = SENTIMENT_HEX[sec.rating]
+                  return (
+                    <path
+                      key={`sent-sector-${i}`}
+                      d={sectorAnnulusPath(sec.sectorStart, sec.sectorSpan, innerSectorR, outerSectorR)}
+                      fill={hex}
+                      fillOpacity={0.12}
+                      stroke={hex}
+                      strokeOpacity={0.32}
+                      strokeWidth={0.9}
+                      className="pointer-events-none"
+                    />
+                  )
+                })}
+
+                {sentimentL.links.map(link => {
+                  const leaf = leafByIdSentiment.get(link.toId)
+                  const sentDim = leaf ? leafSentimentDimmed(leaf.word) : false
+                  const hi = linkHighlightedSentiment(link)
+                  const hex = SENTIMENT_HEX[link.rating]
+                  const opacity = hi ? 1 : sentDim ? 0.18 : 0.82
+                  const sw = hi ? 2.6 : 1.05
+                  return (
+                    <line
+                      key={link.id}
+                      x1={0}
+                      y1={0}
+                      x2={link.x2}
+                      y2={link.y2}
+                      stroke={hi ? hex : sentDim ? '#cbd5e1' : hex}
+                      strokeWidth={sw}
+                      strokeOpacity={opacity}
+                      strokeLinecap="round"
+                    />
+                  )
+                })}
+
+                <circle
+                  r={12}
+                  cx={0}
+                  cy={0}
+                  fill={nodeHighlighted('root') ? '#156fde25' : DEFAULT_NODE_FILL}
+                  stroke={nodeHighlighted('root') ? '#156fde' : DEFAULT_NODE_STROKE}
+                  strokeWidth={nodeHighlighted('root') ? 2.5 : 1.2}
+                />
+                <text
+                  x={0}
+                  y={4}
+                  textAnchor="middle"
+                  className="fill-gray-800 dark:fill-gray-100 text-[12px] font-semibold pointer-events-none select-none"
+                >
+                  Glossary
+                </text>
+
+                {sentimentL.leaves.map(leaf => {
+                  const sentDim = leafSentimentDimmed(leaf.word)
+                  const hex = SENTIMENT_HEX[leaf.rating]
+                  const ang = Math.atan2(leaf.y, leaf.x)
+                  let rotDeg = (ang * 180) / Math.PI
+                  if (Math.cos(ang) < 0) rotDeg += 180
+
+                  const fs =
+                    3.35 * Math.max(5.2, Math.min(8.5, 480 / Math.sqrt(userWordsAll.length + 40)))
+                  const labelR = Math.max(24, fs * 0.48)
+                  const lx = leaf.x + Math.cos(ang) * labelR
+                  const ly = leaf.y + Math.sin(ang) * labelR
+
+                  const groupOp = sentDim ? 0.22 : 1
+                  const isSelected = selectedWordId === leaf.id
+                  const isHoverOnly = hoveredWordId === leaf.id && !isSelected
+
+                  const textFill = isSelected ? hex : isHoverOnly ? WORD_HOVER_GREY : hex
+                  const textOpacity = isSelected ? 1 : isHoverOnly ? 1 : 0.5
+
+                  const dotFill = isSelected ? `${hex}55` : isHoverOnly ? '#e2e8f0' : `${hex}20`
+                  const dotStroke = isSelected ? hex : isHoverOnly ? WORD_HOVER_GREY : hex
+                  const dotR = isSelected ? 6.5 : isHoverOnly ? 4.5 : 4
+                  const dotSw = isSelected ? 2 : 1
+
+                  return (
+                    <g
+                      key={leaf.id}
+                      opacity={groupOp}
+                      className="cursor-pointer"
+                      onPointerEnter={() => setHoveredWordId(leaf.id)}
+                      onPointerLeave={() => setHoveredWordId((h) => (h === leaf.id ? null : h))}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onSelectWord?.(leaf.word)
+                      }}
+                    >
+                      <circle r={Math.max(18, fs * 0.42)} cx={leaf.x} cy={leaf.y} fill="transparent" />
+                      <circle
+                        r={dotR}
+                        cx={leaf.x}
+                        cy={leaf.y}
+                        fill={dotFill}
+                        stroke={dotStroke}
+                        strokeWidth={dotSw}
+                        pointerEvents="none"
+                        opacity={isHoverOnly ? 0.85 : 1}
+                      />
+                      <text
+                        x={lx}
+                        y={ly}
+                        fontSize={fs}
+                        className={cn('select-none pointer-events-none', isSelected && 'font-semibold')}
+                        fill={textFill}
+                        fillOpacity={textOpacity}
+                        transform={`rotate(${rotDeg} ${lx} ${ly})`}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                      >
+                        {leaf.word.word}
+                      </text>
+                    </g>
+                  )
+                })}
+              </>
+            ) : (
+              <>
+                {/* Clock-colored sector bands (diagram sections) */}
+                {chakraL.clocks.map(c => {
+                  const dim = sectorDimmed(c.clockId)
                   const hex = CLOCK_HEX[c.clockId]
                   const fillOp = focusClockId !== null ? (c.clockId === focusClockId ? 0.22 : 0.06) : 0.1
                   const strokeOp = dim ? 0.12 : 0.35
@@ -532,10 +663,10 @@ export function GlossaryRadialTree({
                   )
                 })}
 
-                {layoutBundle.layout.links.map(link => {
-                  const dim = sectorDimmedClock(link.clockId)
-                  const hi = linkHighlighted(link)
-                  const stroke = linkStrokeClock(link.clockId, dim, hi)
+                {chakraL.links.map(link => {
+                  const dim = sectorDimmed(link.clockId)
+                  const hi = linkHighlightedChakra(link)
+                  const stroke = linkStrokeForClock(link.clockId, dim, hi)
                   const sw = hi ? 3 : focusClockId === link.clockId && !dim ? 1.85 : 1.05
                   const opacity = linkOpacity(dim, hi)
                   return (
@@ -551,9 +682,26 @@ export function GlossaryRadialTree({
                   )
                 })}
 
-                {layoutBundle.layout.clocks.map(c => {
+                <circle
+                  r={12}
+                  cx={0}
+                  cy={0}
+                  fill={nodeHighlighted('root') ? '#156fde25' : DEFAULT_NODE_FILL}
+                  stroke={nodeHighlighted('root') ? '#156fde' : DEFAULT_NODE_STROKE}
+                  strokeWidth={nodeHighlighted('root') ? 2.5 : 1.2}
+                />
+                <text
+                  x={0}
+                  y={4}
+                  textAnchor="middle"
+                  className="fill-gray-800 dark:fill-gray-100 text-[12px] font-semibold pointer-events-none select-none"
+                >
+                  Glossary
+                </text>
+
+                {chakraL.clocks.map(c => {
                   const hi = nodeHighlighted(c.id)
-                  const dim = sectorDimmedClock(c.clockId)
+                  const dim = sectorDimmed(c.clockId)
                   const hex = CLOCK_HEX[c.clockId]
                   const [lx, ly] = pointOnCircle(c.clockAngle, innerSectorR + (Math.hypot(c.x, c.y) - innerSectorR) * 0.45)
 
@@ -584,166 +732,80 @@ export function GlossaryRadialTree({
                     </g>
                   )
                 })}
-              </>
-            ) : (
-              <>
-                {layoutBundle.sentiment.sectors.map(sector => {
-                  const dim = sectorDimmedSentiment(sector.index)
-                  const hex = SENTIMENT_HEX[sector.index]
-                  const active = selectedSentiment === sector.rating
-                  const fillOp = selectedSentiment !== null ? (active ? 0.2 : 0.06) : 0.12
-                  const strokeOp = dim ? 0.12 : 0.38
-                  return (
-                    <path
-                      key={`sent-sector-${sector.index}`}
-                      d={sectorAnnulusPath(sector.sectorStart, sector.sectorSpan, innerSectorR, outerSectorR)}
-                      fill={hex}
-                      fillOpacity={dim ? fillOp * 0.35 : fillOp}
-                      stroke={hex}
-                      strokeOpacity={strokeOp}
-                      strokeWidth={active ? 2 : 0.9}
-                      className="pointer-events-none"
-                    />
-                  )
-                })}
 
-                {layoutBundle.sentiment.links.map(link => {
-                  const dim = sectorDimmedSentiment(link.clockId)
-                  const hi = linkHighlighted(link)
-                  const stroke = linkStrokeSentiment(link.clockId, dim, hi)
-                  const sw = hi ? 3 : 1.15
-                  const opacity = linkOpacity(dim, hi)
-                  return (
-                    <line
-                      key={link.id}
-                      x1={link.x1}
-                      y1={link.y1}
-                      x2={link.x2}
-                      y2={link.y2}
-                      stroke={hi ? stroke : dim ? '#cbd5e1' : stroke}
-                      strokeWidth={sw}
-                      strokeOpacity={opacity}
-                      strokeLinecap="round"
-                    />
-                  )
-                })}
+                {chakraL.leaves.map(leaf => {
+                  const hx = highlightStroke(leaf.clockId)
+                  const dim = sectorDimmed(leaf.clockId)
+                  const sentDim = leafSentimentDimmed(leaf.word)
+                  const ang = Math.atan2(leaf.y, leaf.x)
+                  let rotDeg = (ang * 180) / Math.PI
+                  if (Math.cos(ang) < 0) rotDeg += 180
 
-                {layoutBundle.sentiment.sectors.map(sector => {
-                  const mid = sector.sectorStart + sector.sectorSpan / 2
-                  const [lx, ly] = pointOnCircle(mid, innerSectorR * 1.35)
-                  const dim = sectorDimmedSentiment(sector.index)
-                  const hex = SENTIMENT_HEX[sector.index]
-                  const label = sector.rating === '~' ? '~' : sector.rating === '+' ? '+' : '−'
+                  const fs =
+                    3.35 * Math.max(5.2, Math.min(8.5, 480 / Math.sqrt(defaultWords.length + 40)))
+                  const labelR = Math.max(24, fs * 0.48)
+                  const lx = leaf.x + Math.cos(ang) * labelR
+                  const ly = leaf.y + Math.sin(ang) * labelR
+
+                  const groupOp = dim ? 0.38 : sentDim ? 0.22 : 1
+                  const isSelected = selectedWordId === leaf.id
+                  const isHoverOnly = hoveredWordId === leaf.id && !isSelected
+
+                  const clockHex = CLOCK_HEX[leaf.clockId] ?? hx
+                  const textFill = isSelected ? clockHex : isHoverOnly ? WORD_HOVER_GREY : clockHex
+                  const textOpacity = isSelected ? 1 : isHoverOnly ? 1 : 0.5
+
+                  const dotFill = isSelected
+                    ? `${clockHex}55`
+                    : isHoverOnly
+                      ? '#e2e8f0'
+                      : `${clockHex}20`
+                  const dotStroke = isSelected ? clockHex : isHoverOnly ? WORD_HOVER_GREY : clockHex
+                  const dotR = isSelected ? 6.5 : isHoverOnly ? 4.5 : 4
+                  const dotSw = isSelected ? 2 : 1
+
                   return (
-                    <text
-                      key={`sent-label-${sector.index}`}
-                      x={lx}
-                      y={ly}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      className="pointer-events-none select-none font-bold"
-                      style={{
-                        fontSize: 11,
-                        fill: hex,
-                        opacity: dim ? 0.35 : 0.9,
+                    <g
+                      key={leaf.id}
+                      opacity={groupOp}
+                      className="cursor-pointer"
+                      onPointerEnter={() => setHoveredWordId(leaf.id)}
+                      onPointerLeave={() => setHoveredWordId((h) => (h === leaf.id ? null : h))}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onSelectWord?.(leaf.word)
                       }}
                     >
-                      {label}
-                    </text>
+                      <circle r={Math.max(18, fs * 0.42)} cx={leaf.x} cy={leaf.y} fill="transparent" />
+                      <circle
+                        r={dotR}
+                        cx={leaf.x}
+                        cy={leaf.y}
+                        fill={dotFill}
+                        stroke={dotStroke}
+                        strokeWidth={dotSw}
+                        pointerEvents="none"
+                        opacity={isHoverOnly ? 0.85 : 1}
+                      />
+                      <text
+                        x={lx}
+                        y={ly}
+                        fontSize={fs}
+                        className={cn('select-none pointer-events-none', isSelected && 'font-semibold')}
+                        fill={textFill}
+                        fillOpacity={textOpacity}
+                        transform={`rotate(${rotDeg} ${lx} ${ly})`}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                      >
+                        {leaf.word.word}
+                      </text>
+                    </g>
                   )
                 })}
               </>
             )}
-
-            <circle
-              r={12}
-              cx={0}
-              cy={0}
-              fill={nodeHighlighted('root') ? '#156fde25' : DEFAULT_NODE_FILL}
-              stroke={nodeHighlighted('root') ? '#156fde' : DEFAULT_NODE_STROKE}
-              strokeWidth={nodeHighlighted('root') ? 2.5 : 1.2}
-            />
-            <text
-              x={0}
-              y={4}
-              textAnchor="middle"
-              className="fill-gray-800 dark:fill-gray-100 text-[12px] font-semibold pointer-events-none select-none"
-            >
-              Glossary
-            </text>
-
-            {leaves.map(leaf => {
-              const isClock = layoutBundle.kind === 'clock'
-              const hx = isClock ? highlightStrokeClock(leaf.clockId) : highlightStrokeSentiment(leaf.clockId)
-              const dim = isClock ? sectorDimmedClock(leaf.clockId) : sectorDimmedSentiment(leaf.clockId)
-              const sentDim = leafSentimentDimmed(leaf.word)
-              const ang = Math.atan2(leaf.y, leaf.x)
-              let rotDeg = (ang * 180) / Math.PI
-              if (Math.cos(ang) < 0) rotDeg += 180
-
-              const wordCount = isClock ? defaultWords.length : words.length
-              const fs = 3.35 * Math.max(5.2, Math.min(8.5, 480 / Math.sqrt(wordCount + 40)))
-              const labelR = Math.max(24, fs * 0.48)
-              const lx = leaf.x + Math.cos(ang) * labelR
-              const ly = leaf.y + Math.sin(ang) * labelR
-
-              const groupOp = dim ? 0.38 : sentDim ? 0.22 : 1
-              const isSelected = selectedWordId === leaf.id
-              const isHoverOnly = hoveredWordId === leaf.id && !isSelected
-
-              const accentHex = isClock ? CLOCK_HEX[leaf.clockId] ?? hx : SENTIMENT_HEX[leaf.clockId] ?? hx
-              const textFill = isSelected ? accentHex : isHoverOnly ? WORD_HOVER_GREY : accentHex
-              const textOpacity = isSelected ? 1 : isHoverOnly ? 1 : 0.5
-
-              const dotFill = isSelected
-                ? `${accentHex}55`
-                : isHoverOnly
-                  ? '#e2e8f0'
-                  : `${accentHex}20`
-              const dotStroke = isSelected ? accentHex : isHoverOnly ? WORD_HOVER_GREY : accentHex
-              const dotR = isSelected ? 6.5 : isHoverOnly ? 4.5 : 4
-              const dotSw = isSelected ? 2 : 1
-
-              return (
-                <g
-                  key={leaf.id}
-                  opacity={groupOp}
-                  className="cursor-pointer"
-                  onPointerEnter={() => setHoveredWordId(leaf.id)}
-                  onPointerLeave={() => setHoveredWordId((h) => (h === leaf.id ? null : h))}
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onSelectWord?.(leaf.word)
-                  }}
-                >
-                  <circle r={Math.max(18, fs * 0.42)} cx={leaf.x} cy={leaf.y} fill="transparent" />
-                  <circle
-                    r={dotR}
-                    cx={leaf.x}
-                    cy={leaf.y}
-                    fill={dotFill}
-                    stroke={dotStroke}
-                    strokeWidth={dotSw}
-                    pointerEvents="none"
-                    opacity={isHoverOnly ? 0.85 : 1}
-                  />
-                  <text
-                    x={lx}
-                    y={ly}
-                    fontSize={fs}
-                    className={cn('select-none pointer-events-none', isSelected && 'font-semibold')}
-                    fill={textFill}
-                    fillOpacity={textOpacity}
-                    transform={`rotate(${rotDeg} ${lx} ${ly})`}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                  >
-                    {leaf.word.word}
-                  </text>
-                </g>
-              )
-            })}
           </g>
         </g>
       </svg>

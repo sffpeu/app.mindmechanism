@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords, searchWords } from '@/lib/glossary'
 import { AddWordDialog } from '@/components/AddWordDialog'
@@ -24,6 +24,7 @@ export default function GlossaryPage() {
   const [selectedSentiment, setSelectedSentiment] = useState<SentimentValue | null>(null)
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
   const [words, setWords] = useState<GlossaryWord[]>([])
+  const [fullWordList, setFullWordList] = useState<GlossaryWord[]>([])
   const [loading, setLoading] = useState(true)
   const [visualMode, setVisualMode] = useState(false)
   const [isAddWordOpen, setIsAddWordOpen] = useState(false)
@@ -62,6 +63,7 @@ export default function GlossaryPage() {
     try {
       const allWords = await getAllWords()
       setWords(allWords)
+      setFullWordList(allWords)
     } catch (error) {
       console.error('Error loading words:', error)
     }
@@ -79,8 +81,8 @@ export default function GlossaryPage() {
     setLoading(false)
   }
 
-  const filteredWords = useMemo(() => {
-    return words.filter((word) => {
+  const glossaryFilterIncludes = useCallback(
+    (word: GlossaryWord) => {
       if (scopeFilter === 'My Words') {
         if (word.source !== 'user' || word.user_id !== user?.uid) return false
       } else if (scopeFilter === 'Default') {
@@ -89,15 +91,11 @@ export default function GlossaryPage() {
       }
       if (selectedSentiment !== null && word.rating !== selectedSentiment) return false
       return true
-    })
-  }, [words, scopeFilter, selectedClockId, selectedSentiment, user?.uid])
+    },
+    [scopeFilter, selectedClockId, selectedSentiment, user?.uid]
+  )
 
-  useEffect(() => {
-    setSelectedCard((prev) => {
-      if (!prev) return null
-      return filteredWords.some((w) => w.id === prev.id) ? prev : null
-    })
-  }, [filteredWords])
+  const filteredWords = words.filter(glossaryFilterIncludes)
 
   const setScopeAllOrMy = useCallback((scope: 'All' | 'My Words') => {
     setSelectedClockId(null)
@@ -119,6 +117,17 @@ export default function GlossaryPage() {
   }, [])
 
   const sortedWords = [...filteredWords].sort((a, b) => a.word.localeCompare(b.word))
+
+  /**
+   * Card list uses `words` (includes search). The radial always uses `fullWordList`, so in visual mode the count chip
+   * uses the same scope/sentiment rules on the full list so it matches the diagram.
+   */
+  const searchBarWordCount = (() => {
+    if (!visualMode) return sortedWords.length
+    const base = fullWordList.filter(glossaryFilterIncludes)
+    if (scopeFilter === 'All') return base.filter((w) => w.source === 'user').length
+    return base.length
+  })()
 
   const letterSections = (() => {
     const map: Record<string, GlossaryWord[]> = {}
@@ -161,7 +170,7 @@ export default function GlossaryPage() {
 
   const bottomChromeInner = (
     <>
-      <GlossarySearchBar value={searchQuery} onChange={setSearchQuery} wordCount={sortedWords.length} />
+      <GlossarySearchBar value={searchQuery} onChange={setSearchQuery} wordCount={searchBarWordCount} />
       <div className="flex flex-wrap items-center gap-2 gap-y-2">
         <GlossaryAllMyScopeButtons scopeFilter={scopeFilter} onScope={setScopeAllOrMy} />
         <GlossaryDefaultChakraDropdown
@@ -212,7 +221,7 @@ export default function GlossaryPage() {
               </div>
             ) : (
               <GlossaryRadialTree
-                words={filteredWords}
+                words={fullWordList}
                 selectedWordId={selectedCard?.id ?? null}
                 onSelectWord={(w) => setSelectedCard((prev) => (prev?.id === w.id ? null : w))}
                 className="absolute inset-0 h-full w-full min-h-[240px]"
