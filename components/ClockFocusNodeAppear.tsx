@@ -3,8 +3,10 @@
 import { motion } from 'framer-motion'
 import type { HTMLAttributes, ReactNode } from 'react'
 
-const STAGGER_S = 0.068
-const SPIN_DEG = -112
+/** Matches `renderSatellites` on numbered clock pages (staggered fade + scale from center). */
+const BASE_DELAY_S = 1
+const STAGGER_S = 0.1
+const DURATION_S = 0.5
 
 type Props = HTMLAttributes<HTMLDivElement> & {
   nodeIndex: number
@@ -12,25 +14,25 @@ type Props = HTMLAttributes<HTMLDivElement> & {
 }
 
 /**
- * Focus nodes on clock pages: staggered clockwise entrance with a short spin settle
- * (matches the feel of the clock entrance animation).
+ * Focus nodes on clock pages: same entrance as orbiting satellite dots (staggered, easeOut scale-in).
  */
 export function ClockFocusNodeAppear({ nodeIndex, className, style, children, ...rest }: Props) {
   return (
-    <div className={className} style={style} {...rest}>
-      <motion.div
-        className="flex h-full w-full min-h-[44px] min-w-[44px] items-center justify-center"
-        initial={{ opacity: 0, scale: 0.28, rotate: SPIN_DEG }}
-        animate={{ opacity: 1, scale: 1, rotate: 0 }}
-        transition={{
-          delay: nodeIndex * STAGGER_S,
-          opacity: { duration: 0.26 },
-          scale: { type: 'spring', damping: 17, stiffness: 270 },
-          rotate: { type: 'spring', damping: 12, stiffness: 158 },
-        }}
-      >
+    <motion.div
+      className={className}
+      style={style}
+      initial={{ opacity: 0, scale: 0 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{
+        delay: BASE_DELAY_S + nodeIndex * STAGGER_S,
+        duration: DURATION_S,
+        ease: 'easeOut',
+      }}
+      {...rest}
+    >
+      <div className="flex h-full w-full min-h-[44px] min-w-[44px] items-center justify-center">
         {children}
-      </motion.div>
-    </div>
+      </div>
+    </motion.div>
   )
 }

@@ -425,6 +425,13 @@ const FocusNode = ({
         transform: 'translate(-50%, -50%)',
         zIndex: nodeStyle.zIndex,
       }}
+      initial={{ opacity: 0, scale: 0 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{
+        delay: 1 + index * 0.1,
+        duration: 0.5,
+        ease: 'easeOut',
+      }}
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
