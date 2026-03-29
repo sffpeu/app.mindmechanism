@@ -373,6 +373,11 @@ export default function GlossaryPage() {
                   selectedWordId={selectedCard?.id ?? null}
                   onSelectWord={w => setSelectedCard(prev => (prev?.id === w.id ? null : w))}
                   className="min-h-[480px]"
+                  visualFilters={{
+                    scopeFilter: scopeFilter,
+                    selectedClockId: selectedClockId,
+                    selectedSentiment: selectedSentiment,
+                  }}
                 />
               )
             ) : (
