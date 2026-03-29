@@ -8,7 +8,13 @@ const BASE_DELAY_S = 1
 const STAGGER_S = 0.1
 const DURATION_S = 0.5
 
-type Props = HTMLAttributes<HTMLDivElement> & {
+/** DOM animation handlers clash with Framer Motion `MotionProps` on `motion.div`. */
+type DivHTMLForMotion = Omit<
+  HTMLAttributes<HTMLDivElement>,
+  'onAnimationStart' | 'onAnimationEnd' | 'onAnimationIteration'
+>
+
+type Props = DivHTMLForMotion & {
   nodeIndex: number
   children: ReactNode
 }
