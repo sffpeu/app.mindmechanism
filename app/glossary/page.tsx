@@ -1,18 +1,20 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { Search, Plus, UserCircle2, Pencil, Layers } from 'lucide-react'
+import { Search, Plus, UserCircle2, Pencil, Layers, LayoutGrid, List } from 'lucide-react'
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords, searchWords } from '@/lib/glossary'
 import { clockTitles } from '@/lib/clockTitles'
 import { AddWordDialog } from '@/components/AddWordDialog'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { cn } from '@/lib/utils'
+import { GlossaryClusterMap } from '@/components/GlossaryClusterMap'
 
 export default function GlossaryPage() {
   const { user } = useAuth()
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(false)
+  const [visualMode, setVisualMode] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [scopeFilter, setScopeFilter] = useState<'All' | 'Default' | 'My Words'>('All')
   const [selectedClockId, setSelectedClockId] = useState<number | null>(null)
@@ -124,6 +126,7 @@ export default function GlossaryPage() {
 
   // Scroll spy: highlight the letter whose section is currently in view
   useEffect(() => {
+    if (visualMode) return
     const container = scrollContainerRef.current
     if (!container) return
     const onScroll = () => {
@@ -143,7 +146,7 @@ export default function GlossaryPage() {
     container.addEventListener('scroll', onScroll, { passive: true })
     onScroll()
     return () => container.removeEventListener('scroll', onScroll)
-  }, [])
+  }, [visualMode, letterSections.length])
 
   return (
     <div className="h-full overflow-hidden flex flex-col bg-gray-50 dark:bg-black/95">
@@ -173,6 +176,21 @@ export default function GlossaryPage() {
                 </span>
               </div>
               <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setVisualMode(v => !v)}
+                  aria-pressed={visualMode}
+                  aria-label={visualMode ? 'Switch to list view' : 'Switch to visual cluster map'}
+                  className={cn(
+                    'px-3 py-1.5 rounded-lg text-sm border flex items-center gap-1.5 transition-all',
+                    visualMode
+                      ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-100 border-emerald-300 dark:border-emerald-500/40'
+                      : 'bg-white dark:bg-black/30 border-black/5 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:border-black/10 dark:hover:border-white/20'
+                  )}
+                >
+                  {visualMode ? <List className="w-4 h-4" /> : <LayoutGrid className="w-4 h-4" />}
+                  {visualMode ? 'List mode' : 'Visual mode'}
+                </button>
                 {selectedCard && (
                   <button
                     type="button"
@@ -317,7 +335,8 @@ export default function GlossaryPage() {
                 })}
               </div>
             )}
-            {/* Letter anchor — click to scroll to section; highlight shows section currently in view (scroll spy) */}
+            {/* Letter anchor — list view only */}
+            {!visualMode && (
             <div className="flex flex-wrap items-center gap-2">
               <div id="az-filter-glossary" className="flex flex-wrap gap-1.5" role="region" aria-label="Jump to letter">
                 {alphabet.map(letter => (
@@ -339,9 +358,48 @@ export default function GlossaryPage() {
                 ))}
               </div>
             </div>
+            )}
           </div>
-          {/* Scrollable letter sections — same as Assign Words popup */}
+          {/* List or visual cluster map */}
           <div className="flex-1 min-h-0 relative flex flex-col">
+            {visualMode ? (
+              <div className="absolute inset-0 flex flex-col min-h-0 overflow-hidden p-4">
+                {loading ? (
+                  <div className="flex-1 flex items-center justify-center text-gray-500 dark:text-gray-400">Loading words...</div>
+                ) : sortedWords.length === 0 ? (
+                  <div className="flex-1 flex items-center justify-center text-gray-500 dark:text-gray-400">No words found</div>
+                ) : (
+                  <>
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 shrink-0 mb-3 text-sm">
+                      <span className="text-gray-600 dark:text-gray-300 font-medium">
+                        {sortedWords.length} words on map
+                      </span>
+                      <div className="flex flex-wrap items-center gap-4" aria-label="Sentiment legend">
+                        {[
+                          { value: '+' as const, label: 'Positive' },
+                          { value: '~' as const, label: 'Neutral' },
+                          { value: '-' as const, label: 'Negative' },
+                        ].map(({ value, label }) => (
+                          <span key={label} className="inline-flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                            <span
+                              className={cn(
+                                'h-3 w-3 rounded-full shrink-0 ring-1 ring-black/10 dark:ring-white/20',
+                                value === '+' && 'bg-emerald-500',
+                                value === '-' && 'bg-rose-500',
+                                value === '~' && 'bg-slate-500'
+                              )}
+                              aria-hidden
+                            />
+                            {label}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <GlossaryClusterMap words={sortedWords} className="flex-1 min-h-0" />
+                  </>
+                )}
+              </div>
+            ) : (
             <div
               ref={scrollContainerRef}
               className="absolute inset-0 overflow-y-auto overflow-x-hidden overscroll-contain scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800 touch-pan-y"
@@ -420,6 +478,7 @@ export default function GlossaryPage() {
                 )}
               </div>
             </div>
+            )}
           </div>
         </div>
       </div>

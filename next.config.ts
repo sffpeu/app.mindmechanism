@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  /* Clock routes like /6/ resolve consistently */
+  trailingSlash: true,
 };
 
 export default nextConfig;

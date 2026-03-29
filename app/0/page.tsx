@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { useTheme } from '@/app/ThemeContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { ClockBreathingTone } from '@/components/ClockBreathingTone'
+import { ClockFocusNodeAppear } from '@/components/ClockFocusNodeAppear'
 import { motion, AnimatePresence } from 'framer-motion'
 import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
@@ -914,8 +915,9 @@ function NodesPageContent() {
                       }),
                     }
                     return (
-                      <motion.div
+                      <ClockFocusNodeAppear
                         key={index}
+                        nodeIndex={index}
                         className="absolute rounded-full cursor-pointer flex items-center justify-center"
                         style={{
                           left: `${x}%`,
@@ -972,7 +974,7 @@ function NodesPageContent() {
                             </AnimatePresence>
                           </div>
                         )}
-                      </motion.div>
+                      </ClockFocusNodeAppear>
                     )
                   })}
                 </div>
