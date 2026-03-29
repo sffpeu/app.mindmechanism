@@ -1,6 +1,6 @@
 'use client'
 
-import { RefObject, MutableRefObject } from 'react'
+import type { MutableRefObject, Ref } from 'react'
 import { UserCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { clockTitles } from '@/lib/clockTitles'
@@ -11,7 +11,7 @@ export type LetterSection = [string, GlossaryWord[]]
 export type GlossaryWordScrollListProps = {
   loading: boolean
   letterSections: LetterSection[]
-  scrollContainerRef: RefObject<HTMLDivElement | null>
+  scrollContainerRef: Ref<HTMLDivElement>
   sectionRefsMap: MutableRefObject<Record<string, HTMLDivElement | null>>
   selectedCard: GlossaryWord | null
   onSelectCard: (word: GlossaryWord | null) => void
