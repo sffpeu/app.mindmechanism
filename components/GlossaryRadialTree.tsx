@@ -28,15 +28,8 @@ const CLOCK_SHORT: readonly string[] = [
   'ETHERAL',
 ]
 
-/** Radial stretch for the focused clock when Default + clock filter (or sector click) is active */
-const FOCUS_RADIAL_SCALE = 1.48
-
-/** Leaf label offset from the node along the radius (px, SVG units) */
-const LABEL_R_BASE = 9
-const LABEL_R_FOCUS = 36
-
-/** When a sector is isolated, leaf word font size and label offset scale by this factor */
-const SECTOR_FOCUS_WORD_SCALE = 4
+/** Radial stretch for the focused clock when Default + clock filter is active */
+const FOCUS_RADIAL_SCALE = 1.34
 
 type LayoutLink = {
   id: string
@@ -190,8 +183,6 @@ export type GlossaryRadialTreeProps = {
   words: GlossaryWord[]
   selectedWordId: string | null
   onSelectWord?: (word: GlossaryWord) => void
-  /** Toggle like Default + clock filter: isolates that sector (pass null to clear). */
-  onSelectClockSector?: (clockId: number | null) => void
   className?: string
   /** When set, diagram reflects glossary filters (clock color, sector, enlargement). */
   visualFilters?: GlossaryVisualFilters
@@ -201,7 +192,6 @@ export function GlossaryRadialTree({
   words,
   selectedWordId,
   onSelectWord,
-  onSelectClockSector,
   className,
   visualFilters,
 }: GlossaryRadialTreeProps) {
@@ -360,7 +350,7 @@ export function GlossaryRadialTree({
       )}
     >
       <p className="absolute top-2 left-2 z-10 text-xs text-gray-500 dark:text-gray-400 pointer-events-none select-none max-w-[min(100%,220px)]">
-        Scroll to zoom · drag to pan · click a sector to isolate (same as Default + clock)
+        Scroll to zoom · drag to pan
         {focusClockId !== null && (
           <span className="block mt-0.5 font-medium" style={{ color: CLOCK_HEX[focusClockId] }}>
             {clockTitles[focusClockId]} — enlarged
@@ -393,17 +383,7 @@ export function GlossaryRadialTree({
                   stroke={hex}
                   strokeOpacity={strokeOp}
                   strokeWidth={focusClockId === c.clockId ? 2.2 : 0.8}
-                  className={cn(
-                    onSelectClockSector && 'cursor-pointer hover:opacity-95',
-                  )}
-                  onClick={
-                    onSelectClockSector
-                      ? (e) => {
-                          e.stopPropagation()
-                          onSelectClockSector(focusClockId === c.clockId ? null : c.clockId)
-                        }
-                      : undefined
-                  }
+                  className="pointer-events-none"
                 />
               )
             })}
@@ -423,7 +403,6 @@ export function GlossaryRadialTree({
                   strokeWidth={sw}
                   strokeOpacity={opacity}
                   strokeLinecap="round"
-                  pointerEvents="none"
                 />
               )
             })}
@@ -460,15 +439,6 @@ export function GlossaryRadialTree({
                     fill={hi ? `${hex}45` : `${hex}28`}
                     stroke={hi ? hex : hex}
                     strokeWidth={hi ? 2.4 : focusClockId === c.clockId ? 2 : 1.35}
-                    className={onSelectClockSector ? 'cursor-pointer' : undefined}
-                    onClick={
-                      onSelectClockSector
-                        ? (e) => {
-                            e.stopPropagation()
-                            onSelectClockSector(focusClockId === c.clockId ? null : c.clockId)
-                          }
-                        : undefined
-                    }
                   />
                   <title>{clockTitles[c.clockId]}</title>
                   <text
@@ -501,12 +471,10 @@ export function GlossaryRadialTree({
               let rotDeg = (ang * 180) / Math.PI
               if (Math.cos(ang) < 0) rotDeg += 180
 
-              const sectorIsolated = focusClockId !== null && leaf.clockId === focusClockId
-              const labelR = sectorIsolated ? LABEL_R_FOCUS : LABEL_R_BASE
+              const labelR = 9
               const lx = leaf.x + Math.cos(ang) * labelR
               const ly = leaf.y + Math.sin(ang) * labelR
-              const fsBase = Math.max(5.2, Math.min(8.5, 480 / Math.sqrt(defaultWords.length + 40)))
-              const fs = sectorIsolated ? fsBase * SECTOR_FOCUS_WORD_SCALE : fsBase
+              const fs = Math.max(5.2, Math.min(8.5, 480 / Math.sqrt(defaultWords.length + 40)))
 
               const groupOp = dim ? 0.38 : sentDim ? 0.22 : 1
 
@@ -533,11 +501,7 @@ export function GlossaryRadialTree({
                     style={{
                       paintOrder: 'stroke fill',
                       stroke: hi ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.45)',
-                      strokeWidth: sectorIsolated
-                        ? Math.max(1.2, fs * 0.06)
-                        : hi
-                          ? 2.5
-                          : 0.8,
+                      strokeWidth: hi ? 2.5 : 0.8,
                     }}
                     transform={`rotate(${rotDeg} ${lx} ${ly})`}
                     textAnchor="middle"
