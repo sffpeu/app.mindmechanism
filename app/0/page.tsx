@@ -6,10 +6,11 @@ import { useTheme } from '@/app/ThemeContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { ClockBreathingTone } from '@/components/ClockBreathingTone'
 import { ClockFocusNodeAppear } from '@/components/ClockFocusNodeAppear'
+import { ClockPageSettingsTrigger } from '@/components/ClockPageSettingsTrigger'
 import { motion, AnimatePresence } from 'framer-motion'
 import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
-import { Settings, List, Info, Satellite, Clock as ClockIcon, Calendar, RotateCw, Timer as TimerIcon, Compass, HelpCircle, Book, User, Edit, LogOut, Play, BookOpen, Library, Sun, Moon, MapPin, Cloud, Droplets, Wind, Minus, Plus, X } from 'lucide-react'
+import { List, Info, Satellite, Clock as ClockIcon, Calendar, RotateCw, Timer as TimerIcon, Compass, HelpCircle, Book, User, Edit, LogOut, Play, BookOpen, Library, Sun, Moon, MapPin, Cloud, Droplets, Wind, Minus, Plus, X } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Timer from '@/components/Timer'
@@ -389,7 +390,7 @@ function NodesPageContent() {
     const placement = a > 315 || a < 45 ? 'top' : a <= 135 ? 'right' : a < 225 ? 'bottom' : 'left'
     const counterRotation = -rotation
     const offsetPx = 50
-    const base = { position: 'absolute' as const, left: '50%', top: '50%', transformOrigin: 'center center' as const, zIndex: 500 }
+    const base = { position: 'absolute' as const, left: '50%', top: '50%', transformOrigin: 'center center' as const, zIndex: 900 }
     const scale = isSelected ? 1.1 : 1
     if (placement === 'top') return { ...base, transform: `translate(-50%, -50%) translateY(-${offsetPx}px) scale(${scale}) rotate(${counterRotation}deg)` }
     if (placement === 'bottom') return { ...base, transform: `translate(-50%, -50%) translateY(${offsetPx}px) scale(${scale}) rotate(${counterRotation}deg)` }
@@ -574,16 +575,14 @@ function NodesPageContent() {
   return (
     <ProtectedRoute>
       <ClockBreathingTone clockIndex={0} />
-      <div className="h-full overflow-hidden flex flex-col bg-gray-50 dark:bg-black/95">
+      <div className="h-full overflow-x-hidden flex flex-col bg-gray-50 dark:bg-black/95 min-h-0">
         {/* Settings Dropdown */}
-        <div className="fixed top-4 right-4 z-50">
+        <div className="fixed top-4 right-4 z-[200]">
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
-              <button className="p-2 rounded-lg bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-black/5 dark:border-white/10 hover:bg-white/90 dark:hover:bg-black/90 transition-colors">
-                <Settings className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-              </button>
+              <ClockPageSettingsTrigger clockHex={clockHex} />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end" className="w-56 z-[300]">
               <DropdownMenuItem className="flex items-center justify-between" onSelect={(e) => e.preventDefault()}>
                 <div className="flex items-center gap-2">
                   <Satellite className="h-4 w-4" />
@@ -764,8 +763,8 @@ function NodesPageContent() {
           </div>
         </div>
 
-        <div className="flex-grow flex items-center justify-center min-h-0">
-          <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px]">
+        <div className="flex-grow flex items-center justify-center min-h-0 overflow-visible py-8">
+          <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px] overflow-visible">
             {/* Session progress ring (clock page) — same formula as dashboard: progress = (total - remaining) / total; total from session when continuing */}
             {duration != null && duration > 0 && (() => {
               const remaining = sessionState.remainingTime ?? duration
@@ -884,10 +883,10 @@ function NodesPageContent() {
 
             {/* Focus nodes layer — above satellites so every node is clickable */}
             <motion.div 
-              className="absolute inset-0"
+              className="absolute inset-0 overflow-visible"
               style={{ 
                 willChange: 'transform',
-                zIndex: 400,
+                zIndex: 500,
                 pointerEvents: 'none',
               }}
               animate={{ rotate: rotation + entranceOffset }}
@@ -944,7 +943,7 @@ function NodesPageContent() {
                         </span>
                         {showWords && isSelected && word && (
                           <div 
-                            className="absolute pointer-events-none min-w-0"
+                            className="absolute pointer-events-none z-[800] min-w-max max-w-[min(90vw,20rem)]"
                             style={getWordContainerStyle(angle, isSelected)}
                           >
                             <AnimatePresence mode="wait">
