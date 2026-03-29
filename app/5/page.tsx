@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useTheme } from '@/app/ThemeContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { ClockBreathingTone } from '@/components/ClockBreathingTone'
 import { motion, AnimatePresence } from 'framer-motion'
 import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
@@ -498,6 +499,7 @@ function NodesPageContent() {
 
   return (
     <ProtectedRoute>
+      <ClockBreathingTone clockIndex={5} />
       <div className="h-full overflow-hidden flex flex-col bg-gray-50 dark:bg-black/95">
         {/* Settings Dropdown */}
         <div className="fixed top-4 right-4 z-50">
