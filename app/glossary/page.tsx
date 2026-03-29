@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords, searchWords } from '@/lib/glossary'
 import { AddWordDialog } from '@/components/AddWordDialog'
@@ -24,7 +24,6 @@ export default function GlossaryPage() {
   const [selectedSentiment, setSelectedSentiment] = useState<SentimentValue | null>(null)
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
   const [words, setWords] = useState<GlossaryWord[]>([])
-  const [fullWordList, setFullWordList] = useState<GlossaryWord[]>([])
   const [loading, setLoading] = useState(true)
   const [visualMode, setVisualMode] = useState(false)
   const [isAddWordOpen, setIsAddWordOpen] = useState(false)
@@ -63,7 +62,6 @@ export default function GlossaryPage() {
     try {
       const allWords = await getAllWords()
       setWords(allWords)
-      setFullWordList(allWords)
     } catch (error) {
       console.error('Error loading words:', error)
     }
@@ -81,16 +79,25 @@ export default function GlossaryPage() {
     setLoading(false)
   }
 
-  const filteredWords = words.filter((word) => {
-    if (scopeFilter === 'My Words') {
-      if (word.source !== 'user' || word.user_id !== user?.uid) return false
-    } else if (scopeFilter === 'Default') {
-      if (word.clock_id == null || word.clock_id < 0 || word.clock_id > 8) return false
-      if (selectedClockId !== null && word.clock_id !== selectedClockId) return false
-    }
-    if (selectedSentiment !== null && word.rating !== selectedSentiment) return false
-    return true
-  })
+  const filteredWords = useMemo(() => {
+    return words.filter((word) => {
+      if (scopeFilter === 'My Words') {
+        if (word.source !== 'user' || word.user_id !== user?.uid) return false
+      } else if (scopeFilter === 'Default') {
+        if (word.clock_id == null || word.clock_id < 0 || word.clock_id > 8) return false
+        if (selectedClockId !== null && word.clock_id !== selectedClockId) return false
+      }
+      if (selectedSentiment !== null && word.rating !== selectedSentiment) return false
+      return true
+    })
+  }, [words, scopeFilter, selectedClockId, selectedSentiment, user?.uid])
+
+  useEffect(() => {
+    setSelectedCard((prev) => {
+      if (!prev) return null
+      return filteredWords.some((w) => w.id === prev.id) ? prev : null
+    })
+  }, [filteredWords])
 
   const setScopeAllOrMy = useCallback((scope: 'All' | 'My Words') => {
     setSelectedClockId(null)
@@ -205,7 +212,7 @@ export default function GlossaryPage() {
               </div>
             ) : (
               <GlossaryRadialTree
-                words={fullWordList}
+                words={filteredWords}
                 selectedWordId={selectedCard?.id ?? null}
                 onSelectWord={(w) => setSelectedCard((prev) => (prev?.id === w.id ? null : w))}
                 className="absolute inset-0 h-full w-full min-h-[240px]"
