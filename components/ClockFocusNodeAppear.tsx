@@ -1,22 +1,19 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import type { HTMLAttributes, ReactNode } from 'react'
+import type { ComponentPropsWithoutRef } from 'react'
 
 /** Matches `renderSatellites` on numbered clock pages (staggered fade + scale from center). */
 const BASE_DELAY_S = 1
 const STAGGER_S = 0.1
 const DURATION_S = 0.5
 
-/** DOM animation handlers clash with Framer Motion `MotionProps` on `motion.div`. */
-type DivHTMLForMotion = Omit<
-  HTMLAttributes<HTMLDivElement>,
-  'onAnimationStart' | 'onAnimationEnd' | 'onAnimationIteration'
->
-
-type Props = DivHTMLForMotion & {
+/** Use `motion.div` prop types so spread `rest` matches `MotionProps` (DOM `onDrag*` / `onAnimation*` differ). */
+type Props = Omit<
+  ComponentPropsWithoutRef<typeof motion.div>,
+  'initial' | 'animate' | 'transition'
+> & {
   nodeIndex: number
-  children: ReactNode
 }
 
 /**
