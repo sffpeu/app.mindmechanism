@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import type { ComponentPropsWithoutRef } from 'react'
+import type { ComponentPropsWithoutRef, ReactNode } from 'react'
 
 /** Matches `renderSatellites` on numbered clock pages (staggered fade + scale from center). */
 const BASE_DELAY_S = 1
@@ -11,9 +11,10 @@ const DURATION_S = 0.5
 /** Use `motion.div` prop types so spread `rest` matches `MotionProps` (DOM `onDrag*` / `onAnimation*` differ). */
 type Props = Omit<
   ComponentPropsWithoutRef<typeof motion.div>,
-  'initial' | 'animate' | 'transition'
+  'initial' | 'animate' | 'transition' | 'children'
 > & {
   nodeIndex: number
+  children: ReactNode
 }
 
 /**
