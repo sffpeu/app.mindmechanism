@@ -1,6 +1,8 @@
 /**
- * Independent spiral + axis-aligned bounding box word layout (common word-cloud approach;
- * not derived from third-party word cloud libraries).
+ * Independent spiral + bounding-box word layout (common word-cloud approach;
+ * not derived from third-party word cloud libraries). Supports per-word rotation
+ * using axis-aligned bounds of the rotated rectangle (cf. spiral + collision in
+ * tools like [d3-cloud](https://github.com/jasondavies/d3-cloud)).
  */
 
 export interface LayoutMeasureResult {
@@ -12,17 +14,18 @@ export interface WordCloudInput {
   id: string
   text: string
   fontSize: number
+  /** Degrees, e.g. from rotationDegreesFromId (d3-style 30° steps). */
+  rotate: number
 }
 
 export interface PlacedWordCloudItem {
   id: string
   text: string
   fontSize: number
-  /** Center x in layout pixels */
   x: number
-  /** Center y in layout pixels */
   y: number
   rotate: number
+  /** Axis-aligned half-extents used for collision and hit-testing (includes rotation). */
   halfW: number
   halfH: number
 }
@@ -47,60 +50,107 @@ function inBounds(r: Rect, width: number, height: number, margin: number): boole
   )
 }
 
-/** Map glossary grade (typically small integers) to a readable font size in px. */
+/** Stable pseudo-random in [0, 1) from a string (layout stable across re-renders). */
+export function hash01(s: string): number {
+  let h = 2166136261
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return (h >>> 0) / 4294967296
+}
+
+/**
+ * d3-cloud default style: (~~(random() * 6) - 3) * 30 → -90, -60, -30, 0, 30, 60.
+ */
+export function rotationDegreesFromId(id: string): number {
+  const r = hash01(`rot:${id}`)
+  const k = Math.floor(r * 6) - 3
+  return k * 30
+}
+
+/**
+ * Varying font size: sqrt(grade) weighting, length damping, stable jitter.
+ * Mirrors the idea of fontSize ∝ sqrt(value) from typical word clouds.
+ */
+export function fontSizeForCloud(grade: number, id: string, text: string): number {
+  const g = Math.min(10, Math.max(1, Number.isFinite(grade) ? grade : 5))
+  const sqrtPart = Math.sqrt(g)
+  const len = Math.max(1, text.length)
+  const lengthDamp = 1 / Math.pow(len, 0.2)
+  const base = (9 + sqrtPart * 7.5) * lengthDamp
+  const jitter = 0.82 + hash01(`sz:${id}`) * 0.36
+  return Math.round(Math.min(42, Math.max(10, base * jitter)))
+}
+
+/** Linear grade → size (legacy); prefer fontSizeForCloud for word clouds. */
 export function fontSizeFromGrade(grade: number): number {
-  const g = Number.isFinite(grade) ? grade : 5
-  const t = Math.min(10, Math.max(1, g)) / 10
-  return Math.round(12 + t * 16)
+  const g = Math.min(10, Math.max(1, Number.isFinite(grade) ? grade : 5))
+  return Math.round(12 + (g / 10) * 16)
+}
+
+/** Half-width/half-height of axis-aligned box that contains the text rect rotated by `deg`. */
+function rotatedAabbHalfExtents(halfW: number, halfH: number, deg: number): { hw: number; hh: number } {
+  const rad = (deg * Math.PI) / 180
+  const c = Math.abs(Math.cos(rad))
+  const s = Math.abs(Math.sin(rad))
+  return {
+    hw: halfW * c + halfH * s,
+    hh: halfW * s + halfH * c,
+  }
 }
 
 export interface ComputeWordCloudLayoutOptions {
   words: WordCloudInput[]
   width: number
   height: number
-  /** Padding between word bounding boxes */
   padding: number
-  /** Minimum inset from container edges */
   margin: number
   measure: (text: string, fontSize: number) => LayoutMeasureResult
 }
 
 /**
- * Places words along an Archimedean spiral from the center; skips words that cannot be placed.
+ * Archimedean spiral from center; per-word rotation via expanded AABB collision.
  */
 export function computeWordCloudLayout(options: ComputeWordCloudLayoutOptions): PlacedWordCloudItem[] {
   const { width, height, padding, margin, measure } = options
   if (width <= 0 || height <= 0) return []
 
-  const sorted = [...options.words].sort((a, b) => b.fontSize - a.fontSize || a.text.localeCompare(b.text))
+  const sorted = [...options.words].sort(
+    (a, b) => b.fontSize - a.fontSize || a.text.localeCompare(b.text)
+  )
   const placedRects: Rect[] = []
   const result: PlacedWordCloudItem[] = []
 
   const cx = width / 2
   const cy = height / 2
-  const spiralScale = Math.min(width, height) / (2 * Math.PI * 12)
-  const maxSteps = Math.min(50000, 8000 + sorted.length * 120)
+  const spiralScale = Math.min(width, height) / (2 * Math.PI * 10)
+  const maxSteps = Math.min(60000, 10000 + sorted.length * 140)
+  const pad = padding / 2
 
   for (const w of sorted) {
     const { width: tw, height: th } = measure(w.text, w.fontSize)
-    const halfW = tw / 2
-    const halfH = th / 2
+    const textHalfW = tw / 2
+    const textHalfH = th / 2
+    const { hw: aabbHalfW, hh: aabbHalfH } = rotatedAabbHalfExtents(textHalfW, textHalfH, w.rotate)
+
+    const spiralSign = hash01(`dir:${w.id}`) < 0.5 ? 1 : -1
 
     let placed = false
     for (let step = 0; step < maxSteps; step++) {
-      const t = step * 0.35
-      const r = spiralScale * t
-      const x = cx + r * Math.cos(t)
-      const y = cy + r * Math.sin(t)
+      const u = step * 0.32
+      const rSpiral = spiralScale * u
+      const t = spiralSign * u
+      const x = cx + rSpiral * Math.cos(t)
+      const y = cy + rSpiral * Math.sin(t)
 
       const rect: Rect = {
-        left: x - halfW,
-        top: y - halfH,
-        right: x + halfW,
-        bottom: y + halfH,
+        left: x - aabbHalfW,
+        top: y - aabbHalfH,
+        right: x + aabbHalfW,
+        bottom: y + aabbHalfH,
       }
 
-      const pad = padding / 2
       const expanded: Rect = {
         left: rect.left - pad,
         top: rect.top - pad,
@@ -132,16 +182,12 @@ export function computeWordCloudLayout(options: ComputeWordCloudLayoutOptions): 
         fontSize: w.fontSize,
         x,
         y,
-        rotate: 0,
-        halfW,
-        halfH,
+        rotate: w.rotate,
+        halfW: aabbHalfW,
+        halfH: aabbHalfH,
       })
       placed = true
       break
-    }
-
-    if (!placed) {
-      // Word omitted if no slot found (dense clouds)
     }
   }
 

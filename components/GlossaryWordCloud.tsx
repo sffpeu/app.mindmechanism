@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { GlossaryWord } from '@/types/Glossary'
 import {
   computeWordCloudLayout,
-  fontSizeFromGrade,
+  fontSizeForCloud,
+  rotationDegreesFromId,
   PlacedWordCloudItem,
   WordCloudInput,
 } from '@/lib/wordCloudLayout'
@@ -72,7 +73,8 @@ export function GlossaryWordCloud({
       words.map((w) => ({
         id: w.id,
         text: w.word,
-        fontSize: fontSizeFromGrade(w.grade),
+        fontSize: fontSizeForCloud(w.grade, w.id, w.word),
+        rotate: rotationDegreesFromId(w.id),
       })),
     [words]
   )
@@ -129,6 +131,8 @@ export function GlossaryWordCloud({
       const selected = selectedId === item.id
 
       ctx.save()
+      ctx.translate(item.x, item.y)
+      ctx.rotate((item.rotate * Math.PI) / 180)
       ctx.font = `600 ${item.fontSize}px ${FONT_FAMILY}`
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
@@ -136,10 +140,10 @@ export function GlossaryWordCloud({
         ctx.strokeStyle = stroke
         ctx.lineWidth = selected ? 2.2 : 1.4
         ctx.lineJoin = 'round'
-        ctx.strokeText(item.text, item.x, item.y)
+        ctx.strokeText(item.text, 0, 0)
       }
       ctx.fillStyle = fill
-      ctx.fillText(item.text, item.x, item.y)
+      ctx.fillText(item.text, 0, 0)
       ctx.restore()
     }
   }, [placed, size.w, size.h, wordById, clockHex, isDarkMode, selectedId])
