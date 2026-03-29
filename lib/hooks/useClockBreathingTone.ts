@@ -68,21 +68,23 @@ export function useClockBreathingTone(clockIndex: number, muted: boolean) {
     osc.connect(gain)
     gain.connect(ctx.destination)
 
-    const startPlayback = () => {
-      if (ctx.state === 'suspended') void ctx.resume()
-      try {
-        osc.start()
-      } catch {
-        /* already started */
-      }
+    // Start the tone as soon as the page loads; gain is 0 until the breathing ramp applies.
+    try {
+      osc.start()
+    } catch {
+      /* already started */
     }
+    void ctx.resume()
 
-    const onFirstGesture = () => {
-      startPlayback()
-      window.removeEventListener('pointerdown', onFirstGesture)
+    const tryResume = () => {
+      if (ctx.state === 'suspended') void ctx.resume()
     }
-    window.addEventListener('pointerdown', onFirstGesture, { passive: true })
-    startPlayback()
+    window.addEventListener('pointerdown', tryResume, { passive: true })
+    window.addEventListener('keydown', tryResume, { passive: true })
+    const onVis = () => {
+      if (document.visibilityState === 'visible') tryResume()
+    }
+    document.addEventListener('visibilitychange', onVis)
 
     const t0 = performance.now()
 
@@ -100,7 +102,9 @@ export function useClockBreathingTone(clockIndex: number, muted: boolean) {
     rafRef.current = requestAnimationFrame(tick)
 
     return () => {
-      window.removeEventListener('pointerdown', onFirstGesture)
+      window.removeEventListener('pointerdown', tryResume)
+      window.removeEventListener('keydown', tryResume)
+      document.removeEventListener('visibilitychange', onVis)
       cancelAnimationFrame(rafRef.current)
       try {
         osc.stop()
