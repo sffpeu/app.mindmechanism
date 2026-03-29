@@ -59,7 +59,10 @@ export function GlossaryDefaultChakraDropdown({
           <ChevronDown className="w-3 h-3 shrink-0 opacity-70" />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="max-h-[min(70vh,24rem)] overflow-y-auto">
+      <DropdownMenuContent
+        align="start"
+        className="max-h-[min(70vh,24rem)] overflow-y-auto bg-white dark:bg-neutral-950 border-zinc-200 dark:border-zinc-800 shadow-lg"
+      >
         <DropdownMenuItem
           onClick={() => onSelectAllDefault()}
           className={cn(isDefault && selectedClockId === null && 'bg-accent')}

@@ -15,11 +15,13 @@ import {
   createContext,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type CSSProperties,
 } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 
 const DOCK_HEIGHT = 128;
@@ -33,6 +35,8 @@ type DockProps = {
   distance?: number;
   panelHeight?: number;
   magnification?: number;
+  /** Spring size at rest (magnification is peak size on hover). Default 40. */
+  minItemSize?: number;
   spring?: SpringOptions;
   orientation?: 'horizontal' | 'vertical';
   /** Vertical dock only: `left` = default (AppDock); `right` = mirrored strip on screen edge so tooltips open toward center. */
@@ -57,6 +61,7 @@ type DocContextType = {
   mouseY: MotionValue<number>;
   spring: SpringOptions;
   magnification: number;
+  minItemSize: number;
   distance: number;
   orientation: 'horizontal' | 'vertical';
   dockEdge: 'left' | 'right';
@@ -67,6 +72,8 @@ type DockProviderProps = {
 };
 
 const DockContext = createContext<DocContextType | undefined>(undefined);
+
+const DockItemRefContext = createContext<React.RefObject<HTMLDivElement | null> | null>(null);
 
 function DockProvider({ children, value }: DockProviderProps) {
   return <DockContext.Provider value={value}>{children}</DockContext.Provider>;
@@ -87,6 +94,7 @@ function Dock({
   magnification = DEFAULT_MAGNIFICATION,
   distance = DEFAULT_DISTANCE,
   panelHeight = DEFAULT_PANEL_HEIGHT,
+  minItemSize = 40,
   orientation = 'horizontal',
   dockEdge = 'left',
 }: DockProps) {
@@ -95,8 +103,13 @@ function Dock({
   const isHovered = useMotionValue(0);
 
   const maxHeight = useMemo(() => {
-    return Math.max(DOCK_HEIGHT, magnification + magnification / 2 + 4);
-  }, [magnification]);
+    const hoverBreadth = magnification + magnification / 2 + 4;
+    const padded = Math.max(hoverBreadth, panelHeight * 2);
+    if (orientation === 'vertical') {
+      return padded;
+    }
+    return Math.max(DOCK_HEIGHT, padded);
+  }, [magnification, panelHeight, orientation]);
 
   const heightRow = useTransform(isHovered, [0, 1], [panelHeight, maxHeight]);
   const height = useSpring(heightRow, spring);
@@ -139,7 +152,16 @@ function Dock({
         aria-label='Application dock'
       >
         <DockProvider
-          value={{ mouseX, mouseY, spring, distance, magnification, orientation, dockEdge }}
+          value={{
+            mouseX,
+            mouseY,
+            spring,
+            distance,
+            magnification,
+            minItemSize,
+            orientation,
+            dockEdge,
+          }}
         >
           {children}
         </DockProvider>
@@ -151,7 +173,8 @@ function Dock({
 function DockItem({ children, className, style }: DockItemProps) {
   const ref = useRef<HTMLDivElement>(null);
 
-  const { distance, magnification, mouseX, mouseY, spring, orientation, dockEdge } = useDock();
+  const { distance, magnification, minItemSize, mouseX, mouseY, spring, orientation, dockEdge } =
+    useDock();
   const isVertical = orientation === 'vertical';
 
   const isHovered = useMotionValue(0);
@@ -170,42 +193,52 @@ function DockItem({ children, className, style }: DockItemProps) {
   const sizeTransform = useTransform(
     mouseDistance,
     [-distance, 0, distance],
-    [40, magnification, 40]
+    [minItemSize, magnification, minItemSize]
   );
 
   const size = useSpring(sizeTransform, spring);
 
   return (
-    <motion.div
-      ref={ref}
-      style={{
-        ...(isVertical ? { height: size } : { width: size }),
-        ...style,
-      }}
-      onHoverStart={() => isHovered.set(1)}
-      onHoverEnd={() => isHovered.set(0)}
-      onFocus={() => isHovered.set(1)}
-      onBlur={() => isHovered.set(0)}
-      className={cn(
-        'relative inline-flex items-center justify-center shrink-0',
-        isVertical ? 'w-full' : '',
-        className
-      )}
-      tabIndex={0}
-      role='button'
-      aria-haspopup='true'
-    >
-      {Children.map(children, (child) =>
-        cloneElement(child as React.ReactElement, {
-          width: size,
-          isHovered,
-          orientation,
-          dockEdge,
-        })
-      )}
-    </motion.div>
+    <DockItemRefContext.Provider value={ref}>
+      <motion.div
+        ref={ref}
+        style={{
+          ...(isVertical ? { height: size } : { width: size }),
+          ...style,
+        }}
+        onHoverStart={() => isHovered.set(1)}
+        onHoverEnd={() => isHovered.set(0)}
+        onFocus={() => isHovered.set(1)}
+        onBlur={() => isHovered.set(0)}
+        className={cn(
+          'relative inline-flex items-center justify-center shrink-0',
+          isVertical ? 'w-full' : '',
+          className
+        )}
+        tabIndex={0}
+        role='button'
+        aria-haspopup='true'
+      >
+        {Children.map(children, (child) =>
+          cloneElement(child as React.ReactElement, {
+            width: size,
+            isHovered,
+            orientation,
+            dockEdge,
+          })
+        )}
+      </motion.div>
+    </DockItemRefContext.Provider>
   );
 }
+
+const TOOLTIP_Z = 2147483000;
+
+const labelTooltipClass = (className?: string) =>
+  cn(
+    'w-fit max-w-[min(240px,calc(100vw-3rem))] overflow-visible whitespace-normal break-words rounded-md border border-gray-200 bg-gray-100 px-2 py-1 text-xs text-neutral-700 shadow-md dark:border-neutral-900 dark:bg-neutral-800 dark:text-white',
+    className
+  );
 
 function DockLabel({ children, className, ...rest }: DockLabelProps) {
   const restProps = rest as Record<string, unknown>;
@@ -216,6 +249,9 @@ function DockLabel({ children, className, ...rest }: DockLabelProps) {
   const isVertical = orientation === 'vertical';
   const labelOnRight = isVertical && dockEdge === 'left';
   const labelOnLeft = isVertical && dockEdge === 'right';
+  const itemRef = useContext(DockItemRefContext);
+  const [portalPos, setPortalPos] = useState<{ top: number; left: number } | null>(null);
+  const usePortal = Boolean(labelOnLeft && itemRef);
 
   useEffect(() => {
     if (!isHovered) return;
@@ -226,32 +262,53 @@ function DockLabel({ children, className, ...rest }: DockLabelProps) {
     return () => unsubscribe();
   }, [isHovered]);
 
-  return (
+  const updatePortalPosition = () => {
+    if (!itemRef?.current || !usePortal) return;
+    const rect = itemRef.current.getBoundingClientRect();
+    setPortalPos({
+      top: rect.top + rect.height / 2,
+      left: rect.left - 8,
+    });
+  };
+
+  useLayoutEffect(() => {
+    if (!usePortal) return;
+    if (!isVisible) return;
+    updatePortalPosition();
+    const onScrollOrResize = () => updatePortalPosition();
+    window.addEventListener('scroll', onScrollOrResize, true);
+    window.addEventListener('resize', onScrollOrResize);
+    return () => {
+      window.removeEventListener('scroll', onScrollOrResize, true);
+      window.removeEventListener('resize', onScrollOrResize);
+    };
+  }, [isVisible, usePortal, itemRef]);
+
+  const inlineLabel = (
     <AnimatePresence>
       {isVisible && (
         <motion.div
           initial={{
             opacity: 0,
-            x: isVertical ? (labelOnLeft ? -10 : 10) : 0,
+            x: isVertical ? (labelOnRight ? 10 : -10) : 0,
             y: isVertical ? 0 : 10,
           }}
           animate={{
             opacity: 1,
-            x: isVertical ? 0 : 0,
+            x: 0,
             y: isVertical ? 0 : -10,
           }}
           exit={{
             opacity: 0,
-            x: isVertical ? (labelOnLeft ? -10 : 10) : 0,
+            x: isVertical ? (labelOnRight ? 10 : -10) : 0,
             y: isVertical ? 0 : 0,
           }}
           transition={{ duration: 0.2 }}
           className={cn(
-            'absolute z-[1000] w-fit max-w-[min(240px,calc(100vw-3rem))] overflow-visible whitespace-normal break-words rounded-md border border-gray-200 bg-gray-100 px-2 py-1 text-xs text-neutral-700 shadow-md dark:border-neutral-900 dark:bg-neutral-800 dark:text-white',
+            'absolute z-[1000]',
+            labelTooltipClass(className),
             labelOnRight && 'left-full ml-2 top-1/2 -translate-y-1/2',
-            labelOnLeft && 'right-full mr-2 top-1/2 -translate-y-1/2',
-            !isVertical && '-top-6 left-1/2',
-            className
+            !isVertical && '-top-6 left-1/2'
           )}
           role='tooltip'
           style={isVertical ? undefined : { x: '-50%' }}
@@ -261,6 +318,37 @@ function DockLabel({ children, className, ...rest }: DockLabelProps) {
       )}
     </AnimatePresence>
   );
+
+  if (usePortal) {
+    if (typeof document === 'undefined') return null;
+    return createPortal(
+      <AnimatePresence>
+        {isVisible && portalPos && (
+          <motion.div
+            key='dock-tooltip'
+            initial={{ opacity: 0, x: -6 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -6 }}
+            transition={{ duration: 0.2 }}
+            className={labelTooltipClass(className)}
+            style={{
+              position: 'fixed',
+              top: portalPos.top,
+              left: portalPos.left,
+              transform: 'translate(-100%, -50%)',
+              zIndex: TOOLTIP_Z,
+            }}
+            role='tooltip'
+          >
+            {children}
+          </motion.div>
+        )}
+      </AnimatePresence>,
+      document.body
+    );
+  }
+
+  return inlineLabel;
 }
 
 function DockIcon({ children, className, ...rest }: DockIconProps) {

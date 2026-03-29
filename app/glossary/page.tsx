@@ -152,13 +152,8 @@ export default function GlossaryPage() {
     return () => container.removeEventListener('scroll', onScroll)
   }, [visualMode, letterSections.length])
 
-  const bottomChrome = (
-    <div
-      className={cn(
-        'shrink-0 border-t border-black/5 dark:border-white/10 p-3 space-y-2',
-        visualMode ? 'bg-white/90 dark:bg-black/70 backdrop-blur-md z-20 px-4 sm:px-6' : 'bg-white/90 dark:bg-black/50 backdrop-blur-sm'
-      )}
-    >
+  const bottomChromeInner = (
+    <>
       <GlossarySearchBar value={searchQuery} onChange={setSearchQuery} wordCount={sortedWords.length} />
       <div className="flex flex-wrap items-center gap-2 gap-y-2">
         <GlossaryAllMyScopeButtons scopeFilter={scopeFilter} onScope={setScopeAllOrMy} />
@@ -185,6 +180,17 @@ export default function GlossaryPage() {
         />
       </div>
       {!visualMode && <GlossaryAlphabetStrip selectedLetter={selectedLetter} onLetterClick={scrollToLetter} />}
+    </>
+  )
+
+  const bottomChrome = (
+    <div
+      className={cn(
+        'shrink-0 border-t border-black/5 dark:border-white/10 p-3 space-y-2 w-full',
+        visualMode ? 'bg-white/90 dark:bg-black/70 backdrop-blur-md z-20' : 'bg-white/90 dark:bg-black/50 backdrop-blur-sm'
+      )}
+    >
+      {bottomChromeInner}
     </div>
   )
 
@@ -212,7 +218,7 @@ export default function GlossaryPage() {
               />
             )}
           </div>
-          {bottomChrome}
+          <div className="max-w-7xl mx-auto w-full px-4 shrink-0">{bottomChrome}</div>
         </>
       ) : (
         <div className="flex-1 min-h-0 flex flex-col max-w-7xl mx-auto w-full px-4 py-6">
@@ -221,8 +227,8 @@ export default function GlossaryPage() {
             <p className="text-gray-600 dark:text-gray-400">Browse and search through meditation focus words</p>
           </div>
 
-          <div className="rounded-xl border border-black/5 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-lg overflow-hidden flex flex-col flex-1 min-h-0">
-            <div className="flex-1 min-h-0 relative flex flex-col min-h-[320px]">
+          <div className="flex-1 min-h-0 flex flex-col min-h-[320px] overflow-hidden">
+            <div className="flex-1 min-h-0 relative">
               <GlossaryWordScrollList
                 loading={loading}
                 letterSections={letterSections}
@@ -231,6 +237,7 @@ export default function GlossaryPage() {
                 selectedCard={selectedCard}
                 onSelectCard={setSelectedCard}
                 getDefaultIconStyle={getDefaultIconStyle}
+                clockHexPalette={CLOCK_HEX}
               />
             </div>
             {bottomChrome}

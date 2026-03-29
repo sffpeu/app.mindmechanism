@@ -53,54 +53,65 @@ const DotNavigation: React.FC<DotNavigationProps> = ({ activeDot, onDotHover }) 
   const isM2Active = Boolean(pathname?.startsWith('/multiview/2'))
 
   const dock = (
-    <Dock orientation="vertical" dockEdge="right" className="items-end">
+    <Dock
+      orientation="vertical"
+      dockEdge="right"
+      className="items-end gap-2 py-2 px-2"
+      panelHeight={32}
+      magnification={40}
+      minItemSize={20}
+      distance={72}
+    >
       {DOT_HEX.map((hex, index) => (
         <Link
           key={index}
           href={`/${index}`}
           className="outline-none border-none no-underline"
+          aria-label={clockTitles[index] ?? `Clock ${index + 1}`}
           onMouseEnter={() => onDotHover?.(index)}
           onMouseLeave={() => onDotHover?.(null)}
           onTouchStart={() => onDotHover?.(index)}
           onTouchEnd={() => onDotHover?.(null)}
         >
           <DockItem
-            className={`aspect-square rounded-full transition-colors ${
+            className={`aspect-square rounded-full transition-shadow ring-2 ring-inset ${
               isClockActive(index)
-                ? 'bg-black dark:bg-white'
-                : 'bg-gray-200 dark:bg-neutral-800 hover:bg-gray-300 dark:hover:bg-neutral-700'
+                ? 'ring-white/95 shadow-md dark:ring-neutral-950 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.35)]'
+                : 'ring-black/25 hover:brightness-110 dark:ring-white/30'
             }`}
+            style={{ backgroundColor: hex }}
           >
             <DockLabel>{clockTitles[index] ?? index + 1}</DockLabel>
             <DockIcon>
               {isClockActive(index) ? (
-                <div className="flex h-full w-full items-center justify-center">
-                  <div
-                    className="h-[55%] w-[55%] rounded-full"
-                    style={{ backgroundColor: hex }}
-                  />
-                </div>
+                <div
+                  className="h-[42%] w-[42%] rounded-full bg-white/95 shadow-sm dark:bg-neutral-950/90"
+                  aria-hidden
+                />
               ) : (
-                <div className="h-full w-full rounded-full" style={{ backgroundColor: hex }} />
+                <div
+                  className="h-[38%] w-[38%] rounded-full bg-black/20 dark:bg-white/25"
+                  aria-hidden
+                />
               )}
             </DockIcon>
           </DockItem>
         </Link>
       ))}
 
-      <Link href="/multiview/1" className="outline-none border-none no-underline">
+      <Link href="/multiview/1" className="outline-none border-none no-underline" aria-label="Multiview 1">
         <DockItem
-          className={`aspect-square rounded-full ring-2 ring-inset ring-offset-0 transition-colors ${
+          className={`aspect-square rounded-full bg-slate-400/90 ring-2 ring-inset transition-shadow dark:bg-slate-600/90 ${
             isM1Active
-              ? 'bg-black dark:bg-white ring-white dark:ring-black'
-              : 'bg-gray-200 ring-black dark:bg-neutral-800 dark:ring-white hover:bg-gray-300 dark:hover:bg-neutral-700'
+              ? 'ring-white/95 shadow-md dark:ring-neutral-950'
+              : 'ring-black/25 hover:brightness-110 dark:ring-white/30'
           }`}
         >
           <DockLabel>M1</DockLabel>
           <DockIcon>
             <span
-              className={`text-[10px] font-bold leading-none ${
-                isM1Active ? 'text-white dark:text-black' : 'text-neutral-600 dark:text-neutral-300'
+              className={`text-[9px] font-bold leading-none text-white drop-shadow-sm dark:text-white ${
+                isM1Active ? 'opacity-100' : 'opacity-90'
               }`}
             >
               M1
@@ -109,19 +120,19 @@ const DotNavigation: React.FC<DotNavigationProps> = ({ activeDot, onDotHover }) 
         </DockItem>
       </Link>
 
-      <Link href="/multiview/2" className="outline-none border-none no-underline">
+      <Link href="/multiview/2" className="outline-none border-none no-underline" aria-label="Multiview 2">
         <DockItem
-          className={`aspect-square rounded-full ring-2 ring-inset ring-offset-0 transition-colors ${
+          className={`aspect-square rounded-full bg-slate-500/90 ring-2 ring-inset transition-shadow dark:bg-slate-500/90 ${
             isM2Active
-              ? 'bg-black dark:bg-white ring-white dark:ring-black'
-              : 'bg-gray-200 ring-black dark:bg-neutral-800 dark:ring-white hover:bg-gray-300 dark:hover:bg-neutral-700'
+              ? 'ring-white/95 shadow-md dark:ring-neutral-950'
+              : 'ring-black/25 hover:brightness-110 dark:ring-white/30'
           }`}
         >
           <DockLabel>M2</DockLabel>
           <DockIcon>
             <span
-              className={`text-[10px] font-bold leading-none ${
-                isM2Active ? 'text-white dark:text-black' : 'text-neutral-600 dark:text-neutral-300'
+              className={`text-[9px] font-bold leading-none text-white drop-shadow-sm dark:text-white ${
+                isM2Active ? 'opacity-100' : 'opacity-90'
               }`}
             >
               M2
@@ -133,10 +144,10 @@ const DotNavigation: React.FC<DotNavigationProps> = ({ activeDot, onDotHover }) 
   )
 
   return (
-    <div className="fixed right-0 top-0 bottom-0 z-[999] flex items-center justify-end pointer-events-none pr-3">
+    <div className="fixed right-0 top-0 bottom-0 z-[10000] flex items-center justify-end pointer-events-none pr-2">
       {isSessionsPage ? (
         <motion.div
-          className="pointer-events-auto max-h-full overflow-y-auto overflow-x-visible"
+          className="pointer-events-auto max-h-full overflow-visible"
           initial={{ x: 50, opacity: 0 }}
           animate={{ x: isVisible ? 0 : 50, opacity: isVisible ? 1 : 0 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
@@ -144,7 +155,7 @@ const DotNavigation: React.FC<DotNavigationProps> = ({ activeDot, onDotHover }) 
           {dock}
         </motion.div>
       ) : (
-        <div className="pointer-events-auto max-h-full overflow-y-auto overflow-x-visible">{dock}</div>
+        <div className="pointer-events-auto max-h-full overflow-visible">{dock}</div>
       )}
     </div>
   )
