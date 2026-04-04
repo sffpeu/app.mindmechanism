@@ -583,6 +583,10 @@ export default function Clock({
   // Timer effect with auto-save — start counting down as soon as session begins
   useEffect(() => {
     if (!initialDuration || isPaused || !sessionStartTime) return;
+    // lastAutoSave is in deps: when it updates after the session has ended, do not restart the interval
+    // (would re-fire handleSessionComplete and fight the UI).
+    const remainingNow = initialDuration - (Date.now() - sessionStartTime);
+    if (remainingNow <= 0) return;
 
     const tick = () => {
       const elapsed = Date.now() - sessionStartTime;

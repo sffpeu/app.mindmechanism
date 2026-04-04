@@ -67,7 +67,16 @@ export function useSessionTimer(
 
   // Timer countdown effect
   useEffect(() => {
-    if (remainingTime == null || isPaused || !sessionStartTime || initialDurationRef.current == null) return
+    // When remaining hits 0, this effect re-runs (remainingTime is in deps). Without this guard,
+    // a new interval would start and call onSessionComplete every tick — locking the UI.
+    if (
+      remainingTime == null ||
+      remainingTime <= 0 ||
+      isPaused ||
+      !sessionStartTime ||
+      initialDurationRef.current == null
+    )
+      return
 
     const tick = () => {
       const elapsed = Date.now() - sessionStartTime
