@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/popover"
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords } from '@/lib/glossary'
-import Clock from '@/components/Clock'
+import Clock, { defaultSatelliteConfigs } from '@/components/Clock'
 import { SessionTimer } from '@/components/SessionTimer'
 import { useSessionTimer } from '@/lib/useSessionTimer'
 import { useAuth } from '@/lib/FirebaseAuthContext'
@@ -79,18 +79,10 @@ interface MoonData {
 }
 
 // Clock 1–9 hex palette; this page uses index 1 (clock 2)
+const CLOCK_INDEX = 1
 const CLOCK_HEX = ['#fd290a', '#fba63b', '#f7da5f', '#6dc037', '#156fde', '#941952', '#541b96', '#ee5fa7', '#56c1ff']
-const clockHex = CLOCK_HEX[1]
-
-// Satellite configurations for clock 1
-const satelliteConfigs = [
-  { rotationTime: 450 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 900 * 1000, rotationDirection: 'counterclockwise' },
-  { rotationTime: 1350 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 2700 * 1000, rotationDirection: 'counterclockwise' },
-  { rotationTime: 4050 * 1000, rotationDirection: 'clockwise' },
-  { rotationTime: 8100 * 1000, rotationDirection: 'counterclockwise' }
-]
+const clockHex = CLOCK_HEX[CLOCK_INDEX]
+const satelliteConfigs = defaultSatelliteConfigs[CLOCK_INDEX] ?? []
 
 // Helper function to convert hex to rgb
 const hexToRgb = (hex: string) => {

@@ -20,6 +20,7 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type MouseEventHandler,
 } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
@@ -46,6 +47,9 @@ type DockItemProps = {
   className?: string;
   children: React.ReactNode;
   style?: CSSProperties;
+  /** When true, omit button semantics so the item can sit inside a link or act as a plain control. */
+  asNavSlot?: boolean;
+  onClick?: MouseEventHandler<HTMLDivElement>;
 };
 type DockLabelProps = {
   className?: string;
@@ -170,7 +174,7 @@ function Dock({
   );
 }
 
-function DockItem({ children, className, style }: DockItemProps) {
+function DockItem({ children, className, style, asNavSlot, onClick }: DockItemProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   const { distance, magnification, minItemSize, mouseX, mouseY, spring, orientation, dockEdge } =
@@ -208,16 +212,18 @@ function DockItem({ children, className, style }: DockItemProps) {
         }}
         onHoverStart={() => isHovered.set(1)}
         onHoverEnd={() => isHovered.set(0)}
-        onFocus={() => isHovered.set(1)}
-        onBlur={() => isHovered.set(0)}
+        onFocus={() => !asNavSlot && isHovered.set(1)}
+        onBlur={() => !asNavSlot && isHovered.set(0)}
+        onClick={onClick}
         className={cn(
           'relative inline-flex items-center justify-center shrink-0',
+          asNavSlot && onClick && 'cursor-pointer',
           isVertical ? 'w-full' : '',
           className
         )}
-        tabIndex={0}
-        role='button'
-        aria-haspopup='true'
+        tabIndex={asNavSlot ? undefined : 0}
+        role={asNavSlot ? undefined : 'button'}
+        aria-haspopup={asNavSlot ? undefined : 'true'}
       >
         {Children.map(children, (child) =>
           cloneElement(child as React.ReactElement, {

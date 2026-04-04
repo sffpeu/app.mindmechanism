@@ -101,6 +101,9 @@ export const defaultSatelliteConfigs: Record<number, Array<{ rotationTime: numbe
     { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' },
     { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' },
     { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' }
+  ],
+  8: [ // Clock 9
+    { rotationTime: 3600 * 1000, rotationDirection: 'clockwise' }
   ]
 };
 

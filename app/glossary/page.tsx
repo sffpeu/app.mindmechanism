@@ -15,6 +15,7 @@ import type { SentimentValue } from '@/components/glossary/GlossarySentimentFilt
 import { GlossaryAlphabetStrip } from '@/components/glossary/GlossaryAlphabetStrip'
 import { GlossaryToolbarActions } from '@/components/glossary/GlossaryToolbarActions'
 import { GlossaryWordScrollList } from '@/components/glossary/GlossaryWordScrollList'
+import { GlossaryVisualWordPanel } from '@/components/glossary/GlossaryVisualWordPanel'
 
 export default function GlossaryPage() {
   const { user } = useAuth()
@@ -28,6 +29,8 @@ export default function GlossaryPage() {
   const [loading, setLoading] = useState(true)
   const [visualMode, setVisualMode] = useState(false)
   const [diagramHoverClockId, setDiagramHoverClockId] = useState<number | null>(null)
+  /** All view: null = ring of chakra titles only; number = show words for that clock. */
+  const [visualExpandedClockId, setVisualExpandedClockId] = useState<number | null>(null)
   const [isAddWordOpen, setIsAddWordOpen] = useState(false)
   const [selectedCard, setSelectedCard] = useState<GlossaryWord | null>(null)
   const [editWord, setEditWord] = useState<GlossaryWord | null>(null)
@@ -101,17 +104,20 @@ export default function GlossaryPage() {
   const setScopeAllOrMy = useCallback((scope: 'All' | 'My Words') => {
     setSelectedClockId(null)
     setDiagramHoverClockId(null)
+    setVisualExpandedClockId(null)
     setScopeFilter(scope)
   }, [])
 
   const onSelectAllDefault = useCallback(() => {
     setDiagramHoverClockId(null)
+    setVisualExpandedClockId(null)
     setScopeFilter('Default')
     setSelectedClockId(null)
   }, [])
 
   const onSelectChakra = useCallback((clockId: number) => {
     setDiagramHoverClockId(null)
+    setVisualExpandedClockId(null)
     setScopeFilter('Default')
     setSelectedClockId(clockId)
   }, [])
@@ -147,10 +153,14 @@ export default function GlossaryPage() {
 
   useEffect(() => {
     setDiagramHoverClockId(null)
+    if (scopeFilter !== 'All') setVisualExpandedClockId(null)
   }, [scopeFilter])
 
   useEffect(() => {
-    if (!visualMode) setDiagramHoverClockId(null)
+    if (!visualMode) {
+      setDiagramHoverClockId(null)
+      setVisualExpandedClockId(null)
+    }
   }, [visualMode])
 
   useEffect(() => {
@@ -221,26 +231,37 @@ export default function GlossaryPage() {
     <div className="h-full overflow-hidden flex flex-col bg-gray-50 dark:bg-black/95">
       {visualMode ? (
         <>
-          <div className="flex-1 min-h-0 relative w-full">
-            {loading ? (
-              <div className="absolute inset-0 flex items-center justify-center text-gray-500 dark:text-gray-400">
-                Loading words...
-              </div>
-            ) : (
-              <GlossaryRadialTree
-                words={fullWordList}
-                selectedWordId={selectedCard?.id ?? null}
-                onSelectWord={(w) => setSelectedCard((prev) => (prev?.id === w.id ? null : w))}
-                className="absolute inset-0 h-full w-full min-h-[240px]"
-                variant="fullscreen"
-                diagramHoverClockId={diagramHoverClockId}
-                onDiagramClockHover={setDiagramHoverClockId}
-                visualFilters={{
-                  scopeFilter,
-                  selectedClockId,
-                  selectedSentiment,
-                  userId: user?.uid ?? null,
-                }}
+          <div className="flex flex-1 min-h-0 w-full flex-col sm:flex-row overflow-hidden">
+            <div className="flex-1 min-w-0 min-h-0 relative">
+              {loading ? (
+                <div className="absolute inset-0 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                  Loading words...
+                </div>
+              ) : (
+                <GlossaryRadialTree
+                  words={fullWordList}
+                  selectedWordId={selectedCard?.id ?? null}
+                  onSelectWord={(w) => setSelectedCard((prev) => (prev?.id === w.id ? null : w))}
+                  className="absolute inset-0 h-full w-full min-h-[240px]"
+                  variant="fullscreen"
+                  diagramHoverClockId={diagramHoverClockId}
+                  onDiagramClockHover={setDiagramHoverClockId}
+                  expandedSegmentClockId={scopeFilter === 'All' ? visualExpandedClockId : null}
+                  onExpandSegment={scopeFilter === 'All' ? setVisualExpandedClockId : undefined}
+                  visualFilters={{
+                    scopeFilter,
+                    selectedClockId,
+                    selectedSentiment,
+                    userId: user?.uid ?? null,
+                  }}
+                />
+              )}
+            </div>
+            {selectedCard && (
+              <GlossaryVisualWordPanel
+                word={selectedCard}
+                clockHexPalette={CLOCK_HEX}
+                onClose={() => setSelectedCard(null)}
               />
             )}
           </div>

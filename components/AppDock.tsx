@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Home,
   LayoutDashboard,
@@ -28,6 +28,7 @@ const navItems = [
 
 export function AppDock() {
   const pathname = usePathname();
+  const router = useRouter();
   const { isDarkMode, setIsDarkMode } = useTheme();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -46,8 +47,21 @@ export function AppDock() {
               const Icon = item.icon;
               const isActive = pathname === item.href;
               return (
-                <Link key={item.href} href={item.href}>
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  prefetch
+                  className="inline-flex rounded-full no-underline text-inherit outline-none focus-visible:ring-2 focus-visible:ring-black/30 focus-visible:ring-offset-2 dark:focus-visible:ring-white/40"
+                  aria-label={item.title}
+                  onClick={(e) => {
+                    if (e.button !== 0) return;
+                    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+                    e.preventDefault();
+                    router.push(item.href);
+                  }}
+                >
                   <DockItem
+                    asNavSlot
                     className={`aspect-square rounded-full transition-colors ${
                       isActive
                         ? 'bg-black dark:bg-white'
