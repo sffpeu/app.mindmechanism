@@ -3,12 +3,8 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { 
   User,
-  signInWithPopup,
-  GoogleAuthProvider,
   signOut as firebaseSignOut,
   onAuthStateChanged,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
   Auth
 } from 'firebase/auth';
 import { auth, db } from './firebase';

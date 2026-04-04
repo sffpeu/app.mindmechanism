@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { auth } from '@/lib/firebase'
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth'
 
 interface AuthModalProps {
   isOpen: boolean
@@ -44,21 +44,6 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
     }
   }
 
-  const handleGoogleSignIn = async () => {
-    try {
-      if (!auth) {
-        throw new Error('Firebase auth is not initialized')
-      }
-      const provider = new GoogleAuthProvider()
-      await signInWithPopup(auth, provider)
-      onClose()
-      router.push('/dashboard')
-    } catch (error) {
-      console.error('Error signing in with Google:', error)
-      setError('Failed to sign in with Google.')
-    }
-  }
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-white dark:bg-black/90 border border-gray-200 dark:border-white/10">
@@ -91,24 +76,6 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
           )}
           <Button type="submit" className="w-full bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-100">
             {mode === 'signin' ? 'Sign In' : 'Sign Up'}
-          </Button>
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-gray-300 dark:border-gray-700" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white dark:bg-black/90 px-2 text-gray-500 dark:text-gray-400">
-                Or continue with
-              </span>
-            </div>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleGoogleSignIn}
-            className="w-full border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/5 text-gray-900 dark:text-gray-100"
-          >
-            Continue with Google
           </Button>
         </form>
       </DialogContent>
