@@ -45,7 +45,7 @@ export default function DashboardPage() {
       try {
         if (authLoading || !user) {
           if (!authLoading && !user) {
-            router.push('/login')
+            router.push('/home')
           }
           return
         }

@@ -3,13 +3,18 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { 
   User,
+  signInWithPopup,
+  GoogleAuthProvider,
   signOut as firebaseSignOut,
   onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
   Auth
 } from 'firebase/auth';
 import { auth, db } from './firebase';
-import { setCookie, deleteCookie } from 'cookies-next';
+import { deleteCookie } from 'cookies-next';
 import { useRouter } from 'next/navigation';
+import { syncFirebaseAuthCookie } from '@/lib/syncFirebaseAuthCookie';
 import { doc, getDoc, setDoc, Firestore } from 'firebase/firestore';
 
 export interface UserProfile {
@@ -94,15 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const unsubscribe = onAuthStateChanged(auth as Auth, async (user) => {
       if (user) {
-        // Get the Firebase ID token
-        const token = await user.getIdToken();
-        // Set the token in a cookie
-        setCookie('__firebase_auth_token', token, {
-          maxAge: 30 * 24 * 60 * 60, // 30 days
-          path: '/',
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax'
-        });
+        await syncFirebaseAuthCookie(user);
         setUser(user);
         // Load user profile when user signs in
         await loadUserProfile(user.uid);
