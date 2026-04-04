@@ -1,10 +1,11 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getAllWords, searchWords } from '@/lib/glossary'
 
-export async function GET(request: Request) {
+export const dynamic = 'force-dynamic'
+
+export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const searchQuery = searchParams.get('search')
+    const searchQuery = request.nextUrl.searchParams.get('search')
 
     if (searchQuery) {
       const matchingWords = await searchWords(searchQuery)

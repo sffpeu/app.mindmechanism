@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useTheme } from '@/app/ThemeContext'
 import { Play, Clock, RotateCw, Timer, Compass, LayoutGrid, List, ChevronUp, ChevronDown } from 'lucide-react'
 import Image from 'next/image'
@@ -78,7 +78,7 @@ function hexToRgba(hex: string, alpha: number): string {
 // Tailwind arbitrary classes from hex for text/bg (SessionDurationDialog compatible)
 const clockColors = CLOCK_HEX.map((hex) => `text-[${hex}] bg-[${hex}]`)
 
-export default function SessionsPage() {
+function SessionsPageContent() {
   const { isDarkMode } = useTheme()
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(false)
@@ -421,4 +421,18 @@ export default function SessionsPage() {
       </div>
     </ProtectedRoute>
   )
-} 
+}
+
+export default function SessionsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="h-full min-h-[50vh] flex items-center justify-center bg-gray-50 dark:bg-black/95">
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-300 dark:border-white/20 border-t-red-600 dark:border-t-red-500" />
+        </div>
+      }
+    >
+      <SessionsPageContent />
+    </Suspense>
+  )
+}
