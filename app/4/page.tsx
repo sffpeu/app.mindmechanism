@@ -9,8 +9,9 @@ import { ClockFocusNodeAppear } from '@/components/ClockFocusNodeAppear'
 import { ClockPageSettingsTrigger, ClockPageMenuContent, ClockPageIconButton } from '@/components/ClockPageSettingsTrigger'
 import { motion, AnimatePresence } from 'framer-motion'
 import { clockSettings } from '@/lib/clockSettings'
+import { formatSatelliteRevolutionPeriod, satelliteDegreesPerSecond } from '@/lib/satelliteRotation'
 import Image from 'next/image'
-import { List, Info, Satellite, Clock as ClockIcon, Calendar, RotateCw, Timer as TimerIcon, Compass, HelpCircle, Book, User, Edit, LogOut, Play, BookOpen, Library, Sun, Moon, MapPin, Cloud, Droplets, Wind, Minus, Plus, X } from 'lucide-react'
+import { List, Info, Satellite, Clock as ClockIcon, Calendar, RotateCw, Timer as TimerIcon, Compass, HelpCircle, Book, User, Edit, LogOut, Play, BookOpen, Library, Sun, Moon, MapPin, Cloud, Droplets, Wind, X } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Timer from '@/components/Timer'
@@ -20,7 +21,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
   Popover,
@@ -171,7 +171,6 @@ function NodesPageContent() {
   // Calculate rotation
   const [rotation, setRotation] = useState(startingDegree)
   const [currentDegree, setCurrentDegree] = useState(startingDegree)
-  const [focusNodesOffset, setFocusNodesOffset] = useState(0)
   const [entranceOffset, triggerCompleteSpin] = useClockEntrance()
 
   // Helper functions
@@ -647,37 +646,37 @@ function NodesPageContent() {
                       </div>
                     </div>
 
-                    {/* Focus nodes rotation */}
+                    {/* Satellites — one revolution duration and angular speed */}
                     <div className="pt-2 border-t border-black/10 dark:border-white/10">
                       <p className="text-xs font-medium text-black/60 dark:text-white/60 mb-2 flex items-center gap-1">
-                        <RotateCw className="h-3 w-3" />
-                        Focus nodes rotation
+                        <Satellite className="h-3 w-3" />
+                        Satellites
                       </p>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8 shrink-0 rounded-full"
-                          onClick={() => setFocusNodesOffset((n) => n - 1)}
-                          aria-label="Rotate focus nodes -1°"
-                        >
-                          <Minus className="h-4 w-4" />
-                        </Button>
-                        <span className="text-sm font-medium text-black/90 dark:text-white/90 min-w-[7rem] text-center tabular-nums">
-                          {focusNodesOffset >= 0 ? '+' : ''}{focusNodesOffset} Degrees
-                        </span>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8 shrink-0 rounded-full"
-                          onClick={() => setFocusNodesOffset((n) => n + 1)}
-                          aria-label="Rotate focus nodes +1°"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      {satelliteConfigs.length === 0 ? (
+                        <p className="text-xs text-black/50 dark:text-white/50">None on this clock.</p>
+                      ) : (
+                        <ul className="max-h-40 space-y-2 overflow-y-auto pr-1 text-left">
+                          {satelliteConfigs.map((sat, i) => (
+                            <li
+                              key={i}
+                              className="rounded-md bg-gray-50 px-2 py-1.5 text-[11px] dark:bg-white/5"
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="font-medium text-black/90 dark:text-white/90">
+                                  Satellite {i + 1}
+                                </span>
+                                <span className="shrink-0 text-black/55 dark:text-white/55">
+                                  {sat.rotationDirection === 'clockwise' ? 'CW' : 'CCW'}
+                                </span>
+                              </div>
+                              <div className="mt-0.5 tabular-nums text-black/70 dark:text-white/70">
+                                {formatSatelliteRevolutionPeriod(sat.rotationTime)} per revolution ·{' '}
+                                {satelliteDegreesPerSecond(sat.rotationTime).toFixed(4)} °/s
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -823,7 +822,7 @@ function NodesPageContent() {
               <div className="absolute inset-0" style={{ transform: `rotate(${clock4.imageOrientation}deg)`, pointerEvents: 'auto' }}>
                 <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
                   {Array.from({ length: focusNodes }).map((_, index) => {
-                    const angle = ((360 / focusNodes) * index + 270 + focusNodesOffset) % 360
+                    const angle = ((360 / focusNodes) * index + 270) % 360
                     const radians = angle * (Math.PI / 180)
                     const nodeRadius = 55 // Increased from 48 to move nodes further out
                     const x = 50 + nodeRadius * Math.cos(radians)

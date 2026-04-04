@@ -55,6 +55,14 @@ function pointOnCircle(angle: number, r: number): [number, number] {
   return [r * Math.cos(angle - Math.PI / 2), r * Math.sin(angle - Math.PI / 2)]
 }
 
+/** Normalize degrees to (-180, 180] for stable CSS rotation. */
+function normalizeRotationDeg(deg: number): number {
+  let d = deg % 360
+  if (d > 180) d -= 360
+  if (d <= -180) d += 360
+  return d
+}
+
 function bezierPath(x1: number, y1: number, x2: number, y2: number): string {
   const mx = (x1 + x2) / 2
   const my = (y1 + y2) / 2
@@ -422,12 +430,16 @@ export function GlossaryRadialTree({
     return c0 ? Math.hypot(c0.x, c0.y) * 0.35 : 80
   }, [layout.clocks])
 
-  /** Rotate so the snapped clock’s bisector aligns with 3 o’clock (SVG +x). */
+  /**
+   * Rotate diagram CW so the active hub sits on +x (3 o’clock). Derived from actual hub (cx, cy)
+   * so it matches SVG `rotate()`, then normalized for consistent animation endpoints.
+   */
   const rotationSnapDeg = useMemo(() => {
     if (rotationSnapClockId === null || rotationSnapClockId < 0 || rotationSnapClockId >= NUM_CLOCKS) return 0
     const clk = layout.clocks.find(c => c.clockId === rotationSnapClockId)
     if (!clk) return 0
-    return ((clk.clockAngle - Math.PI / 2) * 180) / Math.PI
+    const raw = (Math.atan2(clk.y, clk.x) * 180) / Math.PI
+    return normalizeRotationDeg(raw)
   }, [rotationSnapClockId, layout.clocks])
 
   const onSvgPointerLeave = useCallback(
@@ -565,32 +577,31 @@ export function GlossaryRadialTree({
               />
             )}
 
-            <circle
-              r={12}
-              cx={0}
-              cy={0}
-              fill={DEFAULT_NODE_FILL}
-              stroke={DEFAULT_NODE_STROKE}
-              strokeWidth={1.2}
-              pointerEvents="none"
-            />
-            <text
-              x={0}
-              y={4}
-              textAnchor="middle"
-              className="fill-gray-800 dark:fill-gray-100 text-[12px] font-semibold pointer-events-none select-none"
-            >
-              Glossary
-            </text>
+            <g transform={`rotate(${-rotationSnapDeg} 0 0)`}>
+              <circle
+                r={12}
+                cx={0}
+                cy={0}
+                fill={DEFAULT_NODE_FILL}
+                stroke={DEFAULT_NODE_STROKE}
+                strokeWidth={1.2}
+                pointerEvents="none"
+              />
+              <text
+                x={0}
+                y={4}
+                textAnchor="middle"
+                className="fill-gray-800 dark:fill-gray-100 text-[12px] font-semibold pointer-events-none select-none"
+              >
+                Glossary
+              </text>
+            </g>
 
             {layout.clocks.map(c => {
               const dim = sectorDimmed(c.clockId)
               const hex = CLOCK_HEX[c.clockId]
               const titleRingR = leafRadius * (allViewOverview ? 0.97 : 0.86)
               const [ttx, tty] = pointOnCircle(c.clockAngle, titleRingR)
-              const tAng = Math.atan2(tty, ttx)
-              let titleRot = (tAng * 180) / Math.PI
-              if (Math.cos(tAng) < 0) titleRot += 180
 
               return (
                 <g
@@ -626,7 +637,7 @@ export function GlossaryRadialTree({
                     fontSize={labelFontSize}
                     fill={hex}
                     fillOpacity={dim ? 0.45 : 0.92}
-                    transform={`rotate(${titleRot} ${ttx} ${tty})`}
+                    transform={`rotate(${-rotationSnapDeg} ${ttx} ${tty})`}
                     style={{ pointerEvents: 'auto' }}
                   >
                     {clockTitles[c.clockId]}
@@ -642,13 +653,13 @@ export function GlossaryRadialTree({
                 const sentDim = leafSentimentDimmed(leaf.word)
                 const notMine = leafNotInMyWordsScope(leaf.word)
                 const ang = Math.atan2(leaf.y, leaf.x)
-                let rotDeg = (ang * 180) / Math.PI
-                if (Math.cos(ang) < 0) rotDeg += 180
 
                 const fs = labelFontSize
                 const labelR = Math.max(38, fs * 0.78)
                 const lx = leaf.x + Math.cos(ang) * labelR
                 const ly = leaf.y + Math.sin(ang) * labelR
+                /** Counter parent rotate(snap) so glyphs stay horizontal and readable on screen. */
+                const labelUprightDeg = -rotationSnapDeg
 
                 const groupOp = dim ? 0.38 : notMine ? 0.3 : sentDim ? 0.22 : 1
                 const isSelected = selectedWordId === leaf.id
@@ -698,7 +709,7 @@ export function GlossaryRadialTree({
                       className={cn('select-none pointer-events-none', isSelected && 'font-semibold')}
                       fill={textFill}
                       fillOpacity={textOpacity}
-                      transform={`rotate(${rotDeg} ${lx} ${ly})`}
+                      transform={`rotate(${labelUprightDeg} ${lx} ${ly})`}
                       textAnchor="middle"
                       dominantBaseline="middle"
                     >

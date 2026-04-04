@@ -3,13 +3,26 @@
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { signInWithPopup, GoogleAuthProvider, signInWithCustomToken } from 'firebase/auth'
+import {
+  signInWithPopup,
+  GoogleAuthProvider,
+  signInWithCustomToken,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendSignInLinkToEmail,
+} from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { syncFirebaseAuthCookie } from '@/lib/syncFirebaseAuthCookie'
+import {
+  FIREBASE_EMAIL_LINK_STORAGE_KEY,
+  getEmailLinkActionUrl,
+} from '@/lib/firebaseEmailLink'
 import { toast } from 'sonner'
-import { useEffect, Suspense } from 'react'
+import { useEffect, Suspense, useState } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 function hasAuthCookie(): boolean {
   if (typeof document === 'undefined') return false
@@ -18,7 +31,32 @@ function hasAuthCookie(): boolean {
 
 const isDevBypassVisible = process.env.NODE_ENV === 'development'
 
+function firebaseAuthMessage(error: unknown): string {
+  if (error && typeof error === 'object' && 'code' in error) {
+    const code = String((error as { code?: string }).code)
+    const map: Record<string, string> = {
+      'auth/email-already-in-use': 'That email is already registered. Try signing in instead.',
+      'auth/invalid-email': 'Enter a valid email address.',
+      'auth/weak-password': 'Use a stronger password (at least 6 characters).',
+      'auth/user-not-found': 'No account found for that email.',
+      'auth/wrong-password': 'Incorrect password.',
+      'auth/invalid-credential': 'Email or password is incorrect.',
+      'auth/too-many-requests': 'Too many attempts. Try again in a few minutes.',
+      'auth/unauthorized-continue-uri':
+        'This sign-in link URL is not allowed. In Firebase Console → Authentication → Settings, add your site under Authorized domains (e.g. localhost and your production domain).',
+    }
+    if (map[code]) return map[code]
+  }
+  return 'Something went wrong. Please try again.'
+}
+
 function HomeLoginContent() {
+  const [devEmail, setDevEmail] = useState('')
+  const [emailAuthEmail, setEmailAuthEmail] = useState('')
+  const [emailAuthPassword, setEmailAuthPassword] = useState('')
+  const [emailAuthMode, setEmailAuthMode] = useState<'signin' | 'signup'>('signin')
+  const [emailAuthBusy, setEmailAuthBusy] = useState(false)
+  const [emailLinkBusy, setEmailLinkBusy] = useState(false)
   const searchParams = useSearchParams()
   const { user } = useAuth()
   const rawCallback = searchParams.get('callbackUrl') || '/dashboard'
@@ -56,25 +94,106 @@ function HomeLoginContent() {
     }
   }
 
+  const signInWithDevToken = async (body: object | undefined, successMessage: string) => {
+    if (!auth) {
+      throw new Error('Firebase auth is not initialized')
+    }
+    const res = await fetch('/api/auth/dev-bypass', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: body !== undefined ? JSON.stringify(body) : '{}',
+    })
+    const data = (await res.json()) as { token?: string; error?: string }
+    if (!res.ok || !data.token) {
+      throw new Error(data.error || 'Dev bypass failed')
+    }
+    const credential = await signInWithCustomToken(auth, data.token)
+    await syncFirebaseAuthCookie(credential.user)
+    toast.success(successMessage)
+    window.location.assign(callbackUrl)
+  }
+
   const handleDevBypass = async () => {
     try {
-      if (!auth) {
-        throw new Error('Firebase auth is not initialized')
-      }
-      const res = await fetch('/api/auth/dev-bypass', { method: 'POST' })
-      const data = (await res.json()) as { token?: string; error?: string }
-      if (!res.ok || !data.token) {
-        throw new Error(data.error || 'Dev bypass failed')
-      }
-      const credential = await signInWithCustomToken(auth, data.token)
-      await syncFirebaseAuthCookie(credential.user)
-      toast.success('Signed in as dev admin')
-      window.location.assign(callbackUrl)
+      await signInWithDevToken(undefined, 'Signed in as dev admin')
     } catch (error) {
       console.error('Dev bypass error:', error)
       toast.error(
         error instanceof Error ? error.message : 'Dev sign-in failed. Check server credentials in .env.local.'
       )
+    }
+  }
+
+  const handleDevEmailBypass = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      if (!devEmail.trim()) {
+        toast.error('Enter your dev email')
+        return
+      }
+      await signInWithDevToken({ email: devEmail.trim() }, 'Signed in with allowlisted email')
+    } catch (error) {
+      console.error('Dev email bypass error:', error)
+      toast.error(
+        error instanceof Error ? error.message : 'Dev sign-in failed. Check DEV_AUTH_ALLOWLIST_EMAILS in .env.local.'
+      )
+    }
+  }
+
+  const handleEmailAuth = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!auth) {
+      toast.error('Authentication is not available.')
+      return
+    }
+    const email = emailAuthEmail.trim()
+    if (!email) {
+      toast.error('Enter your email')
+      return
+    }
+    setEmailAuthBusy(true)
+    try {
+      const credential =
+        emailAuthMode === 'signin'
+          ? await signInWithEmailAndPassword(auth, email, emailAuthPassword)
+          : await createUserWithEmailAndPassword(auth, email, emailAuthPassword)
+      await syncFirebaseAuthCookie(credential.user)
+      toast.success(emailAuthMode === 'signin' ? 'Signed in!' : 'Account created!')
+      window.location.assign(callbackUrl)
+    } catch (error) {
+      console.error('Email auth error:', error)
+      toast.error(firebaseAuthMessage(error))
+    } finally {
+      setEmailAuthBusy(false)
+    }
+  }
+
+  const handleSendEmailLink = async () => {
+    if (!auth) {
+      toast.error('Authentication is not available.')
+      return
+    }
+    const email = emailAuthEmail.trim()
+    if (!email) {
+      toast.error('Enter your email to receive a sign-in link.')
+      return
+    }
+    setEmailLinkBusy(true)
+    try {
+      const actionCodeSettings = {
+        url: getEmailLinkActionUrl(callbackUrl),
+        handleCodeInApp: true,
+      }
+      await sendSignInLinkToEmail(auth, email, actionCodeSettings)
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(FIREBASE_EMAIL_LINK_STORAGE_KEY, email)
+      }
+      toast.success('Check your email — we sent you a sign-in link.')
+    } catch (error) {
+      console.error('sendSignInLinkToEmail error:', error)
+      toast.error(firebaseAuthMessage(error))
+    } finally {
+      setEmailLinkBusy(false)
     }
   }
 
@@ -101,10 +220,12 @@ function HomeLoginContent() {
           className="max-w-sm mx-auto w-full rounded-xl p-8 shadow-[0_1px_3px_rgba(0,0,0,0.08)] dark:shadow-[0_1px_3px_rgba(255,255,255,0.06)] border border-gray-200/80 dark:border-white/10 bg-white dark:bg-[hsl(var(--card))]"
         >
           <h1 className="text-2xl font-bold text-[hsl(var(--foreground))] mb-1">
-            Welcome back
+            {emailAuthMode === 'signin' ? 'Welcome back' : 'Create your account'}
           </h1>
           <p className="text-[hsl(var(--muted-foreground))] text-sm mb-8">
-            Sign in to track your meditation journey and save your progress.
+            {emailAuthMode === 'signin'
+              ? 'Sign in to track your meditation journey and save your progress.'
+              : 'Sign up with email to save your progress and pick up where you left off.'}
           </p>
 
           <Button
@@ -132,14 +253,127 @@ function HomeLoginContent() {
             Continue with Google
           </Button>
 
-          {isDevBypassVisible ? (
-            <button
-              type="button"
-              onClick={handleDevBypass}
-              className="mt-4 w-full text-center text-xs text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] underline-offset-4 hover:underline"
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center" aria-hidden>
+              <span className="w-full border-t border-gray-200/80 dark:border-white/10" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-white dark:bg-[hsl(var(--card))] px-3 text-[hsl(var(--muted-foreground))]">
+                Or use email
+              </span>
+            </div>
+          </div>
+
+          <form onSubmit={handleEmailAuth} className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="home-auth-email" className="text-sm text-[hsl(var(--foreground))]">
+                Email
+              </Label>
+              <Input
+                id="home-auth-email"
+                type="email"
+                autoComplete="email"
+                value={emailAuthEmail}
+                onChange={(e) => setEmailAuthEmail(e.target.value)}
+                required
+                className="h-10 bg-white dark:bg-black/40 border-gray-200 dark:border-white/10"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="home-auth-password" className="text-sm text-[hsl(var(--foreground))]">
+                Password
+              </Label>
+              <Input
+                id="home-auth-password"
+                type="password"
+                autoComplete={emailAuthMode === 'signin' ? 'current-password' : 'new-password'}
+                value={emailAuthPassword}
+                onChange={(e) => setEmailAuthPassword(e.target.value)}
+                required
+                minLength={6}
+                className="h-10 bg-white dark:bg-black/40 border-gray-200 dark:border-white/10"
+              />
+            </div>
+            <Button
+              type="submit"
+              disabled={emailAuthBusy || emailLinkBusy}
+              variant="outline"
+              className="w-full h-11 border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5"
             >
-              Dev: sign in without Google (admin)
-            </button>
+              {emailAuthBusy
+                ? 'Please wait…'
+                : emailAuthMode === 'signin'
+                  ? 'Sign in with email'
+                  : 'Create account'}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={emailAuthBusy || emailLinkBusy}
+              onClick={() => void handleSendEmailLink()}
+              className="w-full h-10 text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+            >
+              {emailLinkBusy ? 'Sending link…' : 'Email me a sign-in link (no password)'}
+            </Button>
+            <p className="text-center text-sm text-[hsl(var(--muted-foreground))]">
+              {emailAuthMode === 'signin' ? (
+                <>
+                  New here?{' '}
+                  <button
+                    type="button"
+                    className="text-red-600 dark:text-red-400 font-medium hover:underline underline-offset-2"
+                    onClick={() => setEmailAuthMode('signup')}
+                  >
+                    Sign up with email
+                  </button>
+                </>
+              ) : (
+                <>
+                  Already have an account?{' '}
+                  <button
+                    type="button"
+                    className="text-red-600 dark:text-red-400 font-medium hover:underline underline-offset-2"
+                    onClick={() => setEmailAuthMode('signin')}
+                  >
+                    Sign in
+                  </button>
+                </>
+              )}
+            </p>
+          </form>
+
+          {isDevBypassVisible ? (
+            <div className="mt-6 pt-6 border-t border-gray-200/80 dark:border-white/10 space-y-4">
+              <form onSubmit={handleDevEmailBypass} className="space-y-2">
+                <Label htmlFor="dev-auth-email" className="text-xs text-[hsl(var(--muted-foreground))]">
+                  Dev: allowlisted email
+                </Label>
+                <Input
+                  id="dev-auth-email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  value={devEmail}
+                  onChange={(e) => setDevEmail(e.target.value)}
+                  className="h-9 text-sm"
+                />
+                <Button type="submit" variant="outline" size="sm" className="w-full h-9 text-xs">
+                  Continue with this email
+                </Button>
+              </form>
+              <p className="text-[11px] text-[hsl(var(--muted-foreground))] leading-snug">
+                Add your address to <code className="text-[10px]">DEV_AUTH_ALLOWLIST_EMAILS</code> in{' '}
+                <code className="text-[10px]">.env.local</code> (comma-separated). Requires{' '}
+                <code className="text-[10px]">FIREBASE_SERVICE_ACCOUNT_JSON</code>.
+              </p>
+              <button
+                type="button"
+                onClick={handleDevBypass}
+                className="w-full text-center text-xs text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] underline-offset-4 hover:underline"
+              >
+                Dev: fixed admin user (no email)
+              </button>
+            </div>
           ) : null}
         </motion.div>
       </div>
