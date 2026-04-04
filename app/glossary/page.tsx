@@ -31,6 +31,10 @@ export default function GlossaryPage() {
   const [diagramHoverClockId, setDiagramHoverClockId] = useState<number | null>(null)
   /** All view: null = ring of chakra titles only; number = show words for that clock. */
   const [visualExpandedClockId, setVisualExpandedClockId] = useState<number | null>(null)
+  /** Second click on same wedge: rotate diagram so that clock faces 3 o’clock. */
+  const [diagramRotationSnapClockId, setDiagramRotationSnapClockId] = useState<number | null>(null)
+  const visualExpandedRef = useRef<number | null>(null)
+  visualExpandedRef.current = visualExpandedClockId
   const [isAddWordOpen, setIsAddWordOpen] = useState(false)
   const [selectedCard, setSelectedCard] = useState<GlossaryWord | null>(null)
   const [editWord, setEditWord] = useState<GlossaryWord | null>(null)
@@ -105,12 +109,14 @@ export default function GlossaryPage() {
     setSelectedClockId(null)
     setDiagramHoverClockId(null)
     setVisualExpandedClockId(null)
+    setDiagramRotationSnapClockId(null)
     setScopeFilter(scope)
   }, [])
 
   const onSelectAllDefault = useCallback(() => {
     setDiagramHoverClockId(null)
     setVisualExpandedClockId(null)
+    setDiagramRotationSnapClockId(null)
     setScopeFilter('Default')
     setSelectedClockId(null)
   }, [])
@@ -118,8 +124,24 @@ export default function GlossaryPage() {
   const onSelectChakra = useCallback((clockId: number) => {
     setDiagramHoverClockId(null)
     setVisualExpandedClockId(null)
+    setDiagramRotationSnapClockId(null)
     setScopeFilter('Default')
     setSelectedClockId(clockId)
+  }, [])
+
+  const handleExpandSegment = useCallback((clockId: number | null) => {
+    if (clockId === null) {
+      setVisualExpandedClockId(null)
+      setDiagramRotationSnapClockId(null)
+      return
+    }
+    const prev = visualExpandedRef.current
+    if (prev === clockId) {
+      setDiagramRotationSnapClockId(clockId)
+      return
+    }
+    setVisualExpandedClockId(clockId)
+    setDiagramRotationSnapClockId(null)
   }, [])
 
   const onToggleSentiment = useCallback((value: SentimentValue) => {
@@ -153,13 +175,17 @@ export default function GlossaryPage() {
 
   useEffect(() => {
     setDiagramHoverClockId(null)
-    if (scopeFilter !== 'All') setVisualExpandedClockId(null)
+    if (scopeFilter !== 'All') {
+      setVisualExpandedClockId(null)
+      setDiagramRotationSnapClockId(null)
+    }
   }, [scopeFilter])
 
   useEffect(() => {
     if (!visualMode) {
       setDiagramHoverClockId(null)
       setVisualExpandedClockId(null)
+      setDiagramRotationSnapClockId(null)
     }
   }, [visualMode])
 
@@ -247,7 +273,8 @@ export default function GlossaryPage() {
                   diagramHoverClockId={diagramHoverClockId}
                   onDiagramClockHover={setDiagramHoverClockId}
                   expandedSegmentClockId={scopeFilter === 'All' ? visualExpandedClockId : null}
-                  onExpandSegment={scopeFilter === 'All' ? setVisualExpandedClockId : undefined}
+                  onExpandSegment={scopeFilter === 'All' ? handleExpandSegment : undefined}
+                  rotationSnapClockId={scopeFilter === 'All' ? diagramRotationSnapClockId : null}
                   visualFilters={{
                     scopeFilter,
                     selectedClockId,

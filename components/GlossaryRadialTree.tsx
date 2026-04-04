@@ -84,7 +84,7 @@ function sectorAnnulusPath(sectorStart: number, sectorSpan: number, innerR: numb
 }
 
 /** Pixels beyond the sector annulus outer edge where word nodes sit (labels sit further via radial offset). */
-const LEAF_OUTSET = 72
+const LEAF_OUTSET = 118
 
 type BuildLayoutOptions = {
   /** All-view overview: no word leaves or hub→word links, only hubs + root links. */
@@ -199,6 +199,8 @@ export type GlossaryRadialTreeProps = {
   /** All view: expanded clock shows words; null = overview (clock titles on ring only). */
   expandedSegmentClockId?: number | null
   onExpandSegment?: (clockId: number | null) => void
+  /** When set, diagram rotates so this clock’s sector sits at 3 o’clock (readable horizontal). */
+  rotationSnapClockId?: number | null
   /** Full-bleed diagram: no card border/background (visual glossary mode). */
   variant?: 'card' | 'fullscreen'
 }
@@ -213,6 +215,7 @@ export function GlossaryRadialTree({
   onDiagramClockHover,
   expandedSegmentClockId = null,
   onExpandSegment,
+  rotationSnapClockId = null,
   variant = 'card',
 }: GlossaryRadialTreeProps) {
   const scopeFilter = visualFilters?.scopeFilter ?? 'All'
@@ -254,7 +257,7 @@ export function GlossaryRadialTree({
     const rWordBaseHi = rWordBaseLo * 1.06
     const outerRMax = rWordBaseHi * FOCUS_RADIAL_SCALE + 80
     const leafRadiusMax = outerRMax + LEAF_OUTSET
-    const pad = 200
+    const pad = 280
     const extent = leafRadiusMax + pad
 
     const usedFocus = focusClockId !== null
@@ -270,7 +273,8 @@ export function GlossaryRadialTree({
         : {}
 
     const L = buildLayout(defaultWords, rClock, leafRadius, layoutOpts)
-    const labelFontSize = 3.35 * Math.max(5.2, Math.min(8.5, 480 / Math.sqrt(defaultWords.length + 40)))
+    const labelFontSize =
+      4.45 * Math.max(6.4, Math.min(12, 560 / Math.sqrt(defaultWords.length + 36)))
 
     return { layout: L, extent, outerSectorR: outerR, labelFontSize, leafRadius }
   }, [defaultWords, focusClockId, allViewOverview, scopeFilter, expandedSegmentClockId])
@@ -399,6 +403,14 @@ export function GlossaryRadialTree({
     return c0 ? Math.hypot(c0.x, c0.y) * 0.35 : 80
   }, [layout.clocks])
 
+  /** Rotate so the snapped clock’s bisector aligns with 3 o’clock (SVG +x). */
+  const rotationSnapDeg = useMemo(() => {
+    if (rotationSnapClockId === null || rotationSnapClockId < 0 || rotationSnapClockId >= NUM_CLOCKS) return 0
+    const clk = layout.clocks.find(c => c.clockId === rotationSnapClockId)
+    if (!clk) return 0
+    return ((clk.clockAngle - Math.PI / 2) * 180) / Math.PI
+  }, [rotationSnapClockId, layout.clocks])
+
   const onSvgPointerLeave = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
       onPointerUp(e)
@@ -431,7 +443,10 @@ export function GlossaryRadialTree({
         <p className="absolute top-2 left-2 z-10 text-xs text-gray-500 dark:text-gray-400 pointer-events-none select-none max-w-[min(100%,260px)]">
           Hover a wedge to focus · scroll zoom · drag pan
           {scopeFilter === 'All' && allViewOverview && (
-            <span className="block mt-0.5">All view: click a wedge to show words · center clears</span>
+            <span className="block mt-0.5">All: click wedge for words · center clears</span>
+          )}
+          {scopeFilter === 'All' && !allViewOverview && (
+            <span className="block mt-0.5">Click the same wedge again to rotate readable (3 o&apos;clock)</span>
           )}
           {focusClockId !== null && (
             <span className="block mt-0.5 font-medium" style={{ color: CLOCK_HEX[focusClockId] }}>
@@ -452,6 +467,13 @@ export function GlossaryRadialTree({
         onPointerLeave={onSvgPointerLeave}
       >
         <g transform={`translate(${transform.tx},${transform.ty}) scale(${transform.k})`}>
+          <g
+            style={{
+              transform: `rotate(${rotationSnapDeg}deg)`,
+              transformOrigin: '0px 0px',
+              transition: 'transform 0.55s cubic-bezier(0.33, 1, 0.32, 1)',
+            }}
+          >
           <g style={{ transition: 'opacity 0.32s ease-out' }}>
             {/* Clock-colored sector bands (diagram sections) */}
             {layout.clocks.map(c => {
@@ -484,9 +506,7 @@ export function GlossaryRadialTree({
                   onPointerDown={(e) => e.stopPropagation()}
                   onClick={(e) => {
                     e.stopPropagation()
-                    if (onExpandSegment) {
-                      onExpandSegment(expandedSegmentClockId === c.clockId ? null : c.clockId)
-                    }
+                    onExpandSegment?.(c.clockId)
                   }}
                 />
               ))}
@@ -567,7 +587,7 @@ export function GlossaryRadialTree({
                     onExpandSegment
                       ? (e) => {
                           e.stopPropagation()
-                          onExpandSegment(expandedSegmentClockId === c.clockId ? null : c.clockId)
+                          onExpandSegment(c.clockId)
                         }
                       : undefined
                   }
@@ -610,7 +630,7 @@ export function GlossaryRadialTree({
                 if (Math.cos(ang) < 0) rotDeg += 180
 
                 const fs = labelFontSize
-                const labelR = Math.max(24, fs * 0.48)
+                const labelR = Math.max(38, fs * 0.78)
                 const lx = leaf.x + Math.cos(ang) * labelR
                 const ly = leaf.y + Math.sin(ang) * labelR
 
@@ -628,8 +648,8 @@ export function GlossaryRadialTree({
                     ? '#e2e8f0'
                     : `${clockHex}20`
                 const dotStroke = isSelected ? clockHex : isHoverOnly ? WORD_HOVER_GREY : clockHex
-                const dotR = isSelected ? 6.5 : isHoverOnly ? 4.5 : 4
-                const dotSw = isSelected ? 2 : 1
+                const dotR = isSelected ? 8.5 : isHoverOnly ? 6 : 5.5
+                const dotSw = isSelected ? 2.25 : 1.35
 
                 return (
                   <g
@@ -644,7 +664,7 @@ export function GlossaryRadialTree({
                       onSelectWord?.(leaf.word)
                     }}
                   >
-                    <circle r={Math.max(18, fs * 0.42)} cx={leaf.x} cy={leaf.y} fill="transparent" />
+                    <circle r={Math.max(26, fs * 0.52)} cx={leaf.x} cy={leaf.y} fill="transparent" />
                     <circle
                       r={dotR}
                       cx={leaf.x}
@@ -672,6 +692,7 @@ export function GlossaryRadialTree({
                 )
               })}
             </g>
+          </g>
           </g>
         </g>
       </svg>

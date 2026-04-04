@@ -17,6 +17,13 @@ import { useTheme } from '@/app/ThemeContext';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { SettingsDialog } from '@/components/settings/SettingsDialog';
+import { useAuth } from '@/lib/FirebaseAuthContext';
+
+function isPublicAuthPath(pathname: string | null) {
+  if (!pathname) return true;
+  if (pathname === '/' || pathname === '/home' || pathname === '/home/') return true;
+  return pathname.startsWith('/auth/');
+}
 
 const navItems = [
   { title: 'Home', href: '/layers', icon: Home },
@@ -29,6 +36,7 @@ const navItems = [
 export function AppDock() {
   const pathname = usePathname();
   const router = useRouter();
+  const { user, loading } = useAuth();
   const { isDarkMode, setIsDarkMode } = useTheme();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -36,6 +44,9 @@ export function AppDock() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const showDock =
+    !isPublicAuthPath(pathname) && (loading || user !== null);
 
   const dockUi = (
     <>
@@ -127,6 +138,10 @@ export function AppDock() {
       />
     </>
   );
+
+  if (!showDock) {
+    return null;
+  }
 
   if (typeof document === 'undefined' || !mounted) {
     return dockUi;
