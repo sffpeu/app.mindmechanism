@@ -226,7 +226,26 @@ export function GlossaryRadialTree({
   const allViewOverview =
     scopeFilter === 'All' && expandedSegmentClockId === null
 
-  /** Sector emphasis: expanded All segment → hover → Default dropdown clock. */
+  /**
+   * Geometry only (radii / word positions): expanded All wedge or Default dropdown clock.
+   * Excludes diagram hover so the graph does not grow/shrink when moving the pointer.
+   */
+  const layoutFocusClockId = useMemo(() => {
+    if (
+      scopeFilter === 'All' &&
+      expandedSegmentClockId !== null &&
+      expandedSegmentClockId >= 0 &&
+      expandedSegmentClockId < NUM_CLOCKS
+    ) {
+      return expandedSegmentClockId
+    }
+    if (scopeFilter === 'Default' && filterClockId !== null && filterClockId >= 0 && filterClockId < NUM_CLOCKS) {
+      return filterClockId
+    }
+    return null
+  }, [scopeFilter, expandedSegmentClockId, filterClockId])
+
+  /** Visual dimming / emphasis: expanded segment → sector hover → Default clock (may differ from layout). */
   const focusClockId = useMemo(() => {
     if (
       scopeFilter === 'All' &&
@@ -260,9 +279,9 @@ export function GlossaryRadialTree({
     const pad = 280
     const extent = leafRadiusMax + pad
 
-    const usedFocus = focusClockId !== null
-    const rWordBase = usedFocus ? rWordBaseHi : rWordBaseLo
-    const outerR = (usedFocus ? rWordBase * FOCUS_RADIAL_SCALE : rWordBase) + 80
+    const usedLayoutFocus = layoutFocusClockId !== null
+    const rWordBase = usedLayoutFocus ? rWordBaseHi : rWordBaseLo
+    const outerR = (usedLayoutFocus ? rWordBase * FOCUS_RADIAL_SCALE : rWordBase) + 80
     const leafRadius = outerR + LEAF_OUTSET
     const rClock = rWordBase * 0.38
 
@@ -277,7 +296,7 @@ export function GlossaryRadialTree({
       4.45 * Math.max(6.4, Math.min(12, 560 / Math.sqrt(defaultWords.length + 36)))
 
     return { layout: L, extent, outerSectorR: outerR, labelFontSize, leafRadius }
-  }, [defaultWords, focusClockId, allViewOverview, scopeFilter, expandedSegmentClockId])
+  }, [defaultWords, layoutFocusClockId, allViewOverview, scopeFilter, expandedSegmentClockId])
 
   const leafById = useMemo(() => {
     const m = new Map<string, LayoutLeaf>()
@@ -443,14 +462,11 @@ export function GlossaryRadialTree({
         <p className="absolute top-2 left-2 z-10 text-xs text-gray-500 dark:text-gray-400 pointer-events-none select-none max-w-[min(100%,260px)]">
           Hover a wedge to focus · scroll zoom · drag pan
           {scopeFilter === 'All' && allViewOverview && (
-            <span className="block mt-0.5">All: click wedge for words · center clears</span>
+            <span className="block mt-0.5">All: click a wedge for words · diagram turns to readable (3 o&apos;clock)</span>
           )}
-          {scopeFilter === 'All' && !allViewOverview && (
-            <span className="block mt-0.5">Click the same wedge again to rotate readable (3 o&apos;clock)</span>
-          )}
-          {focusClockId !== null && (
-            <span className="block mt-0.5 font-medium" style={{ color: CLOCK_HEX[focusClockId] }}>
-              {clockTitles[focusClockId]} — enlarged
+          {layoutFocusClockId !== null && (
+            <span className="block mt-0.5 font-medium" style={{ color: CLOCK_HEX[layoutFocusClockId] }}>
+              {clockTitles[layoutFocusClockId]} — enlarged layout
             </span>
           )}
           {scopeFilter === 'My Words' && (

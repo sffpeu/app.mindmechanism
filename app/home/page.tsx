@@ -3,7 +3,7 @@
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
+import { signInWithPopup, GoogleAuthProvider, signInWithCustomToken } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { syncFirebaseAuthCookie } from '@/lib/syncFirebaseAuthCookie'
 import { toast } from 'sonner'
@@ -15,6 +15,8 @@ function hasAuthCookie(): boolean {
   if (typeof document === 'undefined') return false
   return document.cookie.includes('__firebase_auth_token=')
 }
+
+const isDevBypassVisible = process.env.NODE_ENV === 'development'
 
 function HomeLoginContent() {
   const searchParams = useSearchParams()
@@ -51,6 +53,28 @@ function HomeLoginContent() {
     } catch (error) {
       console.error('Error signing in with Google:', error)
       toast.error('Failed to sign in. Please try again.')
+    }
+  }
+
+  const handleDevBypass = async () => {
+    try {
+      if (!auth) {
+        throw new Error('Firebase auth is not initialized')
+      }
+      const res = await fetch('/api/auth/dev-bypass', { method: 'POST' })
+      const data = (await res.json()) as { token?: string; error?: string }
+      if (!res.ok || !data.token) {
+        throw new Error(data.error || 'Dev bypass failed')
+      }
+      const credential = await signInWithCustomToken(auth, data.token)
+      await syncFirebaseAuthCookie(credential.user)
+      toast.success('Signed in as dev admin')
+      window.location.assign(callbackUrl)
+    } catch (error) {
+      console.error('Dev bypass error:', error)
+      toast.error(
+        error instanceof Error ? error.message : 'Dev sign-in failed. Check server credentials in .env.local.'
+      )
     }
   }
 
@@ -107,6 +131,16 @@ function HomeLoginContent() {
             </svg>
             Continue with Google
           </Button>
+
+          {isDevBypassVisible ? (
+            <button
+              type="button"
+              onClick={handleDevBypass}
+              className="mt-4 w-full text-center text-xs text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] underline-offset-4 hover:underline"
+            >
+              Dev: sign in without Google (admin)
+            </button>
+          ) : null}
         </motion.div>
       </div>
     </div>

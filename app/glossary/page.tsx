@@ -33,8 +33,6 @@ export default function GlossaryPage() {
   const [visualExpandedClockId, setVisualExpandedClockId] = useState<number | null>(null)
   /** Second click on same wedge: rotate diagram so that clock faces 3 o’clock. */
   const [diagramRotationSnapClockId, setDiagramRotationSnapClockId] = useState<number | null>(null)
-  const visualExpandedRef = useRef<number | null>(null)
-  visualExpandedRef.current = visualExpandedClockId
   const [isAddWordOpen, setIsAddWordOpen] = useState(false)
   const [selectedCard, setSelectedCard] = useState<GlossaryWord | null>(null)
   const [editWord, setEditWord] = useState<GlossaryWord | null>(null)
@@ -129,20 +127,18 @@ export default function GlossaryPage() {
     setSelectedClockId(clockId)
   }, [])
 
-  const handleExpandSegment = useCallback((clockId: number | null) => {
+  /** Segment / center click: rotate to readable (3 o’clock) like /layers focused clock; All view also drills into words. */
+  const handleGlossarySegmentClick = useCallback((clockId: number | null) => {
     if (clockId === null) {
       setVisualExpandedClockId(null)
       setDiagramRotationSnapClockId(null)
       return
     }
-    const prev = visualExpandedRef.current
-    if (prev === clockId) {
-      setDiagramRotationSnapClockId(clockId)
-      return
+    setDiagramRotationSnapClockId(clockId)
+    if (scopeFilter === 'All') {
+      setVisualExpandedClockId(clockId)
     }
-    setVisualExpandedClockId(clockId)
-    setDiagramRotationSnapClockId(null)
-  }, [])
+  }, [scopeFilter])
 
   const onToggleSentiment = useCallback((value: SentimentValue) => {
     setSelectedSentiment((prev) => (prev === value ? null : value))
@@ -180,6 +176,16 @@ export default function GlossaryPage() {
       setDiagramRotationSnapClockId(null)
     }
   }, [scopeFilter])
+
+  /** Default scope + dropdown clock: snap diagram rotation like focusing a clock on /layers. */
+  useEffect(() => {
+    if (!visualMode || scopeFilter !== 'Default') return
+    if (selectedClockId !== null) {
+      setDiagramRotationSnapClockId(selectedClockId)
+    } else {
+      setDiagramRotationSnapClockId(null)
+    }
+  }, [visualMode, scopeFilter, selectedClockId])
 
   useEffect(() => {
     if (!visualMode) {
@@ -273,8 +279,8 @@ export default function GlossaryPage() {
                   diagramHoverClockId={diagramHoverClockId}
                   onDiagramClockHover={setDiagramHoverClockId}
                   expandedSegmentClockId={scopeFilter === 'All' ? visualExpandedClockId : null}
-                  onExpandSegment={scopeFilter === 'All' ? handleExpandSegment : undefined}
-                  rotationSnapClockId={scopeFilter === 'All' ? diagramRotationSnapClockId : null}
+                  onExpandSegment={handleGlossarySegmentClick}
+                  rotationSnapClockId={diagramRotationSnapClockId}
                   visualFilters={{
                     scopeFilter,
                     selectedClockId,
