@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Dock, DockIcon, DockItem, DockLabel } from '@/components/ui/dock'
+import { Dock, DockIcon, DockItem } from '@/components/ui/dock'
 import { clockTitles } from '@/lib/clockTitles'
 
 interface DotNavigationProps {
@@ -81,7 +81,6 @@ const DotNavigation: React.FC<DotNavigationProps> = ({ activeDot, onDotHover }) 
             }`}
             style={{ backgroundColor: hex }}
           >
-            <DockLabel>{clockTitles[index] ?? index + 1}</DockLabel>
             <DockIcon>
               {isClockActive(index) ? (
                 <div
@@ -107,7 +106,6 @@ const DotNavigation: React.FC<DotNavigationProps> = ({ activeDot, onDotHover }) 
               : 'ring-black/25 hover:brightness-110 dark:ring-white/30'
           }`}
         >
-          <DockLabel>M1</DockLabel>
           <DockIcon>
             <span
               className={`text-[9px] font-bold leading-none text-white drop-shadow-sm dark:text-white ${
@@ -128,7 +126,6 @@ const DotNavigation: React.FC<DotNavigationProps> = ({ activeDot, onDotHover }) 
               : 'ring-black/25 hover:brightness-110 dark:ring-white/30'
           }`}
         >
-          <DockLabel>M2</DockLabel>
           <DockIcon>
             <span
               className={`text-[9px] font-bold leading-none text-white drop-shadow-sm dark:text-white ${
