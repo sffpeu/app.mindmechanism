@@ -9,7 +9,7 @@ import { ClockFocusNodeAppear } from '@/components/ClockFocusNodeAppear'
 import { ClockPageSettingsTrigger, ClockPageMenuContent, ClockPageIconButton } from '@/components/ClockPageSettingsTrigger'
 import { motion, AnimatePresence } from 'framer-motion'
 import { clockSettings } from '@/lib/clockSettings'
-import { formatSatelliteRevolutionPeriod, satelliteDegreesPerSecond } from '@/lib/satelliteRotation'
+import { formatSatelliteRevolutionPeriod } from '@/lib/satelliteRotation'
 import Image from 'next/image'
 import { List, Info, Satellite, Clock as ClockIcon, Calendar, RotateCw, Timer as TimerIcon, Compass, HelpCircle, Book, User, Edit, LogOut, Play, BookOpen, Library, Sun, Moon, MapPin, Cloud, Droplets, Wind, X } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
@@ -698,8 +698,7 @@ function NodesPageContent() {
                                 </span>
                               </div>
                               <div className="mt-0.5 tabular-nums text-black/70 dark:text-white/70">
-                                {formatSatelliteRevolutionPeriod(sat.rotationTime)} per revolution ·{' '}
-                                {satelliteDegreesPerSecond(sat.rotationTime).toFixed(4)} °/s
+                                {formatSatelliteRevolutionPeriod(sat.rotationTime)} to complete one rotation
                               </div>
                             </li>
                           ))}

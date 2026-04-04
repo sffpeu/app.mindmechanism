@@ -134,11 +134,21 @@ export default function GlossaryPage() {
       setDiagramRotationSnapClockId(null)
       return
     }
+    // All: second click on the same wedge returns to overview (ring of chakra titles only).
+    if (
+      scopeFilter === 'All' &&
+      visualExpandedClockId === clockId &&
+      diagramRotationSnapClockId === clockId
+    ) {
+      setVisualExpandedClockId(null)
+      setDiagramRotationSnapClockId(null)
+      return
+    }
     setDiagramRotationSnapClockId(clockId)
     if (scopeFilter === 'All') {
       setVisualExpandedClockId(clockId)
     }
-  }, [scopeFilter])
+  }, [scopeFilter, visualExpandedClockId, diagramRotationSnapClockId])
 
   const onToggleSentiment = useCallback((value: SentimentValue) => {
     setSelectedSentiment((prev) => (prev === value ? null : value))

@@ -179,6 +179,35 @@ function buildLayout(
   return { links, clocks, leaves }
 }
 
+/** My Words: single ring from center — no nine-clock hubs or sectors; only this user’s entries. */
+function buildLayoutMyWords(userWords: GlossaryWord[], leafRadius: number) {
+  const links: LayoutLink[] = []
+  const clocks: LayoutClock[] = []
+  const leaves: LayoutLeaf[] = []
+  const sorted = [...userWords].sort((a, b) => a.word.localeCompare(b.word))
+  const n = sorted.length
+  for (let i = 0; i < n; i++) {
+    const t = n === 1 ? 0.5 : (i + 0.5) / n
+    const angle = -Math.PI / 2 + TAU * t
+    const [wx, wy] = pointOnCircle(angle, leafRadius)
+    const w = sorted[i]
+    const c =
+      w.clock_id != null && w.clock_id >= 0 && w.clock_id < NUM_CLOCKS ? w.clock_id : 0
+    leaves.push({ id: w.id, x: wx, y: wy, word: w, clockId: c, angle })
+    links.push({
+      id: `root-${w.id}`,
+      fromId: 'root',
+      toId: w.id,
+      x1: 0,
+      y1: 0,
+      x2: wx,
+      y2: wy,
+      clockId: c,
+    })
+  }
+  return { links, clocks, leaves }
+}
+
 /** Selection highlights the word leaf only — not root/hub paths. */
 function pathNodeIdsForWord(wordId: string | null, leafById: Map<string, LayoutLeaf>): Set<string> | null {
   if (!wordId) return null
@@ -277,14 +306,35 @@ export function GlossaryRadialTree({
     [words]
   )
 
+  /** Logged-in user’s own glossary entries only (visual My Words ring). */
+  const myWordsOnly = useMemo(() => {
+    if (scopeFilter !== 'My Words' || !filterUserId) return [] as GlossaryWord[]
+    return words.filter(w => w.source === 'user' && w.user_id === filterUserId)
+  }, [scopeFilter, filterUserId, words])
+
+  const isMyWordsSoloLayout = scopeFilter === 'My Words'
+
   /** Stable canvas size (max of focused / unfocused) so focus changes do not jump the view fit. */
   const { layout, extent, outerSectorR, labelFontSize, leafRadius } = useMemo(() => {
+    const pad = 280
+
+    if (isMyWordsSoloLayout) {
+      const n = myWordsOnly.length
+      const rWordBaseLo = Math.max(1400, 520 + Math.sqrt(Math.max(n, 1)) * 42)
+      const outerR = rWordBaseLo + 80
+      const leafR = outerR + LEAF_OUTSET
+      const extentVal = leafR + pad
+      const L = buildLayoutMyWords(myWordsOnly, leafR)
+      const labelFontSize =
+        4.45 * Math.max(6.4, Math.min(12, 560 / Math.sqrt(Math.max(n, 1) + 36)))
+      return { layout: L, extent: extentVal, outerSectorR: outerR, labelFontSize, leafRadius: leafR }
+    }
+
     const n = defaultWords.length
     const rWordBaseLo = Math.max(1400, 520 + Math.sqrt(Math.max(n, 1)) * 42)
     const rWordBaseHi = rWordBaseLo * 1.06
     const outerRMax = rWordBaseHi * FOCUS_RADIAL_SCALE + 80
     const leafRadiusMax = outerRMax + LEAF_OUTSET
-    const pad = 280
     const extent = leafRadiusMax + pad
 
     const usedLayoutFocus = layoutFocusClockId !== null
@@ -304,7 +354,15 @@ export function GlossaryRadialTree({
       4.45 * Math.max(6.4, Math.min(12, 560 / Math.sqrt(defaultWords.length + 36)))
 
     return { layout: L, extent, outerSectorR: outerR, labelFontSize, leafRadius }
-  }, [defaultWords, layoutFocusClockId, allViewOverview, scopeFilter, expandedSegmentClockId])
+  }, [
+    isMyWordsSoloLayout,
+    myWordsOnly,
+    defaultWords,
+    layoutFocusClockId,
+    allViewOverview,
+    scopeFilter,
+    expandedSegmentClockId,
+  ])
 
   const leafById = useMemo(() => {
     const m = new Map<string, LayoutLeaf>()
@@ -426,9 +484,10 @@ export function GlossaryRadialTree({
   }
 
   const innerSectorR = useMemo(() => {
+    if (isMyWordsSoloLayout) return Math.min(outerSectorR * 0.42, 220)
     const c0 = layout.clocks[0]
     return c0 ? Math.hypot(c0.x, c0.y) * 0.35 : 80
-  }, [layout.clocks])
+  }, [isMyWordsSoloLayout, layout.clocks, outerSectorR])
 
   /**
    * Rotate diagram CW so the active hub sits on +x (3 o’clock). Derived from actual hub (cx, cy)
@@ -474,7 +533,9 @@ export function GlossaryRadialTree({
         <p className="absolute top-2 left-2 z-10 text-xs text-gray-500 dark:text-gray-400 pointer-events-none select-none max-w-[min(100%,260px)]">
           Hover a wedge to focus · scroll zoom · drag pan
           {scopeFilter === 'All' && allViewOverview && (
-            <span className="block mt-0.5">All: click a wedge for words · diagram turns to readable (3 o&apos;clock)</span>
+            <span className="block mt-0.5">
+              All: click a wedge for words · click the same wedge again to return to overview
+            </span>
           )}
           {layoutFocusClockId !== null && (
             <span className="block mt-0.5 font-medium" style={{ color: CLOCK_HEX[layoutFocusClockId] }}>
@@ -482,7 +543,9 @@ export function GlossaryRadialTree({
             </span>
           )}
           {scopeFilter === 'My Words' && (
-            <span className="block mt-0.5 text-gray-600 dark:text-gray-400">Dimmed labels are not your words</span>
+            <span className="block mt-0.5 text-gray-600 dark:text-gray-400">
+              Only words you added; colors match chakra when set
+            </span>
           )}
         </p>
       )}
@@ -503,41 +566,52 @@ export function GlossaryRadialTree({
             }}
           >
           <g style={{ transition: 'opacity 0.32s ease-out' }}>
-            {/* Clock-colored sector bands (diagram sections) */}
-            {layout.clocks.map(c => {
-              const dim = sectorDimmed(c.clockId)
-              const hex = CLOCK_HEX[c.clockId]
-              const fillOp = focusClockId !== null ? (c.clockId === focusClockId ? 0.22 : 0.06) : 0.1
-              const strokeOp = dim ? 0.12 : 0.35
-              return (
-                <path
-                  key={`sector-${c.id}`}
-                  d={sectorAnnulusPath(c.sectorStart, c.sectorSpan, innerSectorR, outerSectorR)}
-                  fill={hex}
-                  fillOpacity={dim ? fillOp * 0.35 : fillOp}
-                  stroke={hex}
-                  strokeOpacity={strokeOp}
-                  strokeWidth={focusClockId === c.clockId ? 2.2 : 0.8}
-                  className="pointer-events-none"
-                />
-              )
-            })}
+            {isMyWordsSoloLayout ? (
+              <circle
+                r={innerSectorR * 1.15}
+                cx={0}
+                cy={0}
+                className="fill-slate-400/10 dark:fill-white/5 pointer-events-none"
+              />
+            ) : (
+              <>
+                {/* Clock-colored sector bands (diagram sections) */}
+                {layout.clocks.map(c => {
+                  const dim = sectorDimmed(c.clockId)
+                  const hex = CLOCK_HEX[c.clockId]
+                  const fillOp = focusClockId !== null ? (c.clockId === focusClockId ? 0.22 : 0.06) : 0.1
+                  const strokeOp = dim ? 0.12 : 0.35
+                  return (
+                    <path
+                      key={`sector-${c.id}`}
+                      d={sectorAnnulusPath(c.sectorStart, c.sectorSpan, innerSectorR, outerSectorR)}
+                      fill={hex}
+                      fillOpacity={dim ? fillOp * 0.35 : fillOp}
+                      stroke={hex}
+                      strokeOpacity={strokeOp}
+                      strokeWidth={focusClockId === c.clockId ? 2.2 : 0.8}
+                      className="pointer-events-none"
+                    />
+                  )
+                })}
 
-            {(onDiagramClockHover || onExpandSegment) &&
-              layout.clocks.map(c => (
-                <path
-                  key={`sector-hit-${c.id}`}
-                  d={sectorAnnulusPath(c.sectorStart, c.sectorSpan, innerSectorR, outerSectorR)}
-                  fill="transparent"
-                  className="cursor-pointer"
-                  onPointerEnter={() => setClockHover(c.clockId)}
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onExpandSegment?.(c.clockId)
-                  }}
-                />
-              ))}
+                {(onDiagramClockHover || onExpandSegment) &&
+                  layout.clocks.map(c => (
+                    <path
+                      key={`sector-hit-${c.id}`}
+                      d={sectorAnnulusPath(c.sectorStart, c.sectorSpan, innerSectorR, outerSectorR)}
+                      fill="transparent"
+                      className="cursor-pointer"
+                      onPointerEnter={() => setClockHover(c.clockId)}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onExpandSegment?.(c.clockId)
+                      }}
+                    />
+                  ))}
+              </>
+            )}
 
             <g style={{ transition: 'opacity 0.28s ease-out' }}>
               {layout.links.map(link => {
@@ -561,7 +635,7 @@ export function GlossaryRadialTree({
               })}
             </g>
 
-            {(onDiagramClockHover || onExpandSegment) && (
+            {!isMyWordsSoloLayout && (onDiagramClockHover || onExpandSegment) && (
               <circle
                 r={innerSectorR * 0.92}
                 cx={0}
@@ -593,58 +667,59 @@ export function GlossaryRadialTree({
                 textAnchor="middle"
                 className="fill-gray-800 dark:fill-gray-100 text-[12px] font-semibold pointer-events-none select-none"
               >
-                Glossary
+                {isMyWordsSoloLayout ? 'My words' : 'Glossary'}
               </text>
             </g>
 
-            {layout.clocks.map(c => {
-              const dim = sectorDimmed(c.clockId)
-              const hex = CLOCK_HEX[c.clockId]
-              const titleRingR = leafRadius * (allViewOverview ? 0.97 : 0.86)
-              const [ttx, tty] = pointOnCircle(c.clockAngle, titleRingR)
+            {!isMyWordsSoloLayout &&
+              layout.clocks.map(c => {
+                const dim = sectorDimmed(c.clockId)
+                const hex = CLOCK_HEX[c.clockId]
+                const titleRingR = leafRadius * (allViewOverview ? 0.97 : 0.86)
+                const [ttx, tty] = pointOnCircle(c.clockAngle, titleRingR)
 
-              return (
-                <g
-                  key={c.id}
-                  opacity={dim ? 0.45 : 1}
-                  className={onDiagramClockHover || onExpandSegment ? 'cursor-pointer' : undefined}
-                  onPointerEnter={onDiagramClockHover ? () => setClockHover(c.clockId) : undefined}
-                  onPointerDown={onExpandSegment ? (e) => e.stopPropagation() : undefined}
-                  onClick={
-                    onExpandSegment
-                      ? (e) => {
-                          e.stopPropagation()
-                          onExpandSegment(c.clockId)
-                        }
-                      : undefined
-                  }
-                >
-                  <circle
-                    r={focusClockId === c.clockId ? 10 : 7}
-                    cx={c.x}
-                    cy={c.y}
-                    fill={`${hex}28`}
-                    stroke={hex}
-                    strokeWidth={focusClockId === c.clockId ? 2 : 1.35}
-                  />
-                  <title>{clockTitles[c.clockId]}</title>
-                  <text
-                    x={ttx}
-                    y={tty}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    className={cn('select-none font-semibold cursor-pointer', dim && 'opacity-80')}
-                    fontSize={labelFontSize}
-                    fill={hex}
-                    fillOpacity={dim ? 0.45 : 0.92}
-                    transform={`rotate(${-rotationSnapDeg} ${ttx} ${tty})`}
-                    style={{ pointerEvents: 'auto' }}
+                return (
+                  <g
+                    key={c.id}
+                    opacity={dim ? 0.45 : 1}
+                    className={onDiagramClockHover || onExpandSegment ? 'cursor-pointer' : undefined}
+                    onPointerEnter={onDiagramClockHover ? () => setClockHover(c.clockId) : undefined}
+                    onPointerDown={onExpandSegment ? (e) => e.stopPropagation() : undefined}
+                    onClick={
+                      onExpandSegment
+                        ? (e) => {
+                            e.stopPropagation()
+                            onExpandSegment(c.clockId)
+                          }
+                        : undefined
+                    }
                   >
-                    {clockTitles[c.clockId]}
-                  </text>
-                </g>
-              )
-            })}
+                    <circle
+                      r={focusClockId === c.clockId ? 10 : 7}
+                      cx={c.x}
+                      cy={c.y}
+                      fill={`${hex}28`}
+                      stroke={hex}
+                      strokeWidth={focusClockId === c.clockId ? 2 : 1.35}
+                    />
+                    <title>{clockTitles[c.clockId]}</title>
+                    <text
+                      x={ttx}
+                      y={tty}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      className={cn('select-none font-semibold cursor-pointer', dim && 'opacity-80')}
+                      fontSize={labelFontSize}
+                      fill={hex}
+                      fillOpacity={dim ? 0.45 : 0.92}
+                      transform={`rotate(${-rotationSnapDeg} ${ttx} ${tty})`}
+                      style={{ pointerEvents: 'auto' }}
+                    >
+                      {clockTitles[c.clockId]}
+                    </text>
+                  </g>
+                )
+              })}
 
             <g style={{ transition: 'opacity 0.28s ease-out' }}>
               {layout.leaves.map(leaf => {
