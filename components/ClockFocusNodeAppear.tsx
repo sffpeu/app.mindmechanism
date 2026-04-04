@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import type { HTMLAttributes, ReactNode } from 'react'
+import { cn } from '@/lib/utils'
 
 const STAGGER_S = 0.068
 const SPIN_DEG = -112
@@ -17,7 +18,7 @@ type Props = HTMLAttributes<HTMLDivElement> & {
  */
 export function ClockFocusNodeAppear({ nodeIndex, className, style, children, ...rest }: Props) {
   return (
-    <div className={className} style={style} {...rest}>
+    <div className={cn('pointer-events-auto', className)} style={style} {...rest}>
       <motion.div
         className="flex h-full w-full min-h-[44px] min-w-[44px] items-center justify-center"
         initial={{ opacity: 0, scale: 0.28, rotate: SPIN_DEG }}

@@ -333,7 +333,7 @@ const Satellite = ({ satellite, index, clockId, x, y, isMultiView }: {
   return (
     <motion.div
       key={`satellite-${clockId}-${index}`}
-      className="absolute cursor-pointer"
+      className="absolute cursor-pointer pointer-events-auto"
       initial={{ opacity: 0, scale: 0 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{
@@ -419,7 +419,7 @@ const FocusNode = ({
   return (
     <motion.div
       key={`${clockId}-${index}`}
-      className="absolute rounded-full cursor-pointer flex items-center justify-center"
+      className="absolute rounded-full cursor-pointer pointer-events-auto flex items-center justify-center"
       style={{
         left: `${x}%`,
         top: `${y}%`,
@@ -907,7 +907,7 @@ export default function Clock({
     const wordsToUse = customWords.length > 0 ? customWords : testWords;
 
     return (
-      <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
+      <div className="absolute inset-0 pointer-events-none">
         {Array.from({ length: Math.max(0, clockFocusNodes || 0) }).map((_, index) => {
           const angle = ((360 / Math.max(1, clockFocusNodes || 1)) * index + adjustedStartingDegree) % 360;
           const word = wordsToUse[index % wordsToUse.length];
@@ -1140,7 +1140,7 @@ export default function Clock({
 
         {/* Satellites layer */}
         {showSatellites && (
-          <div className="absolute inset-[-20%]" style={{ pointerEvents: 'auto', zIndex: 50 }}>
+          <div className="absolute inset-[-20%] pointer-events-none" style={{ zIndex: 50 }}>
             {renderSatellites(rotation, id)}
             {/* User session satellite: rotates once per session duration, starts at focus node 1, clock color */}
             {duration != null && (() => {
@@ -1195,7 +1195,7 @@ export default function Clock({
           animate={{ rotate: rotation }}
           transition={transitionConfig}
         >
-          <div className="absolute inset-0" style={{ transform: `rotate(${imageOrientation}deg)`, pointerEvents: 'auto' }}>
+          <div className="absolute inset-0 pointer-events-none" style={{ transform: `rotate(${imageOrientation}deg)` }}>
             {renderFocusNodes(rotation, focusNodes, startingDegree, id, duration != null)}
           </div>
         </motion.div>

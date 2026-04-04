@@ -817,8 +817,8 @@ function NodesPageContent() {
                 ease: 'linear'
               }}
             >
-              <div className="absolute inset-0" style={{ transform: `rotate(${clock7.imageOrientation}deg)`, pointerEvents: 'auto' }}>
-                <div className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
+              <div className="absolute inset-0 pointer-events-none" style={{ transform: `rotate(${clock7.imageOrientation}deg)` }}>
+                <div className="absolute inset-0 pointer-events-none">
                   {Array.from({ length: focusNodes }).map((_, index) => {
                     const angle = ((360 / focusNodes) * index + 270) % 360
                     const radians = angle * (Math.PI / 180)
