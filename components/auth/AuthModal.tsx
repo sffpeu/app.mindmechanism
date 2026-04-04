@@ -6,8 +6,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { auth } from '@/lib/firebase'
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  sendEmailVerification,
+} from 'firebase/auth'
 import { syncFirebaseAuthCookie } from '@/lib/syncFirebaseAuthCookie'
+import { requiresEmailVerification, getVerifyEmailContinueUrl } from '@/lib/authEmailVerification'
 
 interface AuthModalProps {
   isOpen: boolean
@@ -35,6 +42,23 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
           : await createUserWithEmailAndPassword(auth, email, password)
 
       await syncFirebaseAuthCookie(credential.user)
+
+      if (mode === 'signup') {
+        await sendEmailVerification(credential.user, {
+          url: getVerifyEmailContinueUrl(),
+          handleCodeInApp: false,
+        })
+        onClose()
+        window.location.assign('/auth/verify-email')
+        return
+      }
+
+      if (requiresEmailVerification(credential.user)) {
+        onClose()
+        window.location.assign('/auth/verify-email')
+        return
+      }
+
       onClose()
       window.location.assign('/dashboard')
     } catch (error) {

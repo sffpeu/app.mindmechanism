@@ -10,6 +10,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendSignInLinkToEmail,
+  sendEmailVerification,
 } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { syncFirebaseAuthCookie } from '@/lib/syncFirebaseAuthCookie'
@@ -17,6 +18,7 @@ import {
   FIREBASE_EMAIL_LINK_STORAGE_KEY,
   getEmailLinkActionUrl,
 } from '@/lib/firebaseEmailLink'
+import { requiresEmailVerification, getVerifyEmailContinueUrl } from '@/lib/authEmailVerification'
 import { toast } from 'sonner'
 import { useEffect, Suspense, useState } from 'react'
 import Image from 'next/image'
@@ -73,6 +75,10 @@ function HomeLoginContent() {
   useEffect(() => {
     // Full navigation so middleware always sees the cookie (client router alone can race).
     if (user && hasAuthCookie()) {
+      if (requiresEmailVerification(user)) {
+        window.location.replace('/auth/verify-email')
+        return
+      }
       window.location.replace(callbackUrl)
     }
   }, [user, callbackUrl])
@@ -158,7 +164,24 @@ function HomeLoginContent() {
           ? await signInWithEmailAndPassword(auth, email, emailAuthPassword)
           : await createUserWithEmailAndPassword(auth, email, emailAuthPassword)
       await syncFirebaseAuthCookie(credential.user)
-      toast.success(emailAuthMode === 'signin' ? 'Signed in!' : 'Account created!')
+
+      if (emailAuthMode === 'signup') {
+        await sendEmailVerification(credential.user, {
+          url: getVerifyEmailContinueUrl(),
+          handleCodeInApp: false,
+        })
+        toast.success('Check your email — we sent a link to verify your account.')
+        window.location.assign('/auth/verify-email')
+        return
+      }
+
+      if (requiresEmailVerification(credential.user)) {
+        toast.info('Please verify your email to continue.')
+        window.location.assign('/auth/verify-email')
+        return
+      }
+
+      toast.success('Signed in!')
       window.location.assign(callbackUrl)
     } catch (error) {
       console.error('Email auth error:', error)

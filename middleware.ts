@@ -23,8 +23,11 @@ export function middleware(request: NextRequest) {
   }
 
   // If we're on home or auth pages and have a token, redirect to dashboard
+  const isVerifyEmailPath = path === '/auth/verify-email' || path === '/auth/verify-email/'
   if ((path === '/home' || path === '/home/' || path.startsWith('/auth/')) && token) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    if (!isVerifyEmailPath) {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
   }
 
   return NextResponse.next()
