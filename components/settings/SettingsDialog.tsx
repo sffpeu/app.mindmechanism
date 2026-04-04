@@ -30,7 +30,7 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl w-[90vw] bg-white/90 dark:bg-black/90 backdrop-blur-lg p-0" style={{ zIndex: 200 }}>
+      <DialogContent className="max-w-2xl w-[90vw] bg-white/90 dark:bg-black/90 backdrop-blur-lg p-0">
         <DialogTitle className="sr-only">Settings</DialogTitle>
         <div className="flex flex-col h-full">
           <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-800">

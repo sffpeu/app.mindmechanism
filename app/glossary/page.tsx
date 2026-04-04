@@ -27,6 +27,7 @@ export default function GlossaryPage() {
   const [fullWordList, setFullWordList] = useState<GlossaryWord[]>([])
   const [loading, setLoading] = useState(true)
   const [visualMode, setVisualMode] = useState(false)
+  const [diagramHoverClockId, setDiagramHoverClockId] = useState<number | null>(null)
   const [isAddWordOpen, setIsAddWordOpen] = useState(false)
   const [selectedCard, setSelectedCard] = useState<GlossaryWord | null>(null)
   const [editWord, setEditWord] = useState<GlossaryWord | null>(null)
@@ -99,15 +100,18 @@ export default function GlossaryPage() {
 
   const setScopeAllOrMy = useCallback((scope: 'All' | 'My Words') => {
     setSelectedClockId(null)
+    setDiagramHoverClockId(null)
     setScopeFilter(scope)
   }, [])
 
   const onSelectAllDefault = useCallback(() => {
+    setDiagramHoverClockId(null)
     setScopeFilter('Default')
     setSelectedClockId(null)
   }, [])
 
   const onSelectChakra = useCallback((clockId: number) => {
+    setDiagramHoverClockId(null)
     setScopeFilter('Default')
     setSelectedClockId(clockId)
   }, [])
@@ -122,12 +126,7 @@ export default function GlossaryPage() {
    * Card list uses `words` (includes search). The radial always uses `fullWordList`, so in visual mode the count chip
    * uses the same scope/sentiment rules on the full list so it matches the diagram.
    */
-  const searchBarWordCount = (() => {
-    if (!visualMode) return sortedWords.length
-    const base = fullWordList.filter(glossaryFilterIncludes)
-    if (scopeFilter === 'All') return base.filter((w) => w.source === 'user').length
-    return base.length
-  })()
+  const searchBarWordCount = !visualMode ? sortedWords.length : fullWordList.filter(glossaryFilterIncludes).length
 
   const letterSections = (() => {
     const map: Record<string, GlossaryWord[]> = {}
@@ -145,6 +144,14 @@ export default function GlossaryPage() {
     const el = sectionRefsMap.current[`letter-${letter}`] ?? document.getElementById(`letter-${letter}`)
     el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
+
+  useEffect(() => {
+    setDiagramHoverClockId(null)
+  }, [scopeFilter])
+
+  useEffect(() => {
+    if (!visualMode) setDiagramHoverClockId(null)
+  }, [visualMode])
 
   useEffect(() => {
     const container = scrollContainerRef.current
@@ -226,10 +233,13 @@ export default function GlossaryPage() {
                 onSelectWord={(w) => setSelectedCard((prev) => (prev?.id === w.id ? null : w))}
                 className="absolute inset-0 h-full w-full min-h-[240px]"
                 variant="fullscreen"
+                diagramHoverClockId={diagramHoverClockId}
+                onDiagramClockHover={setDiagramHoverClockId}
                 visualFilters={{
                   scopeFilter,
                   selectedClockId,
                   selectedSentiment,
+                  userId: user?.uid ?? null,
                 }}
               />
             )}

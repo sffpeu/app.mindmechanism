@@ -14,7 +14,8 @@ import {
 } from 'lucide-react';
 import { Dock, DockIcon, DockItem, DockLabel } from '@/components/ui/dock';
 import { useTheme } from '@/app/ThemeContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { SettingsDialog } from '@/components/settings/SettingsDialog';
 
 const navItems = [
@@ -29,10 +30,16 @@ export function AppDock() {
   const pathname = usePathname();
   const { isDarkMode, setIsDarkMode } = useTheme();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  return (
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const dockUi = (
     <>
-      <div className="fixed left-0 top-0 bottom-0 z-[999] flex items-center pointer-events-none pl-3">
+      {/* Above clock DotNavigation (z-[10000]) so main nav stays clickable during sessions */}
+      <div className="fixed left-0 top-0 bottom-0 z-[12000] flex items-center pointer-events-none pl-3">
         <div className="pointer-events-auto">
           <Dock orientation="vertical" className="items-start">
             {navItems.map((item) => {
@@ -106,4 +113,9 @@ export function AppDock() {
       />
     </>
   );
+
+  if (typeof document === 'undefined' || !mounted) {
+    return dockUi;
+  }
+  return createPortal(dockUi, document.body);
 }

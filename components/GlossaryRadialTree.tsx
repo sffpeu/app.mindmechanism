@@ -173,81 +173,6 @@ function buildLayout(
   return { links, clocks, leaves }
 }
 
-/** All-scope visual: user words only, three sectors (~, +, -) with green / blue / red. */
-const SENTIMENT_ORDER = ['~', '+', '-'] as const
-type SentimentRating = (typeof SENTIMENT_ORDER)[number]
-const SENTIMENT_HEX: Record<SentimentRating, string> = {
-  '~': '#22c55e',
-  '+': '#2563eb',
-  '-': '#dc2626',
-}
-
-type SentimentLayoutLink = {
-  id: string
-  fromId: 'root'
-  toId: string
-  x2: number
-  y2: number
-  rating: SentimentRating
-}
-
-type SentimentLayoutLeaf = {
-  id: string
-  x: number
-  y: number
-  word: GlossaryWord
-  rating: SentimentRating
-  angle: number
-}
-
-type SentimentSector = {
-  sectorStart: number
-  sectorSpan: number
-  rating: SentimentRating
-}
-
-function buildSentimentLayout(userWords: GlossaryWord[], leafRadius: number) {
-  const byRating: Record<SentimentRating, GlossaryWord[]> = { '~': [], '+': [], '-': [] }
-  for (const w of userWords) {
-    const r = w.rating
-    if (r === '~' || r === '+' || r === '-') byRating[r].push(w)
-  }
-  for (const k of SENTIMENT_ORDER) {
-    byRating[k].sort((a, b) => a.word.localeCompare(b.word))
-  }
-
-  const sectorSpan = TAU / 3
-  const links: SentimentLayoutLink[] = []
-  const leaves: SentimentLayoutLeaf[] = []
-  const sectors: SentimentSector[] = SENTIMENT_ORDER.map((rating, s) => ({
-    sectorStart: -Math.PI / 2 + s * sectorSpan,
-    sectorSpan,
-    rating,
-  }))
-
-  let sectorIndex = 0
-  for (const rating of SENTIMENT_ORDER) {
-    const sectorStart = -Math.PI / 2 + sectorIndex * sectorSpan
-    const bucket = byRating[rating]
-    const n = bucket.length
-    const angleMargin = sectorSpan * 0.08
-    const usable = sectorSpan - 2 * angleMargin
-    for (let i = 0; i < n; i++) {
-      const t = n === 1 ? 0.5 : (i + 0.5) / n
-      const angle = sectorStart + angleMargin + usable * t
-      const [wx, wy] = pointOnCircle(angle, leafRadius)
-      const w = bucket[i]
-      leaves.push({ id: w.id, x: wx, y: wy, word: w, rating, angle })
-      links.push({ id: `root-word-${w.id}`, fromId: 'root', toId: w.id, x2: wx, y2: wy, rating })
-    }
-    sectorIndex++
-  }
-
-  const innerSectorR = leafRadius * 0.14
-  const outerSectorR = leafRadius * 0.88
-  return { links, leaves, sectors, innerSectorR, outerSectorR }
-}
-
 function pathNodeIdsForWord(wordId: string | null, leafById: Map<string, LayoutLeaf>): Set<string> | null {
   if (!wordId) return null
   const leaf = leafById.get(wordId)
@@ -256,17 +181,12 @@ function pathNodeIdsForWord(wordId: string | null, leafById: Map<string, LayoutL
   return set
 }
 
-function pathNodeIdsForSentimentWord(wordId: string | null, leafById: Map<string, SentimentLayoutLeaf>): Set<string> | null {
-  if (!wordId) return null
-  const leaf = leafById.get(wordId)
-  if (!leaf) return null
-  return new Set<string>(['root', leaf.id])
-}
-
 export type GlossaryVisualFilters = {
   scopeFilter: 'All' | 'Default' | 'My Words'
   selectedClockId: number | null
   selectedSentiment: '+' | '~' | '-' | null
+  /** For My Words: dim leaves that are not this user's entries. */
+  userId?: string | null
 }
 
 export type GlossaryRadialTreeProps = {
@@ -276,6 +196,9 @@ export type GlossaryRadialTreeProps = {
   className?: string
   /** When set, diagram reflects glossary filters (clock color, sector, enlargement). */
   visualFilters?: GlossaryVisualFilters
+  /** Hovering a sector (or word) focuses that chakra; leaving the diagram clears. */
+  diagramHoverClockId?: number | null
+  onDiagramClockHover?: (clockId: number | null) => void
   /** Full-bleed diagram: no card border/background (visual glossary mode). */
   variant?: 'card' | 'fullscreen'
 }
@@ -286,31 +209,32 @@ export function GlossaryRadialTree({
   onSelectWord,
   className,
   visualFilters,
+  diagramHoverClockId = null,
+  onDiagramClockHover,
   variant = 'card',
 }: GlossaryRadialTreeProps) {
   const scopeFilter = visualFilters?.scopeFilter ?? 'All'
   const filterClockId = visualFilters?.selectedClockId ?? null
   const selectedSentiment = visualFilters?.selectedSentiment ?? null
+  const filterUserId = visualFilters?.userId ?? null
 
-  /** Default scope + a specific clock pill → focus that sector (enlarge + color). */
-  const focusClockId =
-    scopeFilter === 'Default' && filterClockId !== null && filterClockId >= 0 && filterClockId < NUM_CLOCKS
-      ? filterClockId
-      : null
-
-  const myWordsScopeDim = scopeFilter === 'My Words'
-
-  /** Scope "All" → user-word sentiment sunburst; Default / My Words → chakra tree (My Words dims diagram). */
-  const layoutKind = scopeFilter === 'All' ? ('sentiment' as const) : ('chakra' as const)
+  /** Sector / chakra focus: diagram hover wins; else Default scope + dropdown clock. */
+  const focusClockId = useMemo(() => {
+    if (diagramHoverClockId !== null && diagramHoverClockId >= 0 && diagramHoverClockId < NUM_CLOCKS) {
+      return diagramHoverClockId
+    }
+    if (scopeFilter === 'Default' && filterClockId !== null && filterClockId >= 0 && filterClockId < NUM_CLOCKS) {
+      return filterClockId
+    }
+    return null
+  }, [diagramHoverClockId, scopeFilter, filterClockId])
 
   const defaultWords = useMemo(
     () => words.filter(w => w.clock_id != null && w.clock_id >= 0 && w.clock_id < NUM_CLOCKS),
     [words]
   )
 
-  const userWordsAll = useMemo(() => words.filter(w => w.source === 'user'), [words])
-
-  const chakraLayout = useMemo(() => {
+  const { layout, extent, outerSectorR } = useMemo(() => {
     const n = defaultWords.length
     const rWordBase = Math.max(1400, 520 + Math.sqrt(Math.max(n, 1)) * 42) * (focusClockId !== null ? 1.06 : 1)
     const rClock = rWordBase * 0.38
@@ -324,55 +248,24 @@ export function GlossaryRadialTree({
     return { layout: L, extent, outerSectorR }
   }, [defaultWords, focusClockId])
 
-  const sentimentLayout = useMemo(() => {
-    const n = userWordsAll.length
-    const rWordBase = Math.max(1200, 480 + Math.sqrt(Math.max(n, 1)) * 36)
-    const leafRadius = rWordBase + LEAF_OUTSET
-    const L = buildSentimentLayout(userWordsAll, leafRadius)
-    const pad = 200
-    const extent = leafRadius + pad
-    return { layout: L, extent, outerSectorR: L.outerSectorR, innerSectorR: L.innerSectorR }
-  }, [userWordsAll])
-
-  const { layout: chakraL, extent: chakraExtent, outerSectorR: chakraOuterSectorR } = chakraLayout
-  const { layout: sentimentL, extent: sentimentExtent, outerSectorR: sentimentOuterSectorR, innerSectorR: sentimentInnerSectorR } =
-    sentimentLayout
-
-  const extent = layoutKind === 'sentiment' ? sentimentExtent : chakraExtent
-  const outerSectorR = layoutKind === 'sentiment' ? sentimentOuterSectorR : chakraOuterSectorR
-
-  const leafByIdChakra = useMemo(() => {
+  const leafById = useMemo(() => {
     const m = new Map<string, LayoutLeaf>()
-    for (const leaf of chakraL.leaves) m.set(leaf.id, leaf)
+    for (const leaf of layout.leaves) m.set(leaf.id, leaf)
     return m
-  }, [chakraL.leaves])
-
-  const leafByIdSentiment = useMemo(() => {
-    const m = new Map<string, SentimentLayoutLeaf>()
-    for (const leaf of sentimentL.leaves) m.set(leaf.id, leaf)
-    return m
-  }, [sentimentL.leaves])
+  }, [layout.leaves])
 
   const [hoveredWordId, setHoveredWordId] = useState<string | null>(null)
 
   /** Path/root/clock highlights follow selection only — not hover. */
-  const selectionPathIds = useMemo(() => {
-    if (layoutKind === 'sentiment') return pathNodeIdsForSentimentWord(selectedWordId, leafByIdSentiment)
-    return pathNodeIdsForWord(selectedWordId, leafByIdChakra)
-  }, [layoutKind, selectedWordId, leafByIdChakra, leafByIdSentiment])
+  const selectionPathIds = useMemo(
+    () => pathNodeIdsForWord(selectedWordId, leafById),
+    [selectedWordId, leafById]
+  )
 
   const linkHighlightedChakra = useCallback(
     (link: LayoutLink) => {
       if (!selectionPathIds) return false
       return selectionPathIds.has(link.fromId) && selectionPathIds.has(link.toId)
-    },
-    [selectionPathIds]
-  )
-
-  const linkHighlightedSentiment = useCallback(
-    (link: SentimentLayoutLink) => {
-      if (!selectionPathIds) return false
-      return selectionPathIds.has('root') && selectionPathIds.has(link.toId)
     },
     [selectionPathIds]
   )
@@ -387,11 +280,18 @@ export function GlossaryRadialTree({
 
   const sectorDimmed = useCallback(
     (clockId: number) => {
-      if (myWordsScopeDim) return true
       if (focusClockId === null) return false
       return clockId !== focusClockId
     },
-    [focusClockId, myWordsScopeDim]
+    [focusClockId]
+  )
+
+  const leafNotInMyWordsScope = useCallback(
+    (w: GlossaryWord) => {
+      if (scopeFilter !== 'My Words' || !filterUserId) return false
+      return w.source !== 'user' || w.user_id !== filterUserId
+    },
+    [scopeFilter, filterUserId]
   )
 
   const leafSentimentDimmed = useCallback(
@@ -472,14 +372,28 @@ export function GlossaryRadialTree({
   const linkOpacity = (dim: boolean, hi: boolean) => {
     if (hi) return 1
     if (dim) return 0.28
-    return scopeFilter === 'Default' || scopeFilter === 'All' ? 0.88 : 0.55
+    return 0.88
   }
 
   const innerSectorR = useMemo(() => {
-    if (layoutKind === 'sentiment') return sentimentInnerSectorR
-    const c0 = chakraL.clocks[0]
+    const c0 = layout.clocks[0]
     return c0 ? Math.hypot(c0.x, c0.y) * 0.35 : 80
-  }, [layoutKind, sentimentInnerSectorR, chakraL.clocks])
+  }, [layout.clocks])
+
+  const onSvgPointerLeave = useCallback(
+    (e: React.PointerEvent<SVGSVGElement>) => {
+      onPointerUp(e)
+      onDiagramClockHover?.(null)
+    },
+    [onPointerUp, onDiagramClockHover]
+  )
+
+  const setClockHover = useCallback(
+    (clockId: number | null) => {
+      onDiagramClockHover?.(clockId)
+    },
+    [onDiagramClockHover]
+  )
 
   const isFullscreen = variant === 'fullscreen'
 
@@ -491,20 +405,19 @@ export function GlossaryRadialTree({
         isFullscreen
           ? 'rounded-none border-0 bg-transparent dark:bg-transparent'
           : 'rounded-lg border border-black/5 dark:border-white/10 bg-white dark:bg-black/20',
-        myWordsScopeDim && 'opacity-40',
         className
       )}
     >
       {!isFullscreen && (
-        <p className="absolute top-2 left-2 z-10 text-xs text-gray-500 dark:text-gray-400 pointer-events-none select-none max-w-[min(100%,220px)]">
-          Scroll to zoom · drag to pan
+        <p className="absolute top-2 left-2 z-10 text-xs text-gray-500 dark:text-gray-400 pointer-events-none select-none max-w-[min(100%,240px)]">
+          Hover a wedge to focus · scroll zoom · drag pan
           {focusClockId !== null && (
             <span className="block mt-0.5 font-medium" style={{ color: CLOCK_HEX[focusClockId] }}>
               {clockTitles[focusClockId]} — enlarged
             </span>
           )}
-          {myWordsScopeDim && (
-            <span className="block mt-0.5 text-amber-700 dark:text-amber-300">My Words: tree shows default glossary only</span>
+          {scopeFilter === 'My Words' && (
+            <span className="block mt-0.5 text-gray-600 dark:text-gray-400">Dimmed labels are not your words</span>
           )}
         </p>
       )}
@@ -514,298 +427,205 @@ export function GlossaryRadialTree({
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
-        onPointerLeave={onPointerUp}
+        onPointerLeave={onSvgPointerLeave}
       >
         <g transform={`translate(${transform.tx},${transform.ty}) scale(${transform.k})`}>
           <g>
-            {layoutKind === 'sentiment' ? (
-              <>
-                {sentimentL.sectors.map((sec, i) => {
-                  const hex = SENTIMENT_HEX[sec.rating]
-                  return (
-                    <path
-                      key={`sent-sector-${i}`}
-                      d={sectorAnnulusPath(sec.sectorStart, sec.sectorSpan, innerSectorR, outerSectorR)}
-                      fill={hex}
-                      fillOpacity={0.12}
-                      stroke={hex}
-                      strokeOpacity={0.32}
-                      strokeWidth={0.9}
-                      className="pointer-events-none"
-                    />
-                  )
-                })}
-
-                {sentimentL.links.map(link => {
-                  const leaf = leafByIdSentiment.get(link.toId)
-                  const sentDim = leaf ? leafSentimentDimmed(leaf.word) : false
-                  const hi = linkHighlightedSentiment(link)
-                  const hex = SENTIMENT_HEX[link.rating]
-                  const opacity = hi ? 1 : sentDim ? 0.18 : 0.82
-                  const sw = hi ? 2.6 : 1.05
-                  return (
-                    <line
-                      key={link.id}
-                      x1={0}
-                      y1={0}
-                      x2={link.x2}
-                      y2={link.y2}
-                      stroke={hi ? hex : sentDim ? '#cbd5e1' : hex}
-                      strokeWidth={sw}
-                      strokeOpacity={opacity}
-                      strokeLinecap="round"
-                    />
-                  )
-                })}
-
-                <circle
-                  r={12}
-                  cx={0}
-                  cy={0}
-                  fill={nodeHighlighted('root') ? '#156fde25' : DEFAULT_NODE_FILL}
-                  stroke={nodeHighlighted('root') ? '#156fde' : DEFAULT_NODE_STROKE}
-                  strokeWidth={nodeHighlighted('root') ? 2.5 : 1.2}
+            {/* Clock-colored sector bands (diagram sections) */}
+            {layout.clocks.map(c => {
+              const dim = sectorDimmed(c.clockId)
+              const hex = CLOCK_HEX[c.clockId]
+              const fillOp = focusClockId !== null ? (c.clockId === focusClockId ? 0.22 : 0.06) : 0.1
+              const strokeOp = dim ? 0.12 : 0.35
+              return (
+                <path
+                  key={`sector-${c.id}`}
+                  d={sectorAnnulusPath(c.sectorStart, c.sectorSpan, innerSectorR, outerSectorR)}
+                  fill={hex}
+                  fillOpacity={dim ? fillOp * 0.35 : fillOp}
+                  stroke={hex}
+                  strokeOpacity={strokeOp}
+                  strokeWidth={focusClockId === c.clockId ? 2.2 : 0.8}
+                  className="pointer-events-none"
                 />
-                <text
-                  x={0}
-                  y={4}
-                  textAnchor="middle"
-                  className="fill-gray-800 dark:fill-gray-100 text-[12px] font-semibold pointer-events-none select-none"
-                >
-                  Glossary
-                </text>
+              )
+            })}
 
-                {sentimentL.leaves.map(leaf => {
-                  const sentDim = leafSentimentDimmed(leaf.word)
-                  const hex = SENTIMENT_HEX[leaf.rating]
-                  const ang = Math.atan2(leaf.y, leaf.x)
-                  let rotDeg = (ang * 180) / Math.PI
-                  if (Math.cos(ang) < 0) rotDeg += 180
-
-                  const fs =
-                    3.35 * Math.max(5.2, Math.min(8.5, 480 / Math.sqrt(userWordsAll.length + 40)))
-                  const labelR = Math.max(24, fs * 0.48)
-                  const lx = leaf.x + Math.cos(ang) * labelR
-                  const ly = leaf.y + Math.sin(ang) * labelR
-
-                  const groupOp = sentDim ? 0.22 : 1
-                  const isSelected = selectedWordId === leaf.id
-                  const isHoverOnly = hoveredWordId === leaf.id && !isSelected
-
-                  const textFill = isSelected ? hex : isHoverOnly ? WORD_HOVER_GREY : hex
-                  const textOpacity = isSelected ? 1 : isHoverOnly ? 1 : 0.5
-
-                  const dotFill = isSelected ? `${hex}55` : isHoverOnly ? '#e2e8f0' : `${hex}20`
-                  const dotStroke = isSelected ? hex : isHoverOnly ? WORD_HOVER_GREY : hex
-                  const dotR = isSelected ? 6.5 : isHoverOnly ? 4.5 : 4
-                  const dotSw = isSelected ? 2 : 1
-
-                  return (
-                    <g
-                      key={leaf.id}
-                      opacity={groupOp}
-                      className="cursor-pointer"
-                      onPointerEnter={() => setHoveredWordId(leaf.id)}
-                      onPointerLeave={() => setHoveredWordId((h) => (h === leaf.id ? null : h))}
-                      onPointerDown={(e) => e.stopPropagation()}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onSelectWord?.(leaf.word)
-                      }}
-                    >
-                      <circle r={Math.max(18, fs * 0.42)} cx={leaf.x} cy={leaf.y} fill="transparent" />
-                      <circle
-                        r={dotR}
-                        cx={leaf.x}
-                        cy={leaf.y}
-                        fill={dotFill}
-                        stroke={dotStroke}
-                        strokeWidth={dotSw}
-                        pointerEvents="none"
-                        opacity={isHoverOnly ? 0.85 : 1}
-                      />
-                      <text
-                        x={lx}
-                        y={ly}
-                        fontSize={fs}
-                        className={cn('select-none pointer-events-none', isSelected && 'font-semibold')}
-                        fill={textFill}
-                        fillOpacity={textOpacity}
-                        transform={`rotate(${rotDeg} ${lx} ${ly})`}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                      >
-                        {leaf.word.word}
-                      </text>
-                    </g>
-                  )
-                })}
-              </>
-            ) : (
-              <>
-                {/* Clock-colored sector bands (diagram sections) */}
-                {chakraL.clocks.map(c => {
-                  const dim = sectorDimmed(c.clockId)
-                  const hex = CLOCK_HEX[c.clockId]
-                  const fillOp = focusClockId !== null ? (c.clockId === focusClockId ? 0.22 : 0.06) : 0.1
-                  const strokeOp = dim ? 0.12 : 0.35
-                  return (
-                    <path
-                      key={`sector-${c.id}`}
-                      d={sectorAnnulusPath(c.sectorStart, c.sectorSpan, innerSectorR, outerSectorR)}
-                      fill={hex}
-                      fillOpacity={dim ? fillOp * 0.35 : fillOp}
-                      stroke={hex}
-                      strokeOpacity={strokeOp}
-                      strokeWidth={focusClockId === c.clockId ? 2.2 : 0.8}
-                      className="pointer-events-none"
-                    />
-                  )
-                })}
-
-                {chakraL.links.map(link => {
-                  const dim = sectorDimmed(link.clockId)
-                  const hi = linkHighlightedChakra(link)
-                  const stroke = linkStrokeForClock(link.clockId, dim, hi)
-                  const sw = hi ? 3 : focusClockId === link.clockId && !dim ? 1.85 : 1.05
-                  const opacity = linkOpacity(dim, hi)
-                  return (
-                    <path
-                      key={link.id}
-                      d={bezierPath(link.x1, link.y1, link.x2, link.y2)}
-                      fill="none"
-                      stroke={hi ? stroke : dim ? '#cbd5e1' : stroke}
-                      strokeWidth={sw}
-                      strokeOpacity={opacity}
-                      strokeLinecap="round"
-                    />
-                  )
-                })}
-
-                <circle
-                  r={12}
-                  cx={0}
-                  cy={0}
-                  fill={nodeHighlighted('root') ? '#156fde25' : DEFAULT_NODE_FILL}
-                  stroke={nodeHighlighted('root') ? '#156fde' : DEFAULT_NODE_STROKE}
-                  strokeWidth={nodeHighlighted('root') ? 2.5 : 1.2}
+            {/* Invisible wedges: hover focuses chakra (same as dropdown clock pick). */}
+            {onDiagramClockHover &&
+              layout.clocks.map(c => (
+                <path
+                  key={`sector-hit-${c.id}`}
+                  d={sectorAnnulusPath(c.sectorStart, c.sectorSpan, innerSectorR, outerSectorR)}
+                  fill="transparent"
+                  className="cursor-pointer"
+                  onPointerEnter={() => setClockHover(c.clockId)}
                 />
-                <text
-                  x={0}
-                  y={4}
-                  textAnchor="middle"
-                  className="fill-gray-800 dark:fill-gray-100 text-[12px] font-semibold pointer-events-none select-none"
-                >
-                  Glossary
-                </text>
+              ))}
 
-                {chakraL.clocks.map(c => {
-                  const hi = nodeHighlighted(c.id)
-                  const dim = sectorDimmed(c.clockId)
-                  const hex = CLOCK_HEX[c.clockId]
-                  const [lx, ly] = pointOnCircle(c.clockAngle, innerSectorR + (Math.hypot(c.x, c.y) - innerSectorR) * 0.45)
+            {layout.links.map(link => {
+              const dim = sectorDimmed(link.clockId)
+              const hi = linkHighlightedChakra(link)
+              const stroke = linkStrokeForClock(link.clockId, dim, hi)
+              const sw = hi ? 3 : focusClockId === link.clockId && !dim ? 1.85 : 1.05
+              const opacity = linkOpacity(dim, hi)
+              return (
+                <path
+                  key={link.id}
+                  d={bezierPath(link.x1, link.y1, link.x2, link.y2)}
+                  fill="none"
+                  stroke={hi ? stroke : dim ? '#cbd5e1' : stroke}
+                  strokeWidth={sw}
+                  strokeOpacity={opacity}
+                  strokeLinecap="round"
+                  pointerEvents="none"
+                />
+              )
+            })}
 
-                  return (
-                    <g key={c.id} opacity={dim ? 0.45 : 1}>
-                      <circle
-                        r={focusClockId === c.clockId ? 10 : 7}
-                        cx={c.x}
-                        cy={c.y}
-                        fill={hi ? `${hex}45` : `${hex}28`}
-                        stroke={hi ? hex : hex}
-                        strokeWidth={hi ? 2.4 : focusClockId === c.clockId ? 2 : 1.35}
-                      />
-                      <title>{clockTitles[c.clockId]}</title>
-                      <text
-                        x={lx}
-                        y={ly}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                        className="pointer-events-none select-none font-semibold"
-                        style={{
-                          fontSize: CLOCK_TITLE_FONT_PX,
-                          fill: hex,
-                        }}
-                      >
-                        {CLOCK_SHORT[c.clockId] ?? clockTitles[c.clockId]}
-                      </text>
-                    </g>
-                  )
-                })}
-
-                {chakraL.leaves.map(leaf => {
-                  const hx = highlightStroke(leaf.clockId)
-                  const dim = sectorDimmed(leaf.clockId)
-                  const sentDim = leafSentimentDimmed(leaf.word)
-                  const ang = Math.atan2(leaf.y, leaf.x)
-                  let rotDeg = (ang * 180) / Math.PI
-                  if (Math.cos(ang) < 0) rotDeg += 180
-
-                  const fs =
-                    3.35 * Math.max(5.2, Math.min(8.5, 480 / Math.sqrt(defaultWords.length + 40)))
-                  const labelR = Math.max(24, fs * 0.48)
-                  const lx = leaf.x + Math.cos(ang) * labelR
-                  const ly = leaf.y + Math.sin(ang) * labelR
-
-                  const groupOp = dim ? 0.38 : sentDim ? 0.22 : 1
-                  const isSelected = selectedWordId === leaf.id
-                  const isHoverOnly = hoveredWordId === leaf.id && !isSelected
-
-                  const clockHex = CLOCK_HEX[leaf.clockId] ?? hx
-                  const textFill = isSelected ? clockHex : isHoverOnly ? WORD_HOVER_GREY : clockHex
-                  const textOpacity = isSelected ? 1 : isHoverOnly ? 1 : 0.5
-
-                  const dotFill = isSelected
-                    ? `${clockHex}55`
-                    : isHoverOnly
-                      ? '#e2e8f0'
-                      : `${clockHex}20`
-                  const dotStroke = isSelected ? clockHex : isHoverOnly ? WORD_HOVER_GREY : clockHex
-                  const dotR = isSelected ? 6.5 : isHoverOnly ? 4.5 : 4
-                  const dotSw = isSelected ? 2 : 1
-
-                  return (
-                    <g
-                      key={leaf.id}
-                      opacity={groupOp}
-                      className="cursor-pointer"
-                      onPointerEnter={() => setHoveredWordId(leaf.id)}
-                      onPointerLeave={() => setHoveredWordId((h) => (h === leaf.id ? null : h))}
-                      onPointerDown={(e) => e.stopPropagation()}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onSelectWord?.(leaf.word)
-                      }}
-                    >
-                      <circle r={Math.max(18, fs * 0.42)} cx={leaf.x} cy={leaf.y} fill="transparent" />
-                      <circle
-                        r={dotR}
-                        cx={leaf.x}
-                        cy={leaf.y}
-                        fill={dotFill}
-                        stroke={dotStroke}
-                        strokeWidth={dotSw}
-                        pointerEvents="none"
-                        opacity={isHoverOnly ? 0.85 : 1}
-                      />
-                      <text
-                        x={lx}
-                        y={ly}
-                        fontSize={fs}
-                        className={cn('select-none pointer-events-none', isSelected && 'font-semibold')}
-                        fill={textFill}
-                        fillOpacity={textOpacity}
-                        transform={`rotate(${rotDeg} ${lx} ${ly})`}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                      >
-                        {leaf.word.word}
-                      </text>
-                    </g>
-                  )
-                })}
-              </>
+            {onDiagramClockHover && (
+              <circle
+                r={innerSectorR * 0.92}
+                cx={0}
+                cy={0}
+                fill="transparent"
+                className="cursor-pointer"
+                onPointerEnter={() => setClockHover(null)}
+              />
             )}
+
+            <circle
+              r={12}
+              cx={0}
+              cy={0}
+              fill={nodeHighlighted('root') ? '#156fde25' : DEFAULT_NODE_FILL}
+              stroke={nodeHighlighted('root') ? '#156fde' : DEFAULT_NODE_STROKE}
+              strokeWidth={nodeHighlighted('root') ? 2.5 : 1.2}
+              pointerEvents="none"
+            />
+            <text
+              x={0}
+              y={4}
+              textAnchor="middle"
+              className="fill-gray-800 dark:fill-gray-100 text-[12px] font-semibold pointer-events-none select-none"
+            >
+              Glossary
+            </text>
+
+            {layout.clocks.map(c => {
+              const hi = nodeHighlighted(c.id)
+              const dim = sectorDimmed(c.clockId)
+              const hex = CLOCK_HEX[c.clockId]
+              const [lx, ly] = pointOnCircle(c.clockAngle, innerSectorR + (Math.hypot(c.x, c.y) - innerSectorR) * 0.45)
+
+              return (
+                <g
+                  key={c.id}
+                  opacity={dim ? 0.45 : 1}
+                  className={onDiagramClockHover ? 'cursor-pointer' : undefined}
+                  onPointerEnter={onDiagramClockHover ? () => setClockHover(c.clockId) : undefined}
+                >
+                  <circle
+                    r={focusClockId === c.clockId ? 10 : 7}
+                    cx={c.x}
+                    cy={c.y}
+                    fill={hi ? `${hex}45` : `${hex}28`}
+                    stroke={hi ? hex : hex}
+                    strokeWidth={hi ? 2.4 : focusClockId === c.clockId ? 2 : 1.35}
+                  />
+                  <title>{clockTitles[c.clockId]}</title>
+                  <text
+                    x={lx}
+                    y={ly}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    className="pointer-events-none select-none font-semibold"
+                    style={{
+                      fontSize: CLOCK_TITLE_FONT_PX,
+                      fill: hex,
+                    }}
+                  >
+                    {CLOCK_SHORT[c.clockId] ?? clockTitles[c.clockId]}
+                  </text>
+                </g>
+              )
+            })}
+
+            {layout.leaves.map(leaf => {
+              const hx = highlightStroke(leaf.clockId)
+              const dim = sectorDimmed(leaf.clockId)
+              const sentDim = leafSentimentDimmed(leaf.word)
+              const notMine = leafNotInMyWordsScope(leaf.word)
+              const ang = Math.atan2(leaf.y, leaf.x)
+              let rotDeg = (ang * 180) / Math.PI
+              if (Math.cos(ang) < 0) rotDeg += 180
+
+              const fs =
+                3.35 * Math.max(5.2, Math.min(8.5, 480 / Math.sqrt(defaultWords.length + 40)))
+              const labelR = Math.max(24, fs * 0.48)
+              const lx = leaf.x + Math.cos(ang) * labelR
+              const ly = leaf.y + Math.sin(ang) * labelR
+
+              const groupOp = dim ? 0.38 : notMine ? 0.3 : sentDim ? 0.22 : 1
+              const isSelected = selectedWordId === leaf.id
+              const isHoverOnly = hoveredWordId === leaf.id && !isSelected
+
+              const clockHex = CLOCK_HEX[leaf.clockId] ?? hx
+              const textFill = isSelected ? clockHex : isHoverOnly ? WORD_HOVER_GREY : clockHex
+              const textOpacity = isSelected ? 1 : isHoverOnly ? 1 : 0.5
+
+              const dotFill = isSelected
+                ? `${clockHex}55`
+                : isHoverOnly
+                  ? '#e2e8f0'
+                  : `${clockHex}20`
+              const dotStroke = isSelected ? clockHex : isHoverOnly ? WORD_HOVER_GREY : clockHex
+              const dotR = isSelected ? 6.5 : isHoverOnly ? 4.5 : 4
+              const dotSw = isSelected ? 2 : 1
+
+              return (
+                <g
+                  key={leaf.id}
+                  opacity={groupOp}
+                  className="cursor-pointer"
+                  onPointerEnter={() => {
+                    setHoveredWordId(leaf.id)
+                    setClockHover(leaf.clockId)
+                  }}
+                  onPointerLeave={() => setHoveredWordId((h) => (h === leaf.id ? null : h))}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onSelectWord?.(leaf.word)
+                  }}
+                >
+                  <circle r={Math.max(18, fs * 0.42)} cx={leaf.x} cy={leaf.y} fill="transparent" />
+                  <circle
+                    r={dotR}
+                    cx={leaf.x}
+                    cy={leaf.y}
+                    fill={dotFill}
+                    stroke={dotStroke}
+                    strokeWidth={dotSw}
+                    pointerEvents="none"
+                    opacity={isHoverOnly ? 0.85 : 1}
+                  />
+                  <text
+                    x={lx}
+                    y={ly}
+                    fontSize={fs}
+                    className={cn('select-none pointer-events-none', isSelected && 'font-semibold')}
+                    fill={textFill}
+                    fillOpacity={textOpacity}
+                    transform={`rotate(${rotDeg} ${lx} ${ly})`}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                  >
+                    {leaf.word.word}
+                  </text>
+                </g>
+              )
+            })}
           </g>
         </g>
       </svg>
