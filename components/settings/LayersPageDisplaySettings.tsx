@@ -3,10 +3,7 @@
 import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
-import {
-  LAYERS_LARGE_BG_CLOCK_OPACITY_DEFAULT_PERCENT,
-  useLayersDisplaySettings,
-} from '@/lib/LayersDisplaySettingsContext'
+import { useLayersDisplaySettings } from '@/lib/LayersDisplaySettingsContext'
 import { Layers } from 'lucide-react'
 
 export function LayersPageDisplaySettings() {
@@ -42,9 +39,7 @@ export function LayersPageDisplaySettings() {
           max={100}
           step={1}
           value={[largeBackgroundClockOpacityPercent]}
-          onValueChange={(v) =>
-            setLargeBackgroundClockOpacityPercent(v[0] ?? LAYERS_LARGE_BG_CLOCK_OPACITY_DEFAULT_PERCENT)
-          }
+          onValueChange={(v) => setLargeBackgroundClockOpacityPercent(v[0] ?? 0)}
           className="py-1"
         />
       </div>

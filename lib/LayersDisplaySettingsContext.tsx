@@ -1,10 +1,12 @@
 'use client'
 
+import { useTheme } from '@/app/ThemeContext'
 import {
   createContext,
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
   type ReactNode,
 } from 'react'
@@ -14,12 +16,16 @@ const STORAGE_KEY = 'layersLargeBackgroundClockOpacityPercent'
 const LEGACY_INTENSITY_STORAGE_KEY = 'layersClockIntensity'
 const LEGACY_LARGE_BG_BASE_OPACITY = 0.03
 
-export const LAYERS_LARGE_BG_CLOCK_OPACITY_DEFAULT_PERCENT = 3
+/** Used when no value is saved and the app is in light mode. */
+export const LAYERS_LARGE_BG_CLOCK_OPACITY_DEFAULT_LIGHT_PERCENT = 3
+/** Used when no value is saved and the app is in dark mode. */
+export const LAYERS_LARGE_BG_CLOCK_OPACITY_DEFAULT_DARK_PERCENT = 5
 
 const MIN_PERCENT = 0
 const MAX_PERCENT = 100
 
 type LayersDisplaySettingsContextValue = {
+  /** Effective opacity (saved override, or 3% light / 5% dark). */
   largeBackgroundClockOpacityPercent: number
   setLargeBackgroundClockOpacityPercent: (percent: number) => void
 }
@@ -27,15 +33,24 @@ type LayersDisplaySettingsContextValue = {
 const LayersDisplaySettingsContext = createContext<LayersDisplaySettingsContextValue | null>(null)
 
 function clampPercent(n: number): number {
-  if (Number.isNaN(n)) return LAYERS_LARGE_BG_CLOCK_OPACITY_DEFAULT_PERCENT
+  if (Number.isNaN(n)) return LAYERS_LARGE_BG_CLOCK_OPACITY_DEFAULT_LIGHT_PERCENT
   return Math.min(MAX_PERCENT, Math.max(MIN_PERCENT, Math.round(n)))
 }
 
 export function LayersDisplaySettingsProvider({ children }: { children: ReactNode }) {
-  const [largeBackgroundClockOpacityPercent, setPercentState] = useState(
-    LAYERS_LARGE_BG_CLOCK_OPACITY_DEFAULT_PERCENT
-  )
+  const { isDarkMode } = useTheme()
+  /** `null` = follow theme defaults (3% light, 5% dark). */
+  const [overridePercent, setOverridePercent] = useState<number | null>(null)
   const [hydrated, setHydrated] = useState(false)
+
+  const themeDefaultPercent = isDarkMode
+    ? LAYERS_LARGE_BG_CLOCK_OPACITY_DEFAULT_DARK_PERCENT
+    : LAYERS_LARGE_BG_CLOCK_OPACITY_DEFAULT_LIGHT_PERCENT
+
+  const largeBackgroundClockOpacityPercent = useMemo(
+    () => (overridePercent !== null ? overridePercent : themeDefaultPercent),
+    [overridePercent, themeDefaultPercent]
+  )
 
   useEffect(() => {
     try {
@@ -43,7 +58,7 @@ export function LayersDisplaySettingsProvider({ children }: { children: ReactNod
       if (raw != null) {
         const parsed = Number.parseInt(raw, 10)
         if (!Number.isNaN(parsed)) {
-          setPercentState(clampPercent(parsed))
+          setOverridePercent(clampPercent(parsed))
         }
       } else {
         const legacyRaw = localStorage.getItem(LEGACY_INTENSITY_STORAGE_KEY)
@@ -54,7 +69,7 @@ export function LayersDisplaySettingsProvider({ children }: { children: ReactNod
             const migrated = clampPercent(
               Math.round(100 * LEGACY_LARGE_BG_BASE_OPACITY * clamped01)
             )
-            setPercentState(migrated)
+            setOverridePercent(migrated)
             localStorage.setItem(STORAGE_KEY, String(migrated))
           }
         }
@@ -67,7 +82,7 @@ export function LayersDisplaySettingsProvider({ children }: { children: ReactNod
 
   const setLargeBackgroundClockOpacityPercent = useCallback((percent: number) => {
     const next = clampPercent(percent)
-    setPercentState(next)
+    setOverridePercent(next)
     try {
       localStorage.setItem(STORAGE_KEY, String(next))
     } catch {
@@ -78,9 +93,13 @@ export function LayersDisplaySettingsProvider({ children }: { children: ReactNod
   useEffect(() => {
     if (!hydrated) return
     const onStorage = (e: StorageEvent) => {
-      if (e.key !== STORAGE_KEY || e.newValue == null) return
+      if (e.key !== STORAGE_KEY) return
+      if (e.newValue == null) {
+        setOverridePercent(null)
+        return
+      }
       const parsed = Number.parseInt(e.newValue, 10)
-      if (!Number.isNaN(parsed)) setPercentState(clampPercent(parsed))
+      if (!Number.isNaN(parsed)) setOverridePercent(clampPercent(parsed))
     }
     window.addEventListener('storage', onStorage)
     return () => window.removeEventListener('storage', onStorage)
