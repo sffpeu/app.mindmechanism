@@ -295,7 +295,12 @@ export default function NotesPage() {
   return (
     <div className="h-full overflow-hidden flex flex-col bg-gray-50 dark:bg-black/95">
       <div className="flex-1 min-h-0 overflow-y-auto">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+        <div
+          className={cn(
+            'max-w-7xl mx-auto px-4 py-6',
+            (!selectedNote || isEditing) && 'pb-28 sm:pb-32'
+          )}
+        >
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Notes</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-xl">
@@ -724,25 +729,31 @@ export default function NotesPage() {
                     )}
                   />
                 </div>
-
-                {(!selectedNote || isEditing) && (
-                  <Button
-                    type="button"
-                    size="lg"
-                    className="w-full gap-2 font-semibold shadow-sm"
-                    onClick={handleSaveNote}
-                    disabled={!canSave}
-                  >
-                    <Save className="h-4 w-4" />
-                    {selectedNote ? 'Save changes' : 'Save note'}
-                  </Button>
-                )}
               </div>
             </Card>
           </div>
         </div>
         </div>
       </div>
+
+      {(!selectedNote || isEditing) && (
+        <Button
+          type="button"
+          onClick={handleSaveNote}
+          disabled={!canSave}
+          className={cn(
+            'fixed bottom-6 right-6 z-[960]',
+            'h-14 min-w-[8.5rem] rounded-2xl px-6 gap-2',
+            'text-base font-semibold shadow-lg shadow-black/15',
+            'bg-primary text-primary-foreground hover:bg-primary/90',
+            'dark:shadow-black/40',
+            'touch-manipulation'
+          )}
+        >
+          <Save className="h-5 w-5 shrink-0" aria-hidden />
+          {selectedNote ? 'Save changes' : 'Save note'}
+        </Button>
+      )}
     </div>
   )
 } 
