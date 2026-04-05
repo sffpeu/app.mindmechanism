@@ -9,7 +9,7 @@ import { Slider } from "./ui/slider"
 import { Card, CardContent } from "./ui/card"
 import { MinusIcon, PlusIcon, ChevronRight, ChevronLeft, Plus, X, Calendar, Timer, RotateCw, Compass, Scale, Move, Layers } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs"
-import { clockSatellites } from './Clock';
+import { clockSatellites, getDefaultSatellitesForClock } from '@/lib/satelliteDefaults';
 import { Switch } from "./ui/switch"
 
 // Add dotColors constant at the top of the file
@@ -189,10 +189,12 @@ export function ClockSettings({ settings, onSave, onCancel }: ClockSettingsProps
 
   // Initialize satellites with default settings
   function initializeSatellites(clockId: number): SatelliteSettings[] {
+    const fromLib = getDefaultSatellitesForClock(clockId);
+    if (fromLib.length > 0) return fromLib;
     const count = clockSatellites[clockId] || 0;
     return Array.from({ length: count }).map((_, index) => ({
       id: index,
-      rotationTime: 60000, // default 60 seconds
+      rotationTime: 60000,
       rotationDirection: 'clockwise' as const,
     }));
   }

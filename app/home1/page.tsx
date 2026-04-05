@@ -41,71 +41,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import type { ClockSettings } from '@/types/ClockSettings'
-
-// Default satellite configurations for all clocks
-const defaultSatelliteConfigs: Record<number, Array<{ rotationTime: number, rotationDirection: 'clockwise' | 'counterclockwise' }>> = {
-  0: [ // Clock 1
-    { rotationTime: 300 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 600 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 900 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 2700 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 5400 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 5400 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' }
-  ],
-  1: [ // Clock 2
-    { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 3600 * 1000, rotationDirection: 'counterclockwise' }
-  ],
-  2: [ // Clock 3
-    { rotationTime: 600 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' }
-  ],
-  3: [ // Clock 4
-    { rotationTime: 60 * 1000, rotationDirection: 'clockwise' }
-  ],
-  4: [ // Clock 5
-    { rotationTime: 720 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 1140 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 1710 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 1710 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 900 * 1000, rotationDirection: 'clockwise' }
-  ],
-  5: [ // Clock 6
-    { rotationTime: 60 * 1000, rotationDirection: 'clockwise' }
-  ],
-  6: [ // Clock 7
-    { rotationTime: 900 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 900 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 900 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 700 * 1000, rotationDirection: 'clockwise' }
-  ],
-  7: [ // Clock 8
-    { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' }
-  ],
-  8: [ // Clock 9
-    { rotationTime: 3600 * 1000, rotationDirection: 'clockwise' }
-  ]
-};
-
-// Satellite counts for each clock
-const clockSatellites: Record<number, number> = {
-  0: 8, // Clock 1
-  1: 2, // Clock 2
-  2: 2, // Clock 3
-  3: 1, // Clock 4
-  4: 5, // Clock 5
-  5: 1, // Clock 6
-  6: 5, // Clock 7
-  7: 5, // Clock 8
-  8: 1, // Clock 9
-};
+import { clockSatellites, defaultSatelliteConfigs } from '@/lib/satelliteDefaults'
 
 interface WeatherResponse {
   location: {
@@ -512,36 +448,49 @@ export default function Home1Page() {
                             const { x, y } = getSatellitePosition(index, satelliteIndex, clockSatellites[index])
                             const isSelected = selectedSatellite?.clockIndex === index && selectedSatellite?.satelliteIndex === satelliteIndex
                             const rotationSpeed = getSatelliteRotationSpeed(index, satelliteIndex)
-                            
+                            const cfg = defaultSatelliteConfigs[index]?.[satelliteIndex]
+                            const accent = cfg?.pulseColor
+                            const bg = accent ?? (isDarkMode ? '#fff' : '#000')
+                            const baseShadow = accent
+                              ? `0 0 8px ${accent}aa`
+                              : isDarkMode
+                                ? '0 0 6px rgba(255, 255, 255, 0.3)'
+                                : '0 0 6px rgba(0, 0, 0, 0.3)'
+                            const selectedShadow = isSelected
+                              ? accent
+                                ? `0 0 14px ${accent}, 0 0 28px ${accent}99`
+                                : isDarkMode
+                                  ? '0 0 12px rgba(255, 255, 255, 0.8), 0 0 24px rgba(255, 255, 255, 0.6)'
+                                  : '0 0 12px rgba(0, 0, 0, 0.8), 0 0 24px rgba(0, 0, 0, 0.6)'
+                              : baseShadow
+
                             return (
                               <motion.div
                                 key={satelliteIndex}
                                 className="absolute w-3 h-3 rounded-full cursor-pointer"
+                                title={cfg?.name}
                                 style={{
                                   left: `${x}%`,
                                   top: `${y}%`,
                                   transform: 'translate(-50%, -50%)',
-                                  backgroundColor: isDarkMode ? '#fff' : '#000',
-                                  boxShadow: isDarkMode 
-                                    ? isSelected 
-                                      ? '0 0 12px rgba(255, 255, 255, 0.8), 0 0 24px rgba(255, 255, 255, 0.6)' 
-                                      : '0 0 6px rgba(255, 255, 255, 0.3)' 
-                                    : isSelected 
-                                      ? '0 0 12px rgba(0, 0, 0, 0.8), 0 0 24px rgba(0, 0, 0, 0.6)' 
-                                      : '0 0 6px rgba(0, 0, 0, 0.3)',
+                                  backgroundColor: bg,
+                                  boxShadow: selectedShadow,
                                   border: isSelected ? '2px solid white' : 'none',
                                   zIndex: isSelected ? 10 : 1,
-                                  willChange: 'transform'
+                                  willChange: 'transform',
                                 }}
                                 initial={{ opacity: 0, scale: 0 }}
-                                animate={{ 
-                                  opacity: 1, 
-                                  scale: 1,
-                                }}
+                                animate={
+                                  cfg?.pulsing
+                                    ? { opacity: [0.15, 1, 0.35, 1, 0.15], scale: [0.88, 1.08, 0.94, 1.04, 0.88] }
+                                    : { opacity: 1, scale: 1 }
+                                }
                                 transition={{
-                                  duration: 0.3,
-                                  delay: 0.3 + satelliteIndex * 0.05,
-                                  ease: "easeOut"
+                                  duration: cfg?.pulsing ? 1.25 : 0.3,
+                                  delay: cfg?.pulsing ? 0 : 0.3 + satelliteIndex * 0.05,
+                                  ease: 'easeInOut',
+                                  repeat: cfg?.pulsing ? Infinity : 0,
+                                  times: cfg?.pulsing ? [0, 0.18, 0.38, 0.62, 1] : undefined,
                                 }}
                                 whileHover={{ scale: 1.8 }}
                                 onMouseEnter={() => setHoveredSatellite({ clockIndex: index, satelliteIndex })}

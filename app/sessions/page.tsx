@@ -8,6 +8,7 @@ import Link from 'next/link'
 import DotNavigation from '@/components/DotNavigation'
 import { clockSettings } from '@/lib/clockSettings'
 import { SatelliteSettings } from '@/types/ClockSettings'
+import { getDefaultSatellitesForClock } from '@/lib/satelliteDefaults'
 import { SessionDurationDialog } from '@/components/SessionDurationDialog'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createSession } from '@/lib/sessions'
@@ -16,19 +17,6 @@ import { useTimeTracking } from '@/lib/hooks/useTimeTracking'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { useSoundEffects } from '@/lib/sounds'
 import { clockTitles } from '@/lib/clockTitles'
-
-// Update satellites count for each clock
-const clockSatellites: Record<number, number> = {
-  0: 8, // Clock 1
-  1: 2, // Clock 2
-  2: 2, // Clock 3
-  3: 1, // Clock 4 (added 1 satellite)
-  4: 5, // Clock 5
-  5: 1, // Clock 6 (added 1 satellite)
-  6: 5, // Clock 7
-  7: 5, // Clock 8
-  8: 1, // Clock 9
-}
 
 interface Session {
   title: string
@@ -128,11 +116,7 @@ export default function SessionsPage() {
       timeElapsed: getElapsedTime(clock.startDateTime),
       currentDegree,
       focusNodes: clock.focusNodes,
-      satellites: Array.from({ length: clockSatellites[index] || 0 }).map((_, i) => ({
-        id: i,
-        rotationTime: 60000, // default 60 seconds
-        rotationDirection: 'clockwise' as const
-      })),
+      satellites: getDefaultSatellitesForClock(index),
       totalRotations: Math.floor(elapsedMs / clock.rotationTime),
       color: clockColors[index],
       description: clockDescriptions[index]

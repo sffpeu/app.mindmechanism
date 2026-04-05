@@ -30,6 +30,7 @@ import {
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords } from '@/lib/glossary'
 import Clock, { defaultSatelliteConfigs } from '@/components/Clock'
+import { ClockPageSatelliteLayer } from '@/components/ClockPageSatelliteLayer'
 import { SessionTimer } from '@/components/SessionTimer'
 import { useSessionTimer } from '@/lib/useSessionTimer'
 import { useAuth } from '@/lib/FirebaseAuthContext'
@@ -161,12 +162,13 @@ function NodesPageContent() {
   const [customLocation, setCustomLocation] = useState('')
   const [isEditingLocation, setIsEditingLocation] = useState(false)
 
-  // Get clock 1 settings
-  const clock6 = clockSettings[6]
-  const focusNodes = clock6.focusNodes
-  const startingDegree = clock6.startingDegree
-  const rotationTime = clock6.rotationTime
-  const rotationDirection = clock6.rotationDirection
+  // Get clock 6 settings
+  const clockSettingsIndex = 6
+  const currentClockSettings = clockSettings[clockSettingsIndex]
+  const focusNodes = currentClockSettings.focusNodes
+  const startingDegree = currentClockSettings.startingDegree
+  const rotationTime = currentClockSettings.rotationTime
+  const rotationDirection = currentClockSettings.rotationDirection
 
   // Calculate rotation
   const [rotation, setRotation] = useState(startingDegree)
@@ -310,7 +312,7 @@ function NodesPageContent() {
   }, [remainingTime, isPaused])
 
   useEffect(() => {
-    const startDateTime = new Date('1610-12-21T03:00:00')
+    const startDateTime = currentClockSettings.startDateTime
     const animate = () => {
       const now = Date.now()
       const elapsedMilliseconds = now - startDateTime.getTime()
@@ -326,7 +328,7 @@ function NodesPageContent() {
 
     const animationId = requestAnimationFrame(animate)
     return () => cancelAnimationFrame(animationId)
-  }, [startingDegree, rotationTime, rotationDirection])
+  }, [startingDegree, rotationTime, rotationDirection, currentClockSettings.startDateTime])
 
   // Update current time every second
   useEffect(() => {
@@ -338,7 +340,7 @@ function NodesPageContent() {
 
   // Update clock info
   useEffect(() => {
-    const startDateTime = new Date('1610-12-21T03:00:00')
+    const startDateTime = currentClockSettings.startDateTime
     const now = Date.now()
     const elapsedMilliseconds = now - startDateTime.getTime()
     const rotations = Math.floor(elapsedMilliseconds / rotationTime)
@@ -350,7 +352,7 @@ function NodesPageContent() {
       currentRotation: currentDegree,
       direction: rotationDirection
     })
-  }, [currentTime, rotationTime, currentDegree, rotationDirection])
+  }, [currentTime, rotationTime, currentDegree, rotationDirection, currentClockSettings.startDateTime])
 
   // Load glossary words
   useEffect(() => {
@@ -374,7 +376,7 @@ function NodesPageContent() {
   const getWordContainerStyle = (angle: number, isSelected: boolean) => {
     const a = ((angle % 360) + 360) % 360
     const placement = a > 315 || a < 45 ? 'top' : a <= 135 ? 'right' : a < 225 ? 'bottom' : 'left'
-    const counterRotation = -rotation - clock6.imageOrientation
+    const counterRotation = -rotation - currentClockSettings.imageOrientation
     const offsetPx = 62
     const base = { position: 'absolute' as const, left: '50%', top: '50%', transformOrigin: 'center center' as const, zIndex: 900 }
     const scale = isSelected ? 1.1 : 1
@@ -393,7 +395,7 @@ function NodesPageContent() {
   useEffect(() => { if (!selectedWord) setCardPosition(null) }, [selectedWord])
   useEffect(() => { isMountedRef.current = true; return () => { isMountedRef.current = false; const { onMove, onUp } = dragListenersRef.current; if (onMove) window.removeEventListener('mousemove', onMove); if (onUp) window.removeEventListener('mouseup', onUp); dragListenersRef.current = { onMove: null, onUp: null } } }, [])
   const handleCardDragStart = useCallback((e: React.MouseEvent) => { e.preventDefault(); if (!cardPosition) return; dragRef.current = { startX: e.clientX, startY: e.clientY, startLeft: cardPosition.x, startTop: cardPosition.y }; const onMove = (e: MouseEvent) => { if (!dragRef.current || !isMountedRef.current) return; setCardPosition({ x: dragRef.current.startLeft + e.clientX - dragRef.current.startX, y: dragRef.current.startTop + e.clientY - dragRef.current.startY }) }; const onUp = () => { dragRef.current = null; window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); dragListenersRef.current = { onMove: null, onUp: null } }; dragListenersRef.current = { onMove, onUp }; window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp) }, [cardPosition])
-  const defaultWords = DEFAULT_WORDS_BY_CLOCK[6] ?? []
+  const defaultWords = DEFAULT_WORDS_BY_CLOCK[CLOCK_INDEX] ?? []
   const getFocusNodeStyle = (index: number, isSelected: boolean) => {
     const color = clockHex
     return {
@@ -423,53 +425,6 @@ function NodesPageContent() {
     }
   }
 
-  const renderSatellites = () => {
-    return satelliteConfigs.map((satellite, index) => {
-      const now = Date.now()
-      const startDateTime = new Date('1610-12-21T03:00:00')
-      const elapsedMilliseconds = now - startDateTime.getTime()
-      const satelliteRotation = (elapsedMilliseconds / satellite.rotationTime) * 360
-      const totalRotation = satellite.rotationDirection === 'clockwise'
-        ? satelliteRotation
-        : -satelliteRotation
-
-      // Calculate position with adjusted radius (60 instead of 65)
-      const angle = ((360 / satelliteConfigs.length) * index + totalRotation) % 360
-      const radians = angle * (Math.PI / 180)
-      const radius = 60 // Reduced from 65 to bring satellites closer
-      const x = 50 + radius * Math.cos(radians)
-      const y = 50 + radius * Math.sin(radians)
-
-      return (
-        <motion.div
-          key={`satellite-${index}`}
-          className="absolute cursor-pointer pointer-events-auto"
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{
-            delay: 1 + (index * 0.1),
-            duration: 0.5,
-            ease: "easeOut"
-          }}
-          style={{
-            left: `${x}%`,
-            top: `${y}%`,
-            transform: 'translate(-50%, -50%)',
-            zIndex: 100,
-          }}
-          whileHover={{ scale: 1.25 }} // Reduced from 1.5
-        >
-          <div 
-            className="w-4 h-4 rounded-full bg-black dark:bg-white"
-            style={{
-              boxShadow: '0 0 12px rgba(0, 0, 0, 0.4)',
-            }}
-          />
-        </motion.div>
-      )
-    })
-  }
-
   // Get the RGB values for the glow effect
   const clockColor = hexToRgb(clockHex)
 
@@ -490,7 +445,7 @@ function NodesPageContent() {
 
   return (
     <ProtectedRoute>
-      <ClockBreathingTone clockIndex={6} />
+      <ClockBreathingTone clockIndex={CLOCK_INDEX} />
       <div className="h-full overflow-x-hidden flex flex-col bg-gray-50 dark:bg-black/95 min-h-0">
         {/* Settings Dropdown */}
         <div className="fixed top-4 right-4 z-[200]">
@@ -551,13 +506,13 @@ function NodesPageContent() {
                     {/* Clock Title and Description */}
                     <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10 text-center">
                       <h3 className="text-sm font-medium text-orange-500">
-                        {clockTitles[6]}
+                        {clockTitles[CLOCK_INDEX]}
                       </h3>
                       <p className="text-xs text-black/60 dark:text-white/60">
-                        {clock6.startDateTime.getDate().toString().padStart(2, '0')}.{(clock6.startDateTime.getMonth() + 1).toString().padStart(2, '0')}.{clock6.startDateTime.getFullYear()}
+                        {currentClockSettings.startDateTime.getDate().toString().padStart(2, '0')}.{(currentClockSettings.startDateTime.getMonth() + 1).toString().padStart(2, '0')}.{currentClockSettings.startDateTime.getFullYear()}
                       </p>
                       <p className="text-xs text-black/60 dark:text-white/60 line-clamp-2">
-                        The historic discovery of Neptune, predicted through mathematical calculations before visual confirmation.
+                        The culmination of the solar journey, split into male and female reflections to achieve harmonic balance in the crown.
                       </p>
                     </div>
 
@@ -662,7 +617,7 @@ function NodesPageContent() {
                             >
                               <div className="flex items-center justify-between gap-2">
                                 <span className="font-medium text-black/90 dark:text-white/90">
-                                  Satellite {i + 1}
+                                  {sat.name ?? `Satellite ${i + 1}`}
                                 </span>
                                 <span className="shrink-0 text-black/55 dark:text-white/55">
                                   {sat.rotationDirection === 'clockwise' ? 'CW' : 'CCW'}
@@ -762,7 +717,10 @@ function NodesPageContent() {
                   zIndex: 300,
                 }}
               >
-                {renderSatellites()}
+                <ClockPageSatelliteLayer
+                  satellites={satelliteConfigs}
+                  startDateTime={currentClockSettings.startDateTime}
+                />
               </motion.div>
             )}
 
@@ -783,14 +741,14 @@ function NodesPageContent() {
                 <div
                   className="absolute inset-0"
                   style={{
-                    transform: `translate(${clock6.imageX}%, ${clock6.imageY}%) rotate(${clock6.imageOrientation}deg) scale(${clock6.imageScale})`,
+                    transform: `translate(${currentClockSettings.imageX}%, ${currentClockSettings.imageY}%) rotate(${currentClockSettings.imageOrientation}deg) scale(${currentClockSettings.imageScale})`,
                     willChange: 'transform',
                     transformOrigin: 'center',
                   }}
                 >
                   <Image 
-                    src={clock6.imageUrl}
-                    alt="Clock Face 6"
+                    src={currentClockSettings.imageUrl}
+                    alt={`Clock Face ${CLOCK_INDEX + 1}`}
                     layout="fill"
                     objectFit="cover"
                     className="rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none [&_*]:stroke-[0.5]"
@@ -816,7 +774,7 @@ function NodesPageContent() {
                 ease: 'linear'
               }}
             >
-              <div className="absolute inset-0 pointer-events-none" style={{ transform: `rotate(${clock6.imageOrientation}deg)` }}>
+              <div className="absolute inset-0 pointer-events-none" style={{ transform: `rotate(${currentClockSettings.imageOrientation}deg)` }}>
                 <div className="absolute inset-0 pointer-events-none">
                   {Array.from({ length: focusNodes }).map((_, index) => {
                     const angle = ((360 / focusNodes) * index + 270) % 360
@@ -905,7 +863,7 @@ function NodesPageContent() {
             transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
             className="rounded-xl border-0 bg-white/95 dark:bg-black/90 backdrop-blur-lg shadow-lg min-w-[240px] max-w-[280px] text-left overflow-hidden cursor-grab active:cursor-grabbing"
             style={{ position: 'fixed', left: cardPosition.x, top: cardPosition.y, zIndex: 10000 }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation() }}
           >
             {(() => {
               const gw = glossaryWords.find(w => w.word === selectedWord)
@@ -940,11 +898,11 @@ function NodesPageContent() {
           document.body
         )}
 
-        {/* Dot Navigation */}
+        {/* Dot Navigation - wrapper is pointer-events-none so only the nav strip receives clicks */}
         <div className="fixed inset-0 pointer-events-none z-[999]">
           {showElements && (
             <DotNavigation
-              activeDot={6}
+              activeDot={CLOCK_INDEX}
               isSmallMultiView={false}
             />
           )}
@@ -974,4 +932,4 @@ export default function NodesPage() {
       <NodesPageContent />
     </Suspense>
   )
-} 
+}

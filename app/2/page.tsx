@@ -30,6 +30,7 @@ import {
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords } from '@/lib/glossary'
 import Clock, { defaultSatelliteConfigs } from '@/components/Clock'
+import { ClockPageSatelliteLayer } from '@/components/ClockPageSatelliteLayer'
 import { SessionTimer } from '@/components/SessionTimer'
 import { useSessionTimer } from '@/lib/useSessionTimer'
 import { useAuth } from '@/lib/FirebaseAuthContext'
@@ -426,53 +427,6 @@ function NodesPageContent() {
     }
   }
 
-  const renderSatellites = () => {
-    return satelliteConfigs.map((satellite, index) => {
-      const now = Date.now()
-      const startDateTime = new Date('1610-12-21T03:00:00')
-      const elapsedMilliseconds = now - startDateTime.getTime()
-      const satelliteRotation = (elapsedMilliseconds / satellite.rotationTime) * 360
-      const totalRotation = satellite.rotationDirection === 'clockwise'
-        ? satelliteRotation
-        : -satelliteRotation
-
-      // Calculate position with adjusted radius (60 instead of 65)
-      const angle = ((360 / satelliteConfigs.length) * index + totalRotation) % 360
-      const radians = angle * (Math.PI / 180)
-      const radius = 60 // Reduced from 65 to bring satellites closer
-      const x = 50 + radius * Math.cos(radians)
-      const y = 50 + radius * Math.sin(radians)
-
-      return (
-        <motion.div
-          key={`satellite-${index}`}
-          className="absolute cursor-pointer pointer-events-auto"
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{
-            delay: 1 + (index * 0.1),
-            duration: 0.5,
-            ease: "easeOut"
-          }}
-          style={{
-            left: `${x}%`,
-            top: `${y}%`,
-            transform: 'translate(-50%, -50%)',
-            zIndex: 100,
-          }}
-          whileHover={{ scale: 1.25 }} // Reduced from 1.5
-        >
-          <div 
-            className="w-4 h-4 rounded-full bg-black dark:bg-white"
-            style={{
-              boxShadow: '0 0 12px rgba(0, 0, 0, 0.4)',
-            }}
-          />
-        </motion.div>
-      )
-    })
-  }
-
   // Get the RGB values for the glow effect
   const clockColor = hexToRgb(clockHex)
 
@@ -560,7 +514,7 @@ function NodesPageContent() {
                         {clock2.startDateTime.getDate().toString().padStart(2, '0')}.{(clock2.startDateTime.getMonth() + 1).toString().padStart(2, '0')}.{clock2.startDateTime.getFullYear()}
                       </p>
                       <p className="text-xs text-black/60 dark:text-white/60 line-clamp-2">
-                        The historic discovery of Neptune, predicted through mathematical calculations before visual confirmation.
+                        The unique signature of clock 3, established for psychological mapping and somatic resonance.
                       </p>
                     </div>
 
@@ -665,7 +619,7 @@ function NodesPageContent() {
                             >
                               <div className="flex items-center justify-between gap-2">
                                 <span className="font-medium text-black/90 dark:text-white/90">
-                                  Satellite {i + 1}
+                                  {sat.name ?? `Satellite ${i + 1}`}
                                 </span>
                                 <span className="shrink-0 text-black/55 dark:text-white/55">
                                   {sat.rotationDirection === 'clockwise' ? 'CW' : 'CCW'}
@@ -765,7 +719,10 @@ function NodesPageContent() {
                   zIndex: 300,
                 }}
               >
-                {renderSatellites()}
+                <ClockPageSatelliteLayer
+                  satellites={satelliteConfigs}
+                  startDateTime={clock2.startDateTime}
+                />
               </motion.div>
             )}
 

@@ -5,7 +5,8 @@ import Image from 'next/image';
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ClockIcon, Calendar, RotateCw, Timer, Compass, ChevronUp, ChevronDown, Repeat, Eye, EyeOff, Settings, Play, Pause } from 'lucide-react';
-import { ClockSettings } from '../types/ClockSettings';
+import { ClockSettings, SatelliteSettings } from '../types/ClockSettings';
+import { clockSatellites, defaultSatelliteConfigs } from '@/lib/satelliteDefaults';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { updateSession, updateSessionActivity, pauseSession } from '@/lib/sessions'
@@ -13,6 +14,8 @@ import { toast } from 'react-hot-toast';
 import { useLocation } from '@/lib/hooks/useLocation';
 import { Timestamp } from 'firebase/firestore';
 import { useSoundEffects } from '@/lib/sounds';
+
+export { clockSatellites, defaultSatelliteConfigs };
 
 const dotColors = [
   'bg-[#fd290a]', // 1
@@ -41,71 +44,6 @@ const testWords = [
   'Standards',
   'Measurement'
 ];
-
-// Update satellites count for each clock
-export const clockSatellites: Record<number, number> = {
-  0: 8, // Clock 1
-  1: 2, // Clock 2
-  2: 2, // Clock 3
-  3: 0, // Clock 4
-  4: 5, // Clock 5
-  5: 0, // Clock 6
-  6: 5, // Clock 7
-  7: 5, // Clock 8
-  8: 1, // Clock 9
-};
-
-// Default satellite configurations
-export const defaultSatelliteConfigs: Record<number, Array<{ rotationTime: number, rotationDirection: 'clockwise' | 'counterclockwise' }>> = {
-  0: [ // Clock 1
-    { rotationTime: 300 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 600 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 900 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 2700 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 5400 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 5400 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' }
-  ],
-  1: [ // Clock 2
-    { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 3600 * 1000, rotationDirection: 'counterclockwise' }
-  ],
-  2: [ // Clock 3
-    { rotationTime: 600 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' }
-  ],
-  3: [ // Clock 4
-    { rotationTime: 60 * 1000, rotationDirection: 'clockwise' }
-  ],
-  4: [ // Clock 5
-    { rotationTime: 720 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 1140 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 1710 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 1710 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 900 * 1000, rotationDirection: 'clockwise' }
-  ],
-  5: [ // Clock 6
-    { rotationTime: 60 * 1000, rotationDirection: 'clockwise' }
-  ],
-  6: [ // Clock 7
-    { rotationTime: 900 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 900 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 900 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 700 * 1000, rotationDirection: 'clockwise' }
-  ],
-  7: [ // Clock 8
-    { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' }
-  ],
-  8: [ // Clock 9
-    { rotationTime: 3600 * 1000, rotationDirection: 'clockwise' }
-  ]
-};
 
 // Function to get the correct image path
 const getImagePath = (index: number) => {
@@ -323,13 +261,21 @@ const WordNode = ({ word, angle, nodeAngle, nodeRadius, isSelected, clockId, isM
 };
 
 const Satellite = ({ satellite, index, clockId, x, y, isMultiView }: {
-  satellite: any;
+  satellite: SatelliteSettings;
   index: number;
   clockId: number;
   x: number;
   y: number;
   isMultiView: boolean;
 }) => {
+  const accent = satellite.pulseColor;
+  const themeFill = !accent;
+  const glow = accent
+    ? `0 0 14px ${accent}cc, 0 0 6px ${accent}`
+    : isMultiView
+      ? 'none'
+      : '0 0 12px rgba(0, 0, 0, 0.4)';
+
   return (
     <motion.div
       key={`satellite-${clockId}-${index}`}
@@ -347,14 +293,28 @@ const Satellite = ({ satellite, index, clockId, x, y, isMultiView }: {
         transform: 'translate(-50%, -50%)',
         zIndex: 50,
       }}
+      title={satellite.name}
       whileHover={{ scale: 1.5 }}
     >
-      <div 
-        className={`${isMultiView ? 'w-3 h-3' : 'w-4 h-4'} rounded-full bg-black dark:bg-white`}
-        style={{
-          boxShadow: isMultiView ? 'none' : '0 0 12px rgba(0, 0, 0, 0.4)',
-        }}
-      />
+      {satellite.pulsing ? (
+        <motion.div
+          className={`${isMultiView ? 'w-3 h-3' : 'w-4 h-4'} rounded-full`}
+          style={{
+            backgroundColor: accent,
+            boxShadow: glow,
+          }}
+          animate={{ opacity: [0.15, 1, 0.35, 1, 0.15], scale: [0.88, 1.08, 0.94, 1.04, 0.88] }}
+          transition={{ duration: 1.25, repeat: Infinity, ease: 'easeInOut', times: [0, 0.18, 0.38, 0.62, 1] }}
+        />
+      ) : (
+        <div
+          className={`${isMultiView ? 'w-3 h-3' : 'w-4 h-4'} rounded-full ${themeFill ? 'bg-black dark:bg-white' : ''}`}
+          style={{
+            backgroundColor: accent,
+            boxShadow: glow,
+          }}
+        />
+      )}
     </motion.div>
   );
 };
@@ -1068,9 +1028,10 @@ export default function Clock({
         rotationDirection: 'clockwise' as const,
       }));
     
+    const satelliteCount = clockSatelliteSettings.length;
     return clockSatelliteSettings.map((satellite, index) => {
       // Calculate base position
-      const angle = ((360 / Math.max(1, clockSatellites[clockId] || 1)) * index) % 360;
+      const angle = ((360 / Math.max(1, satelliteCount)) * index) % 360;
       const radians = angle * (Math.PI / 180);
       
       // Different radius for multiview vs single clock view

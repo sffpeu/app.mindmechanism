@@ -2,6 +2,12 @@ export interface SatelliteSettings {
   id: number;
   rotationTime: number; // in milliseconds
   rotationDirection: 'clockwise' | 'counterclockwise';
+  /** Optional label (moon / body name) */
+  name?: string;
+  /** Opacity pulse (heartbeat); use with pulseColor */
+  pulsing?: boolean;
+  /** Fill color for the satellite dot (hex/CSS) */
+  pulseColor?: string;
 }
 
 export interface ClockSettings {

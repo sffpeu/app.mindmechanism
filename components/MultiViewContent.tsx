@@ -6,74 +6,10 @@ import DotNavigation from '@/components/DotNavigation'
 import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
+import { clockSatellites, defaultSatelliteConfigs } from '@/lib/satelliteDefaults'
 
 export interface MultiViewContentProps {
   type: number
-}
-
-// Default satellite configurations for all clocks
-const defaultSatelliteConfigs: Record<number, Array<{ rotationTime: number, rotationDirection: 'clockwise' | 'counterclockwise' }>> = {
-  0: [ // Clock 1
-    { rotationTime: 300 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 600 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 900 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 2700 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 5400 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 5400 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' }
-  ],
-  1: [ // Clock 2
-    { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 3600 * 1000, rotationDirection: 'counterclockwise' }
-  ],
-  2: [ // Clock 3
-    { rotationTime: 600 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' }
-  ],
-  3: [ // Clock 4
-    { rotationTime: 60 * 1000, rotationDirection: 'clockwise' }
-  ],
-  4: [ // Clock 5
-    { rotationTime: 720 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 1140 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 1710 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 1710 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 900 * 1000, rotationDirection: 'clockwise' }
-  ],
-  5: [ // Clock 6
-    { rotationTime: 60 * 1000, rotationDirection: 'clockwise' }
-  ],
-  6: [ // Clock 7
-    { rotationTime: 900 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 900 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 900 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 700 * 1000, rotationDirection: 'clockwise' }
-  ],
-  7: [ // Clock 8
-    { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' },
-    { rotationTime: 1800 * 1000, rotationDirection: 'counterclockwise' },
-    { rotationTime: 1800 * 1000, rotationDirection: 'clockwise' }
-  ],
-  8: [ // Clock 9
-    { rotationTime: 3600 * 1000, rotationDirection: 'clockwise' }
-  ]
-};
-
-// Satellite counts for each clock
-const clockSatellites: Record<number, number> = {
-  0: 8, // Clock 1
-  1: 2, // Clock 2
-  2: 2, // Clock 3
-  3: 1, // Clock 4
-  4: 5, // Clock 5
-  5: 1, // Clock 6
-  6: 5, // Clock 7
-  7: 5, // Clock 8
-  8: 1, // Clock 9
 }
 
 /** Large hover/focus background clock on /layers (outer ring only). */
@@ -317,29 +253,39 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                           <div className="w-full h-full rounded-full relative">
                             {Array.from({ length: clockSatellites[index] }).map((_, satelliteIndex) => {
                               const { x, y } = getSatellitePosition(index, satelliteIndex, clockSatellites[index])
+                              const cfg = defaultSatelliteConfigs[index]?.[satelliteIndex]
+                              const accent = cfg?.pulseColor
+                              const bg = accent ?? (isDarkMode ? '#fff' : '#000')
+                              const shadow = accent
+                                ? `0 0 8px ${accent}aa`
+                                : isDarkMode
+                                  ? '0 0 6px rgba(255, 255, 255, 0.3)'
+                                  : '0 0 6px rgba(0, 0, 0, 0.3)'
                               return (
                                 <motion.div
                                   key={satelliteIndex}
                                   className="absolute w-3 h-3 rounded-full"
+                                  title={cfg?.name}
                                   style={{
                                     left: `${x}%`,
                                     top: `${y}%`,
                                     transform: 'translate(-50%, -50%)',
-                                    backgroundColor: isDarkMode ? '#fff' : '#000',
-                                    boxShadow: isDarkMode 
-                                      ? '0 0 6px rgba(255, 255, 255, 0.3)' 
-                                      : '0 0 6px rgba(0, 0, 0, 0.3)',
-                                    willChange: 'transform'
+                                    backgroundColor: bg,
+                                    boxShadow: shadow,
+                                    willChange: 'transform',
                                   }}
                                   initial={{ opacity: 0, scale: 0 }}
-                                  animate={{ 
-                                    opacity: 1, 
-                                    scale: 1,
-                                  }}
+                                  animate={
+                                    cfg?.pulsing
+                                      ? { opacity: [0.15, 1, 0.35, 1, 0.15], scale: [0.88, 1.08, 0.94, 1.04, 0.88] }
+                                      : { opacity: 1, scale: 1 }
+                                  }
                                   transition={{
-                                    duration: 0.3,
-                                    delay: 0.3 + satelliteIndex * 0.05,
-                                    ease: "easeOut"
+                                    duration: cfg?.pulsing ? 1.25 : 0.3,
+                                    delay: cfg?.pulsing ? 0 : 0.3 + satelliteIndex * 0.05,
+                                    ease: 'easeInOut',
+                                    repeat: cfg?.pulsing ? Infinity : 0,
+                                    times: cfg?.pulsing ? [0, 0.18, 0.38, 0.62, 1] : undefined,
                                   }}
                                   whileHover={{ scale: 1.8 }}
                                 />
