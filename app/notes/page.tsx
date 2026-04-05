@@ -298,7 +298,7 @@ export default function NotesPage() {
         <div
           className={cn(
             'max-w-7xl mx-auto px-4 py-6',
-            (!selectedNote || isEditing) && 'pb-28 sm:pb-32'
+            (!selectedNote || isEditing) && 'pb-20 sm:pb-24'
           )}
         >
           <div className="mb-6">
@@ -737,22 +737,21 @@ export default function NotesPage() {
       </div>
 
       {(!selectedNote || isEditing) && (
-        <Button
+        <button
           type="button"
           onClick={handleSaveNote}
           disabled={!canSave}
           className={cn(
             'fixed bottom-6 right-6 z-[960]',
-            'h-14 min-w-[8.5rem] rounded-2xl px-6 gap-2',
-            'text-base font-semibold shadow-lg shadow-black/15',
-            'bg-primary text-primary-foreground hover:bg-primary/90',
-            'dark:shadow-black/40',
+            'h-8 px-4 rounded-full flex items-center text-sm font-medium transition-all',
+            'bg-primary text-primary-foreground',
+            'hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed',
             'touch-manipulation'
           )}
         >
-          <Save className="h-5 w-5 shrink-0" aria-hidden />
           {selectedNote ? 'Save changes' : 'Save note'}
-        </Button>
+          <Save className="w-4 h-4 ml-1 shrink-0" aria-hidden />
+        </button>
       )}
     </div>
   )

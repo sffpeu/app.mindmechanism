@@ -1,0 +1,27 @@
+---
+description: After code or project config changes, commit and push to GitHub without waiting for the user to say push
+alwaysApply: true
+---
+
+# Push after finishing changes
+
+When you **finish** a task that edits project files (code, config, or docs the user asked for), **do not stop at “done” in chat**—sync to GitHub automatically.
+
+## Workflow
+
+1. `git status` — see what changed.
+2. **Stage only** intentional project files. Never stage `.env`, secrets, or large/generated artifacts. Respect `.gitignore`.
+3. If there is **nothing meaningful** to commit (only whitespace, or no file changes), skip push.
+4. `git commit -m "…"` with a short, clear message (what changed and why).
+5. `git push origin <current-branch>` (use the branch shown by `git branch --show-current`).
+
+## Exceptions
+
+- **Read-only / investigation only**: no commit or push.
+- User **explicitly** asked not to commit, push, or sync.
+- **Merge conflicts** or **push rejected**: fix or report; do not force-push unless the user clearly requests it.
+- **Multiple remotes**: default to **`origin`** unless the user specified another remote (e.g. `app-dot` for `app.mindmechanism`).
+
+## If push fails
+
+Retry once if appropriate (e.g. `git pull --rebase` then push). If it still fails, explain the error and what the user needs to do (auth, branch protection, etc.).
