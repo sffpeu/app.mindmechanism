@@ -17,8 +17,15 @@ const nextConfig = {
     ignoreDuringBuilds: true,
     dirs: ['app', 'components', 'lib', 'types']
   },
-  experimental: {
-    serverActions: true
+  webpack: (config, { dev }) => {
+    // Polling avoids EMFILE ("too many open files") on macOS when native watchers fail.
+    if (dev) {
+      config.watchOptions = {
+        poll: 1000,
+        aggregateTimeout: 300,
+      }
+    }
+    return config
   },
 }
 

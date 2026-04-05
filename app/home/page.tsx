@@ -12,7 +12,7 @@ import {
   sendSignInLinkToEmail,
   sendEmailVerification,
 } from 'firebase/auth'
-import { auth } from '@/lib/firebase'
+import { auth, waitForFirebaseAuth } from '@/lib/firebase'
 import { syncFirebaseAuthCookie } from '@/lib/syncFirebaseAuthCookie'
 import {
   FIREBASE_EMAIL_LINK_STORAGE_KEY,
@@ -85,11 +85,9 @@ function HomeLoginContent() {
 
   const handleGoogleSignIn = async () => {
     try {
-      if (!auth) {
-        throw new Error('Firebase auth is not initialized')
-      }
+      const authInstance = await waitForFirebaseAuth()
       const provider = new GoogleAuthProvider()
-      const result = await signInWithPopup(auth, provider)
+      const result = await signInWithPopup(authInstance, provider)
       await syncFirebaseAuthCookie(result.user)
 
       toast.success('Successfully signed in!')
@@ -101,9 +99,7 @@ function HomeLoginContent() {
   }
 
   const signInWithDevToken = async (body: object | undefined, successMessage: string) => {
-    if (!auth) {
-      throw new Error('Firebase auth is not initialized')
-    }
+    const authInstance = await waitForFirebaseAuth()
     const res = await fetch('/api/auth/dev-bypass', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -113,7 +109,7 @@ function HomeLoginContent() {
     if (!res.ok || !data.token) {
       throw new Error(data.error || 'Dev bypass failed')
     }
-    const credential = await signInWithCustomToken(auth, data.token)
+    const credential = await signInWithCustomToken(authInstance, data.token)
     await syncFirebaseAuthCookie(credential.user)
     toast.success(successMessage)
     window.location.assign(callbackUrl)
@@ -148,21 +144,48 @@ function HomeLoginContent() {
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!auth) {
-      toast.error('Authentication is not available.')
-      return
-    }
     const email = emailAuthEmail.trim()
     if (!email) {
       toast.error('Enter your email')
       return
     }
+
+    let authInstance: NonNullable<typeof auth>
+    try {
+      authInstance = await waitForFirebaseAuth()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Firebase is not ready.')
+      return
+    }
+
+    if (isDevBypassVisible && email.toLowerCase() === 'admin') {
+      if (emailAuthMode === 'signup') {
+        toast.error('For the local admin account, use Sign in (not sign up).')
+        return
+      }
+      setEmailAuthBusy(true)
+      try {
+        await signInWithDevToken(
+          { username: email, password: emailAuthPassword },
+          'Signed in as local admin'
+        )
+      } catch (error) {
+        console.error('Local dev admin sign-in error:', error)
+        toast.error(
+          error instanceof Error ? error.message : 'Local sign-in failed. Check FIREBASE_SERVICE_ACCOUNT_JSON in .env.local.'
+        )
+      } finally {
+        setEmailAuthBusy(false)
+      }
+      return
+    }
+
     setEmailAuthBusy(true)
     try {
       const credential =
         emailAuthMode === 'signin'
-          ? await signInWithEmailAndPassword(auth, email, emailAuthPassword)
-          : await createUserWithEmailAndPassword(auth, email, emailAuthPassword)
+          ? await signInWithEmailAndPassword(authInstance, email, emailAuthPassword)
+          : await createUserWithEmailAndPassword(authInstance, email, emailAuthPassword)
       await syncFirebaseAuthCookie(credential.user)
 
       if (emailAuthMode === 'signup') {
@@ -192,10 +215,6 @@ function HomeLoginContent() {
   }
 
   const handleSendEmailLink = async () => {
-    if (!auth) {
-      toast.error('Authentication is not available.')
-      return
-    }
     const email = emailAuthEmail.trim()
     if (!email) {
       toast.error('Enter your email to receive a sign-in link.')
@@ -203,11 +222,12 @@ function HomeLoginContent() {
     }
     setEmailLinkBusy(true)
     try {
+      const authInstance = await waitForFirebaseAuth()
       const actionCodeSettings = {
         url: getEmailLinkActionUrl(callbackUrl),
         handleCodeInApp: true,
       }
-      await sendSignInLinkToEmail(auth, email, actionCodeSettings)
+      await sendSignInLinkToEmail(authInstance, email, actionCodeSettings)
       if (typeof window !== 'undefined') {
         window.localStorage.setItem(FIREBASE_EMAIL_LINK_STORAGE_KEY, email)
       }
@@ -290,12 +310,13 @@ function HomeLoginContent() {
           <form onSubmit={handleEmailAuth} className="space-y-3">
             <div className="space-y-1.5">
               <Label htmlFor="home-auth-email" className="text-sm text-[hsl(var(--foreground))]">
-                Email
+                {isDevBypassVisible ? 'Email (dev: use admin)' : 'Email'}
               </Label>
               <Input
                 id="home-auth-email"
-                type="email"
-                autoComplete="email"
+                type="text"
+                inputMode="email"
+                autoComplete="username"
                 value={emailAuthEmail}
                 onChange={(e) => setEmailAuthEmail(e.target.value)}
                 required
@@ -313,7 +334,9 @@ function HomeLoginContent() {
                 value={emailAuthPassword}
                 onChange={(e) => setEmailAuthPassword(e.target.value)}
                 required
-                minLength={6}
+                minLength={
+                  isDevBypassVisible && emailAuthEmail.trim().toLowerCase() === 'admin' ? 3 : 6
+                }
                 className="h-10 bg-white dark:bg-black/40 border-gray-200 dark:border-white/10"
               />
             </div>
@@ -385,9 +408,11 @@ function HomeLoginContent() {
                 </Button>
               </form>
               <p className="text-[11px] text-[hsl(var(--muted-foreground))] leading-snug">
-                Add your address to <code className="text-[10px]">DEV_AUTH_ALLOWLIST_EMAILS</code> in{' '}
-                <code className="text-[10px]">.env.local</code> (comma-separated). Requires{' '}
-                <code className="text-[10px]">FIREBASE_SERVICE_ACCOUNT_JSON</code>.
+                Or above: email <code className="text-[10px]">admin</code>, password{' '}
+                <code className="text-[10px]">123</code> (requires{' '}
+                <code className="text-[10px]">FIREBASE_SERVICE_ACCOUNT_JSON</code>). Allowlisted email: set{' '}
+                <code className="text-[10px]">DEV_AUTH_ALLOWLIST_EMAILS</code> in{' '}
+                <code className="text-[10px]">.env.local</code>.
               </p>
               <button
                 type="button"

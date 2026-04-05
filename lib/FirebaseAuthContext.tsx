@@ -11,7 +11,7 @@ import {
   signInWithEmailAndPassword,
   Auth
 } from 'firebase/auth';
-import { auth, db } from './firebase';
+import { auth, db, waitForFirebaseAuth } from './firebase';
 import { deleteCookie } from 'cookies-next';
 import { useRouter } from 'next/navigation';
 import { syncFirebaseAuthCookie } from '@/lib/syncFirebaseAuthCookie';
@@ -95,31 +95,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    if (!auth) return;
+    let cancelled = false
+    let unsubscribe: (() => void) | undefined
 
-    const unsubscribe = onAuthStateChanged(auth as Auth, async (user) => {
-      if (user) {
-        await syncFirebaseAuthCookie(user);
-        setUser(user);
-        // Load user profile when user signs in
-        await loadUserProfile(user.uid);
-      } else {
-        // Remove the token cookie when user is not authenticated
-        deleteCookie('__firebase_auth_token');
-        setUser(null);
-        setProfile(null);
-      }
-      setLoading(false);
-    });
+    waitForFirebaseAuth()
+      .then((authInstance) => {
+        if (cancelled) return
+        unsubscribe = onAuthStateChanged(authInstance, async (user) => {
+          if (user) {
+            await syncFirebaseAuthCookie(user)
+            setUser(user)
+            await loadUserProfile(user.uid)
+          } else {
+            deleteCookie('__firebase_auth_token')
+            setUser(null)
+            setProfile(null)
+          }
+          setLoading(false)
+        })
+      })
+      .catch(() => {
+        if (!cancelled) setLoading(false)
+      })
 
-    return () => unsubscribe();
-  }, []);
+    return () => {
+      cancelled = true
+      unsubscribe?.()
+    }
+  }, [])
 
   const signOut = async () => {
-    if (!auth) return;
+    const authInstance = auth ?? (await waitForFirebaseAuth().catch(() => null))
+    if (!authInstance) return
 
     try {
-      await firebaseSignOut(auth as Auth);
+      await firebaseSignOut(authInstance);
       // Remove the token cookie on sign out
       deleteCookie('__firebase_auth_token');
       setUser(null);

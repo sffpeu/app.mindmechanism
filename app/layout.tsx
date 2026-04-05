@@ -4,8 +4,6 @@ import './globals.css'
 import { LayoutContent } from './LayoutContent'
 import { SoundProvider } from '@/components/SoundProvider'
 import { ThemeProvider } from '@/components/ThemeProvider'
-import { AuthProvider } from '@/components/AuthProvider'
-
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
@@ -27,11 +25,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>
-            <SoundProvider>
-              <LayoutContent>{children}</LayoutContent>
-            </SoundProvider>
-          </AuthProvider>
+          <SoundProvider>
+            <LayoutContent>{children}</LayoutContent>
+          </SoundProvider>
         </ThemeProvider>
       </body>
     </html>

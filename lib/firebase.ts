@@ -139,23 +139,55 @@ let db: Firestore | null = null;
 
 if (isBrowser) {
   // Initialize Firebase app
-  initializeFirebaseApp().then(firebaseApp => {
-    if (firebaseApp) {
-      app = firebaseApp;
-      auth = getAuth(app);
-      
-      // Initialize Firestore
-      if (!db) {
-        initializeFirestoreWithRetry(app).then(firestore => {
-          if (firestore) {
-            db = firestore;
-          }
-        });
+  initializeFirebaseApp()
+    .then((firebaseApp) => {
+      if (firebaseApp) {
+        app = firebaseApp
+        auth = getAuth(app)
+
+        // Initialize Firestore
+        if (!db) {
+          initializeFirestoreWithRetry(app).then((firestore) => {
+            if (firestore) {
+              db = firestore
+            }
+          })
+        }
       }
+    })
+    .catch((error) => {
+      console.error('Failed to initialize Firebase:', error)
+    })
+}
+
+/**
+ * Firebase sets `auth` asynchronously after the module loads. Sign-in must await this
+ * or users see "Authentication is not available" on fast submits.
+ */
+export function waitForFirebaseAuth(timeoutMs = 20000): Promise<Auth> {
+  return new Promise((resolve, reject) => {
+    if (!isBrowser) {
+      reject(new Error('Firebase Auth is only available in the browser.'))
+      return
     }
-  }).catch(error => {
-    console.error('Failed to initialize Firebase:', error);
-  });
+    const start = Date.now()
+    const tick = () => {
+      if (auth) {
+        resolve(auth)
+        return
+      }
+      if (Date.now() - start >= timeoutMs) {
+        reject(
+          new Error(
+            'Firebase did not finish initializing. Copy .env.local.example to .env.local and set all NEXT_PUBLIC_FIREBASE_* values from Firebase Console → Project settings → Your apps.'
+          )
+        )
+        return
+      }
+      window.setTimeout(tick, 50)
+    }
+    tick()
+  })
 }
 
 export { app, auth, db };
