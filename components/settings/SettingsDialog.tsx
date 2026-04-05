@@ -4,7 +4,6 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { PersonalInfoSettings } from './PersonalInfoSettings'
 import { SecuritySettings } from './SecuritySettings'
 import { ThemeSettings } from './ThemeSettings'
-import { LayersPageDisplaySettings } from './LayersPageDisplaySettings'
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
 import { useState } from 'react'
@@ -48,7 +47,6 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
             <PersonalInfoSettings onChangesPending={setHasChanges} />
             <SecuritySettings />
             <ThemeSettings />
-            <LayersPageDisplaySettings />
           </div>
 
           <div className="flex justify-end gap-2 p-4 border-t border-gray-200 dark:border-gray-800">

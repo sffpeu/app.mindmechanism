@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, useCallback, Fragment } from 'react'
 import { useTheme } from '@/app/ThemeContext'
-import { useLayersDisplaySettings } from '@/lib/LayersDisplaySettingsContext'
 import DotNavigation from '@/components/DotNavigation'
 import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
@@ -75,12 +74,15 @@ const clockSatellites: Record<number, number> = {
   6: 5, // Clock 7
   7: 5, // Clock 8
   8: 1, // Clock 9
-};
+}
+
+/** Large hover/focus background clock on /layers (outer ring only). */
+const LAYERS_LARGE_BG_CLOCK_OPACITY_LIGHT = 0.03
+const LAYERS_LARGE_BG_CLOCK_OPACITY_DARK = 0.05
 
 export function MultiViewContent({ type }: MultiViewContentProps) {
   const [showElements, setShowElements] = useState(true)
   const { isDarkMode } = useTheme()
-  const { largeBackgroundClockOpacityPercent } = useLayersDisplaySettings()
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
   const isMultiView2 = type === 2
   const [hoveredOuterClockIndex, setHoveredOuterClockIndex] = useState<number | null>(null)
@@ -374,7 +376,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
               </div>
             </motion.div>
 
-            {/* Large hover/focus background clock — opacity from Settings → Layers page */}
+            {/* Large hover/focus background clock — 3% light, 5% dark */}
             {(hoveredOuterClockIndex !== null || focusedOuterClockIndex !== null) && (() => {
               const index = hoveredOuterClockIndex ?? focusedOuterClockIndex ?? 0
               const clock = clockSettings[index]
@@ -405,7 +407,9 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                         <div
                           className="absolute inset-0"
                           style={{
-                            opacity: largeBackgroundClockOpacityPercent / 100,
+                            opacity: isDarkMode
+                              ? LAYERS_LARGE_BG_CLOCK_OPACITY_DARK
+                              : LAYERS_LARGE_BG_CLOCK_OPACITY_LIGHT,
                             transform: `translate(${clock.imageX ?? 0}%, ${clock.imageY ?? 0}%) rotate(${clock.imageOrientation ?? 0}deg) scale(${clock.imageScale ?? 1})`,
                             willChange: 'transform',
                             transformOrigin: 'center',
