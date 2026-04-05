@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { ThemeProvider } from '@/app/ThemeContext';
+import { LayersClockIntensityProvider } from '@/app/LayersClockIntensityContext';
 import { AuthProvider } from '@/lib/FirebaseAuthContext';
 import { NotesProvider } from '@/lib/NotesContext';
 import { TimeTrackingProvider } from '@/lib/TimeTrackingContext';
@@ -43,15 +44,17 @@ function LayoutContentInner({ children }: { children: React.ReactNode }) {
 export function LayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <TimeTrackingProvider>
-          <NotesProvider>
-            <ToastProvider>
-              <LayoutContentInner>{children}</LayoutContentInner>
-            </ToastProvider>
-          </NotesProvider>
-        </TimeTrackingProvider>
-      </AuthProvider>
+      <LayersClockIntensityProvider>
+        <AuthProvider>
+          <TimeTrackingProvider>
+            <NotesProvider>
+              <ToastProvider>
+                <LayoutContentInner>{children}</LayoutContentInner>
+              </ToastProvider>
+            </NotesProvider>
+          </TimeTrackingProvider>
+        </AuthProvider>
+      </LayersClockIntensityProvider>
     </ThemeProvider>
   );
 } 
