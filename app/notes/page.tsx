@@ -2,10 +2,16 @@
 
 import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
-import { RotateCcw, PenLine, Files, Clock, ArrowUpDown, Save, Edit, X, Cloud, Thermometer, Droplets, Sun, Gauge, Wind, Moon, MapPin, Timer } from 'lucide-react'
-import { useTheme } from '@/app/ThemeContext'
-import { Plus } from 'lucide-react'
+import { Clock, ArrowUpDown, Save, Edit, X, Cloud, Wind, Moon, MapPin, Timer, Plus, Trash2, ClipboardList } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useNotes } from '@/lib/NotesContext'
 import { Note, WeatherSnapshot } from '@/lib/notes'
@@ -81,16 +87,12 @@ const clockColors = [
 export default function NotesPage() {
   const { user } = useAuth()
   const { notes, isLoading, addNote, editNote, removeNote } = useNotes()
-  const [showElements, setShowElements] = useState(true)
-  const { location, error: locationError, isLoading: isLocationLoading } = useLocation()
-  const [showSatellites, setShowSatellites] = useState(false)
+  const { location } = useLocation()
   const [noteTitle, setNoteTitle] = useState('')
   const [noteContent, setNoteContent] = useState('')
-  const [selectedSession, setSelectedSession] = useState<string | null>(null)
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest')
   const [selectedNote, setSelectedNote] = useState<Note | null>(null)
   const [isEditing, setIsEditing] = useState(false)
-  const { isDarkMode } = useTheme()
   const [weatherData, setWeatherData] = useState<WeatherResponse | null>(null)
   const [moon, setMoon] = useState<MoonData | null>(null)
   const [recentSessions, setRecentSessions] = useState<Session[]>([])
@@ -244,13 +246,6 @@ export default function NotesPage() {
     setSelectedSessionId('none')
   }
 
-  const handleNoteClick = (note: Note) => {
-    setSelectedNote(note)
-    setNoteTitle(note.title)
-    setNoteContent(note.content)
-    setIsEditing(false)
-  }
-
   const formatDate = (timestamp: any) => {
     if (!timestamp) return ''
     const date = timestamp.toDate()
@@ -267,6 +262,8 @@ export default function NotesPage() {
     const dateB = b.updatedAt.toDate().getTime()
     return sortOrder === 'newest' ? dateB - dateA : dateA - dateB
   })
+
+  const canSave = noteTitle.trim().length > 0 && noteContent.trim().length > 0
 
   const getAQIDescription = (index: 1 | 2 | 3 | 4 | 5 | 6) => {
     const descriptions = {
@@ -299,34 +296,49 @@ export default function NotesPage() {
     <div className="h-full overflow-hidden flex flex-col bg-gray-50 dark:bg-black/95">
       <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Notes</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-xl">
+              Write with optional session and environment context—saved notes stay easy to scan in the list.
+            </p>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
           {/* Left Column: Saved Notes */}
           <div className="space-y-4">
-            {/* Saved Notes Card */}
-            <Card className="p-4 bg-white/90 dark:bg-black/90 backdrop-blur-lg border-black/10 dark:border-white/20">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-medium text-black dark:text-white">Saved Notes</h2>
+            <Card className="card p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')}
-                    className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                  <ClipboardList className="h-3.5 w-3.5 text-gray-500" />
+                  <h2 className="text-sm font-semibold dark:text-white">Saved notes</h2>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2 text-xs text-gray-600 dark:text-gray-300"
+                    onClick={() => setSortOrder((prev) => (prev === 'newest' ? 'oldest' : 'newest'))}
                   >
-                    <ArrowUpDown className="h-4 w-4" />
+                    <ArrowUpDown className="h-3.5 w-3.5 mr-1" />
                     {sortOrder === 'newest' ? 'Newest' : 'Oldest'}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 shrink-0"
                     onClick={clearForm}
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    title="New note"
                   >
-                    <Plus className="h-5 w-5" />
-                  </button>
+                    <Plus className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
-              <div className="mt-4 space-y-3">
+              <div className="space-y-1.5 mt-2">
                 {isLoading ? (
-                  <p className="text-center text-black/50 dark:text-white/50 py-8">Loading notes...</p>
+                  <p className="text-center text-xs text-gray-500 dark:text-gray-400 py-8">Loading notes…</p>
                 ) : sortedNotes.length === 0 ? (
-                  <p className="text-center text-black/50 dark:text-white/50 py-8">No saved notes yet</p>
+                  <p className="text-center text-xs text-gray-500 dark:text-gray-400 py-8">No saved notes yet. Start one on the right.</p>
                 ) : (
                   sortedNotes.map((note) => (
                     <div
@@ -339,14 +351,16 @@ export default function NotesPage() {
                           setSelectedSessionId(note.sessionId || 'none');
                         }
                       }}
-                      className={`note-item group p-3 rounded-lg ${
-                        selectedNote?.id === note.id
-                          ? 'bg-black/5 dark:bg-white/10'
-                          : 'bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20'
-                      } backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all cursor-pointer mb-2`}
+                      className={cn(
+                        'note-item group p-2 rounded-lg border transition-all cursor-pointer',
+                        'bg-gray-50 dark:bg-black/20 border-black/5 dark:border-white/10',
+                        'hover:border-black/10 dark:hover:border-white/10',
+                        selectedNote?.id === note.id &&
+                          'ring-1 ring-blue-500/40 border-blue-500/30 bg-white dark:bg-black/30'
+                      )}
                     >
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-medium text-black dark:text-white">{note.title}</h3>
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className="text-sm font-medium dark:text-white truncate min-w-0">{note.title}</h3>
                         <div className="flex items-center gap-1">
                           {note.weatherSnapshot && (
                             <WeatherSnapshotPopover weatherSnapshot={note.weatherSnapshot}>
@@ -436,11 +450,11 @@ export default function NotesPage() {
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Clock className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
-                        <p className="text-sm text-black/50 dark:text-white/50">{formatDate(note.updatedAt)}</p>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <Clock className="h-3 w-3 text-gray-400 dark:text-gray-500 shrink-0" />
+                        <p className="text-[10px] text-gray-400 dark:text-gray-500">{formatDate(note.updatedAt)}</p>
                       </div>
-                      <p className="text-sm text-black/50 dark:text-white/50 mt-1 line-clamp-2">{note.content}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5 line-clamp-2">{note.content}</p>
                     </div>
                   ))
                 )}
@@ -450,134 +464,173 @@ export default function NotesPage() {
 
           {/* Right Column: Write/View Note */}
           <div className="md:col-span-2">
-            <Card className="p-4 bg-white/90 dark:bg-black/90 backdrop-blur-lg border-black/10 dark:border-white/20">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
-                <h2 className="text-lg font-medium text-black dark:text-white">
-                  {selectedNote ? (isEditing ? 'Edit Note' : 'View Note') : 'Write Note'}
-                </h2>
-                <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                  {(!selectedNote || isEditing) && (
-                    <Button
-                      type="button"
-                      onClick={handleSaveNote}
-                      className="gap-2 shadow-sm"
-                    >
-                      <Save className="h-4 w-4" />
-                      {selectedNote ? 'Save changes' : 'Save note'}
-                    </Button>
-                  )}
+            <Card className="card p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between mb-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base font-semibold dark:text-white">
+                      {selectedNote ? (isEditing ? 'Edit note' : 'View note') : 'Write a note'}
+                    </h2>
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    {selectedNote && !isEditing
+                      ? `Last updated ${formatDate(selectedNote.updatedAt)}`
+                      : 'Title and body are required to save.'}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-1 sm:justify-end shrink-0">
                   {selectedNote && (
                     <>
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
                         onClick={() => setIsEditing(!isEditing)}
-                        className="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                        title={isEditing ? 'Done' : 'Edit'}
                         aria-label={isEditing ? 'Cancel editing' : 'Edit note'}
                       >
                         {isEditing ? (
-                          <X className="h-5 w-5 text-black/50 dark:text-white/50" />
+                          <X className="h-4 w-4 text-gray-600 dark:text-gray-300" />
                         ) : (
-                          <Edit className="h-5 w-5 text-black/50 dark:text-white/50" />
+                          <Edit className="h-4 w-4 text-gray-600 dark:text-gray-300" />
                         )}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-500/10 dark:text-red-400"
                         onClick={() => handleDeleteNote(selectedNote.id)}
-                        className="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                        title="Delete note"
                         aria-label="Delete note"
                       >
-                        <X className="h-5 w-5 text-red-500" />
-                      </button>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </>
                   )}
-                  <PenLine className="h-5 w-5 text-black/50 dark:text-white/50" aria-hidden />
                 </div>
               </div>
 
-              {/* Current Information Display */}
               {((weatherData && moon && !selectedNote) || selectedNote?.weatherSnapshot) && (
-                <div className="mb-4 p-3 rounded-lg bg-black/5 dark:bg-white/5">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="space-y-1">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Date & Time</p>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-gray-500" />
-                        <p className="text-sm font-medium dark:text-white">
-                          {selectedNote 
-                            ? formatDate(selectedNote.updatedAt)
-                            : new Date().toLocaleString()}
-                        </p>
+                <div className="mb-3 space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Environment snapshot</p>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs text-blue-600 dark:text-blue-400">
+                          Full details
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80 space-y-3 text-sm" align="end">
+                        {selectedNote?.weatherSnapshot ? (
+                          <>
+                            <p className="font-medium dark:text-white">Saved with this note</p>
+                            <ul className="space-y-1.5 text-gray-600 dark:text-gray-300 text-xs">
+                              <li>
+                                Wind {selectedNote.weatherSnapshot.wind.speed} km/h {selectedNote.weatherSnapshot.wind.direction}
+                              </li>
+                              <li>Pressure {selectedNote.weatherSnapshot.airPressure} mb</li>
+                              <li>UV index {selectedNote.weatherSnapshot.uvIndex}</li>
+                              <li>
+                                Moonrise {selectedNote.weatherSnapshot.moon.moonrise} · Moonset{' '}
+                                {selectedNote.weatherSnapshot.moon.moonset}
+                              </li>
+                            </ul>
+                          </>
+                        ) : weatherData && moon ? (
+                          <>
+                            <p className="font-medium dark:text-white">Current conditions (saved with new notes)</p>
+                            <ul className="space-y-1.5 text-gray-600 dark:text-gray-300 text-xs">
+                              <li>
+                                Wind {weatherData.current.wind_kph} km/h {weatherData.current.wind_dir}
+                              </li>
+                              <li>Pressure {weatherData.current.pressure_mb} hPa</li>
+                              <li>UV index {weatherData.current.uv}</li>
+                              <li>
+                                AQI:{' '}
+                                {weatherData.current.air_quality
+                                  ? getAQIDescription(weatherData.current.air_quality['us-epa-index'])
+                                  : 'N/A'}
+                              </li>
+                              <li>
+                                Moonrise {moon.moonrise} · Moonset {moon.moonset}
+                              </li>
+                            </ul>
+                          </>
+                        ) : null}
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                    <div className="p-2 rounded-lg border border-black/10 dark:border-white/20">
+                      <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-200">
+                        <Clock className="h-3.5 w-3.5 shrink-0" />
+                        <span className="text-xs">Time</span>
                       </div>
+                      <p className="text-sm font-semibold dark:text-white mt-1 leading-tight">
+                        {selectedNote
+                          ? formatDate(selectedNote.updatedAt)
+                          : new Intl.DateTimeFormat('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            }).format(new Date())}
+                      </p>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Weather</p>
-                      <div className="flex items-center gap-2">
-                        <Cloud className="h-4 w-4 text-gray-500" />
-                        <p className="text-sm font-medium dark:text-white">
-                          {selectedNote?.weatherSnapshot 
-                            ? `${selectedNote.weatherSnapshot.temperature}°C, ${selectedNote.weatherSnapshot.humidity}%`
-                            : weatherData ? `${weatherData.current.temp_c}°C, ${weatherData.current.humidity}%` : 'Loading...'}
-                        </p>
+                    <div className="p-2 rounded-lg border border-black/10 dark:border-white/20">
+                      <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-200">
+                        <Cloud className="h-3.5 w-3.5 shrink-0" />
+                        <span className="text-xs">Weather</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Wind className="h-4 w-4 text-gray-500" />
-                        <p className="text-sm font-medium dark:text-white">
-                          {selectedNote?.weatherSnapshot 
-                            ? `Wind: ${selectedNote.weatherSnapshot.wind.speed} km/h ${selectedNote.weatherSnapshot.wind.direction}`
-                            : weatherData?.current?.air_quality ? `AQI: ${getAQIDescription(weatherData.current.air_quality['us-epa-index'])}` : 'Loading...'}
-                        </p>
-                      </div>
+                      <p className="text-sm font-semibold dark:text-white mt-1 leading-tight">
+                        {selectedNote?.weatherSnapshot
+                          ? `${selectedNote.weatherSnapshot.temperature}°C · ${selectedNote.weatherSnapshot.humidity}%`
+                          : weatherData
+                            ? `${weatherData.current.temp_c}°C · ${weatherData.current.humidity}%`
+                            : '…'}
+                      </p>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Moon Phase</p>
-                      <div className="flex items-center gap-2">
-                        <Moon className="h-4 w-4 text-gray-500" />
-                        <p className="text-sm font-medium dark:text-white">
-                          {selectedNote?.weatherSnapshot 
-                            ? selectedNote.weatherSnapshot.moon.phase
-                            : moon?.moon_phase || 'Loading...'}
-                        </p>
+                    <div className="p-2 rounded-lg border border-black/10 dark:border-white/20">
+                      <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-200">
+                        <Moon className="h-3.5 w-3.5 shrink-0" />
+                        <span className="text-xs">Moon</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <p className="text-xs text-gray-500">
-                          {selectedNote?.weatherSnapshot 
-                            ? `${selectedNote.weatherSnapshot.moon.illumination}% illuminated`
-                            : moon ? `${moon.moon_illumination}% illuminated` : 'Loading...'}
-                        </p>
-                      </div>
+                      <p className="text-sm font-semibold dark:text-white mt-1 leading-tight line-clamp-2">
+                        {selectedNote?.weatherSnapshot
+                          ? selectedNote.weatherSnapshot.moon.phase
+                          : moon?.moon_phase || '…'}
+                      </p>
+                      <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+                        {selectedNote?.weatherSnapshot
+                          ? `${selectedNote.weatherSnapshot.moon.illumination}% lit`
+                          : moon
+                            ? `${moon.moon_illumination}% lit`
+                            : ''}
+                      </p>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Location</p>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-gray-500" />
-                        <p className="text-sm font-medium dark:text-white">
-                          {selectedNote?.weatherSnapshot 
-                            ? selectedNote.weatherSnapshot.location.name
-                            : weatherData?.location?.name || 'Loading...'}
-                        </p>
+                    <div className="p-2 rounded-lg border border-black/10 dark:border-white/20 col-span-2 lg:col-span-1">
+                      <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-200">
+                        <MapPin className="h-3.5 w-3.5 shrink-0" />
+                        <span className="text-xs">Location</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <p className="text-xs text-gray-500">
-                          {selectedNote?.weatherSnapshot 
-                            ? `${selectedNote.weatherSnapshot.location.coordinates.lat.toFixed(2)}, ${selectedNote.weatherSnapshot.location.coordinates.lon.toFixed(2)}`
-                            : weatherData?.location ? `${weatherData.location.lat.toFixed(2)}, ${weatherData.location.lon.toFixed(2)}` : 'Loading...'}
-                        </p>
-                      </div>
+                      <p className="text-sm font-semibold dark:text-white mt-1 leading-tight truncate">
+                        {selectedNote?.weatherSnapshot
+                          ? selectedNote.weatherSnapshot.location.name
+                          : weatherData?.location?.name || '…'}
+                      </p>
                     </div>
                   </div>
                 </div>
               )}
 
-              <div className="space-y-4">
-                {/* Add Session Selector */}
+              <div className="space-y-3">
                 {(!selectedNote || isEditing) && (
-                  <div className="flex flex-col space-y-2 bg-black/5 dark:bg-white/5 rounded-lg p-3">
-                    <label className="text-sm text-black/70 dark:text-white/70">Select Session</label>
-                    <Select
-                      value={selectedSessionId}
-                      onValueChange={(value) => setSelectedSessionId(value)}
-                    >
-                      <SelectTrigger>
+                  <div className="rounded-lg border border-black/5 dark:border-white/10 bg-gray-50 dark:bg-black/20 p-3 space-y-2">
+                    <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Link to session</label>
+                    <Select value={selectedSessionId} onValueChange={(value) => setSelectedSessionId(value)}>
+                      <SelectTrigger className="bg-white dark:bg-black/40">
                         <SelectValue placeholder="Choose a session" />
                       </SelectTrigger>
                       <SelectContent>
@@ -594,69 +647,96 @@ export default function NotesPage() {
                         ))}
                       </SelectContent>
                     </Select>
-                    
-                    {/* Selected Session Info */}
-                    {selectedSessionId !== 'none' && (() => {
-                      const session = recentSessions.find(s => s.id === selectedSessionId);
-                      if (!session) return null;
-                      
-                      return (
-                        <div className="mt-3 p-3 rounded-lg bg-black/10 dark:bg-white/10">
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className={`w-2 h-2 rounded-full ${clockColors[session.clock_id].split(' ')[1]}`} />
-                            <span className={`font-medium ${clockColors[session.clock_id].split(' ')[0]}`}>
-                              {clockTitles[session.clock_id]}
-                            </span>
-                            <span className={`text-xs px-2 py-0.5 rounded-full ${
-                              session.status === 'completed' 
-                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                : session.status === 'in_progress'
-                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                                : 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400'
-                            }`}>
-                              {session.status === 'completed' ? 'Completed' : session.status === 'in_progress' ? 'In Progress' : 'Aborted'}
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">{session.words.join(", ")}</p>
-                          <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-3.5 w-3.5" />
-                              <span>Started: {session.start_time.toDate().toLocaleString()}</span>
+
+                    {selectedSessionId !== 'none' &&
+                      (() => {
+                        const session = recentSessions.find((s) => s.id === selectedSessionId)
+                        if (!session) return null
+                        return (
+                          <div className="rounded-md border border-black/5 dark:border-white/10 bg-white/80 dark:bg-black/30 p-2 space-y-1.5">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <div className={`w-2 h-2 rounded-full ${clockColors[session.clock_id].split(' ')[1]}`} />
+                              <span className={`text-sm font-medium ${clockColors[session.clock_id].split(' ')[0]}`}>
+                                {clockTitles[session.clock_id]}
+                              </span>
+                              <span
+                                className={`text-[10px] px-2 py-0.5 rounded-full ${
+                                  session.status === 'completed'
+                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                    : session.status === 'in_progress'
+                                      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                      : 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400'
+                                }`}
+                              >
+                                {session.status === 'completed'
+                                  ? 'Completed'
+                                  : session.status === 'in_progress'
+                                    ? 'In progress'
+                                    : 'Aborted'}
+                              </span>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <Timer className="h-3.5 w-3.5" />
-                              <span>Duration: {Math.round(session.duration / 1000 / 60)} minutes</span>
+                            <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2">{session.words.join(', ')}</p>
+                            <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-gray-500 dark:text-gray-400">
+                              <span className="inline-flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                {session.start_time.toDate().toLocaleString()}
+                              </span>
+                              <span className="inline-flex items-center gap-1">
+                                <Timer className="h-3 w-3" />
+                                {Math.round(session.duration / 1000 / 60)} min
+                              </span>
                             </div>
                           </div>
-                        </div>
-                      );
-                    })()}
+                        )
+                      })()}
                   </div>
                 )}
-                <div className="flex items-center justify-between bg-black/5 dark:bg-white/5 rounded-lg p-3">
-                  <input
-                    type="text"
-                    placeholder="Note Title"
+
+                <div className="space-y-1.5">
+                  <label htmlFor="note-title" className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                    Title
+                  </label>
+                  <Input
+                    id="note-title"
+                    placeholder="Give your note a short title"
                     value={noteTitle}
                     onChange={(e) => setNoteTitle(e.target.value)}
-                    className="bg-transparent w-full text-black dark:text-white placeholder-black/50 dark:placeholder-white/50 outline-none"
                     readOnly={Boolean(selectedNote && !isEditing)}
+                    className={cn(
+                      'bg-white dark:bg-black/40',
+                      selectedNote && !isEditing && 'opacity-80 cursor-default'
+                    )}
                   />
-                  {selectedNote && (
-                    <span className="text-sm text-black/50 dark:text-white/50">
-                      {formatDate(selectedNote.updatedAt)}
-                    </span>
-                  )}
                 </div>
-                <textarea
-                  placeholder="Write your note here..."
-                  value={noteContent}
-                  onChange={(e) => setNoteContent(e.target.value)}
-                  className={`w-full h-[500px] bg-black/5 dark:bg-white/5 rounded-lg p-3 text-black dark:text-white placeholder-black/50 dark:placeholder-white/50 outline-none resize-none ${
-                    selectedNote && !isEditing ? 'cursor-default' : ''
-                  }`}
-                  readOnly={Boolean(selectedNote && !isEditing)}
-                />
+                <div className="space-y-1.5">
+                  <label htmlFor="note-body" className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                    Note
+                  </label>
+                  <Textarea
+                    id="note-body"
+                    placeholder="Write freely—everything saves to your account."
+                    value={noteContent}
+                    onChange={(e) => setNoteContent(e.target.value)}
+                    readOnly={Boolean(selectedNote && !isEditing)}
+                    className={cn(
+                      'min-h-[280px] sm:min-h-[360px] md:min-h-[420px] resize-y text-sm',
+                      selectedNote && !isEditing && 'cursor-default opacity-90'
+                    )}
+                  />
+                </div>
+
+                {(!selectedNote || isEditing) && (
+                  <Button
+                    type="button"
+                    size="lg"
+                    className="w-full gap-2 font-semibold shadow-sm"
+                    onClick={handleSaveNote}
+                    disabled={!canSave}
+                  >
+                    <Save className="h-4 w-4" />
+                    {selectedNote ? 'Save changes' : 'Save note'}
+                  </Button>
+                )}
               </div>
             </Card>
           </div>
