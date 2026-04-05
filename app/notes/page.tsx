@@ -1,16 +1,31 @@
 'use client'
 
-import { useState, useEffect, type MouseEvent } from 'react'
+import { useState, useEffect, type ComponentType, type MouseEvent } from 'react'
 import { Card } from '@/components/ui/card'
-import { Clock, ArrowUpDown, Save, Edit, X, Cloud, Wind, Moon, MapPin, Timer, Plus, Trash2, ClipboardList, FileText } from 'lucide-react'
+import {
+  Clock,
+  ArrowUpDown,
+  Save,
+  Edit,
+  X,
+  Cloud,
+  Wind,
+  Moon,
+  MapPin,
+  Timer,
+  Plus,
+  Trash2,
+  ClipboardList,
+  FileText,
+  Sun,
+  Gauge,
+  Sunrise,
+  Sunset,
+  Activity,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useNotes } from '@/lib/NotesContext'
@@ -83,6 +98,52 @@ const clockColors = [
   'text-indigo-500 bg-indigo-500',
   'text-cyan-500 bg-cyan-500'
 ]
+
+type EnvIcon = ComponentType<{ className?: string }>
+
+function EnvMetricRow({
+  icon: Icon,
+  iconClassName,
+  label,
+  value,
+  valueClassName = 'text-gray-900 dark:text-white',
+}: {
+  icon: EnvIcon
+  iconClassName: string
+  label: string
+  value: string
+  valueClassName?: string
+}) {
+  return (
+    <div className="flex items-start gap-2.5 p-2.5 rounded-lg border border-black/10 dark:border-white/20 bg-white/60 dark:bg-black/20">
+      <Icon className={cn('h-4 w-4 shrink-0 mt-0.5', iconClassName)} aria-hidden />
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{label}</p>
+        <p className={cn('text-sm font-semibold leading-tight mt-0.5', valueClassName)}>{value}</p>
+      </div>
+    </div>
+  )
+}
+
+function uvPalette(uv: number) {
+  if (uv <= 2) return { icon: 'text-emerald-500', value: 'text-emerald-700 dark:text-emerald-400', band: 'Low' }
+  if (uv <= 5) return { icon: 'text-yellow-500', value: 'text-yellow-700 dark:text-yellow-400', band: 'Moderate' }
+  if (uv <= 7) return { icon: 'text-orange-500', value: 'text-orange-700 dark:text-orange-400', band: 'High' }
+  if (uv <= 10) return { icon: 'text-red-500', value: 'text-red-700 dark:text-red-400', band: 'Very high' }
+  return { icon: 'text-violet-500', value: 'text-violet-800 dark:text-violet-300', band: 'Extreme' }
+}
+
+function aqiPalette(index: number) {
+  const table: Record<number, { icon: string; value: string }> = {
+    1: { icon: 'text-emerald-500', value: 'text-emerald-700 dark:text-emerald-400' },
+    2: { icon: 'text-yellow-500', value: 'text-yellow-800 dark:text-yellow-400' },
+    3: { icon: 'text-orange-500', value: 'text-orange-700 dark:text-orange-400' },
+    4: { icon: 'text-red-500', value: 'text-red-700 dark:text-red-400' },
+    5: { icon: 'text-purple-500', value: 'text-purple-700 dark:text-purple-400' },
+    6: { icon: 'text-rose-700', value: 'text-rose-800 dark:text-rose-300' },
+  }
+  return table[index] ?? { icon: 'text-gray-500', value: 'text-gray-900 dark:text-white' }
+}
 
 export default function NotesPage() {
   const { user } = useAuth()
@@ -608,54 +669,7 @@ export default function NotesPage() {
 
               {showEnvironmentSnapshotGrid && (
                 <div className="mb-3 space-y-2">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Environment snapshot</p>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs text-blue-600 dark:text-blue-400">
-                          Full details
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-80 space-y-3 text-sm" align="end">
-                        {selectedNote?.weatherSnapshot ? (
-                          <>
-                            <p className="font-medium dark:text-white">Saved with this note</p>
-                            <ul className="space-y-1.5 text-gray-600 dark:text-gray-300 text-xs">
-                              <li>
-                                Wind {selectedNote.weatherSnapshot.wind.speed} km/h {selectedNote.weatherSnapshot.wind.direction}
-                              </li>
-                              <li>Pressure {selectedNote.weatherSnapshot.airPressure} mb</li>
-                              <li>UV index {selectedNote.weatherSnapshot.uvIndex}</li>
-                              <li>
-                                Moonrise {selectedNote.weatherSnapshot.moon.moonrise} · Moonset{' '}
-                                {selectedNote.weatherSnapshot.moon.moonset}
-                              </li>
-                            </ul>
-                          </>
-                        ) : weatherData && moon ? (
-                          <>
-                            <p className="font-medium dark:text-white">Current conditions (saved with new notes)</p>
-                            <ul className="space-y-1.5 text-gray-600 dark:text-gray-300 text-xs">
-                              <li>
-                                Wind {weatherData.current.wind_kph} km/h {weatherData.current.wind_dir}
-                              </li>
-                              <li>Pressure {weatherData.current.pressure_mb} hPa</li>
-                              <li>UV index {weatherData.current.uv}</li>
-                              <li>
-                                AQI:{' '}
-                                {weatherData.current.air_quality
-                                  ? getAQIDescription(weatherData.current.air_quality['us-epa-index'])
-                                  : 'N/A'}
-                              </li>
-                              <li>
-                                Moonrise {moon.moonrise} · Moonset {moon.moonset}
-                              </li>
-                            </ul>
-                          </>
-                        ) : null}
-                      </PopoverContent>
-                    </Popover>
-                  </div>
+                  <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Environment snapshot</p>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
                     <div className="p-2 rounded-lg border border-black/10 dark:border-white/20">
                       <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-200">
@@ -716,6 +730,107 @@ export default function NotesPage() {
                       </p>
                     </div>
                   </div>
+
+                  {selectedNote?.weatherSnapshot ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 pt-1">
+                      {(() => {
+                        const snap = selectedNote.weatherSnapshot
+                        const uv = uvPalette(snap.uvIndex)
+                        return (
+                          <>
+                            <EnvMetricRow
+                              icon={Wind}
+                              iconClassName="text-teal-500 dark:text-teal-400"
+                              label="Wind"
+                              value={`${snap.wind.speed} km/h ${snap.wind.direction}`}
+                            />
+                            <EnvMetricRow
+                              icon={Gauge}
+                              iconClassName="text-purple-500 dark:text-purple-400"
+                              label="Air pressure"
+                              value={`${snap.airPressure} mb`}
+                            />
+                            <EnvMetricRow
+                              icon={Sun}
+                              iconClassName={uv.icon}
+                              label="UV index"
+                              value={`${snap.uvIndex} · ${uv.band}`}
+                              valueClassName={uv.value}
+                            />
+                            <EnvMetricRow
+                              icon={Sunrise}
+                              iconClassName="text-amber-500 dark:text-amber-400"
+                              label="Moonrise"
+                              value={snap.moon.moonrise}
+                            />
+                            <EnvMetricRow
+                              icon={Sunset}
+                              iconClassName="text-sky-500 dark:text-sky-400"
+                              label="Moonset"
+                              value={snap.moon.moonset}
+                            />
+                          </>
+                        )
+                      })()}
+                    </div>
+                  ) : weatherData && moon ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 pt-1">
+                      {(() => {
+                        const uv = uvPalette(weatherData.current.uv)
+                        const aqiIndex = weatherData.current.air_quality?.['us-epa-index']
+                        const aqiStyles =
+                          typeof aqiIndex === 'number' ? aqiPalette(aqiIndex) : null
+                        const aqiLabel =
+                          typeof aqiIndex === 'number'
+                            ? `${getAQIDescription(aqiIndex)} (US EPA ${aqiIndex})`
+                            : 'No data from provider'
+                        return (
+                          <>
+                            <EnvMetricRow
+                              icon={Wind}
+                              iconClassName="text-teal-500 dark:text-teal-400"
+                              label="Wind"
+                              value={`${weatherData.current.wind_kph} km/h ${weatherData.current.wind_dir}`}
+                            />
+                            <EnvMetricRow
+                              icon={Gauge}
+                              iconClassName="text-purple-500 dark:text-purple-400"
+                              label="Air pressure"
+                              value={`${weatherData.current.pressure_mb} hPa`}
+                            />
+                            <EnvMetricRow
+                              icon={Sun}
+                              iconClassName={uv.icon}
+                              label="UV index"
+                              value={`${weatherData.current.uv} · ${uv.band}`}
+                              valueClassName={uv.value}
+                            />
+                            <EnvMetricRow
+                              icon={Activity}
+                              iconClassName={aqiStyles?.icon ?? 'text-gray-500 dark:text-gray-400'}
+                              label="Air quality (AQI)"
+                              value={aqiLabel}
+                              valueClassName={
+                                aqiStyles?.value ?? 'text-gray-600 dark:text-gray-400'
+                              }
+                            />
+                            <EnvMetricRow
+                              icon={Sunrise}
+                              iconClassName="text-amber-500 dark:text-amber-400"
+                              label="Moonrise"
+                              value={moon.moonrise}
+                            />
+                            <EnvMetricRow
+                              icon={Sunset}
+                              iconClassName="text-sky-500 dark:text-sky-400"
+                              label="Moonset"
+                              value={moon.moonset}
+                            />
+                          </>
+                        )
+                      })()}
+                    </div>
+                  ) : null}
                 </div>
               )}
 
