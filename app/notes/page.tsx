@@ -298,7 +298,7 @@ export default function NotesPage() {
         <div
           className={cn(
             'max-w-7xl mx-auto px-4 py-6',
-            (!selectedNote || isEditing) && 'pb-20 sm:pb-24'
+            (!selectedNote || isEditing) && 'pb-24 sm:pb-28'
           )}
         >
           <div className="mb-6">
@@ -742,15 +742,40 @@ export default function NotesPage() {
           onClick={handleSaveNote}
           disabled={!canSave}
           className={cn(
-            'fixed bottom-6 right-6 z-[960]',
-            'h-8 px-4 rounded-full flex items-center text-sm font-medium transition-all',
-            'bg-primary text-primary-foreground',
-            'hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed',
-            'touch-manipulation'
+            'fixed bottom-6 right-6 z-[960] group',
+            'flex items-center gap-3 pl-2.5 pr-5 py-2.5 rounded-2xl',
+            'bg-white/95 dark:bg-zinc-950/90 backdrop-blur-xl',
+            'border border-black/[0.08] dark:border-white/[0.12]',
+            'shadow-lg shadow-black/[0.08] dark:shadow-black/50',
+            'ring-1 ring-black/[0.04] dark:ring-white/[0.06]',
+            'transition-all duration-200 ease-out',
+            'hover:shadow-xl hover:border-primary/20 dark:hover:border-primary/25',
+            'hover:-translate-y-0.5 active:translate-y-0 active:shadow-lg',
+            'disabled:opacity-45 disabled:cursor-not-allowed disabled:hover:translate-y-0',
+            'disabled:hover:shadow-lg disabled:hover:border-black/[0.08] dark:disabled:hover:border-white/[0.12]',
+            'touch-manipulation',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
           )}
         >
-          {selectedNote ? 'Save changes' : 'Save note'}
-          <Save className="w-4 h-4 ml-1 shrink-0" aria-hidden />
+          <span
+            className={cn(
+              'flex h-10 w-10 items-center justify-center rounded-xl shrink-0',
+              'bg-primary text-primary-foreground shadow-sm',
+              'transition-transform duration-200 group-hover:scale-[1.03]',
+              'group-disabled:opacity-80 group-disabled:scale-100'
+            )}
+            aria-hidden
+          >
+            <Save className="h-5 w-5" />
+          </span>
+          <span className="text-left min-w-0 pr-0.5">
+            <span className="block text-sm font-semibold text-gray-900 dark:text-white leading-tight">
+              {selectedNote ? 'Save changes' : 'Save note'}
+            </span>
+            <span className="block text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 leading-snug">
+              {canSave ? 'Stored in your account' : 'Add a title and note first'}
+            </span>
+          </span>
         </button>
       )}
     </div>

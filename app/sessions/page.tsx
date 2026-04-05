@@ -10,7 +10,6 @@ import { clockSettings } from '@/lib/clockSettings'
 import { SatelliteSettings } from '@/types/ClockSettings'
 import { SessionDurationDialog } from '@/components/SessionDurationDialog'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import { createSession } from '@/lib/sessions'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useTimeTracking } from '@/lib/hooks/useTimeTracking'
@@ -249,12 +248,14 @@ export default function SessionsPage() {
                   </p>
                 </div>
                 <div className={isCreateListView ? "space-y-4" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-1"}>
-                  {clockData.map((clock, i) => (
+                  {clockData.map((clock, i) => {
+                    const clockHex = CLOCK_HEX[clock.id] ?? CLOCK_HEX[i]
+                    return (
                     <div
                       key={i}
                       className={`p-6 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border-0 transition-all group relative ${isCreateListView ? 'flex gap-8 items-start' : 'flex flex-col'}`}
                       style={{
-                        boxShadow: hoveredCardIndex === i ? `0 0 15px ${hexToRgba(CLOCK_HEX[i], 0.3)}` : undefined,
+                        boxShadow: hoveredCardIndex === i ? `0 0 15px ${hexToRgba(clockHex, 0.3)}` : undefined,
                       }}
                       onMouseEnter={() => setHoveredCardIndex(i)}
                       onMouseLeave={() => setHoveredCardIndex(null)}
@@ -295,11 +296,12 @@ export default function SessionsPage() {
                               return (
                                 <div
                                   key={index}
-                                  className={`absolute w-2 h-2 rounded-full ${clock.color.split(' ')[1]}`}
+                                  className="absolute w-2 h-2 rounded-full shadow-sm outline outline-1 outline-offset-1 outline-black/10 dark:outline-white/20"
                                   style={{
                                     left: `${x}%`,
                                     top: `${y}%`,
-                                    transform: 'translate(-50%, -50%)'
+                                    transform: 'translate(-50%, -50%)',
+                                    backgroundColor: clockHex,
                                   }}
                                 />
                               )
@@ -310,7 +312,10 @@ export default function SessionsPage() {
 
                       <div className={`flex-1 min-w-0 ${isCreateListView ? '' : 'flex flex-col h-full'}`}>
                         <div className="text-center">
-                          <h3 className={`text-lg font-medium ${clock.color.split(' ')[0]}`}>
+                          <h3
+                            className="text-lg font-medium"
+                            style={{ color: clockHex }}
+                          >
                             {clock.title}
                           </h3>
                           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -353,7 +358,10 @@ export default function SessionsPage() {
                           </div>
                           <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
                             <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                              <div className={`w-1 h-1 rounded-full ${clock.color.split(' ')[1]}`} />
+                              <div
+                                className="w-1 h-1 rounded-full shrink-0"
+                                style={{ backgroundColor: clockHex }}
+                              />
                               Focus Nodes
                             </span>
                             <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
@@ -381,30 +389,33 @@ export default function SessionsPage() {
                         </div>
 
                         <div className={`flex gap-3 mt-auto items-center`}>
-                          <Button
+                          <button
+                            type="button"
                             onClick={() => handleStartSession(clock.id, clock.color)}
-                            className="flex-1 flex items-center justify-center px-6 py-4 rounded-lg text-center transition-all bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:bg-white dark:hover:bg-white/10"
+                            className="flex-1 flex items-center justify-center px-6 py-4 rounded-lg text-center text-base font-medium transition-all bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:bg-white dark:hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50 dark:focus-visible:ring-offset-black/95"
                             style={{
-                              boxShadow: hoveredCardIndex === i ? `0 0 15px ${hexToRgba(CLOCK_HEX[i], 0.1)}` : undefined,
+                              color: clockHex,
+                              boxShadow: hoveredCardIndex === i ? `0 0 15px ${hexToRgba(clockHex, 0.1)}` : undefined,
                             }}
                           >
-                            <span className={`text-base font-medium ${clock.color.split(' ')[0]}`}>
-                              Start Session
-                            </span>
-                          </Button>
+                            Start Session
+                          </button>
                           <Link
                             href={`/${clock.id}`}
-                            className="h-[45px] w-[45px] flex items-center justify-center rounded-full transition-all bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:bg-white dark:hover:bg-white/10"
+                            className="h-[45px] w-[45px] flex items-center justify-center rounded-full transition-all bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:bg-white dark:hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50 dark:focus-visible:ring-offset-black/95"
                             style={{
-                              boxShadow: hoveredCardIndex === i ? `0 0 15px ${hexToRgba(CLOCK_HEX[i], 0.1)}` : undefined,
+                              color: clockHex,
+                              boxShadow: hoveredCardIndex === i ? `0 0 15px ${hexToRgba(clockHex, 0.1)}` : undefined,
                             }}
+                            aria-label={`Open clock ${clock.id + 1}`}
                           >
-                            <Play className={`h-4 w-4 ${clock.color.split(' ')[0]}`} />
+                            <Play className="h-4 w-4" aria-hidden />
                           </Link>
                         </div>
                       </div>
                     </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             )}
