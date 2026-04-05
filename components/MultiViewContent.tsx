@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, Fragment } from 'react'
 import { useTheme } from '@/app/ThemeContext'
-import { LAYERS_LARGE_BG_CLOCK_BASE_OPACITY, useLayersClockIntensity } from '@/app/LayersClockIntensityContext'
+import { useLayersDisplaySettings } from '@/lib/LayersDisplaySettingsContext'
 import DotNavigation from '@/components/DotNavigation'
 import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
@@ -80,7 +80,7 @@ const clockSatellites: Record<number, number> = {
 export function MultiViewContent({ type }: MultiViewContentProps) {
   const [showElements, setShowElements] = useState(true)
   const { isDarkMode } = useTheme()
-  const { layersClockIntensity } = useLayersClockIntensity()
+  const { largeBackgroundClockOpacityPercent } = useLayersDisplaySettings()
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
   const isMultiView2 = type === 2
   const [hoveredOuterClockIndex, setHoveredOuterClockIndex] = useState<number | null>(null)
@@ -374,7 +374,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
               </div>
             </motion.div>
 
-            {/* Large hovered mini-clock — center on right (next to nav); base opacity × settings intensity; straight (0°) when focused */}
+            {/* Large hover/focus background clock — opacity from Settings → Layers page */}
             {(hoveredOuterClockIndex !== null || focusedOuterClockIndex !== null) && (() => {
               const index = hoveredOuterClockIndex ?? focusedOuterClockIndex ?? 0
               const clock = clockSettings[index]
@@ -405,7 +405,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                         <div
                           className="absolute inset-0"
                           style={{
-                            opacity: LAYERS_LARGE_BG_CLOCK_BASE_OPACITY * layersClockIntensity,
+                            opacity: largeBackgroundClockOpacityPercent / 100,
                             transform: `translate(${clock.imageX ?? 0}%, ${clock.imageY ?? 0}%) rotate(${clock.imageOrientation ?? 0}deg) scale(${clock.imageScale ?? 1})`,
                             willChange: 'transform',
                             transformOrigin: 'center',
@@ -432,7 +432,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
               className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] aspect-square" 
               style={{ zIndex: 40 }}
               initial={{ opacity: 0 }}
-              animate={{ opacity: layersClockIntensity }}
+              animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
             >
               {clockSettings.slice(0, 9).map((clock, index) => {

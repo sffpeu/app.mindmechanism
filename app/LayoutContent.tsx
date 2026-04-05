@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { ThemeProvider } from '@/app/ThemeContext';
-import { LayersClockIntensityProvider } from '@/app/LayersClockIntensityContext';
+import { LayersDisplaySettingsProvider } from '@/lib/LayersDisplaySettingsContext';
 import { AuthProvider } from '@/lib/FirebaseAuthContext';
 import { NotesProvider } from '@/lib/NotesContext';
 import { TimeTrackingProvider } from '@/lib/TimeTrackingContext';
@@ -44,7 +44,7 @@ function LayoutContentInner({ children }: { children: React.ReactNode }) {
 export function LayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
-      <LayersClockIntensityProvider>
+      <LayersDisplaySettingsProvider>
         <AuthProvider>
           <TimeTrackingProvider>
             <NotesProvider>
@@ -54,7 +54,7 @@ export function LayoutContent({ children }: { children: React.ReactNode }) {
             </NotesProvider>
           </TimeTrackingProvider>
         </AuthProvider>
-      </LayersClockIntensityProvider>
+      </LayersDisplaySettingsProvider>
     </ThemeProvider>
   );
 } 
