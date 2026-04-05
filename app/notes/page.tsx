@@ -451,16 +451,28 @@ export default function NotesPage() {
           {/* Right Column: Write/View Note */}
           <div className="md:col-span-2">
             <Card className="p-4 bg-white/90 dark:bg-black/90 backdrop-blur-lg border-black/10 dark:border-white/20">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
                 <h2 className="text-lg font-medium text-black dark:text-white">
                   {selectedNote ? (isEditing ? 'Edit Note' : 'View Note') : 'Write Note'}
                 </h2>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                  {(!selectedNote || isEditing) && (
+                    <Button
+                      type="button"
+                      onClick={handleSaveNote}
+                      className="gap-2 shadow-sm"
+                    >
+                      <Save className="h-4 w-4" />
+                      {selectedNote ? 'Save changes' : 'Save note'}
+                    </Button>
+                  )}
                   {selectedNote && (
                     <>
                       <button
+                        type="button"
                         onClick={() => setIsEditing(!isEditing)}
                         className="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                        aria-label={isEditing ? 'Cancel editing' : 'Edit note'}
                       >
                         {isEditing ? (
                           <X className="h-5 w-5 text-black/50 dark:text-white/50" />
@@ -469,14 +481,16 @@ export default function NotesPage() {
                         )}
                       </button>
                       <button
+                        type="button"
                         onClick={() => handleDeleteNote(selectedNote.id)}
                         className="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                        aria-label="Delete note"
                       >
                         <X className="h-5 w-5 text-red-500" />
                       </button>
                     </>
                   )}
-                  <PenLine className="h-5 w-5 text-black/50 dark:text-white/50" />
+                  <PenLine className="h-5 w-5 text-black/50 dark:text-white/50" aria-hidden />
                 </div>
               </div>
 
@@ -643,14 +657,6 @@ export default function NotesPage() {
                   }`}
                   readOnly={Boolean(selectedNote && !isEditing)}
                 />
-                {(!selectedNote || isEditing) && (
-                  <button
-                    onClick={handleSaveNote}
-                    className="w-full py-3 bg-gray-400/80 hover:bg-gray-400/90 dark:bg-gray-600/80 dark:hover:bg-gray-600/90 text-white rounded-lg transition-colors"
-                  >
-                    {selectedNote ? 'Save Changes' : 'Save Note'}
-                  </button>
-                )}
               </div>
             </Card>
           </div>
