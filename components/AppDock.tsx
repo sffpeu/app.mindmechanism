@@ -11,6 +11,8 @@ import {
   Settings,
   Sun,
   Moon,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 import { Dock, DockIcon, DockItem, DockLabel } from '@/components/ui/dock';
 import { useTheme } from '@/app/ThemeContext';
@@ -18,6 +20,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { SettingsDialog } from '@/components/settings/SettingsDialog';
 import { useAuth } from '@/lib/FirebaseAuthContext';
+import { useFullscreen } from '@/lib/hooks/useFullscreen';
 
 function isPublicAuthPath(pathname: string | null) {
   if (!pathname) return true;
@@ -40,6 +43,7 @@ export function AppDock() {
   const { isDarkMode, setIsDarkMode } = useTheme();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const { isFullscreen, toggle: toggleFullscreen, supported: fullscreenSupported } = useFullscreen();
 
   useEffect(() => {
     setMounted(true);
@@ -109,6 +113,28 @@ export function AppDock() {
                 </DockIcon>
               </DockItem>
             </a>
+            {fullscreenSupported ? (
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  void toggleFullscreen();
+                }}
+                className="outline-none border-none cursor-pointer no-underline"
+                aria-label={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
+              >
+                <DockItem className="aspect-square rounded-full bg-gray-200 dark:bg-neutral-800 hover:bg-gray-300 dark:hover:bg-neutral-700">
+                  <DockLabel>{isFullscreen ? 'Exit full screen' : 'Full screen'}</DockLabel>
+                  <DockIcon>
+                    {isFullscreen ? (
+                      <Minimize2 className="h-full w-full text-neutral-600 dark:text-neutral-300" />
+                    ) : (
+                      <Maximize2 className="h-full w-full text-neutral-600 dark:text-neutral-300" />
+                    )}
+                  </DockIcon>
+                </DockItem>
+              </a>
+            ) : null}
             <a
               href="#"
               onClick={(e) => {
