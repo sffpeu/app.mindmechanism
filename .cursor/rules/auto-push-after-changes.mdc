@@ -7,6 +7,12 @@ alwaysApply: true
 
 When you **finish** a task that edits project files (code, config, or docs the user asked for), **do not stop at “done” in chat**—sync to GitHub automatically.
 
+## Canonical remote (this project)
+
+- **`origin`** → [github.com/sffpeu/app.mindmechanism](https://github.com/sffpeu/app.mindmechanism) (repo name uses a **dot**).
+- Production on Vercel: **app-mindmechanism.vercel.app** (hyphenated project slug is normal).
+- Optional mirror: remote **`hyphen`** → `sffpeu/app-mindmechanism` (hyphen). Push there only if the user asks to sync both.
+
 ## Workflow
 
 1. `git status` — see what changed.
@@ -20,7 +26,7 @@ When you **finish** a task that edits project files (code, config, or docs the u
 - **Read-only / investigation only**: no commit or push.
 - User **explicitly** asked not to commit, push, or sync.
 - **Merge conflicts** or **push rejected**: fix or report; do not force-push unless the user clearly requests it.
-- **Multiple remotes**: default to **`origin`** unless the user specified another remote (e.g. `app-dot` for `app.mindmechanism`).
+- **Multiple remotes**: default to **`origin`** (`app.mindmechanism`) unless the user asked to use **`hyphen`** or another remote.
 
 ## If push fails
 
