@@ -5,7 +5,7 @@ import { useState, useRef, type ReactNode } from 'react'
 export type SatelliteNameLabelProps = {
   name?: string | null
   children: ReactNode
-  /** Smaller chip for tiny dots (e.g. multiview) */
+  /** Smaller type for tiny dots (e.g. multiview) */
   compact?: boolean
   className?: string
 }
@@ -23,9 +23,9 @@ export function SatelliteNameLabel({ name, children, compact, className }: Satel
     return <>{children}</>
   }
 
-  const chipClass = compact
-    ? 'max-w-[min(180px,65vw)] truncate border border-black/10 bg-black/85 px-1.5 py-0.5 text-center text-[10px] font-medium text-white shadow-md dark:border-white/15 dark:bg-white/90 dark:text-black'
-    : 'max-w-[min(220px,75vw)] truncate border border-black/10 bg-black/85 px-2 py-1 text-center text-xs font-medium text-white shadow-md dark:border-white/15 dark:bg-white/90 dark:text-black'
+  const textClass = compact
+    ? 'max-w-[min(180px,65vw)] truncate text-center text-[10px] font-medium text-black dark:text-white'
+    : 'max-w-[min(220px,75vw)] truncate text-center text-xs font-medium text-black dark:text-white'
 
   return (
     <div
@@ -74,7 +74,7 @@ export function SatelliteNameLabel({ name, children, compact, className }: Satel
     >
       {visible ? (
         <div
-          className={`pointer-events-auto absolute bottom-full left-1/2 z-[80] mb-1 -translate-x-1/2 whitespace-nowrap rounded-md ${chipClass}`}
+          className={`pointer-events-auto absolute bottom-full left-1/2 z-[80] mb-0.5 -translate-x-1/2 whitespace-nowrap ${textClass}`}
           role="tooltip"
         >
           {trimmed}
