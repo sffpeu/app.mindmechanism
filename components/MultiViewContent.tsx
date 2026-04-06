@@ -52,75 +52,39 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
     return { x, y };
   }, [rotationValues]);
 
-  // Optimize rotation values update with batch updates
+  // Satellite orbit angles (single RAF loop; was duplicated and shared one ref, which broke updates)
   useEffect(() => {
-    if (type !== 1) return;
+    if (type !== 1) return
 
-    const updateRotations = () => {
-      const now = Date.now();
-      const newRotations: Record<number, number[]> = {};
-      
-      clockSettings.forEach((clock, index) => {
-        if (!clockSatellites[index]) return;
-        
-        const elapsedMilliseconds = now - clock.startDateTime.getTime();
-        const configs = defaultSatelliteConfigs[index] || [];
-        
-        newRotations[index] = configs.map(config => {
-          const satelliteRotation = (elapsedMilliseconds / config.rotationTime) * 360;
-          return config.rotationDirection === 'clockwise'
-            ? satelliteRotation % 360
-            : (-satelliteRotation + 360) % 360;
-        });
-      });
+    const tick = () => {
+      const now = Date.now()
+      const newRotations: Record<number, number[]> = {}
 
-      setRotationValues(newRotations);
-      animationRef.current = requestAnimationFrame(updateRotations);
-    };
-
-    updateRotations();
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, [type, clockSettings]);
-
-  // Remove the duplicate satellite animation effect
-  // Smooth animation for satellites
-  useEffect(() => {
-    if (type !== 1) return;
-
-    const animate = () => {
-      const now = Date.now();
-      const newRotations: Record<number, number[]> = {};
-      
-      // Calculate rotations for all clocks' satellites
       clockSettings.forEach((clock, clockIndex) => {
-        if (!clockSatellites[clockIndex]) return;
-        
-        const elapsedMilliseconds = now - clock.startDateTime.getTime();
-        const configs = defaultSatelliteConfigs[clockIndex] || [];
-        
-        newRotations[clockIndex] = configs.map(config => {
-          const satelliteRotation = (elapsedMilliseconds / config.rotationTime) * 360;
+        if (!clockSatellites[clockIndex]) return
+
+        const elapsedMilliseconds = now - clock.startDateTime.getTime()
+        const configs = defaultSatelliteConfigs[clockIndex] || []
+
+        newRotations[clockIndex] = configs.map((config) => {
+          const satelliteRotation = (elapsedMilliseconds / config.rotationTime) * 360
           return config.rotationDirection === 'clockwise'
             ? satelliteRotation % 360
-            : (-satelliteRotation + 360) % 360;
-        });
-      });
+            : (-satelliteRotation + 360) % 360
+        })
+      })
 
-      setRotationValues(newRotations);
-      animationRef.current = requestAnimationFrame(animate);
-    };
+      setRotationValues(newRotations)
+      animationRef.current = requestAnimationFrame(tick)
+    }
 
-    animate();
+    tick()
     return () => {
       if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
+        cancelAnimationFrame(animationRef.current)
       }
-    };
-  }, [type, clockSettings]);
+    }
+  }, [type, clockSettings])
 
   // Calculate rotation for each clock
   const getClockRotation = (clock: typeof clockSettings[0]) => {
@@ -168,16 +132,16 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
               return (
                 <div
                   key={index}
-                  className="absolute inset-0 flex items-center justify-center"
+                  className="pointer-events-none absolute inset-0 flex items-center justify-center"
                   style={{
                     mixBlendMode: isDarkMode ? 'screen' : 'multiply',
                   }}
                 >
-                  <div className="w-full h-full relative">
+                  <div className="pointer-events-none relative h-full w-full">
                     {/* Clock face with shorter initial animation */}
-                    <div className="absolute inset-0">
+                    <div className="pointer-events-none absolute inset-0">
                       <motion.div
-                        className="absolute inset-0"
+                        className="pointer-events-none absolute inset-0"
                         animate={{ rotate: rotation }}
                         transition={{
                           duration: 0.3, // Shortened from 1 to 0.3
@@ -188,7 +152,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                         }}
                       >
                         <div
-                          className="absolute inset-0"
+                          className="pointer-events-none absolute inset-0"
                           style={{
                             transform: `translate(${clock.imageX || 0}%, ${clock.imageY || 0}%) rotate(${clock.imageOrientation}deg) scale(${clock.imageScale})`,
                             transformOrigin: 'center',
@@ -198,7 +162,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                             src={`/${index + 1}.svg`}
                             alt={`Clock ${index + 1}`}
                             fill
-                            className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
+                            className="pointer-events-none object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
                             priority
                             loading="eager"
                           />
@@ -207,14 +171,14 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                     </div>
 
                     {/* Focus nodes moved slightly inward */}
-                    <div 
-                      className="absolute inset-0"
+                    <div
+                      className="pointer-events-none absolute inset-0"
                       style={{
                         transform: `rotate(${rotation}deg)`,
                       }}
                     >
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-full h-full rounded-full relative">
+                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                        <div className="relative h-full w-full rounded-full">
                           {Array.from({ length: clock.focusNodes }).map((_, nodeIndex) => {
                             const angle = (nodeIndex * 360) / clock.focusNodes
                             const radius = 53 // Reduced from 55 to move focus nodes inward
@@ -223,7 +187,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                             return (
                               <motion.div
                                 key={nodeIndex}
-                                className={`absolute w-2 h-2 rounded-full ${focusNodeColors[index]} dark:brightness-150`}
+                                className={`pointer-events-none absolute w-2 h-2 rounded-full ${focusNodeColors[index]} dark:brightness-150`}
                                 style={{
                                   left: `${x}%`,
                                   top: `${y}%`,
@@ -249,9 +213,9 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
 
                     {/* Satellites with reduced shadow and smoother animation */}
                     {clockSatellites[index] > 0 && (
-                      <div className="absolute inset-0">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-full h-full rounded-full relative">
+                      <div className="pointer-events-none absolute inset-0">
+                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                          <div className="relative h-full w-full rounded-full">
                             {Array.from({ length: clockSatellites[index] }).map((_, satelliteIndex) => {
                               const { x, y } = getSatellitePosition(index, satelliteIndex, clockSatellites[index])
                               const cfg = defaultSatelliteConfigs[index]?.[satelliteIndex]
@@ -265,7 +229,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                               return (
                                 <motion.div
                                   key={satelliteIndex}
-                                  className="absolute pointer-events-auto"
+                                  className="pointer-events-auto absolute z-[5] cursor-pointer p-2"
                                   style={{
                                     left: `${x}%`,
                                     top: `${y}%`,
