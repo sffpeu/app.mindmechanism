@@ -14,6 +14,7 @@ import { toast } from 'react-hot-toast';
 import { useLocation } from '@/lib/hooks/useLocation';
 import { Timestamp } from 'firebase/firestore';
 import { useSoundEffects } from '@/lib/sounds';
+import { SatelliteNameLabel } from '@/components/SatelliteNameLabel';
 
 export { clockSatellites, defaultSatelliteConfigs };
 
@@ -293,28 +294,29 @@ const Satellite = ({ satellite, index, clockId, x, y, isMultiView }: {
         transform: 'translate(-50%, -50%)',
         zIndex: 50,
       }}
-      title={satellite.name}
       whileHover={{ scale: 1.5 }}
     >
-      {satellite.pulsing ? (
-        <motion.div
-          className={`${isMultiView ? 'w-3 h-3' : 'w-4 h-4'} rounded-full`}
-          style={{
-            backgroundColor: accent,
-            boxShadow: glow,
-          }}
-          animate={{ opacity: [0.15, 1, 0.35, 1, 0.15], scale: [0.88, 1.08, 0.94, 1.04, 0.88] }}
-          transition={{ duration: 1.25, repeat: Infinity, ease: 'easeInOut', times: [0, 0.18, 0.38, 0.62, 1] }}
-        />
-      ) : (
-        <div
-          className={`${isMultiView ? 'w-3 h-3' : 'w-4 h-4'} rounded-full ${themeFill ? 'bg-black dark:bg-white' : ''}`}
-          style={{
-            backgroundColor: accent,
-            boxShadow: glow,
-          }}
-        />
-      )}
+      <SatelliteNameLabel name={satellite.name} compact={isMultiView}>
+        {satellite.pulsing ? (
+          <motion.div
+            className={`${isMultiView ? 'w-3 h-3' : 'w-4 h-4'} rounded-full`}
+            style={{
+              backgroundColor: accent,
+              boxShadow: glow,
+            }}
+            animate={{ opacity: [0.15, 1, 0.35, 1, 0.15], scale: [0.88, 1.08, 0.94, 1.04, 0.88] }}
+            transition={{ duration: 1.25, repeat: Infinity, ease: 'easeInOut', times: [0, 0.18, 0.38, 0.62, 1] }}
+          />
+        ) : (
+          <div
+            className={`${isMultiView ? 'w-3 h-3' : 'w-4 h-4'} rounded-full ${themeFill ? 'bg-black dark:bg-white' : ''}`}
+            style={{
+              backgroundColor: accent,
+              boxShadow: glow,
+            }}
+          />
+        )}
+      </SatelliteNameLabel>
     </motion.div>
   );
 };

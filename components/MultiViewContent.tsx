@@ -7,6 +7,7 @@ import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { clockSatellites, defaultSatelliteConfigs } from '@/lib/satelliteDefaults'
+import { SatelliteNameLabel } from '@/components/SatelliteNameLabel'
 
 export interface MultiViewContentProps {
   type: number
@@ -264,14 +265,11 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                               return (
                                 <motion.div
                                   key={satelliteIndex}
-                                  className="absolute w-3 h-3 rounded-full"
-                                  title={cfg?.name}
+                                  className="absolute pointer-events-auto"
                                   style={{
                                     left: `${x}%`,
                                     top: `${y}%`,
                                     transform: 'translate(-50%, -50%)',
-                                    backgroundColor: bg,
-                                    boxShadow: shadow,
                                     willChange: 'transform',
                                   }}
                                   initial={{ opacity: 0, scale: 0 }}
@@ -288,7 +286,17 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                                     times: cfg?.pulsing ? [0, 0.18, 0.38, 0.62, 1] : undefined,
                                   }}
                                   whileHover={{ scale: 1.8 }}
-                                />
+                                >
+                                  <SatelliteNameLabel name={cfg?.name} compact>
+                                    <div
+                                      className="h-3 w-3 rounded-full"
+                                      style={{
+                                        backgroundColor: bg,
+                                        boxShadow: shadow,
+                                      }}
+                                    />
+                                  </SatelliteNameLabel>
+                                </motion.div>
                               )
                             })}
                           </div>

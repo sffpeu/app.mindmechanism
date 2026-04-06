@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/popover"
 import type { ClockSettings } from '@/types/ClockSettings'
 import { clockSatellites, defaultSatelliteConfigs } from '@/lib/satelliteDefaults'
+import { SatelliteNameLabel } from '@/components/SatelliteNameLabel'
 
 interface WeatherResponse {
   location: {
@@ -467,15 +468,11 @@ export default function Home1Page() {
                             return (
                               <motion.div
                                 key={satelliteIndex}
-                                className="absolute w-3 h-3 rounded-full cursor-pointer"
-                                title={cfg?.name}
+                                className="absolute cursor-pointer"
                                 style={{
                                   left: `${x}%`,
                                   top: `${y}%`,
                                   transform: 'translate(-50%, -50%)',
-                                  backgroundColor: bg,
-                                  boxShadow: selectedShadow,
-                                  border: isSelected ? '2px solid white' : 'none',
                                   zIndex: isSelected ? 10 : 1,
                                   willChange: 'transform',
                                 }}
@@ -497,6 +494,16 @@ export default function Home1Page() {
                                 onMouseLeave={() => setHoveredSatellite(null)}
                                 onClick={() => handleSatelliteClick(index, satelliteIndex)}
                               >
+                                <SatelliteNameLabel name={cfg?.name} compact>
+                                  <div
+                                    className="h-3 w-3 rounded-full"
+                                    style={{
+                                      backgroundColor: bg,
+                                      boxShadow: selectedShadow,
+                                      border: isSelected ? '2px solid white' : 'none',
+                                    }}
+                                  />
+                                </SatelliteNameLabel>
                                 {/* Position and speed display for selected satellite */}
                                 {isSelected && (
                                   <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black/80 dark:bg-white/80 text-white dark:text-black text-xs px-2 py-1 rounded whitespace-nowrap z-20">

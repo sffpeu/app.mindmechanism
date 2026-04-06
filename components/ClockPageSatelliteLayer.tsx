@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import type { SatelliteSettings } from '@/types/ClockSettings'
+import { SatelliteNameLabel } from '@/components/SatelliteNameLabel'
 
 export function ClockPageSatelliteLayer({
   satellites,
@@ -50,33 +51,34 @@ export function ClockPageSatelliteLayer({
               transform: 'translate(-50%, -50%)',
               zIndex: 100,
             }}
-            title={satellite.name}
             whileHover={{ scale: 1.25 }}
           >
-            {satellite.pulsing ? (
-              <motion.div
-                className="h-4 w-4 rounded-full"
-                style={{ backgroundColor: accent, boxShadow: glow }}
-                animate={{
-                  opacity: [0.15, 1, 0.35, 1, 0.15],
-                  scale: [0.88, 1.08, 0.94, 1.04, 0.88],
-                }}
-                transition={{
-                  duration: 1.25,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                  times: [0, 0.18, 0.38, 0.62, 1],
-                }}
-              />
-            ) : (
-              <div
-                className={`h-4 w-4 rounded-full ${themeFill ? 'bg-black dark:bg-white' : ''}`}
-                style={{
-                  backgroundColor: accent,
-                  boxShadow: glow,
-                }}
-              />
-            )}
+            <SatelliteNameLabel name={satellite.name}>
+              {satellite.pulsing ? (
+                <motion.div
+                  className="h-4 w-4 rounded-full"
+                  style={{ backgroundColor: accent, boxShadow: glow }}
+                  animate={{
+                    opacity: [0.15, 1, 0.35, 1, 0.15],
+                    scale: [0.88, 1.08, 0.94, 1.04, 0.88],
+                  }}
+                  transition={{
+                    duration: 1.25,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                    times: [0, 0.18, 0.38, 0.62, 1],
+                  }}
+                />
+              ) : (
+                <div
+                  className={`h-4 w-4 rounded-full ${themeFill ? 'bg-black dark:bg-white' : ''}`}
+                  style={{
+                    backgroundColor: accent,
+                    boxShadow: glow,
+                  }}
+                />
+              )}
+            </SatelliteNameLabel>
           </motion.div>
         )
       })}
