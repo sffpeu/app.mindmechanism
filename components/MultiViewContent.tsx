@@ -159,7 +159,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                           }}
                         >
                           <Image
-                            src={`/${index + 1}.svg`}
+                            src={clock.imageUrl}
                             alt={`Clock ${index + 1}`}
                             fill
                             className="pointer-events-none object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
@@ -383,7 +383,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                           }}
                         >
                           <Image
-                            src={`/${index + 1}.svg`}
+                            src={clock.imageUrl}
                             alt={`Clock ${index + 1}`}
                             fill
                             className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
