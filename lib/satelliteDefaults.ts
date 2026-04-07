@@ -35,15 +35,8 @@ export const defaultSatelliteConfigs: Record<number, SatelliteSettings[]> = {
       pulseColor: '#d4af37',
     },
   ],
+  // Clock 5 — Mercury (template)
   4: [
-    { id: 0, name: 'Puck', rotationTime: s(65664), rotationDirection: 'clockwise' },
-    { id: 1, name: 'Miranda', rotationTime: s(121392), rotationDirection: 'counterclockwise' },
-    { id: 2, name: 'Ariel', rotationTime: s(217728), rotationDirection: 'clockwise' },
-    { id: 3, name: 'Umbriel', rotationTime: s(357696), rotationDirection: 'counterclockwise' },
-    { id: 4, name: 'Titania', rotationTime: s(752198), rotationDirection: 'clockwise' },
-    { id: 5, name: 'Oberon', rotationTime: s(1163462), rotationDirection: 'counterclockwise' },
-  ],
-  5: [
     {
       id: 0,
       name: 'Mercury',
@@ -52,6 +45,15 @@ export const defaultSatelliteConfigs: Record<number, SatelliteSettings[]> = {
       pulsing: true,
       pulseColor: '#c0c0c0',
     },
+  ],
+  // Clock 6 — Uranus (template)
+  5: [
+    { id: 0, name: 'Puck', rotationTime: s(65664), rotationDirection: 'clockwise' },
+    { id: 1, name: 'Miranda', rotationTime: s(121392), rotationDirection: 'counterclockwise' },
+    { id: 2, name: 'Ariel', rotationTime: s(217728), rotationDirection: 'clockwise' },
+    { id: 3, name: 'Umbriel', rotationTime: s(357696), rotationDirection: 'counterclockwise' },
+    { id: 4, name: 'Titania', rotationTime: s(752198), rotationDirection: 'clockwise' },
+    { id: 5, name: 'Oberon', rotationTime: s(1163462), rotationDirection: 'counterclockwise' },
   ],
   6: [
     { id: 0, name: 'Metis', rotationTime: s(25488), rotationDirection: 'clockwise' },
@@ -80,8 +82,8 @@ export const clockSatellites: Record<number, number> = {
   1: 5,
   2: 2,
   3: 1,
-  4: 6,
-  5: 1,
+  4: 1, // Mercury
+  5: 6, // Uranus
   6: 7,
   7: 7,
   8: 1,
