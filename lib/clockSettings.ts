@@ -4,7 +4,7 @@ export const clockSettings: ClockSettings[] = [
   {
     id: 0,
     startDateTime: new Date('1610-12-21T03:00:00'),
-    rotationTime: 39600000,
+    rotationTime: 38018000,
     imageUrl: '/clock_1.svg',
     startingDegree: 0,
     focusNodes: 8,
@@ -17,7 +17,7 @@ export const clockSettings: ClockSettings[] = [
   {
     id: 1,
     startDateTime: new Date('1846-09-23T06:00:00'),
-    rotationTime: 57600000,
+    rotationTime: 579996000,
     imageUrl: '/clock_2.svg',
     startingDegree: 60,
     focusNodes: 6,
@@ -30,7 +30,7 @@ export const clockSettings: ClockSettings[] = [
   {
     id: 2,
     startDateTime: new Date('1610-03-21T09:00:00'),
-    rotationTime: 90000000,
+    rotationTime: 88642000,
     imageUrl: '/clock_3.svg',
     startingDegree: 36,
     focusNodes: 10,
@@ -43,7 +43,7 @@ export const clockSettings: ClockSettings[] = [
   {
     id: 3,
     startDateTime: new Date('1610-05-29T15:00:00'),
-    rotationTime: 20995200000,
+    rotationTime: 20996928000,
     imageUrl: '/clock_4.svg',
     startingDegree: 30,
     focusNodes: 12,
@@ -56,7 +56,7 @@ export const clockSettings: ClockSettings[] = [
   {
     id: 4,
     startDateTime: new Date('1781-03-13T18:00:00'),
-    rotationTime: 61200000,
+    rotationTime: 5066997000,
     imageUrl: '/clock_5.svg',
     startingDegree: 22.5,
     focusNodes: 16,
@@ -69,7 +69,7 @@ export const clockSettings: ClockSettings[] = [
   {
     id: 5,
     startDateTime: new Date('1610-08-21T21:00:00'),
-    rotationTime: 5068800000,
+    rotationTime: 62064000,
     imageUrl: '/clock_6.svg',
     startingDegree: 90,
     focusNodes: 4,
@@ -82,7 +82,7 @@ export const clockSettings: ClockSettings[] = [
   {
     id: 6,
     startDateTime: new Date('0015-11-21T00:00:00'),
-    rotationTime: 36000000,
+    rotationTime: 35730000,
     imageUrl: '/clock_7.svg',
     startingDegree: 45,
     focusNodes: 16,
@@ -95,7 +95,7 @@ export const clockSettings: ClockSettings[] = [
   {
     id: 7,
     startDateTime: new Date('0015-12-07T02:00:00'),
-    rotationTime: 36000000,
+    rotationTime: 35730000,
     imageUrl: '/clock_8.svg',
     startingDegree: 67.5,
     focusNodes: 16,
