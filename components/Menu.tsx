@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Settings, Sun, Moon, BookOpen, ClipboardList, LogOut, LayoutDashboard, Clock, Home, Volume2, VolumeX, ExternalLink } from 'lucide-react'
+import { X, Settings, Sun, Moon, BookOpen, ClipboardList, LogOut, LayoutDashboard, Clock, Home, Volume2, VolumeX, ExternalLink, UsersRound } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -197,6 +197,14 @@ export function Menu({
                   onClick={() => handleNavigation('/sessions')}
                 >
                   Sessions
+                </MenuItem>
+                <MenuItem
+                  href="/lobby"
+                  icon={UsersRound}
+                  isActive={isActive('/lobby')}
+                  onClick={() => handleNavigation('/lobby')}
+                >
+                  Lobby
                 </MenuItem>
                 <MenuItem
                   href="/notes"

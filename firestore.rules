@@ -44,6 +44,21 @@ service cloud.firestore {
       allow update, delete: if isAuthenticated() && request.auth.uid == resource.data.user_id;
     }
 
+    // Symbolic lobby: anonymous presence only (no messaging). Others may only increment symbolic_alignments by +1.
+    match /symbolic_lobby/{entryId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && request.resource.data.owner_uid == request.auth.uid
+        && request.resource.data.symbolic_alignments == 0
+        && request.resource.data.created_at is timestamp;
+      allow delete: if isAuthenticated() && resource.data.owner_uid == request.auth.uid;
+      allow update: if isAuthenticated()
+        && resource.data.owner_uid != request.auth.uid
+        && request.resource.data.owner_uid == resource.data.owner_uid
+        && request.resource.data.created_at == resource.data.created_at
+        && request.resource.data.symbolic_alignments == resource.data.symbolic_alignments + 1;
+    }
+
     // Default rule - require authentication for all other reads
     match /{document=**} {
       allow read: if isAuthenticated();

@@ -8,6 +8,7 @@ import {
   Clock,
   ClipboardList,
   BookOpen,
+  UsersRound,
   Settings,
   Sun,
   Moon,
@@ -32,6 +33,7 @@ const navItems = [
   { title: 'Home', href: '/layers', icon: Home },
   { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { title: 'Sessions', href: '/sessions', icon: Clock },
+  { title: 'Lobby', href: '/lobby', icon: UsersRound },
   { title: 'Notes', href: '/notes', icon: ClipboardList },
   { title: 'Glossary', href: '/glossary', icon: BookOpen },
 ];

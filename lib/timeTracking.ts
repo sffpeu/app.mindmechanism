@@ -43,7 +43,7 @@ type TimeStats = {
   lastSignInTime: Date | null;
 };
 
-const VALID_PAGES = ['dashboard', 'clock', 'sessions', 'notes'] as const;
+const VALID_PAGES = ['dashboard', 'clock', 'sessions', 'notes', 'lobby'] as const;
 type ValidPage = typeof VALID_PAGES[number];
 
 function isValidPage(page: string): page is ValidPage {

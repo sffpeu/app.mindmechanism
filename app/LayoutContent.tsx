@@ -18,7 +18,10 @@ function isShellPublic(pathname: string): boolean {
 
 function LayoutContentInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isProtectedRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/sessions');
+  const isProtectedRoute =
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/sessions') ||
+    pathname.startsWith('/lobby');
 
   const routed = isProtectedRoute ? (
     <ProtectedRoute>{children}</ProtectedRoute>
