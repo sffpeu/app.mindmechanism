@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Users, Radio, Sparkles, LogOut as WithdrawIcon } from 'lucide-react'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { toast } from 'sonner'
-import { formatDistanceToNow } from 'date-fns'
 import {
   alignSymbolically,
   appearInLobby,
@@ -14,6 +13,7 @@ import {
   withdrawFromLobby,
   type SymbolicLobbyEntry,
 } from '@/lib/symbolicLobby'
+import { LobbySatelliteField } from '@/components/LobbySatelliteField'
 
 const ALIGNED_KEY = 'symbolic_lobby_aligned_ids'
 
@@ -60,9 +60,11 @@ export function SymbolicLobby() {
 
   useEffect(() => {
     refresh()
-    const t = setInterval(refresh, 8000)
+    const pollMs =
+      myEntry && myEntry.symbolic_alignments === 0 ? 4000 : 8000
+    const t = setInterval(refresh, pollMs)
     return () => clearInterval(t)
-  }, [refresh])
+  }, [refresh, myEntry])
 
   const handleAppear = async () => {
     if (!user?.uid) return
@@ -130,9 +132,9 @@ export function SymbolicLobby() {
             Symbolic lobby
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 leading-relaxed">
-            People here are only shown as anonymous openness to connect. This space does not support messages,
-            audio, or any channel — the connection is symbolic: you see that someone is present, and you may
-            acknowledge it without revealing identity or starting a conversation.
+            Your presence is a small satellite drifting in the lobby. It flashes white until someone taps
+            another satellite to establish a symbolic connection with you — then yours turns green. There are
+            no messages or channels; only this silent signal.
           </p>
         </div>
       </div>
@@ -166,57 +168,29 @@ export function SymbolicLobby() {
 
       {myEntry && (
         <p className="text-xs text-violet-700 dark:text-violet-300/90 mb-4 rounded-lg bg-violet-500/10 dark:bg-violet-500/10 px-3 py-2 border border-violet-500/20">
-          Others see you only as an anonymous presence. Alignments are counts of symbolic acknowledgements — not
-          replies or invites.
+          Others see you only as an anonymous satellite. When your alignment count rises, your satellite turns
+          green — still no identity and no chat.
         </p>
       )}
 
-      <div className="space-y-3 max-h-[min(420px,50vh)] overflow-y-auto pr-1 custom-scrollbar">
-        {loading ? (
-          <p className="text-sm text-gray-500 dark:text-gray-400">Loading…</p>
-        ) : others.length === 0 ? (
-          <div className="text-center py-10 text-gray-500 dark:text-gray-400">
-            <p className="text-sm">No one else is in the lobby right now.</p>
-            <p className="text-xs mt-2 max-w-sm mx-auto">
-              When you appear, others will see only that an anonymous person is open to symbolic connection.
+      {loading ? (
+        <p className="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading lobby space…</p>
+      ) : (
+        <>
+          <LobbySatelliteField
+            myEntry={myEntry}
+            others={others}
+            aligned={aligned}
+            busyId={busyId}
+            onAlignPeer={handleAlign}
+          />
+          {myEntry && others.length === 0 ? (
+            <p className="text-center text-xs text-gray-500 dark:text-gray-400 -mt-2 mb-2">
+              You are alone in the lobby; your satellite will turn green when someone connects with you.
             </p>
-          </div>
-        ) : (
-          others.map((entry) => (
-            <div
-              key={entry.id}
-              className="p-3 rounded-xl bg-gray-50/90 dark:bg-white/[0.04] border border-black/[0.04] dark:border-white/10"
-            >
-              <div className="flex justify-between gap-3 items-start">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">Anonymous presence</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Open to symbolic connection · here{' '}
-                    {formatDistanceToNow(entry.created_at.toDate(), { addSuffix: true })}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Symbolic alignments: {entry.symbolic_alignments}
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  className="shrink-0 rounded-full text-xs h-8"
-                  disabled={busyId !== null || aligned.has(entry.id)}
-                  onClick={() => handleAlign(entry)}
-                >
-                  {busyId === entry.id
-                    ? '…'
-                    : aligned.has(entry.id)
-                      ? 'Aligned'
-                      : 'Align symbolically'}
-                </Button>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+          ) : null}
+        </>
+      )}
     </Card>
   )
 }
