@@ -7,50 +7,27 @@ import { Users, Radio, Sparkles, LogOut as WithdrawIcon } from 'lucide-react'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { toast } from 'sonner'
 import {
-  alignSymbolically,
-  appearInLobby,
-  listLobbyEntries,
-  withdrawFromLobby,
-  type SymbolicLobbyEntry,
-} from '@/lib/symbolicLobby'
+  createLobbyGroup,
+  joinLobbyGroup,
+  leaveLobbyGroup,
+  listLobbyGroups,
+  LOBBY_GROUP_MAX,
+  handleLobbyGroupError,
+  type LobbyGroup,
+} from '@/lib/lobbyGroups'
 import { LobbySatelliteField } from '@/components/LobbySatelliteField'
-
-const ALIGNED_KEY = 'symbolic_lobby_aligned_ids'
-
-function loadAlignedSet(): Set<string> {
-  if (typeof window === 'undefined') return new Set()
-  try {
-    const raw = sessionStorage.getItem(ALIGNED_KEY)
-    if (!raw) return new Set()
-    const arr = JSON.parse(raw) as string[]
-    return new Set(Array.isArray(arr) ? arr : [])
-  } catch {
-    return new Set()
-  }
-}
-
-function saveAlignedSet(ids: Set<string>) {
-  if (typeof window === 'undefined') return
-  sessionStorage.setItem(ALIGNED_KEY, JSON.stringify([...ids]))
-}
 
 export function SymbolicLobby() {
   const { user } = useAuth()
-  const [entries, setEntries] = useState<SymbolicLobbyEntry[]>([])
+  const [groups, setGroups] = useState<LobbyGroup[]>([])
   const [loading, setLoading] = useState(true)
   const [busyId, setBusyId] = useState<string | null>(null)
-  const [myEntry, setMyEntry] = useState<SymbolicLobbyEntry | null>(null)
-  const [aligned, setAligned] = useState<Set<string>>(() =>
-    typeof window !== 'undefined' ? loadAlignedSet() : new Set()
-  )
 
   const refresh = useCallback(async () => {
     if (!user?.uid) return
     try {
-      const list = await listLobbyEntries()
-      setEntries(list)
-      const mine = list.find((e) => e.owner_uid === user.uid) ?? null
-      setMyEntry(mine)
+      const list = await listLobbyGroups()
+      setGroups(list)
     } catch (e) {
       console.error(e)
     } finally {
@@ -58,23 +35,28 @@ export function SymbolicLobby() {
     }
   }, [user?.uid])
 
+  const myGroup = user?.uid
+    ? groups.find((g) => g.member_uids.includes(user.uid)) ?? null
+    : null
+  const otherGroups = groups.filter((g) => g.id !== myGroup?.id)
+  const myMemberCount = myGroup?.member_uids.length ?? 0
+
   useEffect(() => {
     refresh()
-    const pollMs =
-      myEntry && myEntry.symbolic_alignments === 0 ? 4000 : 8000
+    const pollMs = myMemberCount === 1 ? 4000 : 8000
     const t = setInterval(refresh, pollMs)
     return () => clearInterval(t)
-  }, [refresh, myEntry])
+  }, [refresh, myMemberCount])
 
   const handleAppear = async () => {
     if (!user?.uid) return
     setBusyId('appear')
     try {
-      await appearInLobby(user.uid)
-      toast.success('You are visible in the lobby — only as an anonymous presence.')
+      await createLobbyGroup(user.uid)
+      toast.success('Your satellite is in orbit. Others can join your group — up to twelve in one flower.')
       await refresh()
     } catch (e) {
-      toast.error('Could not appear in the lobby.')
+      toast.error(handleLobbyGroupError(e))
       console.error(e)
     } finally {
       setBusyId(null)
@@ -82,43 +64,34 @@ export function SymbolicLobby() {
   }
 
   const handleWithdraw = async () => {
-    if (!user?.uid || !myEntry) return
+    if (!user?.uid || !myGroup) return
     setBusyId('withdraw')
     try {
-      await withdrawFromLobby(myEntry.id, user.uid)
-      toast.message('You left the lobby.')
+      await leaveLobbyGroup(myGroup.id, user.uid)
+      toast.message('You left the group.')
       await refresh()
     } catch (e) {
-      toast.error('Could not leave the lobby.')
+      toast.error(handleLobbyGroupError(e))
       console.error(e)
     } finally {
       setBusyId(null)
     }
   }
 
-  const handleAlign = async (entry: SymbolicLobbyEntry) => {
-    if (!user?.uid || entry.owner_uid === user.uid) return
-    if (aligned.has(entry.id)) {
-      toast.message('You already offered a symbolic alignment with this presence.')
-      return
-    }
-    setBusyId(entry.id)
+  const handleJoinGroup = async (groupId: string) => {
+    if (!user?.uid) return
+    setBusyId(groupId)
     try {
-      await alignSymbolically(entry.id)
-      const next = new Set(aligned).add(entry.id)
-      setAligned(next)
-      saveAlignedSet(next)
-      toast.success('Symbolic alignment recorded. There is no chat or shared channel — only this gesture.')
+      await joinLobbyGroup(groupId, user.uid)
+      toast.success('You joined the group — satellites gather in a flower. Still no messages or channels.')
       await refresh()
     } catch (e) {
-      toast.error('Could not record alignment.')
+      toast.error(handleLobbyGroupError(e))
       console.error(e)
     } finally {
       setBusyId(null)
     }
   }
-
-  const others = entries.filter((e) => e.owner_uid !== user?.uid)
 
   return (
     <Card className="p-4 sm:p-6 bg-white/90 dark:bg-white/5 backdrop-blur-sm border border-black/5 dark:border-white/10 shadow-xl shadow-gray-200/40 dark:shadow-none rounded-2xl">
@@ -132,15 +105,15 @@ export function SymbolicLobby() {
             Symbolic lobby
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 leading-relaxed">
-            Your presence is a small satellite drifting in the lobby. It flashes white until someone taps
-            another satellite to establish a symbolic connection with you — then yours turns green. There are
-            no messages or channels; only this silent signal.
+            Up to {LOBBY_GROUP_MAX} people can share one symbolic group. Your cluster forms a flower as others
+            join. When the circle is complete ({LOBBY_GROUP_MAX} members), it glows gold. There is no chat — only
+            this shared silent pattern.
           </p>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-2 mb-6">
-        {myEntry ? (
+        {myGroup ? (
           <Button
             type="button"
             variant="outline"
@@ -150,7 +123,7 @@ export function SymbolicLobby() {
             disabled={busyId !== null}
           >
             <WithdrawIcon className="h-4 w-4" />
-            {busyId === 'withdraw' ? 'Leaving…' : 'Leave lobby'}
+            {busyId === 'withdraw' ? 'Leaving…' : 'Leave group'}
           </Button>
         ) : (
           <Button
@@ -161,15 +134,19 @@ export function SymbolicLobby() {
             disabled={!user?.uid || busyId !== null}
           >
             <Sparkles className="h-4 w-4" />
-            {busyId === 'appear' ? '…' : 'Appear anonymously'}
+            {busyId === 'appear' ? '…' : 'Start group'}
           </Button>
         )}
       </div>
 
-      {myEntry && (
+      {myGroup && (
         <p className="text-xs text-violet-700 dark:text-violet-300/90 mb-4 rounded-lg bg-violet-500/10 dark:bg-violet-500/10 px-3 py-2 border border-violet-500/20">
-          Others see you only as an anonymous satellite. When your alignment count rises, your satellite turns
-          green — still no identity and no chat.
+          {myGroup.member_uids.length}/{LOBBY_GROUP_MAX} in your group
+          {myGroup.member_uids.length === LOBBY_GROUP_MAX
+            ? ' — full golden circle.'
+            : myGroup.member_uids.length >= 2
+              ? ' — flower formation active.'
+              : ' — solo satellite until someone joins.'}
         </p>
       )}
 
@@ -178,15 +155,15 @@ export function SymbolicLobby() {
       ) : (
         <>
           <LobbySatelliteField
-            myEntry={myEntry}
-            others={others}
-            aligned={aligned}
+            userId={user?.uid}
+            myGroup={myGroup}
+            otherGroups={otherGroups}
             busyId={busyId}
-            onAlignPeer={handleAlign}
+            onJoinGroup={handleJoinGroup}
           />
-          {myEntry && others.length === 0 ? (
+          {myGroup && otherGroups.length === 0 && myGroup.member_uids.length === 1 ? (
             <p className="text-center text-xs text-gray-500 dark:text-gray-400 -mt-2 mb-2">
-              You are alone in the lobby; your satellite will turn green when someone connects with you.
+              No other groups nearby — your satellite flashes until someone joins you or you tap another cluster.
             </p>
           ) : null}
         </>

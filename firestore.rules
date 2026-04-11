@@ -59,6 +59,36 @@ service cloud.firestore {
         && request.resource.data.symbolic_alignments == resource.data.symbolic_alignments + 1;
     }
 
+    // Lobby groups: up to 12 members, symbolic only (no messaging).
+    match /lobby_groups/{groupId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && request.resource.data.member_uids is list
+        && request.resource.data.member_uids.size() == 1
+        && request.auth.uid in request.resource.data.member_uids
+        && request.resource.data.created_at is timestamp;
+      allow delete: if isAuthenticated()
+        && resource.data.member_uids.size() == 1
+        && request.auth.uid in resource.data.member_uids;
+      allow update: if isAuthenticated()
+        && request.resource.data.created_at == resource.data.created_at
+        && (
+          (
+            request.resource.data.member_uids.size() == resource.data.member_uids.size() + 1
+            && request.resource.data.member_uids.size() <= 12
+            && request.resource.data.member_uids.hasAll(resource.data.member_uids)
+            && request.auth.uid in request.resource.data.member_uids
+            && !(request.auth.uid in resource.data.member_uids)
+          )
+          || (
+            request.resource.data.member_uids.size() == resource.data.member_uids.size() - 1
+            && resource.data.member_uids.hasAll(request.resource.data.member_uids)
+            && request.auth.uid in resource.data.member_uids
+            && !(request.auth.uid in request.resource.data.member_uids)
+          )
+        );
+    }
+
     // Default rule - require authentication for all other reads
     match /{document=**} {
       allow read: if isAuthenticated();

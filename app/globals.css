@@ -148,6 +148,12 @@ img[src$=".svg"] * {
   animation: lobby-satellite-white-pulse 1.1s ease-in-out infinite;
 }
 
+/* Solo lobby satellite (small dot) */
+.lobby-satellite-solo {
+  background-color: rgba(255, 255, 255, 0.95);
+  animation: lobby-satellite-white-pulse 1.1s ease-in-out infinite;
+}
+
 .lobby-satellite-connected {
   color: rgb(34 197 94);
   background-color: rgba(34, 197, 94, 0.35);
@@ -161,5 +167,10 @@ img[src$=".svg"] * {
     animation: none !important;
     opacity: 1;
     filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.7));
+  }
+  .lobby-satellite-solo {
+    animation: none !important;
+    opacity: 1;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.75);
   }
 }

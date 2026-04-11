@@ -1,10 +1,13 @@
 'use client'
 
 import { formatDistanceToNow } from 'date-fns'
-import type { SymbolicLobbyEntry } from '@/lib/symbolicLobby'
+import { motion } from 'framer-motion'
+import type { LobbyGroup } from '@/lib/lobbyGroups'
+import { LOBBY_GROUP_MAX } from '@/lib/lobbyGroups'
+import { lobbyFlowerOffsets } from '@/lib/lobbyFlowerLayout'
 import { cn } from '@/lib/utils'
 
-/** Deterministic layout in the orbit so positions stay stable across refreshes. */
+/** Deterministic anchor in the orbit for drifting group clusters. */
 export function lobbySlotForId(id: string): { x: number; y: number; delay: number; duration: number } {
   let h = 2166136261
   for (let i = 0; i < id.length; i++) {
@@ -14,94 +17,172 @@ export function lobbySlotForId(id: string): { x: number; y: number; delay: numbe
   const u = (h >>> 0) / 0xffffffff
   const v = ((h >>> 8) & 0xffffff) / 0xffffff
   return {
-    x: 14 + u * 72,
-    y: 14 + v * 72,
+    x: 12 + u * 76,
+    y: 18 + v * 62,
     delay: ((h >>> 16) % 5000) / 1000,
     duration: 11 + ((h >>> 20) % 8000) / 1000,
   }
 }
 
+function GroupFlower({
+  group,
+  userId,
+  compact,
+  gold,
+}: {
+  group: LobbyGroup
+  userId?: string
+  compact: boolean
+  gold: boolean
+}) {
+  const ordered = [...group.member_uids].sort()
+  const n = ordered.length
+  const offsets = lobbyFlowerOffsets(n)
+  const dotScale = compact ? 1 : n >= 10 ? 0.85 : 1
+
+  return (
+    <>
+      {ordered.map((uid, i) => {
+        const o = offsets[i] ?? { x: 0, y: 0 }
+        const isMe = uid === userId
+        const w = compact ? 9 : 11
+        const h = compact ? 9 : 11
+        return (
+          <div
+            key={`${group.id}-${uid}`}
+            className="absolute flex flex-col items-center justify-center"
+            style={{
+              left: `calc(50% + ${o.x * (compact ? 0.85 : 1)}px)`,
+              top: `calc(50% + ${o.y * (compact ? 0.85 : 1)}px)`,
+              transform: 'translate(-50%, -50%)',
+            }}
+          >
+            <div
+              className={cn(
+                'rounded-full ring-2 transition-colors duration-500',
+                gold
+                  ? 'bg-amber-300 ring-amber-200/70 shadow-[0_0_12px_rgba(251,191,36,0.85)]'
+                  : n >= 2
+                    ? 'bg-emerald-400 ring-emerald-200/50 shadow-[0_0_10px_rgba(52,211,153,0.55)]'
+                    : n === 1
+                      ? 'lobby-satellite-solo ring-white/35'
+                      : 'bg-white/80 ring-white/40 shadow-[0_0_8px_rgba(255,255,255,0.45)]'
+              )}
+              style={{
+                width: w * dotScale,
+                height: h * dotScale,
+              }}
+            />
+            {isMe && !compact ? (
+              <span className="absolute top-[calc(100%+4px)] whitespace-nowrap text-[9px] font-medium text-white/75">
+                You
+              </span>
+            ) : null}
+          </div>
+        )
+      })}
+    </>
+  )
+}
+
 type LobbySatelliteFieldProps = {
-  myEntry: SymbolicLobbyEntry | null
-  others: SymbolicLobbyEntry[]
-  aligned: Set<string>
+  userId: string | undefined
+  myGroup: LobbyGroup | null
+  otherGroups: LobbyGroup[]
   busyId: string | null
-  onAlignPeer: (entry: SymbolicLobbyEntry) => void
+  onJoinGroup: (groupId: string) => void
 }
 
 export function LobbySatelliteField({
-  myEntry,
-  others,
-  aligned,
+  userId,
+  myGroup,
+  otherGroups,
   busyId,
-  onAlignPeer,
+  onJoinGroup,
 }: LobbySatelliteFieldProps) {
-  const mineConnected = myEntry != null && myEntry.symbolic_alignments > 0
-
   return (
     <div
-      className="relative mb-6 min-h-[min(320px,42vh)] w-full overflow-hidden rounded-2xl border border-white/15 bg-gradient-to-b from-slate-950/90 via-violet-950/40 to-slate-950/95 dark:from-black dark:via-violet-950/30 dark:to-black"
+      className={cn(
+        'relative mb-6 min-h-[min(380px,52vh)] w-full overflow-hidden rounded-2xl border transition-[box-shadow,background-color,border-color] duration-700',
+        myGroup?.member_uids.length === LOBBY_GROUP_MAX
+          ? 'border-amber-400/50 bg-gradient-to-b from-amber-950/50 via-amber-900/25 to-slate-950/95 shadow-[0_0_48px_rgba(245,158,11,0.18)]'
+          : 'border-white/15 bg-gradient-to-b from-slate-950/90 via-violet-950/40 to-slate-950/95 dark:from-black dark:via-violet-950/30 dark:to-black'
+      )}
       aria-label="Symbolic lobby space"
     >
       <div className="pointer-events-none absolute inset-0 opacity-[0.35] dark:opacity-[0.25]">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(139,92,246,0.22),transparent_55%)]" />
+        <div
+          className={cn(
+            'absolute inset-0',
+            myGroup?.member_uids.length === LOBBY_GROUP_MAX
+              ? 'bg-[radial-gradient(ellipse_at_50%_35%,rgba(251,191,36,0.28),transparent_58%)]'
+              : 'bg-[radial-gradient(ellipse_at_50%_0%,rgba(139,92,246,0.22),transparent_55%)]'
+          )}
+        />
       </div>
 
       <p className="pointer-events-none absolute left-3 top-3 right-3 z-10 text-[10px] leading-snug text-white/55 sm:text-xs sm:text-white/60">
-        Satellites drift anonymously. Tap another to connect symbolically — no messages are exchanged.
+        Up to {LOBBY_GROUP_MAX} people per group — satellites gather into a flower when you join. At{' '}
+        {LOBBY_GROUP_MAX}, the ring turns gold in a full circle. No messages.
       </p>
 
       <div className="absolute bottom-2 left-3 right-3 z-10 flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-white/50">
         <span className="flex items-center gap-1.5">
           <span className="inline-block h-2 w-2 shrink-0 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]" />
-          Awaiting connection (yours flashes)
+          Solo (awaiting)
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block h-2 w-2 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
-          Connection established
+          Flower (2–11)
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block h-2 w-2 shrink-0 rounded-full bg-amber-300 shadow-[0_0_8px_rgba(251,191,36,0.9)]" />
+          Full circle ({LOBBY_GROUP_MAX})
         </span>
       </div>
 
-      {myEntry && (
-        <div
-          className="lobby-satellite-float pointer-events-none absolute z-20"
-          style={{
-            left: '36%',
-            top: '44%',
-            animationDuration: '13s',
-            animationDelay: '0s',
-          }}
-          role="status"
-          aria-live="polite"
-          aria-label={
-            mineConnected
-              ? 'Your satellite: symbolic connection established'
-              : 'Your satellite: awaiting symbolic connection'
-          }
-        >
-          <div
+      {myGroup ? (
+        <div className="absolute left-1/2 top-[46%] z-20 w-[min(280px,78vw)] -translate-x-1/2 -translate-y-1/2">
+          <motion.div
+            key={`${myGroup.id}-${myGroup.member_uids.length}`}
+            initial={{ scale: 0.68, opacity: 0.72 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 280, damping: 24 }}
             className={cn(
-              'relative flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full ring-2 ring-white/25 transition-colors duration-500',
-              mineConnected
-                ? 'lobby-satellite-connected shadow-[0_0_20px_rgba(52,211,153,0.75)]'
-                : 'lobby-satellite-awaiting shadow-[0_0_16px_rgba(255,255,255,0.45)]'
+              'relative mx-auto flex min-h-[min(220px,42vw)] min-w-[min(220px,42vw)] max-w-full items-center justify-center',
+              myGroup.member_uids.length === LOBBY_GROUP_MAX
+                ? 'rounded-full border border-amber-400/45 bg-amber-500/[0.08] p-6 shadow-[inset_0_0_40px_rgba(251,191,36,0.12)]'
+                : myGroup.member_uids.length >= 2
+                  ? 'rounded-full border border-emerald-500/25 bg-emerald-500/[0.06] p-6'
+                  : 'rounded-full border border-white/15 bg-white/[0.04] p-6'
             )}
+            role="img"
+            aria-label={
+              myGroup.member_uids.length === LOBBY_GROUP_MAX
+                ? 'Your group is complete: twelve satellites in a gold circle'
+                : myGroup.member_uids.length >= 2
+                  ? `Your group flower with ${myGroup.member_uids.length} members`
+                  : 'Your satellite, awaiting others to join your group'
+            }
           >
-            <span className="h-5 w-5 rounded-full bg-current opacity-95" />
-          </div>
-          <span className="absolute left-1/2 top-[calc(100%+6px)] -translate-x-1/2 whitespace-nowrap text-[10px] font-medium text-white/70">
-            You
-          </span>
+            <GroupFlower
+              group={myGroup}
+              userId={userId}
+              compact={false}
+              gold={myGroup.member_uids.length === LOBBY_GROUP_MAX}
+            />
+          </motion.div>
         </div>
-      )}
+      ) : null}
 
-      {others.map((entry) => {
-        const { x, y, delay, duration } = lobbySlotForId(entry.id)
-        const done = aligned.has(entry.id)
-        const loading = busyId === entry.id
+      {otherGroups.map((group) => {
+        const { x, y, delay, duration } = lobbySlotForId(group.id)
+        const full = group.member_uids.length >= LOBBY_GROUP_MAX
+        const gold = group.member_uids.length === LOBBY_GROUP_MAX
+        const loading = busyId === group.id
         return (
           <div
-            key={entry.id}
+            key={group.id}
             className="lobby-satellite-float absolute z-10"
             style={{
               left: `${x}%`,
@@ -110,39 +191,48 @@ export function LobbySatelliteField({
               animationDelay: `${delay}s`,
             }}
           >
-            <button
-              type="button"
-              disabled={busyId !== null || done}
-              onClick={() => onAlignPeer(entry)}
-              title={`Anonymous presence — here ${formatDistanceToNow(entry.created_at.toDate(), { addSuffix: true })}. Tap to connect symbolically.`}
-              className={cn(
-                'flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full ring-2 transition-all duration-300',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
-                done
-                  ? 'cursor-default bg-emerald-500/35 ring-emerald-300/50 shadow-[0_0_14px_rgba(52,211,153,0.45)]'
-                  : 'cursor-pointer bg-white/15 ring-white/35 hover:bg-white/25 hover:ring-white/55 active:scale-95',
-                loading && 'pointer-events-none opacity-60'
-              )}
-              aria-label={
-                done
-                  ? 'Symbolic connection already established with this presence'
-                  : 'Establish symbolic connection with this anonymous presence'
-              }
+            <motion.div
+              key={`${group.id}-${group.member_uids.length}`}
+              initial={{ scale: 0.55, opacity: 0.65 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+              className="-translate-x-1/2 -translate-y-1/2"
             >
-              <span
+              <button
+                type="button"
+                disabled={busyId !== null || full || !userId}
+                onClick={() => onJoinGroup(group.id)}
+                title={
+                  full
+                    ? 'This group is full (twelve members).'
+                    : `Join this group — ${group.member_uids.length} here, flower formation. ${formatDistanceToNow(group.created_at.toDate(), { addSuffix: true })}`
+                }
                 className={cn(
-                  'h-4 w-4 rounded-full',
-                  done ? 'bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.9)]' : 'bg-white/90 shadow-[0_0_10px_rgba(255,255,255,0.5)]'
+                  'relative flex h-[118px] w-[118px] items-center justify-center rounded-full border transition-all duration-300',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
+                  gold
+                    ? 'cursor-default border-amber-400/50 bg-amber-500/15 shadow-[0_0_20px_rgba(251,191,36,0.35)]'
+                    : full
+                      ? 'cursor-not-allowed border-white/20 bg-white/5 opacity-50'
+                      : 'cursor-pointer border-white/25 bg-white/[0.07] hover:border-white/45 hover:bg-white/[0.12] active:scale-[0.97]',
+                  loading && 'pointer-events-none opacity-60'
                 )}
-              />
-            </button>
+                aria-label={
+                  full
+                    ? 'Group is full'
+                    : `Join anonymous group of ${group.member_uids.length} members`
+                }
+              >
+                <GroupFlower group={group} userId={undefined} compact gold={gold} />
+              </button>
+            </motion.div>
           </div>
         )
       })}
 
-      {!myEntry && others.length === 0 && (
+      {!myGroup && otherGroups.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-white/45">
-          Appear anonymously to place your satellite in this space.
+          Start a group to place your satellite; others can join and form a flower together.
         </div>
       )}
     </div>
