@@ -280,7 +280,7 @@ export async function leaveLobbyGroup(groupId: string, userId: string): Promise<
 export function handleLobbyGroupError(error: unknown): string {
   if (error instanceof FirestoreError) {
     if (error.code === 'permission-denied') {
-      return 'Lobby needs server access: add FIREBASE_SERVICE_ACCOUNT_JSON in Vercel (Project settings → Environment variables) with your Firebase service account JSON, then redeploy. Alternatively deploy Firestore rules for lobby_groups in Firebase Console.'
+      return 'Lobby blocked by Firestore rules: open Firebase Console → Firestore → Rules → paste the latest firestore.rules from the repo (lobby_groups section) → Publish. Or set FIREBASE_SERVICE_ACCOUNT_BASE64 on Vercel (base64 of the service account JSON, one line) and redeploy.'
     }
   }
   if (error instanceof Error) return error.message
