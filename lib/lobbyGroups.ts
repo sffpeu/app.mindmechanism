@@ -105,7 +105,9 @@ export async function joinLobbyGroup(groupId: string, userId: string): Promise<v
       throw new Error('Group not found')
     }
     const data = snap.data()
-    const members = ([...(data.member_uids as string[])] ?? []).filter(Boolean)
+    const members = Array.isArray(data.member_uids)
+      ? (data.member_uids as unknown[]).filter((u): u is string => typeof u === 'string')
+      : []
     const created_at = data.created_at as Timestamp
     if (!created_at || !isFresh(created_at)) {
       throw new Error('Group has expired')
@@ -133,7 +135,10 @@ export async function leaveLobbyGroup(groupId: string, userId: string): Promise<
   await runTransaction(db, async (transaction) => {
     const snap = await transaction.get(groupRef)
     if (!snap.exists()) return
-    const members = ([...(snap.data().member_uids as string[])] ?? []).filter(Boolean)
+    const raw = snap.data().member_uids
+    const members = Array.isArray(raw)
+      ? (raw as unknown[]).filter((u): u is string => typeof u === 'string')
+      : []
     if (!members.includes(userId)) return
     const next = members.filter((u) => u !== userId)
     if (next.length === 0) {
