@@ -55,6 +55,43 @@ function getDb(): Firestore {
   return getFirestore(app)
 }
 
+export async function GET(request: Request) {
+  let db: Firestore
+  try {
+    db = getDb()
+  } catch (e) {
+    console.error('lobby/groups GET: Firebase Admin not available', e)
+    return NextResponse.json({ error: 'Admin unavailable' }, { status: 503 })
+  }
+
+  const uid = await verifyUid(request)
+  if (!uid) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    const snap = await db.collection(COLLECTION).orderBy('created_at', 'desc').limit(48).get()
+    const now = Date.now()
+    const groups: Array<{ id: string; member_uids: string[]; created_at_ms: number }> = []
+
+    for (const d of snap.docs) {
+      const data = d.data() as Record<string, unknown>
+      const member_uids = normalizeMembers(data)
+      const ts = data.created_at as Timestamp | undefined
+      if (!ts || typeof ts.toMillis !== 'function') continue
+      const created_at_ms = ts.toMillis()
+      if (now - created_at_ms >= LOBBY_GROUP_TTL_MS) continue
+      if (member_uids.length === 0) continue
+      groups.push({ id: d.id, member_uids, created_at_ms })
+    }
+
+    return NextResponse.json({ groups })
+  } catch (e) {
+    console.error('lobby/groups GET:', e)
+    return NextResponse.json({ error: 'Failed to list groups' }, { status: 500 })
+  }
+}
+
 async function leaveGroupAdmin(db: Firestore, groupId: string, uid: string): Promise<void> {
   const ref = db.collection(COLLECTION).doc(groupId)
   await db.runTransaction(async (tx) => {

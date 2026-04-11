@@ -34,6 +34,40 @@ async function getClientIdTokenForLobbyApi(): Promise<string | null> {
   }
 }
 
+/** List groups via Admin (bypasses client read rules). */
+async function fetchLobbyGroupsViaApi(): Promise<LobbyGroup[] | null> {
+  if (typeof window === 'undefined') return null
+  const idToken = await getClientIdTokenForLobbyApi()
+  const headers: Record<string, string> = {}
+  if (idToken) {
+    headers.Authorization = `Bearer ${idToken}`
+  }
+  try {
+    const res = await fetch(`${window.location.origin}/api/lobby/groups`, {
+      method: 'GET',
+      credentials: 'same-origin',
+      headers,
+    })
+    if (res.status === 503 || res.status === 401) {
+      return null
+    }
+    if (!res.ok) {
+      return null
+    }
+    const json = (await res.json()) as {
+      groups?: Array<{ id: string; member_uids: string[]; created_at_ms: number }>
+    }
+    const raw = json.groups ?? []
+    return raw.map((g) => ({
+      id: g.id,
+      member_uids: g.member_uids.filter((u) => typeof u === 'string'),
+      created_at: Timestamp.fromMillis(g.created_at_ms),
+    }))
+  } catch {
+    return null
+  }
+}
+
 /** Prefer server writes (bypasses client rules when Admin is configured). */
 async function callLobbyGroupsApi(payload: {
   action: 'create' | 'join' | 'leave'
@@ -79,6 +113,13 @@ function isFresh(createdAt: Timestamp): boolean {
 }
 
 export async function listLobbyGroups(): Promise<LobbyGroup[]> {
+  if (typeof window !== 'undefined') {
+    const fromApi = await fetchLobbyGroupsViaApi()
+    if (fromApi !== null) {
+      return fromApi
+    }
+  }
+
   if (!db) throw new Error('Firestore is not initialized')
 
   const q = query(collection(db, COLLECTION), orderBy('created_at', 'desc'), limit(48))
@@ -99,7 +140,16 @@ export async function listLobbyGroups(): Promise<LobbyGroup[]> {
 }
 
 export async function getMyLobbyGroup(userId: string): Promise<LobbyGroup | null> {
-  if (!db || !userId) return null
+  if (!userId) return null
+
+  if (typeof window !== 'undefined') {
+    const fromApi = await fetchLobbyGroupsViaApi()
+    if (fromApi !== null) {
+      return fromApi.find((g) => g.member_uids.includes(userId)) ?? null
+    }
+  }
+
+  if (!db) return null
 
   const q = query(
     collection(db, COLLECTION),
@@ -230,7 +280,7 @@ export async function leaveLobbyGroup(groupId: string, userId: string): Promise<
 export function handleLobbyGroupError(error: unknown): string {
   if (error instanceof FirestoreError) {
     if (error.code === 'permission-denied') {
-      return 'Missing or insufficient permissions. In Firebase Console deploy Firestore rules (lobby_groups), or on Vercel set FIREBASE_SERVICE_ACCOUNT_JSON so the lobby API can write.'
+      return 'Lobby needs server access: add FIREBASE_SERVICE_ACCOUNT_JSON in Vercel (Project settings → Environment variables) with your Firebase service account JSON, then redeploy. Alternatively deploy Firestore rules for lobby_groups in Firebase Console.'
     }
   }
   if (error instanceof Error) return error.message
