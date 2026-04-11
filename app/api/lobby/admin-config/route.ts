@@ -25,9 +25,22 @@ function tryGetProjectIdFromServiceAccountEnv(): string | null {
   }
 }
 
+function base64DecodesToJson(b64: string): boolean {
+  try {
+    const text = Buffer.from(b64.trim(), 'base64').toString('utf8')
+    const o = JSON.parse(text) as { type?: string; project_id?: string }
+    return o?.type === 'service_account' && typeof o?.project_id === 'string'
+  } catch {
+    return false
+  }
+}
+
 export async function GET() {
-  const json = Boolean(process.env.FIREBASE_SERVICE_ACCOUNT_JSON?.trim())
-  const b64 = Boolean(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64?.trim())
+  const jsonRaw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON
+  const b64Raw = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64
+
+  const json = Boolean(jsonRaw?.trim())
+  const b64 = Boolean(b64Raw?.trim())
   const serviceAccountProjectId = tryGetProjectIdFromServiceAccountEnv()
 
   return NextResponse.json({
@@ -42,5 +55,31 @@ export async function GET() {
       Boolean(serviceAccountProjectId) &&
       Boolean(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) &&
       serviceAccountProjectId !== process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+
+    /** Vercel: production | preview | development — env vars are per-environment. */
+    vercelEnv: process.env.VERCEL_ENV ?? null,
+    /** Key exists in process.env (even if empty string). */
+    base64EnvKeyPresent: typeof b64Raw !== 'undefined',
+    jsonEnvKeyPresent: typeof jsonRaw !== 'undefined',
+    /** Length after trim — 0 means missing or whitespace-only. */
+    base64TrimmedLength: b64Raw?.trim().length ?? 0,
+    jsonTrimmedLength: jsonRaw?.trim().length ?? 0,
+    /** False if base64 looks set but is not valid base64+service_account JSON. */
+    base64LooksValid: b64 ? base64DecodesToJson(b64Raw ?? '') : false,
+
+    checklist:
+      !json && !b64
+        ? [
+            'Name must be exactly: FIREBASE_SERVICE_ACCOUNT_BASE64 (or FIREBASE_SERVICE_ACCOUNT_JSON).',
+            'Enable the variable for Production (and Preview if you test preview URLs).',
+            'Redeploy after saving — old deployments never see new env vars.',
+            'Confirm this URL is the same Vercel project where you added the variable.',
+          ]
+        : b64 && !base64DecodesToJson(b64Raw ?? '')
+          ? [
+              'Value is not valid base64 of a Firebase service account JSON file.',
+              'Run: base64 -i your-key.json | tr -d "\\n" | pbcopy — paste once, no quotes.',
+            ]
+          : [],
   })
 }
