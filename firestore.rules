@@ -60,13 +60,15 @@ service cloud.firestore {
     }
 
     // Lobby groups: up to 12 members, symbolic only (no messaging).
+    // Note: deploy with `firebase deploy --only firestore:rules` (or Console) so these apply in production.
     match /lobby_groups/{groupId} {
       allow read: if isAuthenticated();
+      // Solo group only; only these fields; first member must be the signed-in user (avoid strict timestamp typing — client SDKs differ).
       allow create: if isAuthenticated()
+        && request.resource.data.keys().hasOnly(['member_uids', 'created_at'])
         && request.resource.data.member_uids is list
         && request.resource.data.member_uids.size() == 1
-        && request.auth.uid in request.resource.data.member_uids
-        && request.resource.data.created_at is timestamp;
+        && request.resource.data.member_uids[0] == request.auth.uid;
       allow delete: if isAuthenticated()
         && resource.data.member_uids.size() == 1
         && request.auth.uid in resource.data.member_uids;

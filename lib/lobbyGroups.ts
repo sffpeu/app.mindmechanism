@@ -17,6 +17,39 @@ export const LOBBY_GROUP_MAX = 12
 const COLLECTION = 'lobby_groups'
 export const LOBBY_GROUP_TTL_MS = 4 * 60 * 60 * 1000
 
+type LobbyApiResult =
+  | { mode: 'success'; groupId?: string }
+  | { mode: 'fallback' }
+  | { mode: 'error'; message: string }
+
+/** Prefer server writes (bypasses client rules when Admin is configured). */
+async function callLobbyGroupsApi(payload: {
+  action: 'create' | 'join' | 'leave'
+  groupId?: string
+}): Promise<LobbyApiResult> {
+  if (typeof window === 'undefined') {
+    return { mode: 'fallback' }
+  }
+  try {
+    const res = await fetch(`${window.location.origin}/api/lobby/groups`, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    if (res.status === 503) {
+      return { mode: 'fallback' }
+    }
+    const json = (await res.json().catch(() => ({}))) as { error?: string; groupId?: string }
+    if (!res.ok) {
+      return { mode: 'error', message: json.error || res.statusText }
+    }
+    return { mode: 'success', groupId: json.groupId }
+  } catch {
+    return { mode: 'fallback' }
+  }
+}
+
 export interface LobbyGroup {
   id: string
   member_uids: string[]
@@ -69,8 +102,17 @@ export async function getMyLobbyGroup(userId: string): Promise<LobbyGroup | null
 
 /** Create a new solo group. Leaves any non-solo group first. */
 export async function createLobbyGroup(userId: string): Promise<string> {
-  if (!db) throw new Error('Firestore is not initialized')
   if (!userId) throw new Error('User ID is required')
+
+  const api = await callLobbyGroupsApi({ action: 'create' })
+  if (api.mode === 'success' && api.groupId) {
+    return api.groupId
+  }
+  if (api.mode === 'error') {
+    throw new Error(api.message)
+  }
+
+  if (!db) throw new Error('Firestore is not initialized')
 
   const existing = await getMyLobbyGroup(userId)
   if (existing) {
@@ -89,8 +131,17 @@ export async function createLobbyGroup(userId: string): Promise<string> {
 
 /** Leave current group if any, then append user to target group if there is room. */
 export async function joinLobbyGroup(groupId: string, userId: string): Promise<void> {
-  if (!db) throw new Error('Firestore is not initialized')
   if (!groupId || !userId) throw new Error('Group and user are required')
+
+  const api = await callLobbyGroupsApi({ action: 'join', groupId })
+  if (api.mode === 'success') {
+    return
+  }
+  if (api.mode === 'error') {
+    throw new Error(api.message)
+  }
+
+  if (!db) throw new Error('Firestore is not initialized')
 
   const my = await getMyLobbyGroup(userId)
   if (my && my.id !== groupId) {
@@ -127,8 +178,17 @@ export async function joinLobbyGroup(groupId: string, userId: string): Promise<v
 
 /** Remove user from group; delete document if empty. */
 export async function leaveLobbyGroup(groupId: string, userId: string): Promise<void> {
-  if (!db) throw new Error('Firestore is not initialized')
   if (!groupId || !userId) throw new Error('Group and user are required')
+
+  const api = await callLobbyGroupsApi({ action: 'leave', groupId })
+  if (api.mode === 'success') {
+    return
+  }
+  if (api.mode === 'error') {
+    throw new Error(api.message)
+  }
+
+  if (!db) throw new Error('Firestore is not initialized')
 
   const groupRef = doc(db, COLLECTION, groupId)
 
@@ -151,7 +211,9 @@ export async function leaveLobbyGroup(groupId: string, userId: string): Promise<
 
 export function handleLobbyGroupError(error: unknown): string {
   if (error instanceof FirestoreError) {
-    if (error.code === 'permission-denied') return 'Permission denied'
+    if (error.code === 'permission-denied') {
+      return 'Missing or insufficient permissions. In Firebase Console deploy Firestore rules (lobby_groups), or on Vercel set FIREBASE_SERVICE_ACCOUNT_JSON so the lobby API can write.'
+    }
   }
   if (error instanceof Error) return error.message
   return 'Something went wrong'
