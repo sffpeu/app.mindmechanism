@@ -1,4 +1,4 @@
-import { db } from '@/lib/firebase'
+import { db, waitForFirebaseAuth } from '@/lib/firebase'
 import {
   collection,
   addDoc,
@@ -22,6 +22,18 @@ type LobbyApiResult =
   | { mode: 'fallback' }
   | { mode: 'error'; message: string }
 
+async function getClientIdTokenForLobbyApi(): Promise<string | null> {
+  if (typeof window === 'undefined') return null
+  try {
+    const authInstance = await waitForFirebaseAuth(15000)
+    const u = authInstance.currentUser
+    if (!u) return null
+    return await u.getIdToken()
+  } catch {
+    return null
+  }
+}
+
 /** Prefer server writes (bypasses client rules when Admin is configured). */
 async function callLobbyGroupsApi(payload: {
   action: 'create' | 'join' | 'leave'
@@ -30,14 +42,20 @@ async function callLobbyGroupsApi(payload: {
   if (typeof window === 'undefined') {
     return { mode: 'fallback' }
   }
+  const idToken = await getClientIdTokenForLobbyApi()
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (idToken) {
+    headers.Authorization = `Bearer ${idToken}`
+  }
   try {
     const res = await fetch(`${window.location.origin}/api/lobby/groups`, {
       method: 'POST',
       credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(payload),
     })
-    if (res.status === 503) {
+    // No usable session for API, or Admin rejected token — use Firestore SDK (user is still signed in there).
+    if (res.status === 503 || res.status === 401) {
       return { mode: 'fallback' }
     }
     const json = (await res.json().catch(() => ({}))) as { error?: string; groupId?: string }

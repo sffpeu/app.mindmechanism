@@ -20,16 +20,34 @@ function adminFresh(createdAt: Timestamp | undefined): boolean {
   return Date.now() - createdAt.toMillis() < LOBBY_GROUP_TTL_MS
 }
 
-async function verifyUid(): Promise<string | null> {
-  const token = cookies().get('__firebase_auth_token')?.value
-  if (!token) return null
-  try {
-    const app = getFirebaseAdminApp()
-    const decoded = await getAuth(app).verifyIdToken(token)
-    return decoded.uid
-  } catch {
-    return null
+async function verifyUid(request: Request): Promise<string | null> {
+  const app = getFirebaseAdminApp()
+  const authAdmin = getAuth(app)
+
+  const bearer = request.headers.get('authorization')
+  if (bearer?.startsWith('Bearer ')) {
+    const raw = bearer.slice(7).trim()
+    if (raw) {
+      try {
+        const decoded = await authAdmin.verifyIdToken(raw)
+        return decoded.uid
+      } catch {
+        /* try cookie */
+      }
+    }
   }
+
+  const cookieToken = cookies().get('__firebase_auth_token')?.value
+  if (cookieToken) {
+    try {
+      const decoded = await authAdmin.verifyIdToken(cookieToken)
+      return decoded.uid
+    } catch {
+      return null
+    }
+  }
+
+  return null
 }
 
 function getDb(): Firestore {
@@ -68,7 +86,7 @@ export async function POST(request: Request) {
     )
   }
 
-  const uid = await verifyUid()
+  const uid = await verifyUid(request)
   if (!uid) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
