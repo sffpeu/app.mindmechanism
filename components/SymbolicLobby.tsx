@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Users, Radio, Sparkles, LogOut as WithdrawIcon } from 'lucide-react'
@@ -12,7 +12,7 @@ import {
   leaveLobbyGroup,
   listLobbyGroups,
   LOBBY_GROUP_MAX,
-  handleLobbyGroupError,
+  handleLobbyGroupErrorWithHints,
   type LobbyGroup,
 } from '@/lib/lobbyGroups'
 import { LobbySatelliteField } from '@/components/LobbySatelliteField'
@@ -22,6 +22,7 @@ export function SymbolicLobby() {
   const [groups, setGroups] = useState<LobbyGroup[]>([])
   const [loading, setLoading] = useState(true)
   const [busyId, setBusyId] = useState<string | null>(null)
+  const permissionHintShown = useRef(false)
 
   const refresh = useCallback(async () => {
     if (!user?.uid) return
@@ -30,6 +31,10 @@ export function SymbolicLobby() {
       setGroups(list)
     } catch (e) {
       console.error(e)
+      if (!permissionHintShown.current) {
+        permissionHintShown.current = true
+        void handleLobbyGroupErrorWithHints(e).then((msg) => toast.error(msg))
+      }
     } finally {
       setLoading(false)
     }
@@ -56,7 +61,7 @@ export function SymbolicLobby() {
       toast.success('Your satellite is in orbit. Others can join your group — up to twelve in one flower.')
       await refresh()
     } catch (e) {
-      toast.error(handleLobbyGroupError(e))
+      void handleLobbyGroupErrorWithHints(e).then((msg) => toast.error(msg))
       console.error(e)
     } finally {
       setBusyId(null)
@@ -71,7 +76,7 @@ export function SymbolicLobby() {
       toast.message('You left the group.')
       await refresh()
     } catch (e) {
-      toast.error(handleLobbyGroupError(e))
+      void handleLobbyGroupErrorWithHints(e).then((msg) => toast.error(msg))
       console.error(e)
     } finally {
       setBusyId(null)
@@ -86,7 +91,7 @@ export function SymbolicLobby() {
       toast.success('You joined the group — satellites gather in a flower. Still no messages or channels.')
       await refresh()
     } catch (e) {
-      toast.error(handleLobbyGroupError(e))
+      void handleLobbyGroupErrorWithHints(e).then((msg) => toast.error(msg))
       console.error(e)
     } finally {
       setBusyId(null)

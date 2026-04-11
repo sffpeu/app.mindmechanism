@@ -280,9 +280,55 @@ export async function leaveLobbyGroup(groupId: string, userId: string): Promise<
 export function handleLobbyGroupError(error: unknown): string {
   if (error instanceof FirestoreError) {
     if (error.code === 'permission-denied') {
-      return 'Lobby blocked by Firestore rules: open Firebase Console → Firestore → Rules → paste the latest firestore.rules from the repo (lobby_groups section) → Publish. Or set FIREBASE_SERVICE_ACCOUNT_BASE64 on Vercel (base64 of the service account JSON, one line) and redeploy.'
+      return 'Missing or insufficient permissions.'
     }
   }
   if (error instanceof Error) return error.message
   return 'Something went wrong'
+}
+
+/** Same as handleLobbyGroupError, plus server hints from /api/lobby/admin-config. */
+export async function handleLobbyGroupErrorWithHints(error: unknown): Promise<string> {
+  const base = handleLobbyGroupError(error)
+  if (!(error instanceof FirestoreError) || error.code !== 'permission-denied') {
+    return base
+  }
+
+  try {
+    const res = await fetch('/api/lobby/admin-config', {
+      credentials: 'same-origin',
+    })
+    if (!res.ok) return `${base} Open Firebase Console → Firestore → Rules → copy firestore.rules from GitHub → Publish (lobby_groups must allow read/write for signed-in users).`
+
+    const j = (await res.json()) as {
+      anyServiceAccountEnv?: boolean
+      serviceAccountProjectId?: string | null
+      clientProjectId?: string | null
+      projectIdMismatch?: boolean
+    }
+
+    const parts = [base]
+
+    if (j.projectIdMismatch) {
+      parts.push(
+        ` Service account project_id (${j.serviceAccountProjectId}) does not match NEXT_PUBLIC_FIREBASE_PROJECT_ID (${j.clientProjectId}). Download a new key from the same Firebase project as the web app.`
+      )
+    } else if (!j.anyServiceAccountEnv) {
+      parts.push(
+        ' Vercel has no FIREBASE_SERVICE_ACCOUNT_BASE64 (or JSON). Add it and Redeploy — or publish Firestore rules in Firebase Console (Firestore → Rules) from this repo’s firestore.rules.'
+      )
+    } else if (!j.serviceAccountProjectId) {
+      parts.push(
+        ' Vercel has a service account variable but it does not parse as JSON — recreate FIREBASE_SERVICE_ACCOUNT_BASE64 (base64 -i key.json | tr -d "\\n" | pbcopy) and redeploy.'
+      )
+    } else {
+      parts.push(
+        ' Publish Firestore rules: Firebase Console → your project → Firestore → Rules → paste rules from GitHub (include lobby_groups) → Publish.'
+      )
+    }
+
+    return parts.join('')
+  } catch {
+    return `${base} Publish Firestore rules (Firebase Console → Firestore → Rules) from this repo’s firestore.rules, or set FIREBASE_SERVICE_ACCOUNT_BASE64 on Vercel and redeploy.`
+  }
 }
