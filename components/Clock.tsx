@@ -10,6 +10,7 @@ import { clockSatellites, defaultSatelliteConfigs } from '@/lib/satelliteDefault
 import { motion } from 'framer-motion';
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { updateSession, updateSessionActivity, pauseSession } from '@/lib/sessions'
+import { getSessionLobbySnapshot } from '@/lib/sessionLobbyMeta'
 import { toast } from 'react-hot-toast';
 import { useLocation } from '@/lib/hooks/useLocation';
 import { Timestamp } from 'firebase/firestore';
@@ -497,12 +498,14 @@ export default function Clock({
   const handleSessionComplete = async () => {
     if (!sessionId || !user?.uid) return;
     try {
+      const lobby = await getSessionLobbySnapshot(user.uid);
       await updateSession(sessionId, {
         status: 'completed',
         progress: 100,
         end_time: new Date().toISOString(),
         actual_duration: initialDuration || 0,
-        last_active_time: new Date().toISOString()
+        last_active_time: new Date().toISOString(),
+        ...lobby,
       });
     } catch (error) {
       console.error('Error updating session:', error);
@@ -642,11 +645,13 @@ export default function Clock({
 
     try {
       const now = Date.now();
+      const lobby = await getSessionLobbySnapshot(user.uid);
       await updateSession(sessionId, {
         status: 'aborted',
         end_time: new Date(now).toISOString(),
         actual_duration: initialDuration - (remainingTime || 0),
-        last_active_time: new Date(now).toISOString()
+        last_active_time: new Date(now).toISOString(),
+        ...lobby,
       });
 
       setRemainingTime(initialDuration);

@@ -22,6 +22,7 @@ import {
   Sunrise,
   Sunset,
   Activity,
+  Users,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -143,6 +144,15 @@ function aqiPalette(index: number) {
     6: { icon: 'text-rose-700', value: 'text-rose-800 dark:text-rose-300' },
   }
   return table[index] ?? { icon: 'text-gray-500', value: 'text-gray-900 dark:text-white' }
+}
+
+function sessionGroupDisplay(session: Session): { typeLabel: string; participantsLabel: string } | null {
+  if (session.group_participant_count == null || session.is_group_session == null) return null
+  const n = session.group_participant_count
+  return {
+    typeLabel: session.is_group_session ? 'Group session' : 'Solo session',
+    participantsLabel: n === 1 ? '1 participant' : `${n} participants`,
+  }
 }
 
 export default function NotesPage() {
@@ -343,6 +353,7 @@ export default function NotesPage() {
     if (!note.sessionId) return;
     const session = recentSessions.find((s) => s.id === note.sessionId);
     if (!session) return;
+    const group = sessionGroupDisplay(session);
     toast({
       title: 'Session Information',
       description: (
@@ -390,6 +401,21 @@ export default function NotesPage() {
               </div>
             </div>
           </div>
+          {group && (
+            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-black/10 dark:border-white/10">
+              <div className="space-y-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400">Session type</p>
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-indigo-500 shrink-0" />
+                  <p className="text-sm font-medium text-indigo-700 dark:text-indigo-300">{group.typeLabel}</p>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400">Participants</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">{group.participantsLabel}</p>
+              </div>
+            </div>
+          )}
           <div className="space-y-1">
             <p className="text-xs text-gray-500 dark:text-gray-400">Words</p>
             <p className="text-sm">{session.words.join(', ')}</p>
@@ -544,6 +570,20 @@ export default function NotesPage() {
                         <p className="text-[10px] text-gray-400 dark:text-gray-500">{formatDate(note.updatedAt)}</p>
                       </div>
                       <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5 line-clamp-2">{note.content}</p>
+                      {note.sessionId &&
+                        (() => {
+                          const s = recentSessions.find((x) => x.id === note.sessionId)
+                          const g = s ? sessionGroupDisplay(s) : null
+                          if (!g) return null
+                          return (
+                            <div className="flex items-center gap-1 mt-1 text-[10px] text-indigo-600 dark:text-indigo-400">
+                              <Users className="h-3 w-3 shrink-0" aria-hidden />
+                              <span>
+                                {g.typeLabel} · {g.participantsLabel}
+                              </span>
+                            </div>
+                          )
+                        })()}
                     </div>
                   ))
                 )}
@@ -664,6 +704,21 @@ export default function NotesPage() {
                   <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5 whitespace-pre-wrap break-words">
                     {noteContent}
                   </p>
+                  {selectedNote.sessionId &&
+                    (() => {
+                      const s = recentSessions.find((x) => x.id === selectedNote.sessionId)
+                      const g = s ? sessionGroupDisplay(s) : null
+                      if (!g) return null
+                      return (
+                        <div className="flex items-start gap-1.5 mt-2 pt-2 border-t border-black/5 dark:border-white/10">
+                          <Users className="h-3.5 w-3.5 text-indigo-500 shrink-0 mt-0.5" aria-hidden />
+                          <span className="text-xs text-gray-600 dark:text-gray-400">
+                            {g.typeLabel} ·{' '}
+                            <span className="font-medium text-gray-800 dark:text-gray-200">{g.participantsLabel}</span>
+                          </span>
+                        </div>
+                      )
+                    })()}
                 </div>
               )}
 
@@ -861,6 +916,7 @@ export default function NotesPage() {
                       (() => {
                         const session = recentSessions.find((s) => s.id === selectedSessionId)
                         if (!session) return null
+                        const groupMeta = sessionGroupDisplay(session)
                         return (
                           <div className="rounded-md border border-black/5 dark:border-white/10 bg-white/80 dark:bg-black/30 p-2 space-y-1.5">
                             <div className="flex flex-wrap items-center gap-2">
@@ -895,6 +951,14 @@ export default function NotesPage() {
                                 {Math.round(session.duration / 1000 / 60)} min
                               </span>
                             </div>
+                            {groupMeta && (
+                              <div className="flex items-center gap-1.5 text-[10px] text-indigo-600 dark:text-indigo-400 pt-0.5">
+                                <Users className="h-3 w-3 shrink-0" aria-hidden />
+                                <span>
+                                  {groupMeta.typeLabel} · {groupMeta.participantsLabel}
+                                </span>
+                              </div>
+                            )}
                           </div>
                         )
                       })()}

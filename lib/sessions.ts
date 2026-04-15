@@ -44,6 +44,9 @@ export interface SessionData {
   current_participants?: number;
   host_id?: string;
   scheduled_start_time?: string;
+  /** Set when session ends; from symbolic lobby at completion/abort time */
+  is_group_session?: boolean;
+  group_participant_count?: number;
 }
 
 export interface Session extends SessionData {
