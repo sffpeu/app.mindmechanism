@@ -28,9 +28,37 @@ import {
   FirestoreError,
 } from 'firebase/firestore'
 
+/** Max size for anonymous / symbolic public lobby groups (unchanged). */
 export const LOBBY_GROUP_MAX = 12
+/** Friends groups may set a cap up to this (chosen when the group is created). */
+export const LOBBY_FRIENDS_MEMBER_CAP_MAX = 100
+export const LOBBY_FRIENDS_MEMBER_CAP_MIN = 2
 const COLLECTION = 'lobby_groups'
 export const LOBBY_GROUP_TTL_MS = 4 * 60 * 60 * 1000
+
+/** Resolve effective member cap from stored Firestore fields. Public groups are always 12. */
+export function memberCapFromLobbyData(
+  data: Record<string, unknown> | undefined,
+  friendsCode: string | null | undefined
+): number {
+  const isFriends = typeof friendsCode === 'string' && friendsCode.length > 0
+  if (!isFriends) return LOBBY_GROUP_MAX
+  const raw = data?.member_cap
+  if (typeof raw !== 'number' || !Number.isFinite(raw)) return LOBBY_GROUP_MAX
+  const rounded = Math.floor(raw)
+  return Math.min(
+    LOBBY_FRIENDS_MEMBER_CAP_MAX,
+    Math.max(LOBBY_FRIENDS_MEMBER_CAP_MIN, rounded)
+  )
+}
+
+/** Strict parse for API / client when creating a friends group (2–100). */
+export function parseFriendsMemberCapInput(n: unknown): number | null {
+  if (typeof n !== 'number' || !Number.isFinite(n)) return null
+  const rounded = Math.floor(n)
+  if (rounded < LOBBY_FRIENDS_MEMBER_CAP_MIN || rounded > LOBBY_FRIENDS_MEMBER_CAP_MAX) return null
+  return rounded
+}
 
 type LobbyApiResult =
   | { mode: 'success'; groupId?: string; friendsCode?: string }
@@ -75,19 +103,28 @@ async function fetchLobbyGroupsViaApi(): Promise<LobbyGroup[] | null> {
         member_uids: string[]
         created_at_ms: number
         friends_code?: string | null
+        member_cap?: number
         session?: LobbySessionPlan | null
         scheduled_gatherings?: LobbyScheduledGathering[]
       }>
     }
     const raw = json.groups ?? []
-    return raw.map((g) => ({
-      id: g.id,
-      member_uids: g.member_uids.filter((u) => typeof u === 'string'),
-      created_at: Timestamp.fromMillis(g.created_at_ms),
-      friends_code: typeof g.friends_code === 'string' ? g.friends_code : null,
-      session: g.session ?? null,
-      scheduled_gatherings: Array.isArray(g.scheduled_gatherings) ? g.scheduled_gatherings : [],
-    }))
+    return raw.map((g) => {
+      const friends_code = typeof g.friends_code === 'string' ? g.friends_code : null
+      const member_cap = memberCapFromLobbyData(
+        { member_cap: g.member_cap } as Record<string, unknown>,
+        friends_code
+      )
+      return {
+        id: g.id,
+        member_uids: g.member_uids.filter((u) => typeof u === 'string'),
+        created_at: Timestamp.fromMillis(g.created_at_ms),
+        friends_code,
+        member_cap,
+        session: g.session ?? null,
+        scheduled_gatherings: Array.isArray(g.scheduled_gatherings) ? g.scheduled_gatherings : [],
+      }
+    })
   } catch {
     return null
   }
@@ -98,6 +135,7 @@ async function callLobbyGroupsApi(payload: {
   action: 'create' | 'create_friends' | 'join' | 'join_code' | 'leave' | 'update_schedule'
   groupId?: string
   friendsCode?: string
+  memberCap?: number
   mandalaClockId?: number
   sessionDurationMinutes?: number
   focusNodeIndices?: number[]
@@ -137,6 +175,8 @@ export interface LobbyGroup {
   member_uids: string[]
   created_at: Timestamp
   friends_code?: string | null
+  /** Max members for this group (12 for public; 2–100 for friends). */
+  member_cap: number
   session: LobbySessionPlan | null
   scheduled_gatherings: LobbyScheduledGathering[]
 }
@@ -180,13 +220,16 @@ export async function listLobbyGroups(): Promise<LobbyGroup[]> {
       const member_uids = Array.isArray(data.member_uids)
         ? (data.member_uids as string[]).filter((u) => typeof u === 'string')
         : []
+      const friends_code = typeof data.friends_code === 'string' ? data.friends_code : null
+      const row = data as Record<string, unknown>
       return {
         id: d.id,
         member_uids,
         created_at: data.created_at as Timestamp,
-        friends_code: typeof data.friends_code === 'string' ? data.friends_code : null,
-        session: sessionFromFirestoreData(data as Record<string, unknown>),
-        scheduled_gatherings: parseScheduledGatheringsFromFirestore(data as Record<string, unknown>),
+        friends_code,
+        member_cap: memberCapFromLobbyData(row, friends_code),
+        session: sessionFromFirestoreData(row),
+        scheduled_gatherings: parseScheduledGatheringsFromFirestore(row),
       }
     })
     .filter((g) => g.created_at && isFresh(g.created_at) && g.member_uids.length > 0)
@@ -218,13 +261,16 @@ export async function getMyLobbyGroup(userId: string): Promise<LobbyGroup | null
     : []
   const created_at = data.created_at as Timestamp
   if (!created_at || !isFresh(created_at)) return null
+  const friends_code = typeof data.friends_code === 'string' ? data.friends_code : null
+  const row = data as Record<string, unknown>
   return {
     id: d.id,
     member_uids,
     created_at,
-    friends_code: typeof data.friends_code === 'string' ? data.friends_code : null,
-    session: sessionFromFirestoreData(data as Record<string, unknown>),
-    scheduled_gatherings: parseScheduledGatheringsFromFirestore(data as Record<string, unknown>),
+    friends_code,
+    member_cap: memberCapFromLobbyData(row, friends_code),
+    session: sessionFromFirestoreData(row),
+    scheduled_gatherings: parseScheduledGatheringsFromFirestore(row),
   }
 }
 
@@ -232,7 +278,12 @@ export async function getMyLobbyGroup(userId: string): Promise<LobbyGroup | null
 export async function createLobbyGroup(
   userId: string,
   session: LobbySessionConfigInput,
-  options?: { friendsCode?: string | null; scheduledGatherings?: LobbyScheduledGathering[] }
+  options?: {
+    friendsCode?: string | null
+    scheduledGatherings?: LobbyScheduledGathering[]
+    /** Required when creating a friends group (2–100). Ignored for public lobby. */
+    friendsMemberCap?: number
+  }
 ): Promise<string> {
   if (!userId) throw new Error('User ID is required')
   const err = validateLobbySessionConfig(session)
@@ -243,11 +294,21 @@ export async function createLobbyGroup(
   const schedErr = validateScheduledGatherings(gatherings)
   if (schedErr) throw new Error(schedErr)
 
+  let friendsMemberCap = LOBBY_GROUP_MAX
+  if (normalizedCode) {
+    const parsed = parseFriendsMemberCapInput(options?.friendsMemberCap ?? LOBBY_GROUP_MAX)
+    if (parsed === null) {
+      throw new Error(`Friends group size must be ${LOBBY_FRIENDS_MEMBER_CAP_MIN}–${LOBBY_FRIENDS_MEMBER_CAP_MAX}.`)
+    }
+    friendsMemberCap = parsed
+  }
+
   const api = await callLobbyGroupsApi(
     normalizedCode
       ? {
           action: 'create_friends',
           friendsCode: normalizedCode,
+          memberCap: friendsMemberCap,
           mandalaClockId: session.mandalaClockId,
           sessionDurationMinutes: session.sessionDurationMinutes,
           focusNodeIndices: finalized,
@@ -279,7 +340,9 @@ export async function createLobbyGroup(
         ((typeof raw?.friends_code === 'string' ? raw.friends_code : '') || '') === normalizedCode
       const storedG = raw ? parseScheduledGatheringsFromFirestore(raw) : []
       const schedOk = scheduledGatheringsMatch(storedG, gatherings)
-      if (raw && codeOk && storedSessionMatchesInput(raw, session, finalized) && schedOk) {
+      const storedCap = raw ? memberCapFromLobbyData(raw, normalizedCode || null) : LOBBY_GROUP_MAX
+      const capOk = storedCap === (normalizedCode ? friendsMemberCap : LOBBY_GROUP_MAX)
+      if (raw && codeOk && capOk && storedSessionMatchesInput(raw, session, finalized) && schedOk) {
         return existing.id
       }
     }
@@ -290,6 +353,7 @@ export async function createLobbyGroup(
     member_uids: [userId],
     created_at: Timestamp.now(),
     friends_code: normalizedCode || null,
+    member_cap: normalizedCode ? friendsMemberCap : LOBBY_GROUP_MAX,
     mandala_clock_id: session.mandalaClockId,
     session_duration_minutes: session.sessionDurationMinutes,
     focus_node_indices: finalized,
@@ -303,13 +367,18 @@ export async function createFriendsLobbyGroup(
   userId: string,
   session: LobbySessionConfigInput,
   requestedCode?: string,
-  scheduledGatherings?: LobbyScheduledGathering[]
+  scheduledGatherings?: LobbyScheduledGathering[],
+  memberCap?: number
 ): Promise<{ groupId: string; friendsCode: string }> {
   const friendsCode = normalizeFriendsCode(requestedCode || generateFriendsCode())
   if (friendsCode.length < 4) {
     throw new Error('Friends code must be at least 4 characters')
   }
-  const groupId = await createLobbyGroup(userId, session, { friendsCode, scheduledGatherings })
+  const groupId = await createLobbyGroup(userId, session, {
+    friendsCode,
+    scheduledGatherings,
+    friendsMemberCap: memberCap ?? LOBBY_GROUP_MAX,
+  })
   return { groupId, friendsCode }
 }
 
@@ -381,6 +450,7 @@ export async function joinLobbyGroup(groupId: string, userId: string): Promise<v
       throw new Error('Group not found')
     }
     const data = snap.data()
+    const row = data as Record<string, unknown>
     const members = Array.isArray(data.member_uids)
       ? (data.member_uids as unknown[]).filter((u): u is string => typeof u === 'string')
       : []
@@ -391,7 +461,9 @@ export async function joinLobbyGroup(groupId: string, userId: string): Promise<v
     if (members.includes(userId)) {
       return
     }
-    if (members.length >= LOBBY_GROUP_MAX) {
+    const friends_code = typeof row.friends_code === 'string' ? row.friends_code : null
+    const cap = memberCapFromLobbyData(row, friends_code)
+    if (members.length >= cap) {
       throw new Error('Group is full')
     }
 

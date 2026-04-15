@@ -34,6 +34,9 @@ import {
   listLobbyGroups,
   updateLobbyGroupSchedule,
   LOBBY_GROUP_MAX,
+  LOBBY_FRIENDS_MEMBER_CAP_MAX,
+  LOBBY_FRIENDS_MEMBER_CAP_MIN,
+  parseFriendsMemberCapInput,
   normalizeFriendsCode,
   handleLobbyGroupErrorWithHints,
   type LobbyGroup,
@@ -100,6 +103,7 @@ export function SymbolicLobby() {
   const [gatheringDurationMin, setGatheringDurationMin] = useState(10)
   const [gatheringLabel, setGatheringLabel] = useState('')
   const [joinLink, setJoinLink] = useState('')
+  const [friendsMemberCap, setFriendsMemberCap] = useState(12)
   const permissionHintShown = useRef(false)
   const sessionUiStorageKey = 'lobby.sessionConfig.expanded'
 
@@ -232,10 +236,17 @@ export function SymbolicLobby() {
       toast.error(err)
       return
     }
+    const cap = parseFriendsMemberCapInput(friendsMemberCap)
+    if (cap === null) {
+      toast.error(
+        `Friends group size must be between ${LOBBY_FRIENDS_MEMBER_CAP_MIN} and ${LOBBY_FRIENDS_MEMBER_CAP_MAX}.`
+      )
+      return
+    }
     setBusyId('friends-create')
     try {
-      const result = await createFriendsLobbyGroup(user.uid, sessionConfig, undefined, draftSchedule)
-      toast.success(`Friends group created. Share code ${result.friendsCode} to meditate together.`)
+      const result = await createFriendsLobbyGroup(user.uid, sessionConfig, undefined, draftSchedule, cap)
+      toast.success(`Friends group created (${cap} max). Share code ${result.friendsCode} to meditate together.`)
       await refresh()
     } catch (e) {
       void handleLobbyGroupErrorWithHints(e).then((msg) => toast.error(msg))
@@ -428,9 +439,10 @@ export function SymbolicLobby() {
             Symbolic lobby
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 leading-relaxed">
-            Up to {LOBBY_GROUP_MAX} people can share one symbolic group. Your cluster forms a flower as others
-            join. When the circle is complete ({LOBBY_GROUP_MAX} members), it glows gold. There is no chat — only
-            this shared silent pattern.
+            The open lobby holds up to {LOBBY_GROUP_MAX} people per group. Friends groups let you set a larger cap
+            (up to {LOBBY_FRIENDS_MEMBER_CAP_MAX}) before anyone joins so everyone sees how many seats the session
+            has. Your cluster forms a flower as others join; at capacity it glows gold. There is no chat — only this
+            shared silent pattern.
           </p>
         </div>
       </div>
@@ -651,6 +663,28 @@ export function SymbolicLobby() {
         </div>
       ) : null}
 
+      {!myGroup ? (
+        <div className="mb-4 rounded-xl border border-emerald-500/20 bg-emerald-500/[0.06] dark:bg-emerald-500/10 px-4 py-3">
+          <Label htmlFor="lobby-friends-cap" className="text-sm font-medium">
+            Friends group — max participants
+          </Label>
+          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 mb-2">
+            Only for &quot;Create friends group&quot; ({LOBBY_FRIENDS_MEMBER_CAP_MIN}–{LOBBY_FRIENDS_MEMBER_CAP_MAX}).
+            Start lobby stays {LOBBY_GROUP_MAX}.
+          </p>
+          <Input
+            id="lobby-friends-cap"
+            type="number"
+            min={LOBBY_FRIENDS_MEMBER_CAP_MIN}
+            max={LOBBY_FRIENDS_MEMBER_CAP_MAX}
+            value={friendsMemberCap}
+            onChange={(e) => setFriendsMemberCap(Number(e.target.value))}
+            disabled={busyId !== null}
+            className="max-w-[120px]"
+          />
+        </div>
+      ) : null}
+
       <div className="flex flex-wrap gap-2 mb-6">
         {myGroup ? (
           <Button
@@ -784,8 +818,8 @@ export function SymbolicLobby() {
       {myGroup && (
         <>
           <p className="text-xs text-violet-700 dark:text-violet-300/90 mb-3 rounded-lg bg-violet-500/10 dark:bg-violet-500/10 px-3 py-2 border border-violet-500/20">
-            {myGroup.member_uids.length}/{LOBBY_GROUP_MAX} in your group
-            {myGroup.member_uids.length === LOBBY_GROUP_MAX
+            {myGroup.member_uids.length}/{myGroup.member_cap} in your group
+            {myGroup.member_uids.length >= myGroup.member_cap
               ? ' — full golden circle.'
               : myGroup.member_uids.length >= 2
                 ? ' — flower formation active.'

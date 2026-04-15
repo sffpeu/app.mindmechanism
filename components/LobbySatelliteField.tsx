@@ -37,16 +37,26 @@ function GroupFlower({
 }) {
   const ordered = [...group.member_uids].sort()
   const n = ordered.length
-  const offsets = lobbyFlowerOffsets(n)
-  const dotScale = compact ? 1 : n >= 10 ? 0.85 : 1
+  const cap = group.member_cap
+  const offsets = lobbyFlowerOffsets(n, cap)
+  const dotScale = compact
+    ? 1
+    : n >= 60
+      ? 0.4
+      : n >= 30
+        ? 0.55
+        : n >= 10
+          ? 0.85
+          : 1
+  const baseDot = compact ? 9 : n > 60 ? 5 : n > 30 ? 7 : 11
 
   return (
     <>
       {ordered.map((uid, i) => {
         const o = offsets[i] ?? { x: 0, y: 0 }
         const isMe = uid === userId
-        const w = compact ? 9 : 11
-        const h = compact ? 9 : 11
+        const w = baseDot
+        const h = baseDot
         return (
           <div
             key={`${group.id}-${uid}`}
@@ -100,11 +110,13 @@ export function LobbySatelliteField({
   busyId,
   onJoinGroup,
 }: LobbySatelliteFieldProps) {
+  const myCap = myGroup?.member_cap ?? LOBBY_GROUP_MAX
+  const myFull = !!myGroup && myGroup.member_uids.length >= myCap && myCap >= 2
   return (
     <div
       className={cn(
         'relative mb-6 min-h-[min(380px,52vh)] w-full overflow-hidden rounded-2xl border transition-[box-shadow,background-color,border-color] duration-700',
-        myGroup?.member_uids.length === LOBBY_GROUP_MAX
+        myFull
           ? 'border-amber-400/50 bg-gradient-to-b from-amber-950/50 via-amber-900/25 to-slate-950/95 shadow-[0_0_48px_rgba(245,158,11,0.18)]'
           : 'border-white/15 bg-gradient-to-b from-slate-950/90 via-violet-950/40 to-slate-950/95 dark:from-black dark:via-violet-950/30 dark:to-black'
       )}
@@ -114,7 +126,7 @@ export function LobbySatelliteField({
         <div
           className={cn(
             'absolute inset-0',
-            myGroup?.member_uids.length === LOBBY_GROUP_MAX
+            myFull
               ? 'bg-[radial-gradient(ellipse_at_50%_35%,rgba(251,191,36,0.28),transparent_58%)]'
               : 'bg-[radial-gradient(ellipse_at_50%_0%,rgba(139,92,246,0.22),transparent_55%)]'
           )}
@@ -122,8 +134,8 @@ export function LobbySatelliteField({
       </div>
 
       <p className="pointer-events-none absolute left-3 top-3 right-3 z-10 text-[10px] leading-snug text-white/55 sm:text-xs sm:text-white/60">
-        Up to {LOBBY_GROUP_MAX} people per group — satellites gather into a flower when you join. At{' '}
-        {LOBBY_GROUP_MAX}, the ring turns gold in a full circle. No messages.
+        Open lobby groups hold up to {LOBBY_GROUP_MAX} people; friends groups use a size you set (up to 100).
+        Satellites gather into a flower as people join — at capacity the ring turns gold. No messages.
       </p>
 
       <div className="absolute bottom-2 left-3 right-3 z-10 flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-white/50">
@@ -133,11 +145,11 @@ export function LobbySatelliteField({
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block h-2 w-2 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
-          Flower (2–11)
+          Flower (room left)
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block h-2 w-2 shrink-0 rounded-full bg-amber-300 shadow-[0_0_8px_rgba(251,191,36,0.9)]" />
-          Full circle ({LOBBY_GROUP_MAX})
+          Full ring (at cap)
         </span>
       </div>
 
@@ -150,7 +162,7 @@ export function LobbySatelliteField({
             transition={{ type: 'spring', stiffness: 280, damping: 24 }}
             className={cn(
               'relative mx-auto flex min-h-[min(220px,42vw)] min-w-[min(220px,42vw)] max-w-full items-center justify-center',
-              myGroup.member_uids.length === LOBBY_GROUP_MAX
+              myGroup.member_uids.length >= myCap && myCap >= 2
                 ? 'rounded-full border border-amber-400/45 bg-amber-500/[0.08] p-6 shadow-[inset_0_0_40px_rgba(251,191,36,0.12)]'
                 : myGroup.member_uids.length >= 2
                   ? 'rounded-full border border-emerald-500/25 bg-emerald-500/[0.06] p-6'
@@ -158,10 +170,10 @@ export function LobbySatelliteField({
             )}
             role="img"
             aria-label={
-              myGroup.member_uids.length === LOBBY_GROUP_MAX
-                ? 'Your group is complete: twelve satellites in a gold circle'
+              myGroup.member_uids.length >= myCap && myCap >= 2
+                ? `Your group is complete: ${myGroup.member_uids.length} satellites in a gold circle`
                 : myGroup.member_uids.length >= 2
-                  ? `Your group flower with ${myGroup.member_uids.length} members`
+                  ? `Your group flower with ${myGroup.member_uids.length} of ${myCap} members`
                   : 'Your satellite, awaiting others to join your group'
             }
           >
@@ -169,7 +181,7 @@ export function LobbySatelliteField({
               group={myGroup}
               userId={userId}
               compact={false}
-              gold={myGroup.member_uids.length === LOBBY_GROUP_MAX}
+              gold={myGroup.member_uids.length >= myCap && myCap >= 2}
             />
           </motion.div>
         </div>
@@ -177,8 +189,9 @@ export function LobbySatelliteField({
 
       {otherGroups.map((group) => {
         const { x, y, delay, duration } = lobbySlotForId(group.id)
-        const full = group.member_uids.length >= LOBBY_GROUP_MAX
-        const gold = group.member_uids.length === LOBBY_GROUP_MAX
+        const cap = group.member_cap
+        const full = group.member_uids.length >= cap
+        const gold = group.member_uids.length === cap && cap >= 2
         const loading = busyId === group.id
         return (
           <div
@@ -204,8 +217,8 @@ export function LobbySatelliteField({
                 onClick={() => onJoinGroup(group.id)}
                 title={
                   full
-                    ? 'This group is full (twelve members).'
-                    : `Join this group — ${group.member_uids.length} here, flower formation. ${formatDistanceToNow(group.created_at.toDate(), { addSuffix: true })}`
+                    ? `This group is full (${cap} members).`
+                    : `Join this group — ${group.member_uids.length}/${cap} here, flower formation. ${formatDistanceToNow(group.created_at.toDate(), { addSuffix: true })}`
                 }
                 className={cn(
                   'relative flex h-[118px] w-[118px] items-center justify-center rounded-full border transition-all duration-300',
@@ -220,7 +233,7 @@ export function LobbySatelliteField({
                 aria-label={
                   full
                     ? 'Group is full'
-                    : `Join anonymous group of ${group.member_uids.length} members`
+                    : `Join anonymous group with ${group.member_uids.length} of ${cap} members`
                 }
               >
                 <GroupFlower group={group} userId={undefined} compact gold={gold} />

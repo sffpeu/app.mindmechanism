@@ -3,7 +3,12 @@ import { cookies } from 'next/headers'
 import { getAuth } from 'firebase-admin/auth'
 import { getFirestore, FieldValue, type Firestore, type Timestamp } from 'firebase-admin/firestore'
 import { getFirebaseAdminApp } from '@/lib/firebaseAdmin'
-import { LOBBY_GROUP_MAX, LOBBY_GROUP_TTL_MS } from '@/lib/lobbyGroups'
+import {
+  LOBBY_GROUP_MAX,
+  LOBBY_GROUP_TTL_MS,
+  memberCapFromLobbyData,
+  parseFriendsMemberCapInput,
+} from '@/lib/lobbyGroups'
 import type { LobbySessionConfigInput, LobbySessionPlan } from '@/lib/lobbySessionConfig'
 import {
   finalizeLobbySessionIndices,
@@ -95,6 +100,7 @@ export async function GET(request: Request) {
       member_uids: string[]
       created_at_ms: number
       friends_code?: string | null
+      member_cap: number
       session: LobbySessionPlan | null
       scheduled_gatherings: LobbyScheduledGathering[]
     }> = []
@@ -109,6 +115,8 @@ export async function GET(request: Request) {
       if (member_uids.length === 0) continue
       const isMember = member_uids.includes(uid)
       const friendsCode = isMember && typeof data.friends_code === 'string' ? data.friends_code : null
+      const friendsCodeForCap = typeof data.friends_code === 'string' ? data.friends_code : null
+      const member_cap = memberCapFromLobbyData(data, friendsCodeForCap)
       const session = parseLobbySessionPlan(data)
       const scheduled_gatherings = parseScheduledGatheringsFromFirestore(data)
       groups.push({
@@ -116,6 +124,7 @@ export async function GET(request: Request) {
         member_uids,
         created_at_ms,
         friends_code: friendsCode,
+        member_cap,
         session,
         scheduled_gatherings,
       })
@@ -168,6 +177,7 @@ export async function POST(request: Request) {
     action?: string
     groupId?: string
     friendsCode?: string
+    memberCap?: number
     mandalaClockId?: number
     sessionDurationMinutes?: number
     focusNodeIndices?: number[]
@@ -189,6 +199,17 @@ export async function POST(request: Request) {
           : ''
       if (action === 'create_friends' && requestedFriendsCode.length < 4) {
         return NextResponse.json({ error: 'Friends code must be at least 4 characters' }, { status: 400 })
+      }
+
+      let desiredCap = LOBBY_GROUP_MAX
+      if (action === 'create_friends') {
+        const defaultFriendsCap =
+          body.memberCap !== undefined && body.memberCap !== null ? body.memberCap : LOBBY_GROUP_MAX
+        const parsed = parseFriendsMemberCapInput(defaultFriendsCap)
+        if (parsed === null) {
+          return NextResponse.json({ error: 'Invalid friends group size' }, { status: 400 })
+        }
+        desiredCap = parsed
       }
 
       const sessionInput: LobbySessionConfigInput = {
@@ -217,12 +238,17 @@ export async function POST(request: Request) {
         const existingCode = row.friends_code
         const codeMatch =
           ((typeof existingCode === 'string' ? existingCode : '') || '') === requestedFriendsCode
+        const existingCap = memberCapFromLobbyData(
+          row,
+          typeof existingCode === 'string' && existingCode.length > 0 ? existingCode : null
+        )
+        const capMatch = existingCap === desiredCap
         const sessionMatch = storedSessionMatchesInput(row, sessionInput, finalized)
         const schedMatch = scheduledGatheringsMatch(
           parseScheduledGatheringsFromFirestore(row),
           normalizedGatherings
         )
-        if (m.length === 1 && m[0] === uid && codeMatch && sessionMatch && schedMatch) {
+        if (m.length === 1 && m[0] === uid && codeMatch && capMatch && sessionMatch && schedMatch) {
           return NextResponse.json({ groupId: d.id, friendsCode: requestedFriendsCode || null })
         }
       }
@@ -233,6 +259,7 @@ export async function POST(request: Request) {
         member_uids: [uid],
         created_at: FieldValue.serverTimestamp(),
         friends_code: requestedFriendsCode || null,
+        member_cap: desiredCap,
         mandala_clock_id: sessionInput.mandalaClockId,
         session_duration_minutes: sessionInput.sessionDurationMinutes,
         focus_node_indices: finalized,
@@ -270,7 +297,9 @@ export async function POST(request: Request) {
         if (members.includes(uid)) {
           return
         }
-        if (members.length >= LOBBY_GROUP_MAX) {
+        const friendsForCap = typeof data.friends_code === 'string' ? data.friends_code : null
+        const cap = memberCapFromLobbyData(data, friendsForCap)
+        if (members.length >= cap) {
           throw new Error('Group is full')
         }
         tx.update(ref, { member_uids: [...members, uid] })
@@ -309,7 +338,8 @@ export async function POST(request: Request) {
         const members = normalizeMembers(data)
         const createdAt = data.created_at as Timestamp | undefined
         if (!adminFresh(createdAt)) continue
-        if (members.length >= LOBBY_GROUP_MAX && !members.includes(uid)) continue
+        const cap = memberCapFromLobbyData(data, requestedFriendsCode)
+        if (members.length >= cap && !members.includes(uid)) continue
         selectedId = docSnap.id
         break
       }
@@ -333,7 +363,8 @@ export async function POST(request: Request) {
         const createdAt = data.created_at as Timestamp | undefined
         if (!adminFresh(createdAt)) throw new Error('Group has expired')
         if (members.includes(uid)) return
-        if (members.length >= LOBBY_GROUP_MAX) throw new Error('Group is full')
+        const cap = memberCapFromLobbyData(data, requestedFriendsCode)
+        if (members.length >= cap) throw new Error('Group is full')
         tx.update(ref, { member_uids: [...members, uid] })
       })
       return NextResponse.json({ ok: true, groupId: selectedId })
