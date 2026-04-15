@@ -11,6 +11,13 @@ import {
   storedSessionMatchesInput,
   validateLobbySessionConfig,
 } from '@/lib/lobbySessionConfig'
+import type { LobbyScheduledGathering } from '@/lib/lobbySchedule'
+import {
+  normalizeScheduledGatheringsFromClient,
+  parseScheduledGatheringsFromFirestore,
+  scheduledGatheringsMatch,
+  validateScheduledGatherings,
+} from '@/lib/lobbySchedule'
 
 export const runtime = 'nodejs'
 
@@ -89,6 +96,7 @@ export async function GET(request: Request) {
       created_at_ms: number
       friends_code?: string | null
       session: LobbySessionPlan | null
+      scheduled_gatherings: LobbyScheduledGathering[]
     }> = []
 
     for (const d of snap.docs) {
@@ -102,7 +110,15 @@ export async function GET(request: Request) {
       const isMember = member_uids.includes(uid)
       const friendsCode = isMember && typeof data.friends_code === 'string' ? data.friends_code : null
       const session = parseLobbySessionPlan(data)
-      groups.push({ id: d.id, member_uids, created_at_ms, friends_code: friendsCode, session })
+      const scheduled_gatherings = parseScheduledGatheringsFromFirestore(data)
+      groups.push({
+        id: d.id,
+        member_uids,
+        created_at_ms,
+        friends_code: friendsCode,
+        session,
+        scheduled_gatherings,
+      })
     }
 
     return NextResponse.json({ groups })
@@ -155,6 +171,7 @@ export async function POST(request: Request) {
     mandalaClockId?: number
     sessionDurationMinutes?: number
     focusNodeIndices?: number[]
+    scheduledGatherings?: unknown
   }
   try {
     body = await request.json()
@@ -187,6 +204,11 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: sessionErr }, { status: 400 })
       }
       const finalized = finalizeLobbySessionIndices(sessionInput)
+      const normalizedGatherings = normalizeScheduledGatheringsFromClient(body.scheduledGatherings ?? [])
+      const schedErr = validateScheduledGatherings(normalizedGatherings)
+      if (schedErr) {
+        return NextResponse.json({ error: schedErr }, { status: 400 })
+      }
 
       const qs = await db.collection(COLLECTION).where('member_uids', 'array-contains', uid).get()
       for (const d of qs.docs) {
@@ -196,7 +218,11 @@ export async function POST(request: Request) {
         const codeMatch =
           ((typeof existingCode === 'string' ? existingCode : '') || '') === requestedFriendsCode
         const sessionMatch = storedSessionMatchesInput(row, sessionInput, finalized)
-        if (m.length === 1 && m[0] === uid && codeMatch && sessionMatch) {
+        const schedMatch = scheduledGatheringsMatch(
+          parseScheduledGatheringsFromFirestore(row),
+          normalizedGatherings
+        )
+        if (m.length === 1 && m[0] === uid && codeMatch && sessionMatch && schedMatch) {
           return NextResponse.json({ groupId: d.id, friendsCode: requestedFriendsCode || null })
         }
       }
@@ -211,6 +237,7 @@ export async function POST(request: Request) {
         session_duration_minutes: sessionInput.sessionDurationMinutes,
         focus_node_indices: finalized,
         creator_uid: uid,
+        scheduled_gatherings: normalizedGatherings,
       })
       return NextResponse.json({ groupId: ref.id, friendsCode: requestedFriendsCode || null })
     }
@@ -310,6 +337,34 @@ export async function POST(request: Request) {
         tx.update(ref, { member_uids: [...members, uid] })
       })
       return NextResponse.json({ ok: true, groupId: selectedId })
+    }
+
+    if (action === 'update_schedule') {
+      const groupId = body.groupId
+      if (!groupId || typeof groupId !== 'string') {
+        return NextResponse.json({ error: 'groupId required' }, { status: 400 })
+      }
+      const normalizedGatherings = normalizeScheduledGatheringsFromClient(body.scheduledGatherings ?? [])
+      const schedErr = validateScheduledGatherings(normalizedGatherings)
+      if (schedErr) {
+        return NextResponse.json({ error: schedErr }, { status: 400 })
+      }
+
+      const ref = db.collection(COLLECTION).doc(groupId)
+      await db.runTransaction(async (tx) => {
+        const snap = await tx.get(ref)
+        if (!snap.exists) throw new Error('Group not found')
+        const data = snap.data() as Record<string, unknown>
+        const members = normalizeMembers(data)
+        if (!members.includes(uid)) throw new Error('Not in this group')
+        const creator = data.creator_uid
+        const isCreator = creator === uid || (creator == null && members[0] === uid)
+        if (!isCreator) throw new Error('Only the group creator can edit the schedule')
+        const createdAt = data.created_at as Timestamp | undefined
+        if (!adminFresh(createdAt)) throw new Error('Group has expired')
+        tx.update(ref, { scheduled_gatherings: normalizedGatherings })
+      })
+      return NextResponse.json({ ok: true })
     }
 
     return NextResponse.json({ error: 'Unknown action' }, { status: 400 })

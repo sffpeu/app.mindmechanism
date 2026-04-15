@@ -6,6 +6,13 @@ import {
   storedSessionMatchesInput,
   validateLobbySessionConfig,
 } from '@/lib/lobbySessionConfig'
+import type { LobbyScheduledGathering } from '@/lib/lobbySchedule'
+import {
+  normalizeScheduledGatheringsFromClient,
+  parseScheduledGatheringsFromFirestore,
+  scheduledGatheringsMatch,
+  validateScheduledGatherings,
+} from '@/lib/lobbySchedule'
 import {
   collection,
   addDoc,
@@ -69,6 +76,7 @@ async function fetchLobbyGroupsViaApi(): Promise<LobbyGroup[] | null> {
         created_at_ms: number
         friends_code?: string | null
         session?: LobbySessionPlan | null
+        scheduled_gatherings?: LobbyScheduledGathering[]
       }>
     }
     const raw = json.groups ?? []
@@ -78,6 +86,7 @@ async function fetchLobbyGroupsViaApi(): Promise<LobbyGroup[] | null> {
       created_at: Timestamp.fromMillis(g.created_at_ms),
       friends_code: typeof g.friends_code === 'string' ? g.friends_code : null,
       session: g.session ?? null,
+      scheduled_gatherings: Array.isArray(g.scheduled_gatherings) ? g.scheduled_gatherings : [],
     }))
   } catch {
     return null
@@ -86,12 +95,13 @@ async function fetchLobbyGroupsViaApi(): Promise<LobbyGroup[] | null> {
 
 /** Prefer server writes (bypasses client rules when Admin is configured). */
 async function callLobbyGroupsApi(payload: {
-  action: 'create' | 'create_friends' | 'join' | 'join_code' | 'leave'
+  action: 'create' | 'create_friends' | 'join' | 'join_code' | 'leave' | 'update_schedule'
   groupId?: string
   friendsCode?: string
   mandalaClockId?: number
   sessionDurationMinutes?: number
   focusNodeIndices?: number[]
+  scheduledGatherings?: LobbyScheduledGathering[]
 }): Promise<LobbyApiResult> {
   if (typeof window === 'undefined') {
     return { mode: 'fallback' }
@@ -128,6 +138,7 @@ export interface LobbyGroup {
   created_at: Timestamp
   friends_code?: string | null
   session: LobbySessionPlan | null
+  scheduled_gatherings: LobbyScheduledGathering[]
 }
 
 function sessionFromFirestoreData(data: Record<string, unknown>): LobbySessionPlan | null {
@@ -175,6 +186,7 @@ export async function listLobbyGroups(): Promise<LobbyGroup[]> {
         created_at: data.created_at as Timestamp,
         friends_code: typeof data.friends_code === 'string' ? data.friends_code : null,
         session: sessionFromFirestoreData(data as Record<string, unknown>),
+        scheduled_gatherings: parseScheduledGatheringsFromFirestore(data as Record<string, unknown>),
       }
     })
     .filter((g) => g.created_at && isFresh(g.created_at) && g.member_uids.length > 0)
@@ -212,6 +224,7 @@ export async function getMyLobbyGroup(userId: string): Promise<LobbyGroup | null
     created_at,
     friends_code: typeof data.friends_code === 'string' ? data.friends_code : null,
     session: sessionFromFirestoreData(data as Record<string, unknown>),
+    scheduled_gatherings: parseScheduledGatheringsFromFirestore(data as Record<string, unknown>),
   }
 }
 
@@ -219,13 +232,16 @@ export async function getMyLobbyGroup(userId: string): Promise<LobbyGroup | null
 export async function createLobbyGroup(
   userId: string,
   session: LobbySessionConfigInput,
-  options?: { friendsCode?: string | null }
+  options?: { friendsCode?: string | null; scheduledGatherings?: LobbyScheduledGathering[] }
 ): Promise<string> {
   if (!userId) throw new Error('User ID is required')
   const err = validateLobbySessionConfig(session)
   if (err) throw new Error(err)
   const finalized = finalizeLobbySessionIndices(session)
   const normalizedCode = options?.friendsCode ? normalizeFriendsCode(options.friendsCode) : ''
+  const gatherings = normalizeScheduledGatheringsFromClient(options?.scheduledGatherings ?? [])
+  const schedErr = validateScheduledGatherings(gatherings)
+  if (schedErr) throw new Error(schedErr)
 
   const api = await callLobbyGroupsApi(
     normalizedCode
@@ -235,12 +251,14 @@ export async function createLobbyGroup(
           mandalaClockId: session.mandalaClockId,
           sessionDurationMinutes: session.sessionDurationMinutes,
           focusNodeIndices: finalized,
+          scheduledGatherings: gatherings,
         }
       : {
           action: 'create',
           mandalaClockId: session.mandalaClockId,
           sessionDurationMinutes: session.sessionDurationMinutes,
           focusNodeIndices: finalized,
+          scheduledGatherings: gatherings,
         }
   )
   if (api.mode === 'success' && api.groupId) {
@@ -259,7 +277,9 @@ export async function createLobbyGroup(
       const raw = existingSnap.data() as Record<string, unknown> | undefined
       const codeOk =
         ((typeof raw?.friends_code === 'string' ? raw.friends_code : '') || '') === normalizedCode
-      if (raw && codeOk && storedSessionMatchesInput(raw, session, finalized)) {
+      const storedG = raw ? parseScheduledGatheringsFromFirestore(raw) : []
+      const schedOk = scheduledGatheringsMatch(storedG, gatherings)
+      if (raw && codeOk && storedSessionMatchesInput(raw, session, finalized) && schedOk) {
         return existing.id
       }
     }
@@ -274,6 +294,7 @@ export async function createLobbyGroup(
     session_duration_minutes: session.sessionDurationMinutes,
     focus_node_indices: finalized,
     creator_uid: userId,
+    scheduled_gatherings: gatherings,
   })
   return docRef.id
 }
@@ -281,14 +302,56 @@ export async function createLobbyGroup(
 export async function createFriendsLobbyGroup(
   userId: string,
   session: LobbySessionConfigInput,
-  requestedCode?: string
+  requestedCode?: string,
+  scheduledGatherings?: LobbyScheduledGathering[]
 ): Promise<{ groupId: string; friendsCode: string }> {
   const friendsCode = normalizeFriendsCode(requestedCode || generateFriendsCode())
   if (friendsCode.length < 4) {
     throw new Error('Friends code must be at least 4 characters')
   }
-  const groupId = await createLobbyGroup(userId, session, { friendsCode })
+  const groupId = await createLobbyGroup(userId, session, { friendsCode, scheduledGatherings })
   return { groupId, friendsCode }
+}
+
+export async function updateLobbyGroupSchedule(
+  groupId: string,
+  userId: string,
+  gatherings: LobbyScheduledGathering[]
+): Promise<void> {
+  if (!groupId || !userId) throw new Error('Group and user are required')
+  const normalized = normalizeScheduledGatheringsFromClient(gatherings)
+  const schedErr = validateScheduledGatherings(normalized)
+  if (schedErr) throw new Error(schedErr)
+
+  const api = await callLobbyGroupsApi({
+    action: 'update_schedule',
+    groupId,
+    scheduledGatherings: normalized,
+  })
+  if (api.mode === 'success') {
+    return
+  }
+  if (api.mode === 'error') {
+    throw new Error(api.message)
+  }
+
+  if (!db) throw new Error('Firestore is not initialized')
+  const groupRef = doc(db, COLLECTION, groupId)
+  await runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(groupRef)
+    if (!snap.exists()) throw new Error('Group not found')
+    const data = snap.data() as Record<string, unknown>
+    const members = Array.isArray(data.member_uids)
+      ? (data.member_uids as unknown[]).filter((u): u is string => typeof u === 'string')
+      : []
+    if (!members.includes(userId)) throw new Error('Not in this group')
+    const creator = data.creator_uid
+    const isCreator = creator === userId || (creator == null && members[0] === userId)
+    if (!isCreator) throw new Error('Only the group creator can edit the schedule')
+    const created_at = data.created_at as Timestamp
+    if (!created_at || !isFresh(created_at)) throw new Error('Group has expired')
+    transaction.update(groupRef, { scheduled_gatherings: normalized })
+  })
 }
 
 /** Leave current group if any, then append user to target group if there is room. */

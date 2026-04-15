@@ -12,7 +12,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Users, Radio, Sparkles, LogOut as WithdrawIcon, Copy, ChevronDown } from 'lucide-react'
+import { format } from 'date-fns'
+import {
+  Users,
+  Radio,
+  Sparkles,
+  LogOut as WithdrawIcon,
+  Copy,
+  ChevronDown,
+  Calendar,
+} from 'lucide-react'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { toast } from 'sonner'
 import {
@@ -22,6 +31,7 @@ import {
   joinLobbyGroupByFriendsCode,
   leaveLobbyGroup,
   listLobbyGroups,
+  updateLobbyGroupSchedule,
   LOBBY_GROUP_MAX,
   normalizeFriendsCode,
   handleLobbyGroupErrorWithHints,
@@ -36,12 +46,42 @@ import {
   type LobbySessionConfigInput,
   validateLobbySessionConfig,
 } from '@/lib/lobbySessionConfig'
+import type { LobbyScheduledGathering } from '@/lib/lobbySchedule'
+import {
+  buildGatheringIcs,
+  downloadIcsFile,
+  googleCalendarUrlForGathering,
+  newGatheringId,
+  sortGatherings,
+  validateScheduledGatherings,
+} from '@/lib/lobbySchedule'
 import { cn } from '@/lib/utils'
 
 function focusNodeLabel(clockId: number, nodeIndex: number): string {
   const words = DEFAULT_WORDS_BY_CLOCK[clockId]
   const w = words?.[nodeIndex]
   return w ?? `Node ${nodeIndex + 1}`
+}
+
+function gatheringEventTitle(clockId: number, label: string | undefined): string {
+  const mandala = clockTitles[clockId] ?? 'Meditation'
+  const base = label?.trim() ? label.trim() : `Lobby gathering — ${mandala}`
+  return base
+}
+
+function gatheringEventDescription(opts: {
+  clockId: number
+  focusLabels: string[]
+  friendsCode: string | null
+}): string {
+  const lines = [
+    'Symbolic lobby meditation. There is no chat in the lobby.',
+    `Mandala: ${clockTitles[opts.clockId] ?? '—'}`,
+    `Focus: ${opts.focusLabels.length ? opts.focusLabels.join(', ') : '—'}`,
+  ]
+  if (opts.friendsCode) lines.push(`Friends code: ${opts.friendsCode}`)
+  lines.push('Mind Mechanism')
+  return lines.join('\n')
 }
 
 export function SymbolicLobby() {
@@ -54,6 +94,10 @@ export function SymbolicLobby() {
   const [sessionDurationMinutes, setSessionDurationMinutes] = useState(10)
   const [selectedFocusNodes, setSelectedFocusNodes] = useState<number[]>([0])
   const [showSessionConfig, setShowSessionConfig] = useState(true)
+  const [draftSchedule, setDraftSchedule] = useState<LobbyScheduledGathering[]>([])
+  const [gatheringStartLocal, setGatheringStartLocal] = useState('')
+  const [gatheringDurationMin, setGatheringDurationMin] = useState(10)
+  const [gatheringLabel, setGatheringLabel] = useState('')
   const permissionHintShown = useRef(false)
   const sessionUiStorageKey = 'lobby.sessionConfig.expanded'
 
@@ -62,6 +106,10 @@ export function SymbolicLobby() {
   useEffect(() => {
     setSelectedFocusNodes([0])
   }, [mandalaClockId])
+
+  useEffect(() => {
+    setGatheringDurationMin(sessionDurationMinutes)
+  }, [sessionDurationMinutes])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -113,6 +161,11 @@ export function SymbolicLobby() {
   const otherGroups = groups.filter((g) => g.id !== myGroup?.id)
   const myMemberCount = myGroup?.member_uids.length ?? 0
   const myFriendsCode = typeof myGroup?.friends_code === 'string' ? myGroup.friends_code : null
+  const isGroupCreator =
+    !!user?.uid &&
+    !!myGroup &&
+    (myGroup.session?.creator_uid === user.uid ||
+      (myGroup.session?.creator_uid == null && myGroup.member_uids[0] === user.uid))
 
   useEffect(() => {
     refresh()
@@ -140,7 +193,7 @@ export function SymbolicLobby() {
     }
     setBusyId('appear')
     try {
-      await createLobbyGroup(user.uid, sessionConfig)
+      await createLobbyGroup(user.uid, sessionConfig, { scheduledGatherings: draftSchedule })
       toast.success('Your satellite is in orbit. Others can join your group — up to twelve in one flower.')
       await refresh()
     } catch (e) {
@@ -160,7 +213,7 @@ export function SymbolicLobby() {
     }
     setBusyId('friends-create')
     try {
-      const result = await createFriendsLobbyGroup(user.uid, sessionConfig)
+      const result = await createFriendsLobbyGroup(user.uid, sessionConfig, undefined, draftSchedule)
       toast.success(`Friends group created. Share code ${result.friendsCode} to meditate together.`)
       await refresh()
     } catch (e) {
@@ -230,6 +283,106 @@ export function SymbolicLobby() {
     } catch {
       toast.error('Could not copy code on this device.')
     }
+  }
+
+  const calendarClockId = myGroup?.session?.mandala_clock_id ?? mandalaClockId
+  const calendarFocusLabels = myGroup?.session
+    ? myGroup.session.focus_node_indices.map((i) => focusNodeLabel(myGroup.session!.mandala_clock_id, i))
+    : selectedFocusNodes.map((i) => focusNodeLabel(mandalaClockId, i))
+  const calendarFriendsCode = myGroup ? myFriendsCode : null
+
+  const addPlannedGathering = async () => {
+    if (!gatheringStartLocal.trim()) {
+      toast.error('Pick a date and time for the gathering.')
+      return
+    }
+    const ms = new Date(gatheringStartLocal).getTime()
+    if (Number.isNaN(ms)) {
+      toast.error('Invalid date.')
+      return
+    }
+    const proposed: LobbyScheduledGathering = {
+      id: newGatheringId(),
+      starts_at_ms: ms,
+      duration_minutes: gatheringDurationMin,
+      label: gatheringLabel.trim() || undefined,
+    }
+    if (myGroup && isGroupCreator) {
+      const next = sortGatherings([...myGroup.scheduled_gatherings, proposed])
+      const err = validateScheduledGatherings(next)
+      if (err) {
+        toast.error(err)
+        return
+      }
+      if (!user?.uid) return
+      setBusyId('sched')
+      try {
+        await updateLobbyGroupSchedule(myGroup.id, user.uid, next)
+        toast.success('Gathering added to the group schedule.')
+        setGatheringStartLocal('')
+        setGatheringLabel('')
+        await refresh()
+      } catch (e) {
+        void handleLobbyGroupErrorWithHints(e).then((msg) => toast.error(msg))
+        console.error(e)
+      } finally {
+        setBusyId(null)
+      }
+      return
+    }
+    const next = sortGatherings([...draftSchedule, proposed])
+    const err = validateScheduledGatherings(next)
+    if (err) {
+      toast.error(err)
+      return
+    }
+    setDraftSchedule(next)
+    setGatheringStartLocal('')
+    setGatheringLabel('')
+    toast.success('Gathering added to your plan.')
+  }
+
+  const removePlannedGathering = async (id: string) => {
+    if (myGroup && isGroupCreator) {
+      if (!user?.uid) return
+      const next = myGroup.scheduled_gatherings.filter((g) => g.id !== id)
+      setBusyId('sched')
+      try {
+        await updateLobbyGroupSchedule(myGroup.id, user.uid, next)
+        toast.message('Gathering removed.')
+        await refresh()
+      } catch (e) {
+        void handleLobbyGroupErrorWithHints(e).then((msg) => toast.error(msg))
+        console.error(e)
+      } finally {
+        setBusyId(null)
+      }
+      return
+    }
+    setDraftSchedule((prev) => prev.filter((g) => g.id !== id))
+  }
+
+  const exportGatheringIcs = (g: LobbyScheduledGathering) => {
+    const title = gatheringEventTitle(calendarClockId, g.label)
+    const details = gatheringEventDescription({
+      clockId: calendarClockId,
+      focusLabels: calendarFocusLabels,
+      friendsCode: calendarFriendsCode,
+    })
+    const ics = buildGatheringIcs(g, { title, description: details, productId: 'app.mindmechanism' })
+    downloadIcsFile(`lobby-gathering-${g.id.slice(0, 8)}.ics`, ics)
+    toast.success('Calendar file downloaded — open it to add to Apple Calendar, Outlook, etc.')
+  }
+
+  const openGatheringGoogle = (g: LobbyScheduledGathering) => {
+    const title = gatheringEventTitle(calendarClockId, g.label)
+    const details = gatheringEventDescription({
+      clockId: calendarClockId,
+      focusLabels: calendarFocusLabels,
+      friendsCode: calendarFriendsCode,
+    })
+    const url = googleCalendarUrlForGathering(g, { title, details })
+    window.open(url, '_blank', 'noopener,noreferrer')
   }
 
   return (
@@ -345,6 +498,122 @@ export function SymbolicLobby() {
                     )
                   })}
                 </div>
+              </div>
+
+              <div className="space-y-3 border-t border-violet-500/20 pt-4 dark:border-violet-400/15">
+                <div>
+                  <Label className="text-base">Session schedule</Label>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    Plan gatherings in advance. Export each time to your own calendar (.ics for Apple or Outlook, or
+                    Google Calendar).
+                  </p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="lobby-gathering-when">Gathering start (your local time)</Label>
+                    <Input
+                      id="lobby-gathering-when"
+                      type="datetime-local"
+                      value={gatheringStartLocal}
+                      onChange={(e) => setGatheringStartLocal(e.target.value)}
+                      disabled={busyId !== null}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lobby-gathering-duration">This gathering length</Label>
+                    <Select
+                      value={String(gatheringDurationMin)}
+                      onValueChange={(v) => setGatheringDurationMin(Number(v))}
+                      disabled={busyId !== null}
+                    >
+                      <SelectTrigger id="lobby-gathering-duration" className="w-full">
+                        <SelectValue placeholder="Minutes" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LOBBY_SESSION_DURATION_CHOICES.map((m) => (
+                          <SelectItem key={m} value={String(m)}>
+                            {m} minutes
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lobby-gathering-label">Label (optional)</Label>
+                    <Input
+                      id="lobby-gathering-label"
+                      value={gatheringLabel}
+                      onChange={(e) => setGatheringLabel(e.target.value)}
+                      placeholder="e.g. Morning sit"
+                      maxLength={120}
+                      disabled={busyId !== null}
+                    />
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full"
+                  onClick={() => void addPlannedGathering()}
+                  disabled={busyId !== null}
+                >
+                  Add gathering to plan
+                </Button>
+                {draftSchedule.length > 0 ? (
+                  <ul className="space-y-2">
+                    {draftSchedule.map((g) => (
+                      <li
+                        key={g.id}
+                        className="flex flex-col gap-2 rounded-lg border border-violet-500/20 bg-white/50 px-3 py-2 dark:border-white/10 dark:bg-black/20 sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            {format(new Date(g.starts_at_ms), 'PPpp')}
+                          </p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">
+                            {g.duration_minutes} minutes{g.label ? ` · ${g.label}` : ''}
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="h-8 gap-1"
+                            onClick={() => exportGatheringIcs(g)}
+                            disabled={busyId !== null}
+                          >
+                            <Calendar className="h-3.5 w-3.5" aria-hidden />
+                            .ics
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="h-8"
+                            onClick={() => openGatheringGoogle(g)}
+                            disabled={busyId !== null}
+                          >
+                            Google
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            className="h-8"
+                            onClick={() => void removePlannedGathering(g.id)}
+                            disabled={busyId !== null}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-xs text-gray-500 dark:text-gray-400">No planned gatherings yet.</p>
+                )}
               </div>
             </div>
           ) : null}
@@ -471,6 +740,132 @@ export function SymbolicLobby() {
               time, and focus nodes.
             </p>
           )}
+          {myGroup.session ? (
+            <div className="mb-4 rounded-xl border border-sky-500/25 bg-sky-500/[0.06] dark:bg-sky-500/10 px-3 py-3 text-sm">
+              <p className="font-semibold text-gray-900 dark:text-white mb-1">Gathering schedule</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                Planned sits for this group. Add each time to your own calendar — everyone stays in sync symbolically,
+                not by sharing accounts.
+              </p>
+              {isGroupCreator ? (
+                <div className="mb-4 space-y-3 rounded-lg border border-sky-500/20 bg-white/40 p-3 dark:border-white/10 dark:bg-black/20">
+                  <p className="text-xs font-medium text-gray-800 dark:text-gray-200">Add a gathering (creator)</p>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-2 sm:col-span-2">
+                      <Label htmlFor="group-gathering-when">Start (local time)</Label>
+                      <Input
+                        id="group-gathering-when"
+                        type="datetime-local"
+                        value={gatheringStartLocal}
+                        onChange={(e) => setGatheringStartLocal(e.target.value)}
+                        disabled={busyId !== null}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="group-gathering-duration">Length</Label>
+                      <Select
+                        value={String(gatheringDurationMin)}
+                        onValueChange={(v) => setGatheringDurationMin(Number(v))}
+                        disabled={busyId !== null}
+                      >
+                        <SelectTrigger id="group-gathering-duration" className="w-full">
+                          <SelectValue placeholder="Minutes" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {LOBBY_SESSION_DURATION_CHOICES.map((m) => (
+                            <SelectItem key={m} value={String(m)}>
+                              {m} minutes
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="group-gathering-label">Label (optional)</Label>
+                      <Input
+                        id="group-gathering-label"
+                        value={gatheringLabel}
+                        onChange={(e) => setGatheringLabel(e.target.value)}
+                        placeholder="e.g. Evening circle"
+                        maxLength={120}
+                        disabled={busyId !== null}
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full"
+                    onClick={() => void addPlannedGathering()}
+                    disabled={busyId !== null}
+                  >
+                    {busyId === 'sched' ? 'Saving…' : 'Add to group schedule'}
+                  </Button>
+                </div>
+              ) : null}
+              {myGroup.scheduled_gatherings.length > 0 ? (
+                <ul className="space-y-2">
+                  {myGroup.scheduled_gatherings.map((g) => (
+                    <li
+                      key={g.id}
+                      className="flex flex-col gap-2 rounded-lg border border-sky-500/20 bg-white/50 px-3 py-2 dark:border-white/10 dark:bg-black/25 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          {format(new Date(g.starts_at_ms), 'PPpp')}
+                        </p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                          {g.duration_minutes} minutes{g.label ? ` · ${g.label}` : ''}
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="h-8 gap-1"
+                          onClick={() => exportGatheringIcs(g)}
+                          disabled={busyId !== null}
+                        >
+                          <Calendar className="h-3.5 w-3.5" aria-hidden />
+                          .ics
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="h-8"
+                          onClick={() => openGatheringGoogle(g)}
+                          disabled={busyId !== null}
+                        >
+                          Google
+                        </Button>
+                        {isGroupCreator ? (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            className="h-8"
+                            onClick={() => void removePlannedGathering(g.id)}
+                            disabled={busyId !== null}
+                          >
+                            Remove
+                          </Button>
+                        ) : null}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {isGroupCreator
+                    ? 'No gatherings yet — add times above so members can sync their calendars.'
+                    : 'No gatherings scheduled yet.'}
+                </p>
+              )}
+            </div>
+          ) : null}
         </>
       )}
 
