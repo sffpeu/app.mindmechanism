@@ -24,6 +24,8 @@ import {
   Activity,
   Users,
   ChevronDown,
+  ChevronsLeft,
+  ChevronsRight,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -170,6 +172,7 @@ export default function NotesPage() {
   const [recentSessions, setRecentSessions] = useState<Session[]>([])
   const [selectedSessionId, setSelectedSessionId] = useState<string>('none')
   const [envSnapshotExpanded, setEnvSnapshotExpanded] = useState(false)
+  const [savedNotesPanelOpen, setSavedNotesPanelOpen] = useState(true)
   const { playSuccess } = useSoundEffects()
 
   useEffect(() => {
@@ -455,11 +458,31 @@ export default function NotesPage() {
       <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Notes</h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-xl">
-                Write with optional session and environment context—saved notes stay easy to scan in the list.
-              </p>
+            <div className="min-w-0 flex items-start gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 shrink-0 mt-0.5 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                onClick={() => setSavedNotesPanelOpen((open) => !open)}
+                aria-expanded={savedNotesPanelOpen}
+                aria-controls={savedNotesPanelOpen ? 'notes-saved-list-panel' : undefined}
+                id="notes-saved-list-toggle"
+                aria-label={savedNotesPanelOpen ? 'Hide saved notes panel' : 'Show saved notes panel'}
+                title={savedNotesPanelOpen ? 'Hide saved notes' : 'Show saved notes'}
+              >
+                {savedNotesPanelOpen ? (
+                  <ChevronsLeft className="h-5 w-5" aria-hidden />
+                ) : (
+                  <ChevronsRight className="h-5 w-5" aria-hidden />
+                )}
+              </Button>
+              <div className="min-w-0">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Notes</h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-xl">
+                  Write with optional session and environment context—saved notes stay easy to scan in the list.
+                </p>
+              </div>
             </div>
             {(!selectedNote || isEditing) && (
               <button
@@ -479,13 +502,24 @@ export default function NotesPage() {
               </button>
             )}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+          <div
+            className={cn(
+              'grid grid-cols-1 gap-4 md:gap-6',
+              savedNotesPanelOpen && 'md:grid-cols-3'
+            )}
+          >
           {/* Left Column: Saved Notes */}
-          <div className="space-y-4">
+          {savedNotesPanelOpen && (
+          <div
+            id="notes-saved-list-panel"
+            role="region"
+            aria-labelledby="notes-saved-list-toggle"
+            className="space-y-4"
+          >
             <Card className="card p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
               <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <ClipboardList className="h-3.5 w-3.5 text-gray-500" />
+                <div className="flex items-center gap-2 min-w-0">
+                  <ClipboardList className="h-3.5 w-3.5 text-gray-500 shrink-0" />
                   <h2 className="text-sm font-semibold dark:text-white">Saved notes</h2>
                 </div>
                 <div className="flex items-center gap-1">
@@ -596,9 +630,10 @@ export default function NotesPage() {
               </div>
             </Card>
           </div>
+          )}
 
           {/* Right Column: Write/View Note */}
-          <div className="md:col-span-2">
+          <div className={cn(savedNotesPanelOpen && 'md:col-span-2')}>
             <Card className="card p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
               <div
                 className={cn(
