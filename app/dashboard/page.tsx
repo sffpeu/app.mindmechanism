@@ -245,6 +245,32 @@ export default function DashboardPage() {
             </p>
           </header>
 
+          <section
+            className="mb-6 rounded-2xl border border-violet-200/90 bg-violet-50/90 p-4 dark:border-violet-500/25 dark:bg-indigo-950/45"
+            aria-label="Practice shortcuts"
+          >
+            <p className="text-xs font-medium uppercase tracking-wide text-violet-800 dark:text-violet-200/90">
+              Practice
+            </p>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+              Open the home mandala, start a timed session, or review vocabulary.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button size="sm" className="rounded-full" asChild>
+                <Link href="/layers">Home mandala</Link>
+              </Button>
+              <Button size="sm" variant="secondary" className="rounded-full" asChild>
+                <Link href="/sessions">Sessions</Link>
+              </Button>
+              <Button size="sm" variant="outline" className="rounded-full border-violet-300/80 bg-white/80 dark:border-violet-500/40 dark:bg-black/30" asChild>
+                <Link href="/glossary">Glossary</Link>
+              </Button>
+              <Button size="sm" variant="outline" className="rounded-full border-violet-300/80 bg-white/80 dark:border-violet-500/40 dark:bg-black/30" asChild>
+                <Link href="/notes">Notes</Link>
+              </Button>
+            </div>
+          </section>
+
           {/* Profile card */}
           <Card className="overflow-hidden rounded-2xl bg-white/90 dark:bg-white/5 border-0 shadow-xl shadow-gray-200/50 dark:shadow-none backdrop-blur-sm">
             {/* Banner — compact strip, no overlap with content */}

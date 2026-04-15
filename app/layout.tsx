@@ -8,7 +8,8 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Mind Mechanism',
-  description: 'A meditation app for focused practice',
+  description:
+    'Focused practice with nine celestial mandalas: timed sessions, notes, glossary, and optional group lobby.',
 }
 
 export default function RootLayout({
