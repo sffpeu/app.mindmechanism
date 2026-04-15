@@ -24,8 +24,6 @@ import {
   Activity,
   Users,
   ChevronDown,
-  ChevronsLeft,
-  ChevronsRight,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -474,23 +472,14 @@ export default function NotesPage() {
                 title={savedNotesPanelOpen ? 'Hide the saved notes list' : 'Show the saved notes list'}
                 aria-label={savedNotesPanelOpen ? 'Hide saved notes panel' : 'Show saved notes panel'}
                 className={cn(
-                  'inline-flex items-center justify-center gap-3 rounded-xl border-2 px-5 py-3 min-h-[3rem] w-full sm:w-auto sm:min-w-[220px] sm:shrink-0 self-start',
-                  'text-base font-semibold tracking-tight shadow-sm transition-colors',
+                  'inline-flex h-10 w-10 shrink-0 items-center justify-center self-start rounded-lg border-2 transition-colors',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
                   savedNotesPanelOpen
-                    ? 'border-slate-300 bg-white text-slate-900 hover:bg-slate-50 focus-visible:ring-slate-400/60 dark:border-white/20 dark:bg-black/50 dark:text-white dark:hover:bg-black/70'
-                    : 'border-blue-400/80 bg-blue-600 text-white hover:bg-blue-700 focus-visible:ring-blue-500/60 dark:border-blue-400/50 dark:bg-blue-600 dark:hover:bg-blue-500'
+                    ? 'border-slate-300 bg-transparent text-slate-700 hover:bg-slate-100/90 focus-visible:ring-slate-400/50 dark:border-white/25 dark:text-white dark:hover:bg-white/10 dark:focus-visible:ring-white/30'
+                    : 'border-blue-500 bg-transparent text-blue-600 hover:bg-blue-50 focus-visible:ring-blue-500/45 dark:border-blue-400/85 dark:text-blue-400 dark:hover:bg-blue-950/35 dark:focus-visible:ring-blue-400/40'
                 )}
               >
-                <ClipboardList className="h-6 w-6 shrink-0 opacity-90" aria-hidden />
-                <span className="text-left leading-snug">
-                  {savedNotesPanelOpen ? 'Hide saved notes' : 'Show saved notes'}
-                </span>
-                {savedNotesPanelOpen ? (
-                  <ChevronsLeft className="h-6 w-6 shrink-0 opacity-90" aria-hidden />
-                ) : (
-                  <ChevronsRight className="h-6 w-6 shrink-0 opacity-90" aria-hidden />
-                )}
+                <ClipboardList className="h-6 w-6" aria-hidden />
               </button>
               {(!selectedNote || isEditing) && (
                 <button
