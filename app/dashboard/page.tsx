@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { User, Mail, Calendar, CalendarClock, LogIn, Pencil, LogOut } from 'lucide-react'
+import { User, Mail, Calendar, CalendarClock, LogIn, Pencil, LogOut, Clock3, XCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import Link from 'next/link'
@@ -12,17 +12,23 @@ import { startTimeTracking, endTimeTracking } from '@/lib/timeTracking'
 import { getUserSessions } from '@/lib/sessions'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
-import { XCircle } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DashboardRecentSessions,
   type DashboardRecentSessionsHandle,
 } from '@/components/DashboardRecentSessions'
+import { clockTitles } from '@/lib/clockTitles'
 
 interface TimeStats {
   totalTime: number
   monthlyTime: number
   lastSignInTime: Date | null
+}
+
+type UpcomingScheduledSession = {
+  id: string
+  clockId: number
+  startsAt: Date
 }
 
 export default function DashboardPage() {
@@ -38,6 +44,7 @@ export default function DashboardPage() {
   const [isInitializing, setIsInitializing] = useState(true)
   const [authError, setAuthError] = useState<string | null>(null)
   const [scheduledSessionsCount, setScheduledSessionsCount] = useState(0)
+  const [upcomingScheduledSessions, setUpcomingScheduledSessions] = useState<UpcomingScheduledSession[]>([])
   const recentSessionsRef = useRef<DashboardRecentSessionsHandle>(null)
 
   useEffect(() => {
@@ -62,8 +69,26 @@ export default function DashboardPage() {
           getUserSessions(user.uid),
         ])
         if (mounted) {
+          const now = Date.now()
+          const upcoming = userSessions
+            .filter((session) => session.status === 'waiting')
+            .map((session) => {
+              const raw = typeof session.scheduled_start_time === 'string' ? session.scheduled_start_time : ''
+              const startsMs = raw ? new Date(raw).getTime() : NaN
+              if (!Number.isFinite(startsMs) || startsMs < now) return null
+              return {
+                id: session.id,
+                clockId: session.clock_id,
+                startsAt: new Date(startsMs),
+              } satisfies UpcomingScheduledSession
+            })
+            .filter((v): v is UpcomingScheduledSession => v !== null)
+            .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime())
+            .slice(0, 10)
+
           setTimeStats(timeStatsData)
           setScheduledSessionsCount(userSessions.filter((session) => session.status === 'waiting').length)
+          setUpcomingScheduledSessions(upcoming)
         }
       } catch (error) {
         if (mounted) {
@@ -276,7 +301,55 @@ export default function DashboardPage() {
             </div>
           </Card>
 
-          {/* Recent Sessions */}
+          {/* Upcoming scheduled sessions */}
+          <section className="mt-8">
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                  Upcoming Scheduled Sessions
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Next planned starts from your waiting lobby sessions.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="rounded-full"
+                onClick={() => recentSessionsRef.current?.openOpenSessionsDialog('waiting')}
+              >
+                Open waiting
+              </Button>
+            </div>
+            <Card className="rounded-2xl border-0 p-4 sm:p-6 bg-white/90 dark:bg-white/5 shadow-xl shadow-gray-200/50 dark:shadow-none backdrop-blur-sm">
+              {upcomingScheduledSessions.length > 0 ? (
+                <ul className="space-y-2">
+                  {upcomingScheduledSessions.map((session) => (
+                    <li
+                      key={session.id}
+                      className="flex items-center justify-between gap-3 rounded-xl border border-black/5 dark:border-white/10 bg-white/70 dark:bg-white/[0.03] px-3 py-2.5"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                          {clockTitles[session.clockId] ?? `Clock ${session.clockId}`} session
+                        </p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                          {session.startsAt.toLocaleString()}
+                        </p>
+                      </div>
+                      <Clock3 className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-400" aria-hidden />
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  No future scheduled sessions found. Planned sessions will appear here automatically.
+                </p>
+              )}
+            </Card>
+          </section>
+
           <section className="mt-8">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
               Recent Sessions
