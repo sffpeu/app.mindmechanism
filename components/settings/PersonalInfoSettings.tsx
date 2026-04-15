@@ -44,7 +44,7 @@ interface PersonalInfoSettingsProps {
 }
 
 export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsProps) {
-  const { user, profile, refreshProfile } = useAuth()
+  const { user, profile, refreshProfile, mergeProfilePatch } = useAuth()
   const [displayName, setDisplayName] = useState(user?.displayName || '')
   const [isUpdating, setIsUpdating] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -132,6 +132,7 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
         { merge: true }
       )
       await refreshProfile()
+      mergeProfilePatch({ bannerUrl })
     } catch (err) {
       console.error('Error updating profile banner:', err)
       setError(bannerUploadErrorMessage(err))
@@ -152,6 +153,7 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
         { merge: true }
       )
       await refreshProfile()
+      mergeProfilePatch({ bannerUrl: '' })
     } catch (err) {
       setError('Failed to remove profile banner. Please try again.')
       console.error('Error removing profile banner:', err)
@@ -232,9 +234,9 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
           Shown at the top of your dashboard profile card. Larger photos are center-cropped to a 3:1 banner and saved at a standard size.
         </p>
         <div className="relative rounded-xl overflow-hidden h-24 sm:h-28 border border-gray-200 dark:border-gray-700 bg-gradient-to-br from-slate-800 via-indigo-900/95 to-violet-900 dark:from-slate-900 dark:via-indigo-950 dark:to-violet-950">
-          {profile?.bannerUrl ? (
+          {profile?.bannerUrl?.trim() ? (
             <img
-              src={profile.bannerUrl}
+              src={profile.bannerUrl.trim()}
               alt=""
               className="absolute inset-0 h-full w-full object-cover"
             />
@@ -244,7 +246,7 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
             aria-hidden
           />
           <div className="absolute bottom-2 right-2 flex items-center gap-2">
-            {profile?.bannerUrl ? (
+            {profile?.bannerUrl?.trim() ? (
               <button
                 type="button"
                 onClick={handleBannerRemove}
@@ -261,7 +263,7 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
               className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md bg-white/90 dark:bg-gray-900/90 text-gray-800 dark:text-gray-200 border border-gray-200/80 dark:border-gray-600 hover:bg-white dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
             >
               <ImageIcon className="h-3.5 w-3.5" />
-              {profile?.bannerUrl ? 'Change' : 'Upload'}
+              {profile?.bannerUrl?.trim() ? 'Change' : 'Upload'}
             </button>
             <input
               type="file"

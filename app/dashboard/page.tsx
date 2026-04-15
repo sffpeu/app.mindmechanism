@@ -252,10 +252,10 @@ export default function DashboardPage() {
               className="relative h-20 sm:h-24 overflow-hidden"
               aria-hidden
             >
-              {profile?.bannerUrl ? (
+              {profile?.bannerUrl?.trim() ? (
                 <>
                   <img
-                    src={profile.bannerUrl}
+                    src={profile.bannerUrl.trim()}
                     alt=""
                     className="absolute inset-0 h-full w-full object-cover"
                   />

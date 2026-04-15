@@ -39,7 +39,24 @@ export interface AuthContextType {
   loading: boolean;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  /** Merge fields into `profile` (e.g. banner URL right after upload when Firestore cache can lag). */
+  mergeProfilePatch: (partial: Partial<UserProfile>) => void;
 }
+
+const emptyProfileShell = (): UserProfile => ({
+  username: '',
+  bio: '',
+  birthdate: '',
+  avatarUrl: '',
+  bannerUrl: '',
+  preferences: {
+    emailNotifications: true,
+    allowLocationData: false,
+  },
+  security: {
+    sessionTimeout: 30,
+  },
+})
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
@@ -47,6 +64,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   signOut: async () => {},
   refreshProfile: async () => {},
+  mergeProfilePatch: () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -55,20 +73,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  const mergeProfilePatch = (partial: Partial<UserProfile>) => {
+    setProfile((prev) => {
+      const base = prev ?? emptyProfileShell()
+      return { ...base, ...partial }
+    })
+  }
+
   const loadUserProfile = async (userId: string) => {
     if (!db) return null;
     try {
       const profileRef = doc(db as Firestore, 'user_profiles', userId);
       const userSettingsRef = doc(db as Firestore, 'users', userId);
-      const [profileSnap, userSettingsSnap] = await Promise.all([
-        getDoc(profileRef),
-        getDoc(userSettingsRef),
-      ]);
 
-      const usersData = userSettingsSnap.exists() ? userSettingsSnap.data() : null;
-      const usersBanner = usersData && typeof (usersData as { bannerUrl?: unknown }).bannerUrl === 'string'
-        ? (usersData as { bannerUrl: string }).bannerUrl
-        : undefined;
+      const profileSnap = await getDoc(profileRef)
+
+      let usersBanner: string | undefined
+      try {
+        const userSettingsSnap = await getDoc(userSettingsRef)
+        if (userSettingsSnap.exists()) {
+          const d = userSettingsSnap.data() as Record<string, unknown>
+          if ('bannerUrl' in d && typeof d.bannerUrl === 'string') {
+            usersBanner = d.bannerUrl
+          }
+        }
+      } catch (usersDocErr) {
+        console.warn(`Could not load users/${userId} document (banner may be missing until retry):`, usersDocErr)
+      }
 
       if (profileSnap.exists()) {
         const raw = profileSnap.data() as Partial<UserProfile>;
@@ -169,7 +200,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, loading, signOut, refreshProfile, mergeProfilePatch }}>
       {children}
     </AuthContext.Provider>
   );
