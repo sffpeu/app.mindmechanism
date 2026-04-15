@@ -41,7 +41,7 @@ import DotNavigation from '@/components/DotNavigation'
 import { clockTitles } from '@/lib/clockTitles'
 import { DEFAULT_WORDS_BY_CLOCK } from '@/lib/defaultWordsByClock'
 import { cn } from '@/lib/utils'
-import { tangentialWheelWordPosition } from '@/lib/tangentialWheelWordStyle'
+import { CurvedCircleWordLabel } from '@/components/CurvedCircleWordLabel'
 import { getSession } from '@/lib/sessions'
 
 // Weather and Moon data interfaces
@@ -812,28 +812,34 @@ function NodesPageContent() {
                           </span>
                         </ClockFocusNodeAppear>
                         {showWords && isSelected && word && (
-                          <div
-                            className="pointer-events-none"
-                            style={tangentialWheelWordPosition(angle, nodeRadius + 5, { isSelected, zIndex: 900 })}
-                          >
+                          <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 900 }}>
                             <AnimatePresence mode="wait">
                               {selectedWord === word ? null : (
-                                <motion.button
+                                <motion.div
                                   key="pill"
-                                  type="button"
+                                  className="absolute inset-0"
                                   initial={{ opacity: 0 }}
                                   animate={{ opacity: 1 }}
                                   exit={{ opacity: 0 }}
-                                  className={cn(
-                                    'max-w-[min(92vw,14rem)] whitespace-normal break-words px-1.5 py-0.5 text-center uppercase font-bold tracking-wide text-[10px] sm:text-xs leading-snug text-black dark:text-white transition-colors pointer-events-auto drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)] dark:drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]',
-                                    pillHoveredWord === word ? 'bg-white/35 dark:bg-white/10' : 'bg-white/20 dark:bg-black/20 hover:bg-white/35 dark:hover:bg-black/35'
-                                  )}
-                                  onClick={(e) => { e.stopPropagation(); const rect = (e.currentTarget as HTMLElement).getBoundingClientRect(); setCardPosition({ x: rect.left, y: rect.top }); setSelectedWord(word) }}
-                                  onMouseEnter={() => setPillHoveredWord(word)}
-                                  onMouseLeave={() => setPillHoveredWord(null)}
                                 >
-                                  {word}
-                                </motion.button>
+                                  <CurvedCircleWordLabel
+                                    word={word}
+                                    centerAngleDeg={angle}
+                                    radiusPercent={nodeRadius + 5}
+                                    isSelected={isSelected}
+                                    interactive
+                                    isHovered={pillHoveredWord === word}
+                                    onHoverIn={() => setPillHoveredWord(word)}
+                                    onHoverOut={() => setPillHoveredWord(null)}
+                                    onActivate={(e) => {
+                                      e.stopPropagation()
+                                      const path = e.currentTarget as SVGPathElement
+                                      const rect = path.ownerSVGElement?.getBoundingClientRect()
+                                      if (rect) setCardPosition({ x: rect.left, y: rect.top })
+                                      setSelectedWord(word)
+                                    }}
+                                  />
+                                </motion.div>
                               )}
                             </AnimatePresence>
                           </div>

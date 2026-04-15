@@ -16,7 +16,7 @@ import { useLocation } from '@/lib/hooks/useLocation';
 import { Timestamp } from 'firebase/firestore';
 import { useSoundEffects } from '@/lib/sounds';
 import { SatelliteNameLabel } from '@/components/SatelliteNameLabel';
-import { tangentialWheelWordPosition } from '@/lib/tangentialWheelWordStyle';
+import { CurvedCircleWordLabel } from '@/components/CurvedCircleWordLabel';
 
 export { clockSatellites, defaultSatelliteConfigs };
 
@@ -205,19 +205,15 @@ const WordNode = ({ word, angle, nodeRadius, isSelected }: {
 }) => {
   return (
     <div
-      className="pointer-events-none"
-      style={tangentialWheelWordPosition(angle, nodeRadius + WORD_LABEL_RADIUS_OFFSET, {
-        isSelected,
-        zIndex: 500,
-      })}
+      className="pointer-events-none absolute inset-0 overflow-visible"
+      style={{ zIndex: 500 }}
     >
-      <span
-        className={`whitespace-nowrap uppercase font-bold tracking-wide text-[10px] sm:text-[11px] text-black dark:text-white drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)] dark:drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] ${
-          isSelected ? 'opacity-100' : 'opacity-95'
-        }`}
-      >
-        {word}
-      </span>
+      <CurvedCircleWordLabel
+        word={word}
+        centerAngleDeg={angle}
+        radiusPercent={nodeRadius + WORD_LABEL_RADIUS_OFFSET}
+        isSelected={isSelected}
+      />
     </div>
   );
 };
@@ -368,18 +364,18 @@ const FocusNode = ({
       </motion.div>
       {word && (isHovered || isSelected) && (
         <motion.div
-          className="pointer-events-none whitespace-nowrap"
+          className="pointer-events-none absolute inset-0 overflow-visible"
           initial={{ opacity: 0, scale: 0.92 }}
-          animate={{ opacity: 1, scale: 1 }}
+          animate={{ opacity: 1, scale: isSelected ? 1.08 : 1 }}
           exit={{ opacity: 0, scale: 0.92 }}
-          style={tangentialWheelWordPosition(angle, nodeRadius + WORD_LABEL_RADIUS_OFFSET, {
-            isSelected,
-            zIndex: 500,
-          })}
+          style={{ zIndex: 500 }}
         >
-          <span className="uppercase font-bold tracking-wide text-[10px] sm:text-[11px] text-black dark:text-white drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)] dark:drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">
-            {word}
-          </span>
+          <CurvedCircleWordLabel
+            word={word}
+            centerAngleDeg={angle}
+            radiusPercent={nodeRadius + WORD_LABEL_RADIUS_OFFSET}
+            isSelected={isSelected}
+          />
         </motion.div>
       )}
     </>
