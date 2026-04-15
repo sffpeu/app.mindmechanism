@@ -366,20 +366,20 @@ export default function DashboardPage() {
             </div>
           </Card>
 
-          {/* Session (creator sets for the group) — collapsible */}
+          {/* Group Sessions — collapsible */}
           <section className="mt-8">
-            <Card className="rounded-2xl border-0 overflow-hidden bg-white/90 dark:bg-white/5 shadow-xl shadow-gray-200/50 dark:shadow-none backdrop-blur-sm">
+            <Card className="rounded-2xl border border-violet-200/90 dark:border-violet-500/30 overflow-hidden bg-violet-50/95 dark:bg-indigo-950/50 shadow-xl shadow-violet-200/40 dark:shadow-indigo-950/40 backdrop-blur-sm">
               <button
                 type="button"
                 id="dashboard-creator-session-toggle"
                 aria-expanded={creatorSessionPanelOpen}
                 aria-controls="dashboard-creator-session-panel"
                 onClick={() => setCreatorSessionPanelOpen((open) => !open)}
-                className="flex w-full items-start justify-between gap-3 px-4 sm:px-6 py-4 text-left transition-colors hover:bg-gray-50/80 dark:hover:bg-white/[0.04]"
+                className="flex w-full items-start justify-between gap-3 px-4 sm:px-6 py-4 text-left transition-colors hover:bg-violet-100/80 dark:hover:bg-indigo-900/45"
               >
                 <span className="min-w-0">
                   <span className="text-lg font-semibold text-gray-900 dark:text-white block">
-                    Session (creator sets for the group)
+                    Group Sessions
                   </span>
                   <span className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 block">
                     Planned sessions and mandala settings from Lobby. Tap to expand.
@@ -387,7 +387,7 @@ export default function DashboardPage() {
                 </span>
                 <ChevronDown
                   className={cn(
-                    'h-5 w-5 shrink-0 text-gray-500 dark:text-gray-400 transition-transform duration-200 mt-0.5',
+                    'h-5 w-5 shrink-0 text-violet-600 dark:text-violet-300 transition-transform duration-200 mt-0.5',
                     creatorSessionPanelOpen ? 'rotate-180' : 'rotate-0'
                   )}
                   aria-hidden
@@ -398,21 +398,21 @@ export default function DashboardPage() {
                   id="dashboard-creator-session-panel"
                   role="region"
                   aria-labelledby="dashboard-creator-session-toggle"
-                  className="border-t border-gray-100 dark:border-white/10 px-4 sm:px-6 pb-5 pt-1"
+                  className="border-t border-violet-200/80 dark:border-violet-500/25 px-4 sm:px-6 pb-5 pt-1"
                 >
                   <div className="flex justify-end mb-4">
-                    <Button asChild type="button" variant="outline" size="sm" className="rounded-full">
+                    <Button asChild type="button" variant="outline" size="sm" className="rounded-full bg-white/90 dark:bg-indigo-950/60 border-violet-200/90 dark:border-violet-500/35">
                       <Link href="/lobby">Manage in Lobby</Link>
                     </Button>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="rounded-xl border border-black/5 dark:border-white/10 bg-white/70 dark:bg-white/[0.03] px-3 py-3">
+                    <div className="rounded-xl border border-violet-200/70 dark:border-white/10 bg-white/90 dark:bg-black/25 px-3 py-3">
                       <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Planned sessions</p>
                       <p className="text-2xl font-semibold text-gray-900 dark:text-white tabular-nums mt-1">
                         {groupPlannedSessionsCount}
                       </p>
                     </div>
-                    <div className="rounded-xl border border-black/5 dark:border-white/10 bg-white/70 dark:bg-white/[0.03] px-3 py-3">
+                    <div className="rounded-xl border border-violet-200/70 dark:border-white/10 bg-white/90 dark:bg-black/25 px-3 py-3">
                       <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Upcoming planned</p>
                       <p className="text-2xl font-semibold text-gray-900 dark:text-white tabular-nums mt-1">
                         {groupUpcomingSessionsCount}
