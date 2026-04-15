@@ -176,7 +176,6 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
         bio: profile.bio,
         birthdate: profile.birthdate,
         avatarUrl: profile.avatarUrl || user?.photoURL || '',
-        bannerUrl: profile.bannerUrl ?? '',
         preferences: {
           emailNotifications: profile.preferences.emailNotifications,
           allowLocationData: profile.preferences.allowLocationData,

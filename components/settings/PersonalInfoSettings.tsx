@@ -127,7 +127,7 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
       const bannerUrl = await getDownloadURL(bannerRef)
 
       await setDoc(
-        doc(db as Firestore, 'user_profiles', auth.currentUser.uid),
+        doc(db as Firestore, 'users', auth.currentUser.uid),
         { bannerUrl },
         { merge: true }
       )
@@ -147,7 +147,7 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
     setError(null)
     try {
       await setDoc(
-        doc(db as Firestore, 'user_profiles', auth.currentUser.uid),
+        doc(db as Firestore, 'users', auth.currentUser.uid),
         { bannerUrl: '' },
         { merge: true }
       )

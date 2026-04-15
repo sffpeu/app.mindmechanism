@@ -11,7 +11,7 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // User profiles
+    // Per-user root doc (e.g. profile banner URL). Subcollections: notes/…
     match /users/{userId} {
       allow read: if isAuthenticated();
       allow write: if isUserAuthenticated(userId);

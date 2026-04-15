@@ -22,7 +22,7 @@ export interface UserProfile {
   bio: string;
   birthdate: string;
   avatarUrl: string;
-  /** Custom wide image shown on the dashboard profile card; stored in Firestore + Storage. */
+  /** Custom wide image for the dashboard profile card. URL in Storage; Firestore field on `users/{uid}` (rules allow owner writes). */
   bannerUrl: string;
   preferences: {
     emailNotifications: boolean;
@@ -58,17 +58,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loadUserProfile = async (userId: string) => {
     if (!db) return null;
     try {
-      const docRef = doc(db as Firestore, 'user_profiles', userId);
-      const docSnap = await getDoc(docRef);
-      
-      if (docSnap.exists()) {
-        const raw = docSnap.data() as Partial<UserProfile>;
+      const profileRef = doc(db as Firestore, 'user_profiles', userId);
+      const userSettingsRef = doc(db as Firestore, 'users', userId);
+      const [profileSnap, userSettingsSnap] = await Promise.all([
+        getDoc(profileRef),
+        getDoc(userSettingsRef),
+      ]);
+
+      const usersData = userSettingsSnap.exists() ? userSettingsSnap.data() : null;
+      const usersBanner = usersData && typeof (usersData as { bannerUrl?: unknown }).bannerUrl === 'string'
+        ? (usersData as { bannerUrl: string }).bannerUrl
+        : undefined;
+
+      if (profileSnap.exists()) {
+        const raw = profileSnap.data() as Partial<UserProfile>;
         const profileData: UserProfile = {
           username: raw.username ?? '',
           bio: raw.bio ?? '',
           birthdate: raw.birthdate ?? '',
           avatarUrl: raw.avatarUrl ?? '',
-          bannerUrl: raw.bannerUrl ?? '',
+          bannerUrl: usersBanner !== undefined ? usersBanner : (raw.bannerUrl ?? ''),
           preferences: {
             emailNotifications: raw.preferences?.emailNotifications ?? true,
             allowLocationData: raw.preferences?.allowLocationData ?? false,
@@ -86,7 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           bio: '',
           birthdate: '',
           avatarUrl: '',
-          bannerUrl: '',
+          bannerUrl: usersBanner !== undefined ? usersBanner : '',
           preferences: {
             emailNotifications: true,
             allowLocationData: false,
@@ -95,7 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             sessionTimeout: 30,
           },
         };
-        await setDoc(docRef, defaultProfile);
+        await setDoc(profileRef, defaultProfile);
         setProfile(defaultProfile);
         return defaultProfile;
       }
