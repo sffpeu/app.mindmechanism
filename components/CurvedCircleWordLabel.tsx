@@ -2,6 +2,8 @@
 
 import { useId, useMemo } from 'react'
 import { motion } from 'framer-motion'
+import { breathingFillAt, parseHexColor, type BreathTravel } from '@/lib/breathingColor'
+import { useBreathingNow } from '@/lib/useBreathingNow'
 
 const CX = 50
 const CY = 50
@@ -50,8 +52,12 @@ export type CurvedCircleWordLabelProps = {
   isHovered?: boolean
   onHoverIn?: () => void
   onHoverOut?: () => void
-  /** Gentle opacity pulse when this node has stayed selected longer than the page threshold (e.g. 1 min). */
+  /** After threshold (e.g. 1 min): white ↔ wheel color breathing over 30s; multi-select staggers via `breathTravel`. */
   longActivePulse?: boolean
+  /** Wheel accent (same hex as clock rim); required for long-active breathing. */
+  accentHex?: string
+  /** Rank among long-active nodes (sorted by index) so multiple words chase around the wheel. */
+  breathTravel?: BreathTravel | null
   className?: string
 }
 
@@ -70,9 +76,20 @@ export function CurvedCircleWordLabel({
   onHoverIn,
   onHoverOut,
   longActivePulse = false,
+  accentHex,
+  breathTravel = null,
   className,
 }: CurvedCircleWordLabelProps) {
   const reactId = useId()
+  const breathTick = useBreathingNow(longActivePulse && !!accentHex)
+
+  const accentRgb = useMemo(() => (accentHex ? parseHexColor(accentHex) : null), [accentHex])
+
+  const breathingFill = useMemo(() => {
+    if (!longActivePulse || !accentRgb) return null
+    const travel = breathTravel ?? { rank: 0, total: 1 }
+    return breathingFillAt(breathTick, accentRgb, travel)
+  }, [longActivePulse, accentRgb, breathTravel, breathTick])
   const safeId = reactId.replace(/:/g, '')
   const pathId = `wheel-arc-${safeId}`
   const filterId = `wheel-sh-${safeId}`
@@ -122,21 +139,18 @@ export function CurvedCircleWordLabel({
 
       <motion.text
         filter={`url(#${filterId})`}
-        className="fill-current font-bold uppercase tracking-wide"
+        className={breathingFill ? 'font-bold uppercase tracking-wide' : 'fill-current font-bold uppercase tracking-wide'}
         style={{
           fontSize: fs,
           pointerEvents: 'none',
+          ...(breathingFill ? { fill: breathingFill } : {}),
         }}
         animate={
-          longActivePulse
-            ? { opacity: [0.82, 1, 0.82] }
+          longActivePulse && breathingFill
+            ? { opacity: 1 }
             : { opacity: isHovered && interactive ? 1 : interactive ? 0.96 : 1 }
         }
-        transition={
-          longActivePulse
-            ? { duration: 2.4, repeat: Infinity, ease: 'easeInOut' }
-            : { duration: 0.2 }
-        }
+        transition={{ duration: longActivePulse && breathingFill ? 0 : 0.2 }}
       >
         <textPath href={`#${pathId}`} startOffset="50%" textAnchor="middle" method="align" spacing="auto">
           {display}

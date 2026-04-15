@@ -49,5 +49,22 @@ export function useMultiNodeSelection(pulseAfterMs: number = DEFAULT_PULSE_AFTER
     [selectedAt, pulseAfterMs, pulseTick]
   )
 
-  return { toggleNode, isNodeSelected, shouldLongPulse }
+  /** Indices in long-pulse state, sorted by index — used to stagger breathing around the wheel. */
+  const getLongPulseTravelRank = useCallback(
+    (index: number) => {
+      void pulseTick
+      const eligible = selectedIndices
+        .filter((i) => {
+          const ti = selectedAt[i]
+          return ti != null && Date.now() - ti >= pulseAfterMs
+        })
+        .sort((a, b) => a - b)
+      const rank = eligible.indexOf(index)
+      if (rank < 0) return null
+      return { rank, total: eligible.length }
+    },
+    [selectedIndices, selectedAt, pulseAfterMs, pulseTick]
+  )
+
+  return { toggleNode, isNodeSelected, shouldLongPulse, getLongPulseTravelRank }
 }

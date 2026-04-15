@@ -112,7 +112,7 @@ function NodesPageContent() {
     }
     return true
   })
-  const { toggleNode, isNodeSelected, shouldLongPulse } = useMultiNodeSelection()
+  const { toggleNode, isNodeSelected, shouldLongPulse, getLongPulseTravelRank } = useMultiNodeSelection()
   const [hoveredNodeIndex, setHoveredNodeIndex] = useState<number | null>(null)
   const [showWords, setShowWords] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -894,6 +894,8 @@ function NodesPageContent() {
                                     radiusPercent={nodeRadius + 5}
                                     isSelected={isSelected}
                                     longActivePulse={shouldLongPulse(index)}
+                                    accentHex={clockHex}
+                                    breathTravel={getLongPulseTravelRank(index)}
                                     interactive
                                     isHovered={pillHoveredWord === word}
                                     onHoverIn={() => setPillHoveredWord(word)}
