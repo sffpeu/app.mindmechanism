@@ -23,6 +23,7 @@ import {
   Sunset,
   Activity,
   Users,
+  ChevronDown,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -168,7 +169,12 @@ export default function NotesPage() {
   const [moon, setMoon] = useState<MoonData | null>(null)
   const [recentSessions, setRecentSessions] = useState<Session[]>([])
   const [selectedSessionId, setSelectedSessionId] = useState<string>('none')
+  const [envSnapshotExpanded, setEnvSnapshotExpanded] = useState(false)
   const { playSuccess } = useSoundEffects()
+
+  useEffect(() => {
+    setEnvSnapshotExpanded(false)
+  }, [selectedNote?.id])
 
   // Load recent sessions
   useEffect(() => {
@@ -723,8 +729,42 @@ export default function NotesPage() {
               )}
 
               {showEnvironmentSnapshotGrid && (
-                <div className="mb-3 space-y-2">
-                  <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Environment snapshot</p>
+                <div className="mb-3">
+                  <button
+                    type="button"
+                    onClick={() => setEnvSnapshotExpanded((open) => !open)}
+                    aria-label={
+                      envSnapshotExpanded ? 'Hide environment snapshot' : 'Show environment snapshot'
+                    }
+                    className={cn(
+                      'flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left transition-colors',
+                      'border-black/10 dark:border-white/15',
+                      'bg-gray-50/80 hover:bg-gray-100/90 dark:bg-black/25 dark:hover:bg-black/35',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50 dark:focus-visible:ring-offset-black/95'
+                    )}
+                    aria-expanded={envSnapshotExpanded}
+                    aria-controls="notes-env-snapshot-panel"
+                    id="notes-env-snapshot-toggle"
+                  >
+                    <span className="flex items-center gap-2 min-w-0">
+                      <Cloud className="h-4 w-4 shrink-0 text-sky-500 dark:text-sky-400" aria-hidden />
+                      <span className="text-xs font-medium text-gray-700 dark:text-gray-200">Environment snapshot</span>
+                    </span>
+                    <ChevronDown
+                      className={cn(
+                        'h-4 w-4 shrink-0 text-gray-500 dark:text-gray-400 transition-transform duration-200',
+                        envSnapshotExpanded && 'rotate-180'
+                      )}
+                      aria-hidden
+                    />
+                  </button>
+                  <div
+                    id="notes-env-snapshot-panel"
+                    role="region"
+                    aria-labelledby="notes-env-snapshot-toggle"
+                    hidden={!envSnapshotExpanded}
+                    className="space-y-2 pt-2"
+                  >
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
                     <div className="p-2 rounded-lg border border-black/10 dark:border-white/20">
                       <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-200">
@@ -886,6 +926,7 @@ export default function NotesPage() {
                       })()}
                     </div>
                   ) : null}
+                  </div>
                 </div>
               )}
 
