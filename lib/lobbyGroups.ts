@@ -1,4 +1,11 @@
 import { db, waitForFirebaseAuth } from '@/lib/firebase'
+import type { LobbySessionConfigInput, LobbySessionPlan } from '@/lib/lobbySessionConfig'
+import {
+  finalizeLobbySessionIndices,
+  parseLobbySessionPlan,
+  storedSessionMatchesInput,
+  validateLobbySessionConfig,
+} from '@/lib/lobbySessionConfig'
 import {
   collection,
   addDoc,
@@ -9,6 +16,7 @@ import {
   limit,
   Timestamp,
   doc,
+  getDoc,
   runTransaction,
   FirestoreError,
 } from 'firebase/firestore'
@@ -55,7 +63,13 @@ async function fetchLobbyGroupsViaApi(): Promise<LobbyGroup[] | null> {
       return null
     }
     const json = (await res.json()) as {
-      groups?: Array<{ id: string; member_uids: string[]; created_at_ms: number; friends_code?: string | null }>
+      groups?: Array<{
+        id: string
+        member_uids: string[]
+        created_at_ms: number
+        friends_code?: string | null
+        session?: LobbySessionPlan | null
+      }>
     }
     const raw = json.groups ?? []
     return raw.map((g) => ({
@@ -63,6 +77,7 @@ async function fetchLobbyGroupsViaApi(): Promise<LobbyGroup[] | null> {
       member_uids: g.member_uids.filter((u) => typeof u === 'string'),
       created_at: Timestamp.fromMillis(g.created_at_ms),
       friends_code: typeof g.friends_code === 'string' ? g.friends_code : null,
+      session: g.session ?? null,
     }))
   } catch {
     return null
@@ -74,6 +89,9 @@ async function callLobbyGroupsApi(payload: {
   action: 'create' | 'create_friends' | 'join' | 'join_code' | 'leave'
   groupId?: string
   friendsCode?: string
+  mandalaClockId?: number
+  sessionDurationMinutes?: number
+  focusNodeIndices?: number[]
 }): Promise<LobbyApiResult> {
   if (typeof window === 'undefined') {
     return { mode: 'fallback' }
@@ -109,6 +127,11 @@ export interface LobbyGroup {
   member_uids: string[]
   created_at: Timestamp
   friends_code?: string | null
+  session: LobbySessionPlan | null
+}
+
+function sessionFromFirestoreData(data: Record<string, unknown>): LobbySessionPlan | null {
+  return parseLobbySessionPlan(data)
 }
 
 export function normalizeFriendsCode(code: string): string {
@@ -151,6 +174,7 @@ export async function listLobbyGroups(): Promise<LobbyGroup[]> {
         member_uids,
         created_at: data.created_at as Timestamp,
         friends_code: typeof data.friends_code === 'string' ? data.friends_code : null,
+        session: sessionFromFirestoreData(data as Record<string, unknown>),
       }
     })
     .filter((g) => g.created_at && isFresh(g.created_at) && g.member_uids.length > 0)
@@ -182,21 +206,42 @@ export async function getMyLobbyGroup(userId: string): Promise<LobbyGroup | null
     : []
   const created_at = data.created_at as Timestamp
   if (!created_at || !isFresh(created_at)) return null
-  return { id: d.id, member_uids, created_at, friends_code: typeof data.friends_code === 'string' ? data.friends_code : null }
+  return {
+    id: d.id,
+    member_uids,
+    created_at,
+    friends_code: typeof data.friends_code === 'string' ? data.friends_code : null,
+    session: sessionFromFirestoreData(data as Record<string, unknown>),
+  }
 }
 
 /** Create a new solo group. Leaves any non-solo group first. */
 export async function createLobbyGroup(
   userId: string,
+  session: LobbySessionConfigInput,
   options?: { friendsCode?: string | null }
 ): Promise<string> {
   if (!userId) throw new Error('User ID is required')
+  const err = validateLobbySessionConfig(session)
+  if (err) throw new Error(err)
+  const finalized = finalizeLobbySessionIndices(session)
   const normalizedCode = options?.friendsCode ? normalizeFriendsCode(options.friendsCode) : ''
 
   const api = await callLobbyGroupsApi(
     normalizedCode
-      ? { action: 'create_friends', friendsCode: normalizedCode }
-      : { action: 'create' }
+      ? {
+          action: 'create_friends',
+          friendsCode: normalizedCode,
+          mandalaClockId: session.mandalaClockId,
+          sessionDurationMinutes: session.sessionDurationMinutes,
+          focusNodeIndices: finalized,
+        }
+      : {
+          action: 'create',
+          mandalaClockId: session.mandalaClockId,
+          sessionDurationMinutes: session.sessionDurationMinutes,
+          focusNodeIndices: finalized,
+        }
   )
   if (api.mode === 'success' && api.groupId) {
     return api.groupId
@@ -210,7 +255,13 @@ export async function createLobbyGroup(
   const existing = await getMyLobbyGroup(userId)
   if (existing) {
     if (existing.member_uids.length === 1 && existing.member_uids[0] === userId) {
-      return existing.id
+      const existingSnap = await getDoc(doc(db, COLLECTION, existing.id))
+      const raw = existingSnap.data() as Record<string, unknown> | undefined
+      const codeOk =
+        ((typeof raw?.friends_code === 'string' ? raw.friends_code : '') || '') === normalizedCode
+      if (raw && codeOk && storedSessionMatchesInput(raw, session, finalized)) {
+        return existing.id
+      }
     }
     await leaveLobbyGroup(existing.id, userId)
   }
@@ -219,19 +270,24 @@ export async function createLobbyGroup(
     member_uids: [userId],
     created_at: Timestamp.now(),
     friends_code: normalizedCode || null,
+    mandala_clock_id: session.mandalaClockId,
+    session_duration_minutes: session.sessionDurationMinutes,
+    focus_node_indices: finalized,
+    creator_uid: userId,
   })
   return docRef.id
 }
 
 export async function createFriendsLobbyGroup(
   userId: string,
+  session: LobbySessionConfigInput,
   requestedCode?: string
 ): Promise<{ groupId: string; friendsCode: string }> {
   const friendsCode = normalizeFriendsCode(requestedCode || generateFriendsCode())
   if (friendsCode.length < 4) {
     throw new Error('Friends code must be at least 4 characters')
   }
-  const groupId = await createLobbyGroup(userId, { friendsCode })
+  const groupId = await createLobbyGroup(userId, session, { friendsCode })
   return { groupId, friendsCode }
 }
 

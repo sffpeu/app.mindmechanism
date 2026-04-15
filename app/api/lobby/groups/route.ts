@@ -4,6 +4,13 @@ import { getAuth } from 'firebase-admin/auth'
 import { getFirestore, FieldValue, type Firestore, type Timestamp } from 'firebase-admin/firestore'
 import { getFirebaseAdminApp } from '@/lib/firebaseAdmin'
 import { LOBBY_GROUP_MAX, LOBBY_GROUP_TTL_MS } from '@/lib/lobbyGroups'
+import type { LobbySessionConfigInput, LobbySessionPlan } from '@/lib/lobbySessionConfig'
+import {
+  finalizeLobbySessionIndices,
+  parseLobbySessionPlan,
+  storedSessionMatchesInput,
+  validateLobbySessionConfig,
+} from '@/lib/lobbySessionConfig'
 
 export const runtime = 'nodejs'
 
@@ -81,6 +88,7 @@ export async function GET(request: Request) {
       member_uids: string[]
       created_at_ms: number
       friends_code?: string | null
+      session: LobbySessionPlan | null
     }> = []
 
     for (const d of snap.docs) {
@@ -93,7 +101,8 @@ export async function GET(request: Request) {
       if (member_uids.length === 0) continue
       const isMember = member_uids.includes(uid)
       const friendsCode = isMember && typeof data.friends_code === 'string' ? data.friends_code : null
-      groups.push({ id: d.id, member_uids, created_at_ms, friends_code: friendsCode })
+      const session = parseLobbySessionPlan(data)
+      groups.push({ id: d.id, member_uids, created_at_ms, friends_code: friendsCode, session })
     }
 
     return NextResponse.json({ groups })
@@ -139,7 +148,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  let body: { action?: string; groupId?: string; friendsCode?: string }
+  let body: {
+    action?: string
+    groupId?: string
+    friendsCode?: string
+    mandalaClockId?: number
+    sessionDurationMinutes?: number
+    focusNodeIndices?: number[]
+  }
   try {
     body = await request.json()
   } catch {
@@ -157,15 +173,30 @@ export async function POST(request: Request) {
       if (action === 'create_friends' && requestedFriendsCode.length < 4) {
         return NextResponse.json({ error: 'Friends code must be at least 4 characters' }, { status: 400 })
       }
+
+      const sessionInput: LobbySessionConfigInput = {
+        mandalaClockId: typeof body.mandalaClockId === 'number' ? body.mandalaClockId : NaN,
+        sessionDurationMinutes:
+          typeof body.sessionDurationMinutes === 'number' ? body.sessionDurationMinutes : NaN,
+        focusNodeIndices: Array.isArray(body.focusNodeIndices)
+          ? body.focusNodeIndices.filter((n): n is number => typeof n === 'number' && Number.isInteger(n))
+          : [],
+      }
+      const sessionErr = validateLobbySessionConfig(sessionInput)
+      if (sessionErr) {
+        return NextResponse.json({ error: sessionErr }, { status: 400 })
+      }
+      const finalized = finalizeLobbySessionIndices(sessionInput)
+
       const qs = await db.collection(COLLECTION).where('member_uids', 'array-contains', uid).get()
       for (const d of qs.docs) {
         const m = normalizeMembers(d.data() as Record<string, unknown>)
-        const existingCode = d.data().friends_code
-        if (
-          m.length === 1 &&
-          m[0] === uid &&
+        const row = d.data() as Record<string, unknown>
+        const existingCode = row.friends_code
+        const codeMatch =
           ((typeof existingCode === 'string' ? existingCode : '') || '') === requestedFriendsCode
-        ) {
+        const sessionMatch = storedSessionMatchesInput(row, sessionInput, finalized)
+        if (m.length === 1 && m[0] === uid && codeMatch && sessionMatch) {
           return NextResponse.json({ groupId: d.id, friendsCode: requestedFriendsCode || null })
         }
       }
@@ -176,6 +207,10 @@ export async function POST(request: Request) {
         member_uids: [uid],
         created_at: FieldValue.serverTimestamp(),
         friends_code: requestedFriendsCode || null,
+        mandala_clock_id: sessionInput.mandalaClockId,
+        session_duration_minutes: sessionInput.sessionDurationMinutes,
+        focus_node_indices: finalized,
+        creator_uid: uid,
       })
       return NextResponse.json({ groupId: ref.id, friendsCode: requestedFriendsCode || null })
     }
