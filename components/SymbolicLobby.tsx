@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Users, Radio, Sparkles, LogOut as WithdrawIcon, Copy } from 'lucide-react'
+import { Users, Radio, Sparkles, LogOut as WithdrawIcon, Copy, ChevronDown } from 'lucide-react'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { toast } from 'sonner'
 import {
@@ -53,13 +53,35 @@ export function SymbolicLobby() {
   const [mandalaClockId, setMandalaClockId] = useState(0)
   const [sessionDurationMinutes, setSessionDurationMinutes] = useState(10)
   const [selectedFocusNodes, setSelectedFocusNodes] = useState<number[]>([0])
+  const [showSessionConfig, setShowSessionConfig] = useState(true)
   const permissionHintShown = useRef(false)
+  const sessionUiStorageKey = 'lobby.sessionConfig.expanded'
 
   const focusCount = clockSettings[mandalaClockId]?.focusNodes ?? 8
 
   useEffect(() => {
     setSelectedFocusNodes([0])
   }, [mandalaClockId])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      const saved = window.localStorage.getItem(sessionUiStorageKey)
+      if (saved === '0') setShowSessionConfig(false)
+      if (saved === '1') setShowSessionConfig(true)
+    } catch {
+      // ignore localStorage read failures
+    }
+  }, [sessionUiStorageKey])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      window.localStorage.setItem(sessionUiStorageKey, showSessionConfig ? '1' : '0')
+    } catch {
+      // ignore localStorage write failures
+    }
+  }, [showSessionConfig, sessionUiStorageKey])
 
   const sessionConfig = useMemo((): LobbySessionConfigInput => {
     return {
@@ -230,75 +252,102 @@ export function SymbolicLobby() {
       </div>
 
       {!myGroup ? (
-        <div className="mb-6 rounded-xl border border-violet-500/25 dark:border-violet-400/20 bg-violet-500/[0.06] dark:bg-violet-500/10 p-4 space-y-4">
-          <p className="text-sm font-medium text-gray-900 dark:text-white">Session (creator sets for the group)</p>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="lobby-mandala">Mandala</Label>
-              <Select
-                value={String(mandalaClockId)}
-                onValueChange={(v) => setMandalaClockId(Number(v))}
-                disabled={busyId !== null}
-              >
-                <SelectTrigger id="lobby-mandala" className="w-full">
-                  <SelectValue placeholder="Choose mandala" />
-                </SelectTrigger>
-                <SelectContent>
-                  {clockSettings.map((c) => (
-                    <SelectItem key={c.id} value={String(c.id)}>
-                      {clockTitles[c.id] ?? `Clock ${c.id}`}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="lobby-duration">Session length</Label>
-              <Select
-                value={String(sessionDurationMinutes)}
-                onValueChange={(v) => setSessionDurationMinutes(Number(v))}
-                disabled={busyId !== null}
-              >
-                <SelectTrigger id="lobby-duration" className="w-full">
-                  <SelectValue placeholder="Minutes" />
-                </SelectTrigger>
-                <SelectContent>
-                  {LOBBY_SESSION_DURATION_CHOICES.map((m) => (
-                    <SelectItem key={m} value={String(m)}>
-                      {m} minutes
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label>Focus nodes</Label>
-            <p className="text-xs text-gray-600 dark:text-gray-400">
-              Choose one or more nodes on this mandala for the shared meditation.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {Array.from({ length: focusCount }).map((_, nodeIndex) => {
-                const on = selectedFocusNodes.includes(nodeIndex)
-                return (
-                  <button
-                    key={nodeIndex}
-                    type="button"
-                    onClick={() => toggleFocusNode(nodeIndex)}
+        <div className="mb-6 overflow-hidden rounded-xl border border-violet-500/25 bg-violet-500/[0.06] dark:border-violet-400/20 dark:bg-violet-500/10">
+          <button
+            type="button"
+            onClick={() => setShowSessionConfig((v) => !v)}
+            className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-violet-500/10 dark:hover:bg-violet-500/15"
+            aria-expanded={showSessionConfig}
+            aria-controls="lobby-session-panel-body"
+            id="lobby-session-panel-toggle"
+          >
+            <span className="text-sm font-medium text-gray-900 dark:text-white">
+              Session (creator sets for the group)
+            </span>
+            <ChevronDown
+              className={cn(
+                'h-5 w-5 shrink-0 text-violet-700 transition-transform duration-200 dark:text-violet-300',
+                showSessionConfig ? 'rotate-180' : 'rotate-0'
+              )}
+              aria-hidden
+            />
+          </button>
+          {showSessionConfig ? (
+            <div
+              id="lobby-session-panel-body"
+              role="region"
+              aria-labelledby="lobby-session-panel-toggle"
+              className="space-y-4 border-t border-violet-500/20 px-4 pb-4 pt-3 dark:border-violet-400/15"
+            >
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="lobby-mandala">Mandala</Label>
+                  <Select
+                    value={String(mandalaClockId)}
+                    onValueChange={(v) => setMandalaClockId(Number(v))}
                     disabled={busyId !== null}
-                    className={cn(
-                      'rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
-                      on
-                        ? 'border-purple-600 bg-purple-600 text-white dark:border-purple-400 dark:bg-purple-500'
-                        : 'border-black/15 bg-white/80 text-gray-800 hover:bg-white dark:border-white/15 dark:bg-white/10 dark:text-gray-100'
-                    )}
                   >
-                    {focusNodeLabel(mandalaClockId, nodeIndex)}
-                  </button>
-                )
-              })}
+                    <SelectTrigger id="lobby-mandala" className="w-full">
+                      <SelectValue placeholder="Choose mandala" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {clockSettings.map((c) => (
+                        <SelectItem key={c.id} value={String(c.id)}>
+                          {clockTitles[c.id] ?? `Clock ${c.id}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lobby-duration">Session length</Label>
+                  <Select
+                    value={String(sessionDurationMinutes)}
+                    onValueChange={(v) => setSessionDurationMinutes(Number(v))}
+                    disabled={busyId !== null}
+                  >
+                    <SelectTrigger id="lobby-duration" className="w-full">
+                      <SelectValue placeholder="Minutes" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LOBBY_SESSION_DURATION_CHOICES.map((m) => (
+                        <SelectItem key={m} value={String(m)}>
+                          {m} minutes
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Focus nodes</Label>
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  Choose one or more nodes on this mandala for the shared meditation.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {Array.from({ length: focusCount }).map((_, nodeIndex) => {
+                    const on = selectedFocusNodes.includes(nodeIndex)
+                    return (
+                      <button
+                        key={nodeIndex}
+                        type="button"
+                        onClick={() => toggleFocusNode(nodeIndex)}
+                        disabled={busyId !== null}
+                        className={cn(
+                          'rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
+                          on
+                            ? 'border-purple-600 bg-purple-600 text-white dark:border-purple-400 dark:bg-purple-500'
+                            : 'border-black/15 bg-white/80 text-gray-800 hover:bg-white dark:border-white/15 dark:bg-white/10 dark:text-gray-100'
+                        )}
+                      >
+                        {focusNodeLabel(mandalaClockId, nodeIndex)}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
             </div>
-          </div>
+          ) : null}
         </div>
       ) : null}
 
