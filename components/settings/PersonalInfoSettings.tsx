@@ -11,7 +11,8 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { db, getFirebaseStorage } from '@/lib/firebase'
 import { FirebaseError } from 'firebase/app'
 import { doc, setDoc, Firestore } from 'firebase/firestore'
-import { processBannerImageForUpload } from '@/lib/cropBannerImage'
+import { processBannerImageForUpload, type BannerFocalPoint } from '@/lib/cropBannerImage'
+import { BannerFocalDialog } from './BannerFocalDialog'
 
 function bannerUploadErrorMessage(err: unknown): string {
   if (err instanceof FirebaseError) {
@@ -50,6 +51,8 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const bannerInputRef = useRef<HTMLInputElement>(null)
+  const [bannerFocalOpen, setBannerFocalOpen] = useState(false)
+  const [pendingBannerFile, setPendingBannerFile] = useState<File | null>(null)
   const auth = getAuth()
 
   useEffect(() => {
@@ -111,14 +114,13 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
     }
   }
 
-  const handleBannerUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!auth.currentUser || !event.target.files?.[0] || !db) return
+  const performBannerUpload = async (file: File, focal: BannerFocalPoint) => {
+    if (!auth.currentUser || !db) return
     setIsUpdating(true)
     setError(null)
 
     try {
-      const file = event.target.files[0]
-      const processed = await processBannerImageForUpload(file)
+      const processed = await processBannerImageForUpload(file, focal)
       const storage = getFirebaseStorage()
       const bannerRef = ref(storage, `profile-banners/${auth.currentUser.uid}`)
       await uploadBytes(bannerRef, processed, {
@@ -138,8 +140,21 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
       setError(bannerUploadErrorMessage(err))
     } finally {
       setIsUpdating(false)
-      event.target.value = ''
     }
+  }
+
+  const handleBannerFileChosen = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file || !auth.currentUser || !db) return
+    setPendingBannerFile(file)
+    setBannerFocalOpen(true)
+  }
+
+  const handleBannerFocalConfirm = (focal: BannerFocalPoint) => {
+    const file = pendingBannerFile
+    setPendingBannerFile(null)
+    if (file) void performBannerUpload(file, focal)
   }
 
   const handleBannerRemove = async () => {
@@ -231,7 +246,7 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
       <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
         <Label className="text-sm text-gray-700 dark:text-gray-300">Profile banner</Label>
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          Shown at the top of your dashboard profile card. Larger photos are center-cropped to a 3:1 banner and saved at a standard size.
+          Shown at the top of your dashboard profile card. After you choose a photo, set horizontal and vertical focus so the 3:1 crop matches what you want.
         </p>
         <div className="relative rounded-xl overflow-hidden h-24 sm:h-28 border border-gray-200 dark:border-gray-700 bg-gradient-to-br from-slate-800 via-indigo-900/95 to-violet-900 dark:from-slate-900 dark:via-indigo-950 dark:to-violet-950">
           {profile?.bannerUrl?.trim() ? (
@@ -268,13 +283,23 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
             <input
               type="file"
               ref={bannerInputRef}
-              onChange={handleBannerUpload}
+              onChange={handleBannerFileChosen}
               accept="image/*"
               className="hidden"
             />
           </div>
         </div>
       </div>
+
+      <BannerFocalDialog
+        open={bannerFocalOpen}
+        onOpenChange={(open) => {
+          setBannerFocalOpen(open)
+          if (!open) setPendingBannerFile(null)
+        }}
+        file={pendingBannerFile}
+        onConfirm={handleBannerFocalConfirm}
+      />
 
       {error && (
         <p className="mt-2 text-sm text-red-500 dark:text-red-400">{error}</p>
