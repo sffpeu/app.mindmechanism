@@ -14,7 +14,7 @@ service cloud.firestore {
     // Per-user root doc (e.g. profile banner URL). Subcollections: notes/…
     match /users/{userId} {
       allow read: if isAuthenticated();
-      allow write: if isUserAuthenticated(userId);
+      allow create, update, delete: if isUserAuthenticated(userId);
     }
 
     // Glossary

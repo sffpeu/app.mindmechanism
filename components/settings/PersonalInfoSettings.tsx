@@ -14,6 +14,17 @@ import { doc, setDoc, Firestore } from 'firebase/firestore'
 import { processBannerImageForUpload, type BannerFocalPoint } from '@/lib/cropBannerImage'
 import { BannerFocalDialog } from './BannerFocalDialog'
 
+/** Canonical banner URL lives on `user_profiles` (dashboard reads it reliably). Mirror to `users/` best-effort so wheel/settings stay aligned when rules allow. */
+async function persistBannerFirestore(fs: Firestore, uid: string, bannerUrl: string): Promise<void> {
+  const profileRef = doc(fs, 'user_profiles', uid)
+  await setDoc(profileRef, { bannerUrl }, { merge: true })
+  try {
+    await setDoc(doc(fs, 'users', uid), { bannerUrl }, { merge: true })
+  } catch (mirrorErr) {
+    console.warn('[banner] Saved to user_profiles; mirror to users/ failed:', mirrorErr)
+  }
+}
+
 function bannerUploadErrorMessage(err: unknown): string {
   if (err instanceof FirebaseError) {
     if (err.code === 'storage/unauthorized') {
@@ -124,12 +135,7 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
               contentType: staged.blob.type || 'image/jpeg',
             })
             const bannerUrl = await getDownloadURL(bannerRef)
-            const usersRef = doc(db as Firestore, 'users', uid)
-            const profileRef = doc(db as Firestore, 'user_profiles', uid)
-            await Promise.all([
-              setDoc(usersRef, { bannerUrl }, { merge: true }),
-              setDoc(profileRef, { bannerUrl }, { merge: true }),
-            ])
+            await persistBannerFirestore(db as Firestore, uid, bannerUrl)
             URL.revokeObjectURL(staged.previewUrl)
             setPendingBanner(null)
             setPendingBannerRemove(false)
@@ -141,12 +147,7 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
             } catch {
               /* object may not exist */
             }
-            const usersRef = doc(db as Firestore, 'users', uid)
-            const profileRef = doc(db as Firestore, 'user_profiles', uid)
-            await Promise.all([
-              setDoc(usersRef, { bannerUrl: '' }, { merge: true }),
-              setDoc(profileRef, { bannerUrl: '' }, { merge: true }),
-            ])
+            await persistBannerFirestore(db as Firestore, uid, '')
             setPendingBannerRemove(false)
             await refreshProfile()
             mergeProfilePatch({ bannerUrl: '' })

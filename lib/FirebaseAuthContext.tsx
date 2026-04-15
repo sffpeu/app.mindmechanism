@@ -18,6 +18,20 @@ import { syncFirebaseAuthCookie } from '@/lib/syncFirebaseAuthCookie';
 import { doc, getDoc, setDoc, Firestore } from 'firebase/firestore';
 import { normalizeWheelFaceOverlays, emptyWheelFaceOverlays } from '@/lib/wheelFaceOverlays';
 
+/** Prefer non-empty `users/{uid}.bannerUrl`; if missing or empty, use `user_profiles` (avoids empty string masking a valid profile URL). */
+function mergeBannerUrl(
+  usersData: Record<string, unknown> | undefined,
+  profileBannerRaw: unknown
+): string {
+  const fromProfile = typeof profileBannerRaw === 'string' ? profileBannerRaw.trim() : ''
+  if (!usersData) return fromProfile
+  if ('bannerUrl' in usersData && typeof usersData.bannerUrl === 'string') {
+    const fromUsers = usersData.bannerUrl.trim()
+    if (fromUsers.length > 0) return fromUsers
+  }
+  return fromProfile
+}
+
 export interface UserProfile {
   username: string;
   bio: string;
@@ -92,17 +106,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const profileSnap = await getDoc(profileRef)
 
-      let usersBanner: string | undefined
+      let usersDocData: Record<string, unknown> | undefined
       let usersWheelOverlays: string[] | undefined
       try {
         const userSettingsSnap = await getDoc(userSettingsRef)
         if (userSettingsSnap.exists()) {
-          const d = userSettingsSnap.data() as Record<string, unknown>
-          if ('bannerUrl' in d && typeof d.bannerUrl === 'string') {
-            usersBanner = d.bannerUrl
-          }
-          if ('wheelFaceOverlays' in d) {
-            usersWheelOverlays = normalizeWheelFaceOverlays(d.wheelFaceOverlays)
+          usersDocData = userSettingsSnap.data() as Record<string, unknown>
+          if ('wheelFaceOverlays' in usersDocData) {
+            usersWheelOverlays = normalizeWheelFaceOverlays(usersDocData.wheelFaceOverlays)
           }
         }
       } catch (usersDocErr) {
@@ -116,7 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           bio: raw.bio ?? '',
           birthdate: raw.birthdate ?? '',
           avatarUrl: raw.avatarUrl ?? '',
-          bannerUrl: usersBanner !== undefined ? usersBanner : (raw.bannerUrl ?? ''),
+          bannerUrl: mergeBannerUrl(usersDocData, raw.bannerUrl),
           wheelFaceOverlays:
             usersWheelOverlays !== undefined
               ? usersWheelOverlays
@@ -138,7 +149,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           bio: '',
           birthdate: '',
           avatarUrl: '',
-          bannerUrl: usersBanner !== undefined ? usersBanner : '',
+          bannerUrl: mergeBannerUrl(usersDocData, undefined),
           wheelFaceOverlays: usersWheelOverlays !== undefined ? usersWheelOverlays : emptyWheelFaceOverlays(),
           preferences: {
             emailNotifications: true,
