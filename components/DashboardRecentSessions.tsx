@@ -1,8 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Session, getUserSessions, deleteSession } from '@/lib/sessions';
 import { useAuth } from '@/lib/FirebaseAuthContext';
-import { RefreshCw, Play, X } from 'lucide-react';
+import { RefreshCw, Play, X, FolderOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useRouter } from 'next/navigation';
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
 import { toast } from 'react-hot-toast';
@@ -136,9 +142,14 @@ interface DashboardRecentSessionsProps {
   sessions?: Session[];
 }
 
+function isOpenOrIncomplete(s: Session): boolean {
+  return s.status === 'in_progress' || s.status === 'aborted';
+}
+
 export function DashboardRecentSessions({ sessions: propSessions }: DashboardRecentSessionsProps) {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(!propSessions);
+  const [openSessionsDialogOpen, setOpenSessionsDialogOpen] = useState(false);
   const { user } = useAuth();
   const router = useRouter();
 
@@ -227,6 +238,14 @@ export function DashboardRecentSessions({ sessions: propSessions }: DashboardRec
     }
   };
 
+  const openSessions = sessions
+    .filter(isOpenOrIncomplete)
+    .sort((a, b) => {
+      const tb = (b.last_active_time ?? b.start_time).toMillis();
+      const ta = (a.last_active_time ?? a.start_time).toMillis();
+      return tb - ta;
+    });
+
   const SessionMini = ({ session }: { session: Session }) => {
     const clockType = clockTitles[session.clock_id] ?? 'Unknown Clock';
     const textColor = clockColors[session.clock_id] ?? 'text-gray-500';
@@ -308,10 +327,53 @@ export function DashboardRecentSessions({ sessions: propSessions }: DashboardRec
   };
 
   return (
-    <div className="flex flex-wrap gap-4 justify-center sm:justify-start">
-      {sessions.slice(0, 6).map((session) => (
-        <SessionMini key={session.id} session={session} />
-      ))}
-    </div>
+    <>
+      <div className="flex justify-end mb-4">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="gap-2 rounded-full px-4"
+          onClick={() => setOpenSessionsDialogOpen(true)}
+        >
+          <FolderOpen className="h-4 w-4" />
+          Open &amp; incomplete sessions
+          <span className="tabular-nums rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-white/10 dark:text-gray-300">
+            {openSessions.length}
+          </span>
+        </Button>
+      </div>
+
+      <Dialog open={openSessionsDialogOpen} onOpenChange={setOpenSessionsDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[min(90vh,720px)] flex flex-col gap-0 overflow-hidden p-0 sm:rounded-2xl">
+          <DialogHeader className="px-6 pt-6 pb-2 text-left">
+            <DialogTitle>Open &amp; incomplete sessions</DialogTitle>
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-normal leading-relaxed pt-1">
+              Continue from where you left off. Same actions as the cards above: Continue, Restart, or remove.
+            </p>
+          </DialogHeader>
+          <div className="px-6 pb-6 flex-1 min-h-0 overflow-y-auto">
+            {openSessions.length === 0 ? (
+              <p className="text-sm text-gray-600 dark:text-gray-400 text-center py-8 px-2">
+                You don&apos;t have any open or incomplete sessions right now. Start one from Sessions, or finish a
+                session to see it marked complete here.
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-4 justify-center sm:justify-start pt-2">
+                {openSessions.map((session) => (
+                  <SessionMini key={session.id} session={session} />
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <div className="flex flex-wrap gap-4 justify-center sm:justify-start">
+        {sessions.slice(0, 6).map((session) => (
+          <SessionMini key={session.id} session={session} />
+        ))}
+      </div>
+    </>
   );
 }
