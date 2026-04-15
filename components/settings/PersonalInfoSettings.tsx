@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { User, Camera, AlertCircle, ImageIcon } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
-import { getAuth, updateProfile, type User } from 'firebase/auth'
+import { getAuth, updateProfile, type User as FirebaseUser } from 'firebase/auth'
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import { getFirebaseStorage } from '@/lib/firebase'
 import { FirebaseError } from 'firebase/app'
@@ -14,7 +14,7 @@ import { processBannerImageForUpload, type BannerFocalPoint } from '@/lib/cropBa
 import { BannerFocalDialog } from './BannerFocalDialog'
 
 /** Persists banner URL via API + Firebase Admin (bypasses client Firestore rules mismatches). */
-async function persistBannerUrlAfterUpload(currentUser: User, bannerUrl: string): Promise<void> {
+async function persistBannerUrlAfterUpload(currentUser: FirebaseUser, bannerUrl: string): Promise<void> {
   const idToken = await currentUser.getIdToken()
   const res = await fetch('/api/profile/banner-url', {
     method: 'POST',
