@@ -464,7 +464,7 @@ export default function NotesPage() {
                 Write with optional session and environment context—saved notes stay easy to scan in the list.
               </p>
             </div>
-            <div className="flex flex-wrap items-stretch sm:items-center gap-3 sm:justify-end">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between w-full">
               <button
                 type="button"
                 onClick={() => setSavedNotesPanelOpen((open) => !open)}
@@ -474,7 +474,7 @@ export default function NotesPage() {
                 title={savedNotesPanelOpen ? 'Hide the saved notes list' : 'Show the saved notes list'}
                 aria-label={savedNotesPanelOpen ? 'Hide saved notes panel' : 'Show saved notes panel'}
                 className={cn(
-                  'inline-flex items-center justify-center gap-3 rounded-xl border-2 px-5 py-3 sm:min-h-[3rem] min-w-0 flex-1 sm:flex-initial sm:min-w-[220px]',
+                  'inline-flex items-center justify-center gap-3 rounded-xl border-2 px-5 py-3 min-h-[3rem] w-full sm:w-auto sm:min-w-[220px] sm:shrink-0 self-start',
                   'text-base font-semibold tracking-tight shadow-sm transition-colors',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
                   savedNotesPanelOpen
@@ -498,7 +498,7 @@ export default function NotesPage() {
                   onClick={handleSaveNote}
                   disabled={!canSave}
                   className={cn(
-                    'inline-flex items-center justify-center gap-2 shrink-0 rounded-xl border-2 border-transparent px-5 py-3 sm:min-h-[3rem]',
+                    'inline-flex items-center justify-center gap-2 rounded-xl border-2 border-transparent px-5 py-3 min-h-[3rem] w-full sm:w-auto sm:shrink-0 self-end sm:self-auto',
                     'text-base font-semibold text-green-600 dark:text-green-400',
                     'hover:text-green-700 dark:hover:text-green-300',
                     'disabled:opacity-40 disabled:cursor-not-allowed',
