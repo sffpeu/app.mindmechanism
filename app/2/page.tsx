@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense, useRef, useCallback } from 'react'
+import { useState, useEffect, Suspense, useRef, useCallback, Fragment } from 'react'
 import { createPortal } from 'react-dom'
 import { useTheme } from '@/app/ThemeContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
@@ -41,6 +41,7 @@ import DotNavigation from '@/components/DotNavigation'
 import { clockTitles } from '@/lib/clockTitles'
 import { DEFAULT_WORDS_BY_CLOCK } from '@/lib/defaultWordsByClock'
 import { cn } from '@/lib/utils'
+import { tangentialWheelWordPosition } from '@/lib/tangentialWheelWordStyle'
 import { getSession } from '@/lib/sessions'
 
 // Weather and Moon data interfaces
@@ -374,19 +375,6 @@ function NodesPageContent() {
 
   const handleNodeClick = (index: number) => {
     setSelectedNodeIndex(selectedNodeIndex === index ? null : index)
-  }
-
-  const getWordContainerStyle = (angle: number, isSelected: boolean) => {
-    const a = ((angle % 360) + 360) % 360
-    const placement = a > 315 || a < 45 ? 'top' : a <= 135 ? 'right' : a < 225 ? 'bottom' : 'left'
-    const counterRotation = -rotation - clock2.imageOrientation
-    const offsetPx = 62
-    const base = { position: 'absolute' as const, left: '50%', top: '50%', transformOrigin: 'center center' as const, zIndex: 900 }
-    const scale = isSelected ? 1.1 : 1
-    if (placement === 'top') return { ...base, transform: `translate(-50%, -50%) translateY(-${offsetPx}px) scale(${scale}) rotate(${counterRotation}deg)` }
-    if (placement === 'bottom') return { ...base, transform: `translate(-50%, -50%) translateY(${offsetPx}px) scale(${scale}) rotate(${counterRotation}deg)` }
-    if (placement === 'left') return { ...base, transform: `translate(-100%, -50%) translateX(-${offsetPx}px) scale(${scale}) rotate(${counterRotation}deg)` }
-    return { ...base, transform: `translate(0, -50%) translateX(${offsetPx}px) scale(${scale}) rotate(${counterRotation}deg)` }
   }
 
   const getSentimentStyles = (rating: '+' | '~' | '-' | undefined) => {
@@ -796,37 +784,38 @@ function NodesPageContent() {
                       }),
                     }
                     return (
-                      <ClockFocusNodeAppear
-                        key={index}
-                        nodeIndex={index}
-                        className="absolute rounded-full cursor-pointer flex items-center justify-center"
-                        style={{
-                          left: `${x}%`,
-                          top: `${y}%`,
-                          minWidth: 44,
-                          minHeight: 44,
-                          transform: 'translate(-50%, -50%)',
-                          zIndex: nodeStyle.zIndex,
-                        }}
-                        onClick={() => handleNodeClick(index)}
-                        onMouseEnter={() => setHoveredNodeIndex(index)}
-                        onMouseLeave={() => setHoveredNodeIndex(null)}
-                      >
-                        <span
-                          className="flex-shrink-0 flex items-center justify-center text-white text-[10px] font-medium pointer-events-none select-none rounded-full"
+                      <Fragment key={index}>
+                        <ClockFocusNodeAppear
+                          nodeIndex={index}
+                          className="absolute rounded-full cursor-pointer flex items-center justify-center"
                           style={{
-                            ...getFocusNodeStyle(index, isSelected),
-                            width: 18,
-                            height: 18,
-                            transform: 'none',
+                            left: `${x}%`,
+                            top: `${y}%`,
+                            minWidth: 44,
+                            minHeight: 44,
+                            transform: 'translate(-50%, -50%)',
+                            zIndex: nodeStyle.zIndex,
                           }}
+                          onClick={() => handleNodeClick(index)}
+                          onMouseEnter={() => setHoveredNodeIndex(index)}
+                          onMouseLeave={() => setHoveredNodeIndex(null)}
                         >
-                          {index + 1}
-                        </span>
+                          <span
+                            className="flex-shrink-0 flex items-center justify-center text-white text-[10px] font-medium pointer-events-none select-none rounded-full"
+                            style={{
+                              ...getFocusNodeStyle(index, isSelected),
+                              width: 18,
+                              height: 18,
+                              transform: 'none',
+                            }}
+                          >
+                            {index + 1}
+                          </span>
+                        </ClockFocusNodeAppear>
                         {showWords && isSelected && word && (
-                          <div 
-                            className="absolute pointer-events-none z-[900] min-w-0 max-w-[min(92vw,18rem)] sm:max-w-[20rem]"
-                            style={getWordContainerStyle(angle, isSelected)}
+                          <div
+                            className="pointer-events-none"
+                            style={tangentialWheelWordPosition(angle, nodeRadius + 5, { isSelected, zIndex: 900 })}
                           >
                             <AnimatePresence mode="wait">
                               {selectedWord === word ? null : (
@@ -837,8 +826,8 @@ function NodesPageContent() {
                                   animate={{ opacity: 1 }}
                                   exit={{ opacity: 0 }}
                                   className={cn(
-                                    'max-w-full whitespace-normal break-words px-2.5 py-1 text-left text-xs font-medium leading-snug shadow-sm outline outline-1 outline-black/15 dark:outline-white/25 text-gray-800 dark:text-gray-200 transition-colors pointer-events-auto rounded-full',
-                                    pillHoveredWord === word ? 'bg-gray-100/90 dark:bg-gray-500/20' : 'bg-white/90 dark:bg-black/90 hover:bg-white dark:hover:bg-black/80'
+                                    'max-w-[min(92vw,14rem)] whitespace-normal break-words px-1.5 py-0.5 text-center uppercase font-bold tracking-wide text-[10px] sm:text-xs leading-snug text-black dark:text-white transition-colors pointer-events-auto drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)] dark:drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]',
+                                    pillHoveredWord === word ? 'bg-white/35 dark:bg-white/10' : 'bg-white/20 dark:bg-black/20 hover:bg-white/35 dark:hover:bg-black/35'
                                   )}
                                   onClick={(e) => { e.stopPropagation(); const rect = (e.currentTarget as HTMLElement).getBoundingClientRect(); setCardPosition({ x: rect.left, y: rect.top }); setSelectedWord(word) }}
                                   onMouseEnter={() => setPillHoveredWord(word)}
@@ -850,7 +839,7 @@ function NodesPageContent() {
                             </AnimatePresence>
                           </div>
                         )}
-                      </ClockFocusNodeAppear>
+                      </Fragment>
                     )
                   })}
                 </div>

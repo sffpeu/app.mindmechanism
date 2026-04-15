@@ -16,6 +16,7 @@ import { useLocation } from '@/lib/hooks/useLocation';
 import { Timestamp } from 'firebase/firestore';
 import { useSoundEffects } from '@/lib/sounds';
 import { SatelliteNameLabel } from '@/components/SatelliteNameLabel';
+import { tangentialWheelWordPosition } from '@/lib/tangentialWheelWordStyle';
 
 export { clockSatellites, defaultSatelliteConfigs };
 
@@ -155,26 +156,6 @@ const getNodeRadius = (clockId: number, isMultiView: boolean) => {
   }
 };
 
-// Helper function to get label rotation for better readability
-const getLabelRotation = (angle: number) => {
-  // Normalize angle to 0-360 range
-  const normalizedAngle = angle % 360;
-  
-  // For angles near the top (315-45 degrees), keep text upright
-  if (normalizedAngle > 315 || normalizedAngle < 45) {
-    return angle;
-  }
-  
-  // For angles near the bottom (135-225 degrees), flip text
-  if (normalizedAngle > 135 && normalizedAngle < 225) {
-    return angle + 180;
-  }
-  
-  // For angles in between, rotate to minimize text overlap
-  // If on the right side, rotate clockwise, if on the left side, rotate counterclockwise
-  return angle + (normalizedAngle > 180 ? 90 : -90);
-};
-
 const getFocusNodeStyle = (
   index: number,
   isMultiView: boolean,
@@ -213,51 +194,30 @@ const getFocusNodeStyle = (
   };
 };
 
-// Assign Words–style: word pill always outward from node (50px), never behind; z-index above nodes
-const getWordContainerStyle = (angle: number, isSelected: boolean, clockId: number, isMultiView: boolean, counterRotationDeg: number): React.CSSProperties => {
-  const a = ((angle % 360) + 360) % 360;
-  const placement = a > 315 || a < 45 ? 'top' : a <= 135 ? 'right' : a < 225 ? 'bottom' : 'left';
-  const offsetPx = 50;
-  const scale = isSelected ? 1.1 : 1;
-  const base: React.CSSProperties = { position: 'absolute', left: '50%', top: '50%', transformOrigin: 'center center', zIndex: 500 };
-  if (placement === 'top') return { ...base, transform: `translate(-50%, -50%) translateY(-${offsetPx}px) scale(${scale}) rotate(${counterRotationDeg}deg)` };
-  if (placement === 'bottom') return { ...base, transform: `translate(-50%, -50%) translateY(${offsetPx}px) scale(${scale}) rotate(${counterRotationDeg}deg)` };
-  if (placement === 'left') return { ...base, transform: `translate(-100%, -50%) translateX(-${offsetPx}px) scale(${scale}) rotate(${counterRotationDeg}deg)` };
-  return { ...base, transform: `translate(0, -50%) translateX(${offsetPx}px) scale(${scale}) rotate(${counterRotationDeg}deg)` };
-};
+const WORD_LABEL_RADIUS_OFFSET = 5;
 
 // Add these new components before the main Clock component
-const WordNode = ({ word, angle, nodeAngle, nodeRadius, isSelected, clockId, isMultiView }: {
+const WordNode = ({ word, angle, nodeRadius, isSelected }: {
   word: string;
   angle: number;
-  nodeAngle: number;
   nodeRadius: number;
   isSelected: boolean;
-  clockId: number;
-  isMultiView: boolean;
 }) => {
-  const radians = angle * (Math.PI / 180);
-  const x = 50 + nodeRadius * Math.cos(radians);
-  const y = 50 + nodeRadius * Math.sin(radians);
-
   return (
     <div
-      className="absolute"
-      style={{
-        left: `${x}%`,
-        top: `${y}%`,
-        transform: 'translate(-50%, -50%)',
-      }}
+      className="pointer-events-none"
+      style={tangentialWheelWordPosition(angle, nodeRadius + WORD_LABEL_RADIUS_OFFSET, {
+        isSelected,
+        zIndex: 500,
+      })}
     >
-      <div 
-        className={`whitespace-nowrap pointer-events-none px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
-        ${isSelected ? 'shadow-lg scale-110' : 'shadow-sm'} transition-all`}
-        style={{
-          ...getWordContainerStyle(nodeAngle, isSelected, clockId, isMultiView, 0),
-        }}
+      <span
+        className={`whitespace-nowrap uppercase font-bold tracking-wide text-[10px] sm:text-[11px] text-black dark:text-white drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)] dark:drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] ${
+          isSelected ? 'opacity-100' : 'opacity-95'
+        }`}
       >
-        <span className="text-black/90 dark:text-white/90">{word}</span>
-      </div>
+        {word}
+      </span>
     </div>
   );
 };
@@ -358,7 +318,6 @@ const FocusNode = ({
   isMultiView, 
   onClick, 
   selectedNodeIndex,
-  rotation,
   isSessionActive = false
 }: {
   index: number;
@@ -370,7 +329,6 @@ const FocusNode = ({
   isMultiView: boolean;
   onClick: () => void;
   selectedNodeIndex: number | null;
-  rotation: number;
   isSessionActive?: boolean;
 }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -380,47 +338,51 @@ const FocusNode = ({
 
   const nodeStyle = getFocusNodeStyle(index, isMultiView, selectedNodeIndex, clockId, isSessionActive);
   return (
-    <motion.div
-      key={`${clockId}-${index}`}
-      className="absolute rounded-full cursor-pointer pointer-events-auto flex items-center justify-center"
-      style={{
-        left: `${x}%`,
-        top: `${y}%`,
-        minWidth: 44,
-        minHeight: 44,
-        transform: 'translate(-50%, -50%)',
-        zIndex: nodeStyle.zIndex,
-      }}
-      onClick={onClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      whileHover={{ scale: 1.1 }}
-    >
-      <span
-        className="rounded-full flex-shrink-0"
+    <>
+      <motion.div
+        key={`${clockId}-${index}`}
+        className="absolute rounded-full cursor-pointer pointer-events-auto flex items-center justify-center"
         style={{
-          ...nodeStyle,
-          width: nodeStyle.width,
-          height: nodeStyle.height,
-          transform: 'none',
+          left: `${x}%`,
+          top: `${y}%`,
+          minWidth: 44,
+          minHeight: 44,
+          transform: 'translate(-50%, -50%)',
+          zIndex: nodeStyle.zIndex,
         }}
-        aria-hidden
-      />
-      {word && (isHovered || isSelected) && (
-        <motion.div 
-          className="absolute whitespace-nowrap pointer-events-none px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-white/90 dark:bg-black/90 backdrop-blur-sm 
-          shadow-sm transition-all"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.8 }}
+        onClick={onClick}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        whileHover={{ scale: 1.1 }}
+      >
+        <span
+          className="rounded-full flex-shrink-0"
           style={{
-            ...getWordContainerStyle(angle, isSelected, clockId, isMultiView, -rotation),
+            ...nodeStyle,
+            width: nodeStyle.width,
+            height: nodeStyle.height,
+            transform: 'none',
           }}
+          aria-hidden
+        />
+      </motion.div>
+      {word && (isHovered || isSelected) && (
+        <motion.div
+          className="pointer-events-none whitespace-nowrap"
+          initial={{ opacity: 0, scale: 0.92 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.92 }}
+          style={tangentialWheelWordPosition(angle, nodeRadius + WORD_LABEL_RADIUS_OFFSET, {
+            isSelected,
+            zIndex: 500,
+          })}
         >
-          <span className="text-black/90 dark:text-white/90">{word}</span>
+          <span className="uppercase font-bold tracking-wide text-[10px] sm:text-[11px] text-black dark:text-white drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)] dark:drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">
+            {word}
+          </span>
         </motion.div>
       )}
-    </motion.div>
+    </>
   );
 };
 
@@ -890,7 +852,6 @@ export default function Clock({
               isMultiView={isMultiView}
               onClick={() => handleNodeClick(index)}
               selectedNodeIndex={selectedNodeIndex}
-              rotation={clockRotation}
               isSessionActive={isSessionActive}
             />
           );
@@ -926,11 +887,8 @@ export default function Clock({
                 key={`${nodeIndex}-${wordIndex}`}
                 word={word}
                 angle={wordAngle}
-                nodeAngle={nodeAngle}
                 nodeRadius={nodeRadius}
                 isSelected={false}
-                clockId={id}
-                isMultiView={isMultiView}
               />
             );
           });
