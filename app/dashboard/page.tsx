@@ -1,19 +1,23 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { User, Mail, Calendar, LogIn, Pencil, LogOut } from 'lucide-react'
+import { User, Mail, Calendar, CalendarClock, LogIn, Pencil, LogOut } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import Link from 'next/link'
 import { calculateUserTimeStats } from '@/lib/timeTracking'
 import { startTimeTracking, endTimeTracking } from '@/lib/timeTracking'
+import { getUserSessions } from '@/lib/sessions'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { XCircle } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { DashboardRecentSessions } from '@/components/DashboardRecentSessions'
+import {
+  DashboardRecentSessions,
+  type DashboardRecentSessionsHandle,
+} from '@/components/DashboardRecentSessions'
 
 interface TimeStats {
   totalTime: number
@@ -33,6 +37,8 @@ export default function DashboardPage() {
   const [timeEntryId, setTimeEntryId] = useState<string | null>(null)
   const [isInitializing, setIsInitializing] = useState(true)
   const [authError, setAuthError] = useState<string | null>(null)
+  const [scheduledSessionsCount, setScheduledSessionsCount] = useState(0)
+  const recentSessionsRef = useRef<DashboardRecentSessionsHandle>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -51,9 +57,13 @@ export default function DashboardPage() {
         }
         setIsInitializing(true)
         setAuthError(null)
-        const timeStatsData = await calculateUserTimeStats(user.uid)
+        const [timeStatsData, userSessions] = await Promise.all([
+          calculateUserTimeStats(user.uid),
+          getUserSessions(user.uid),
+        ])
         if (mounted) {
           setTimeStats(timeStatsData)
+          setScheduledSessionsCount(userSessions.filter((session) => session.status === 'waiting').length)
         }
       } catch (error) {
         if (mounted) {
@@ -229,6 +239,20 @@ export default function DashboardPage() {
                     </span>
                   </div>
                 )}
+                <button
+                  type="button"
+                  onClick={() => recentSessionsRef.current?.openOpenSessionsDialog('waiting')}
+                  aria-label="View waiting lobby sessions"
+                  className="flex w-full items-center justify-between gap-3 rounded-lg text-left text-sm text-gray-900 dark:text-white transition-colors hover:bg-gray-50 dark:hover:bg-white/5 -mx-2 px-2 py-1.5 -my-0.5"
+                >
+                  <span className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                    <CalendarClock className="h-4 w-4 flex-shrink-0 text-gray-400 dark:text-gray-500" />
+                    Scheduled sessions
+                  </span>
+                  <span className="font-medium text-gray-900 dark:text-white tabular-nums">
+                    {scheduledSessionsCount}
+                  </span>
+                </button>
               </div>
 
               {/* Actions — pill-shaped buttons */}
@@ -261,7 +285,7 @@ export default function DashboardPage() {
               Continue or restart from your latest sessions. Times reflect when you left the session.
             </p>
             <Card className="rounded-2xl border-0 p-4 sm:p-6 bg-white/90 dark:bg-white/5 shadow-xl shadow-gray-200/50 dark:shadow-none backdrop-blur-sm">
-              <DashboardRecentSessions />
+              <DashboardRecentSessions ref={recentSessionsRef} />
             </Card>
           </section>
           </div>
