@@ -16,6 +16,7 @@ import { deleteCookie } from 'cookies-next';
 import { useRouter } from 'next/navigation';
 import { syncFirebaseAuthCookie } from '@/lib/syncFirebaseAuthCookie';
 import { doc, getDoc, setDoc, Firestore } from 'firebase/firestore';
+import { normalizeWheelFaceOverlays, emptyWheelFaceOverlays } from '@/lib/wheelFaceOverlays';
 
 export interface UserProfile {
   username: string;
@@ -24,6 +25,8 @@ export interface UserProfile {
   avatarUrl: string;
   /** Custom wide image for the dashboard profile card. URL in Storage; Firestore field on `users/{uid}` (rules allow owner writes). */
   bannerUrl: string;
+  /** Optional image URLs layered on single-clock faces (index 0 = clock 1 … index 8 = clock 9). `users/{uid}`. */
+  wheelFaceOverlays: string[];
   preferences: {
     emailNotifications: boolean;
     allowLocationData: boolean;
@@ -49,6 +52,7 @@ const emptyProfileShell = (): UserProfile => ({
   birthdate: '',
   avatarUrl: '',
   bannerUrl: '',
+  wheelFaceOverlays: emptyWheelFaceOverlays(),
   preferences: {
     emailNotifications: true,
     allowLocationData: false,
@@ -89,6 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const profileSnap = await getDoc(profileRef)
 
       let usersBanner: string | undefined
+      let usersWheelOverlays: string[] | undefined
       try {
         const userSettingsSnap = await getDoc(userSettingsRef)
         if (userSettingsSnap.exists()) {
@@ -96,9 +101,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if ('bannerUrl' in d && typeof d.bannerUrl === 'string') {
             usersBanner = d.bannerUrl
           }
+          if ('wheelFaceOverlays' in d) {
+            usersWheelOverlays = normalizeWheelFaceOverlays(d.wheelFaceOverlays)
+          }
         }
       } catch (usersDocErr) {
-        console.warn(`Could not load users/${userId} document (banner may be missing until retry):`, usersDocErr)
+        console.warn(`Could not load users/${userId} document (banner/overlays may be missing until retry):`, usersDocErr)
       }
 
       if (profileSnap.exists()) {
@@ -109,6 +117,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           birthdate: raw.birthdate ?? '',
           avatarUrl: raw.avatarUrl ?? '',
           bannerUrl: usersBanner !== undefined ? usersBanner : (raw.bannerUrl ?? ''),
+          wheelFaceOverlays:
+            usersWheelOverlays !== undefined
+              ? usersWheelOverlays
+              : normalizeWheelFaceOverlays((raw as { wheelFaceOverlays?: unknown }).wheelFaceOverlays),
           preferences: {
             emailNotifications: raw.preferences?.emailNotifications ?? true,
             allowLocationData: raw.preferences?.allowLocationData ?? false,
@@ -127,6 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           birthdate: '',
           avatarUrl: '',
           bannerUrl: usersBanner !== undefined ? usersBanner : '',
+          wheelFaceOverlays: usersWheelOverlays !== undefined ? usersWheelOverlays : emptyWheelFaceOverlays(),
           preferences: {
             emailNotifications: true,
             allowLocationData: false,

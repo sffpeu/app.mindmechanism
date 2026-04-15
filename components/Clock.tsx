@@ -487,7 +487,7 @@ export default function Clock({
   const [pausedTimeRemaining, setPausedTimeRemaining] = useState<number | null>(null);
   const [initialDuration, setInitialDuration] = useState<number | null>(null);
   const [sessionElapsedForSatellite, setSessionElapsedForSatellite] = useState<number>(0);
-  const { user } = useAuth() as { user: { uid: string } | null }
+  const { user, profile } = useAuth()
   const { location } = useLocation();
 
   // Add new state for auto-save
@@ -1075,6 +1075,10 @@ export default function Clock({
 
   // Update renderSingleClock to make background transparent
   const renderSingleClock = () => {
+    const wheelOverlayUrl =
+      !isMultiView && !isMultiView2 && profile?.wheelFaceOverlays?.[id]?.trim()
+        ? profile.wheelFaceOverlays[id].trim()
+        : undefined
     const transitionConfig = getTransitionConfig();
     const clockColor = id === 9 ? null : hexToRgb(dotColors[id].replace('bg-[', '').replace(']', ''));
     const shadowStyle = clockColor ? {
@@ -1148,6 +1152,13 @@ export default function Clock({
                 priority
                 loading="eager"
               />
+              {wheelOverlayUrl ? (
+                <img
+                  src={wheelOverlayUrl}
+                  alt=""
+                  className="absolute inset-0 h-full w-full rounded-full object-cover dark:invert pointer-events-none z-[1]"
+                />
+              ) : null}
             </div>
           </motion.div>
         </div>

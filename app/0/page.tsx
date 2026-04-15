@@ -30,6 +30,7 @@ import {
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords } from '@/lib/glossary'
 import Clock, { defaultSatelliteConfigs } from '@/components/Clock'
+import { ClockWheelFaceOverlay } from '@/components/ClockWheelFaceOverlay'
 import { ClockPageSatelliteLayer } from '@/components/ClockPageSatelliteLayer'
 import { LeaveWarning } from '@/components/LeaveWarning'
 import { SessionTimer } from '@/components/SessionTimer'
@@ -826,6 +827,7 @@ function NodesPageContent() {
                     priority
                     loading="eager"
                   />
+                  <ClockWheelFaceOverlay clockId={0} />
                 </div>
               </motion.div>
             </div>

@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { PersonalInfoSettings } from './PersonalInfoSettings'
 import { SecuritySettings } from './SecuritySettings'
 import { ThemeSettings } from './ThemeSettings'
+import { WheelFacesSettings } from './WheelFacesSettings'
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
 import { useState } from 'react'
@@ -45,6 +46,7 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
 
           <div className="p-4 space-y-3">
             <PersonalInfoSettings onChangesPending={setHasChanges} />
+            <WheelFacesSettings />
             <SecuritySettings />
             <ThemeSettings />
           </div>

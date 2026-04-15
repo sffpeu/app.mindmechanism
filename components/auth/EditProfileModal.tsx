@@ -15,6 +15,7 @@ import { User, Bell, Globe, Shield, Clock, Mail, Link, MapPin, Calendar, Image a
 import { Textarea } from '@/components/ui/textarea'
 import Image from 'next/image'
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { emptyWheelFaceOverlays } from '@/lib/wheelFaceOverlays'
 
 interface UserProfile {
   username: string;
@@ -22,6 +23,7 @@ interface UserProfile {
   birthdate: string;
   avatarUrl: string;
   bannerUrl: string;
+  wheelFaceOverlays: string[];
   preferences: {
     emailNotifications: boolean;
     allowLocationData: boolean;
@@ -47,6 +49,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
     birthdate: '',
     avatarUrl: '',
     bannerUrl: '',
+    wheelFaceOverlays: emptyWheelFaceOverlays(),
     preferences: {
       emailNotifications: true,
       allowLocationData: false,
