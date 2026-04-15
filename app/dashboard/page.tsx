@@ -10,6 +10,8 @@ import Link from 'next/link'
 import { calculateUserTimeStats } from '@/lib/timeTracking'
 import { startTimeTracking, endTimeTracking } from '@/lib/timeTracking'
 import { getUserSessions } from '@/lib/sessions'
+import { getMyLobbyGroup } from '@/lib/lobbyGroups'
+import { upcomingGatheringsWindow } from '@/lib/lobbySchedule'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -31,6 +33,12 @@ type UpcomingScheduledSession = {
   startsAt: Date
 }
 
+type GroupSessionSummary = {
+  clockId: number
+  durationMinutes: number
+  focusNodeCount: number
+}
+
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
@@ -45,6 +53,9 @@ export default function DashboardPage() {
   const [authError, setAuthError] = useState<string | null>(null)
   const [scheduledSessionsCount, setScheduledSessionsCount] = useState(0)
   const [upcomingScheduledSessions, setUpcomingScheduledSessions] = useState<UpcomingScheduledSession[]>([])
+  const [groupPlannedSessionsCount, setGroupPlannedSessionsCount] = useState(0)
+  const [groupUpcomingSessionsCount, setGroupUpcomingSessionsCount] = useState(0)
+  const [groupSessionSummary, setGroupSessionSummary] = useState<GroupSessionSummary | null>(null)
   const recentSessionsRef = useRef<DashboardRecentSessionsHandle>(null)
 
   useEffect(() => {
@@ -69,6 +80,13 @@ export default function DashboardPage() {
           getUserSessions(user.uid),
         ])
         if (mounted) {
+          let myGroup = null
+          try {
+            myGroup = await getMyLobbyGroup(user.uid)
+          } catch (groupError) {
+            console.error('Failed to load lobby group for dashboard summary:', groupError)
+          }
+
           const now = Date.now()
           const upcoming = userSessions
             .filter((session) => session.status === 'waiting')
@@ -89,6 +107,21 @@ export default function DashboardPage() {
           setTimeStats(timeStatsData)
           setScheduledSessionsCount(userSessions.filter((session) => session.status === 'waiting').length)
           setUpcomingScheduledSessions(upcoming)
+          const plannedCount = myGroup?.scheduled_gatherings?.length ?? 0
+          const upcomingPlannedCount = myGroup
+            ? upcomingGatheringsWindow(myGroup.scheduled_gatherings).totalUpcoming
+            : 0
+          setGroupPlannedSessionsCount(plannedCount)
+          setGroupUpcomingSessionsCount(upcomingPlannedCount)
+          setGroupSessionSummary(
+            myGroup?.session
+              ? {
+                  clockId: myGroup.session.mandala_clock_id,
+                  durationMinutes: myGroup.session.session_duration_minutes,
+                  focusNodeCount: myGroup.session.focus_node_indices.length,
+                }
+              : null
+          )
         }
       } catch (error) {
         if (mounted) {
@@ -300,6 +333,61 @@ export default function DashboardPage() {
               </div>
             </div>
           </Card>
+
+          {/* Session (creator sets for the group) */}
+          <section className="mt-8">
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                  Session (creator sets for the group)
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Planned sessions from your lobby group configuration.
+                </p>
+              </div>
+              <Button asChild type="button" variant="outline" size="sm" className="rounded-full">
+                <Link href="/lobby">Manage in Lobby</Link>
+              </Button>
+            </div>
+            <Card className="rounded-2xl border-0 p-4 sm:p-6 bg-white/90 dark:bg-white/5 shadow-xl shadow-gray-200/50 dark:shadow-none backdrop-blur-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="rounded-xl border border-black/5 dark:border-white/10 bg-white/70 dark:bg-white/[0.03] px-3 py-3">
+                  <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Planned sessions</p>
+                  <p className="text-2xl font-semibold text-gray-900 dark:text-white tabular-nums mt-1">
+                    {groupPlannedSessionsCount}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-black/5 dark:border-white/10 bg-white/70 dark:bg-white/[0.03] px-3 py-3">
+                  <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Upcoming planned</p>
+                  <p className="text-2xl font-semibold text-gray-900 dark:text-white tabular-nums mt-1">
+                    {groupUpcomingSessionsCount}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 space-y-2 text-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-gray-500 dark:text-gray-400">Mandala</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {groupSessionSummary
+                      ? (clockTitles[groupSessionSummary.clockId] ?? `Clock ${groupSessionSummary.clockId}`)
+                      : 'Not set'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-gray-500 dark:text-gray-400">Session length</span>
+                  <span className="font-medium text-gray-900 dark:text-white tabular-nums">
+                    {groupSessionSummary ? `${groupSessionSummary.durationMinutes} min` : 'Not set'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-gray-500 dark:text-gray-400">Focus nodes</span>
+                  <span className="font-medium text-gray-900 dark:text-white tabular-nums">
+                    {groupSessionSummary ? groupSessionSummary.focusNodeCount : 0}
+                  </span>
+                </div>
+              </div>
+            </Card>
+          </section>
 
           {/* Upcoming scheduled sessions */}
           <section className="mt-8">
