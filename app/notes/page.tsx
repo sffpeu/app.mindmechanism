@@ -457,50 +457,59 @@ export default function NotesPage() {
     <div className="h-full overflow-hidden flex flex-col bg-gray-50 dark:bg-black/95">
       <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0 flex items-start gap-2">
-              <Button
+          <div className="mb-6 flex flex-col gap-4">
+            <div className="min-w-0">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Notes</h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-xl">
+                Write with optional session and environment context—saved notes stay easy to scan in the list.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-stretch sm:items-center gap-3 sm:justify-end">
+              <button
                 type="button"
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 shrink-0 mt-0.5 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                 onClick={() => setSavedNotesPanelOpen((open) => !open)}
                 aria-expanded={savedNotesPanelOpen}
                 aria-controls={savedNotesPanelOpen ? 'notes-saved-list-panel' : undefined}
                 id="notes-saved-list-toggle"
+                title={savedNotesPanelOpen ? 'Hide the saved notes list' : 'Show the saved notes list'}
                 aria-label={savedNotesPanelOpen ? 'Hide saved notes panel' : 'Show saved notes panel'}
-                title={savedNotesPanelOpen ? 'Hide saved notes' : 'Show saved notes'}
-              >
-                {savedNotesPanelOpen ? (
-                  <ChevronsLeft className="h-5 w-5" aria-hidden />
-                ) : (
-                  <ChevronsRight className="h-5 w-5" aria-hidden />
-                )}
-              </Button>
-              <div className="min-w-0">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Notes</h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-xl">
-                  Write with optional session and environment context—saved notes stay easy to scan in the list.
-                </p>
-              </div>
-            </div>
-            {(!selectedNote || isEditing) && (
-              <button
-                type="button"
-                onClick={handleSaveNote}
-                disabled={!canSave}
                 className={cn(
-                  'inline-flex items-center gap-2 shrink-0 self-start sm:self-auto',
-                  'text-sm font-semibold text-green-600 dark:text-green-400',
-                  'hover:text-green-700 dark:hover:text-green-300',
-                  'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-green-600 dark:disabled:hover:text-green-400',
-                  'transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500/40 focus-visible:ring-offset-2 rounded-md px-1 py-1 -mr-1'
+                  'inline-flex items-center justify-center gap-3 rounded-xl border-2 px-5 py-3 sm:min-h-[3rem] min-w-0 flex-1 sm:flex-initial sm:min-w-[220px]',
+                  'text-base font-semibold tracking-tight shadow-sm transition-colors',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                  savedNotesPanelOpen
+                    ? 'border-slate-300 bg-white text-slate-900 hover:bg-slate-50 focus-visible:ring-slate-400/60 dark:border-white/20 dark:bg-black/50 dark:text-white dark:hover:bg-black/70'
+                    : 'border-blue-400/80 bg-blue-600 text-white hover:bg-blue-700 focus-visible:ring-blue-500/60 dark:border-blue-400/50 dark:bg-blue-600 dark:hover:bg-blue-500'
                 )}
               >
-                <Save className="h-5 w-5" aria-hidden />
-                Save
+                <ClipboardList className="h-6 w-6 shrink-0 opacity-90" aria-hidden />
+                <span className="text-left leading-snug">
+                  {savedNotesPanelOpen ? 'Hide saved notes' : 'Show saved notes'}
+                </span>
+                {savedNotesPanelOpen ? (
+                  <ChevronsLeft className="h-6 w-6 shrink-0 opacity-90" aria-hidden />
+                ) : (
+                  <ChevronsRight className="h-6 w-6 shrink-0 opacity-90" aria-hidden />
+                )}
               </button>
-            )}
+              {(!selectedNote || isEditing) && (
+                <button
+                  type="button"
+                  onClick={handleSaveNote}
+                  disabled={!canSave}
+                  className={cn(
+                    'inline-flex items-center justify-center gap-2 shrink-0 rounded-xl border-2 border-transparent px-5 py-3 sm:min-h-[3rem]',
+                    'text-base font-semibold text-green-600 dark:text-green-400',
+                    'hover:text-green-700 dark:hover:text-green-300',
+                    'disabled:opacity-40 disabled:cursor-not-allowed',
+                    'transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500/40 focus-visible:ring-offset-2'
+                  )}
+                >
+                  <Save className="h-6 w-6" aria-hidden />
+                  Save
+                </button>
+              )}
+            </div>
           </div>
           <div
             className={cn(
