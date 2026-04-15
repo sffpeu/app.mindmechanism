@@ -18,9 +18,12 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
   const [hasChanges, setHasChanges] = useState(false)
 
   const handleSave = () => {
-    // Trigger save in child components
+    const onComplete = () => {
+      setHasChanges(false)
+      onClose()
+    }
+    window.addEventListener('settings-save-complete', onComplete, { once: true })
     window.dispatchEvent(new Event('settings-save'))
-    onClose()
   }
 
   const handleCancel = () => {

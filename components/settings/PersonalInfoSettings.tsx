@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label'
 import { User, Camera, AlertCircle, ImageIcon } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { getAuth, updateProfile } from 'firebase/auth'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import { db, getFirebaseStorage } from '@/lib/firebase'
 import { FirebaseError } from 'firebase/app'
 import { doc, setDoc, Firestore } from 'firebase/firestore'
@@ -44,6 +44,11 @@ interface PersonalInfoSettingsProps {
   onChangesPending?: (hasChanges: boolean) => void
 }
 
+type PendingBannerState = {
+  blob: Blob
+  previewUrl: string
+}
+
 export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsProps) {
   const { user, profile, refreshProfile, mergeProfilePatch } = useAuth()
   const [displayName, setDisplayName] = useState(user?.displayName || '')
@@ -53,33 +58,99 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
   const bannerInputRef = useRef<HTMLInputElement>(null)
   const [bannerFocalOpen, setBannerFocalOpen] = useState(false)
   const [pendingBannerFile, setPendingBannerFile] = useState<File | null>(null)
+  const [pendingBanner, setPendingBanner] = useState<PendingBannerState | null>(null)
+  const [pendingBannerRemove, setPendingBannerRemove] = useState(false)
   const auth = getAuth()
 
   useEffect(() => {
-    const hasChanges = displayName.trim() !== (user?.displayName || '')
-    onChangesPending?.(hasChanges)
-  }, [displayName, user?.displayName, onChangesPending])
+    setDisplayName(user?.displayName || '')
+  }, [user?.uid, user?.displayName])
+
+  useEffect(() => {
+    const nameChanged = displayName.trim() !== (user?.displayName || '')
+    const bannerDirty = pendingBanner !== null || pendingBannerRemove
+    onChangesPending?.(nameChanged || bannerDirty)
+  }, [displayName, user?.displayName, pendingBanner, pendingBannerRemove, onChangesPending])
 
   useEffect(() => {
     const handleSave = async () => {
-      if (!auth.currentUser || displayName.trim() === user?.displayName) return
-      setIsUpdating(true)
-      setError(null)
-
       try {
-        await updateProfile(auth.currentUser, {
-          displayName: displayName.trim()
-        })
-      } catch (err) {
-        setError('Failed to update display name. Please try again.')
-        console.error('Error updating profile:', err)
+        if (!auth.currentUser) return
+        const nameChanged = displayName.trim() !== (user?.displayName || '')
+        const bannerDirty = pendingBanner !== null || pendingBannerRemove
+        if (!nameChanged && !bannerDirty) return
+
+        if (bannerDirty && !db) {
+          setError('Could not save banner: database not ready.')
+          return
+        }
+
+        setIsUpdating(true)
+        setError(null)
+
+        try {
+          if (nameChanged) {
+            await updateProfile(auth.currentUser, {
+              displayName: displayName.trim(),
+            })
+          }
+
+          const uid = auth.currentUser.uid
+
+          if (pendingBanner && db) {
+            const storage = getFirebaseStorage()
+            const bannerRef = ref(storage, `profile-banners/${uid}`)
+            await uploadBytes(bannerRef, pendingBanner.blob, {
+              contentType: pendingBanner.blob.type || 'image/jpeg',
+            })
+            const bannerUrl = await getDownloadURL(bannerRef)
+            await setDoc(
+              doc(db as Firestore, 'users', uid),
+              { bannerUrl },
+              { merge: true }
+            )
+            URL.revokeObjectURL(pendingBanner.previewUrl)
+            setPendingBanner(null)
+            setPendingBannerRemove(false)
+            await refreshProfile()
+            mergeProfilePatch({ bannerUrl })
+          } else if (pendingBannerRemove && db) {
+            try {
+              await deleteObject(ref(getFirebaseStorage(), `profile-banners/${uid}`))
+            } catch {
+              /* object may not exist */
+            }
+            await setDoc(
+              doc(db as Firestore, 'users', uid),
+              { bannerUrl: '' },
+              { merge: true }
+            )
+            setPendingBannerRemove(false)
+            await refreshProfile()
+            mergeProfilePatch({ bannerUrl: '' })
+          }
+        } catch (err) {
+          console.error('Settings save failed:', err)
+          if (pendingBanner || pendingBannerRemove) {
+            setError(bannerUploadErrorMessage(err))
+          } else {
+            setError('Failed to update display name. Please try again.')
+          }
+        } finally {
+          setIsUpdating(false)
+        }
       } finally {
-        setIsUpdating(false)
+        window.dispatchEvent(new Event('settings-save-complete'))
       }
     }
 
     const handleCancel = () => {
       setDisplayName(user?.displayName || '')
+      if (pendingBanner?.previewUrl) {
+        URL.revokeObjectURL(pendingBanner.previewUrl)
+      }
+      setPendingBanner(null)
+      setPendingBannerRemove(false)
     }
 
     window.addEventListener('settings-save', handleSave)
@@ -89,7 +160,15 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
       window.removeEventListener('settings-save', handleSave)
       window.removeEventListener('settings-cancel', handleCancel)
     }
-  }, [auth.currentUser, displayName, user?.displayName])
+  }, [
+    auth.currentUser,
+    displayName,
+    user?.displayName,
+    pendingBanner,
+    pendingBannerRemove,
+    refreshProfile,
+    mergeProfilePatch,
+  ])
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!auth.currentUser || !event.target.files?.[0]) return
@@ -114,68 +193,52 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
     }
   }
 
-  const performBannerUpload = async (file: File, focal: BannerFocalPoint) => {
-    if (!auth.currentUser || !db) return
-    setIsUpdating(true)
-    setError(null)
-
-    try {
-      const processed = await processBannerImageForUpload(file, focal)
-      const storage = getFirebaseStorage()
-      const bannerRef = ref(storage, `profile-banners/${auth.currentUser.uid}`)
-      await uploadBytes(bannerRef, processed, {
-        contentType: processed.type || 'image/jpeg',
-      })
-      const bannerUrl = await getDownloadURL(bannerRef)
-
-      await setDoc(
-        doc(db as Firestore, 'users', auth.currentUser.uid),
-        { bannerUrl },
-        { merge: true }
-      )
-      await refreshProfile()
-      mergeProfilePatch({ bannerUrl })
-    } catch (err) {
-      console.error('Error updating profile banner:', err)
-      setError(bannerUploadErrorMessage(err))
-    } finally {
-      setIsUpdating(false)
-    }
-  }
-
   const handleBannerFileChosen = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     event.target.value = ''
     if (!file || !auth.currentUser || !db) return
+    setPendingBannerRemove(false)
     setPendingBannerFile(file)
     setBannerFocalOpen(true)
   }
 
   const handleBannerFocalConfirm = (focal: BannerFocalPoint) => {
     const file = pendingBannerFile
+    setBannerFocalOpen(false)
     setPendingBannerFile(null)
-    if (file) void performBannerUpload(file, focal)
+    if (!file) return
+
+    void (async () => {
+      setIsUpdating(true)
+      setError(null)
+      try {
+        const blob = await processBannerImageForUpload(file, focal)
+        const previewUrl = URL.createObjectURL(blob)
+        setPendingBanner((prev) => {
+          if (prev?.previewUrl) URL.revokeObjectURL(prev.previewUrl)
+          return { blob, previewUrl }
+        })
+        setPendingBannerRemove(false)
+      } catch (err) {
+        console.error('Error preparing profile banner:', err)
+        setError(bannerUploadErrorMessage(err))
+      } finally {
+        setIsUpdating(false)
+      }
+    })()
   }
 
-  const handleBannerRemove = async () => {
-    if (!auth.currentUser || !db) return
-    setIsUpdating(true)
-    setError(null)
-    try {
-      await setDoc(
-        doc(db as Firestore, 'users', auth.currentUser.uid),
-        { bannerUrl: '' },
-        { merge: true }
-      )
-      await refreshProfile()
-      mergeProfilePatch({ bannerUrl: '' })
-    } catch (err) {
-      setError('Failed to remove profile banner. Please try again.')
-      console.error('Error removing profile banner:', err)
-    } finally {
-      setIsUpdating(false)
+  const handleBannerRemoveClick = () => {
+    if (pendingBanner?.previewUrl) {
+      URL.revokeObjectURL(pendingBanner.previewUrl)
     }
+    setPendingBanner(null)
+    setPendingBannerRemove(true)
   }
+
+  const bannerPreviewSrc =
+    pendingBanner?.previewUrl ??
+    (!pendingBannerRemove && profile?.bannerUrl?.trim() ? profile.bannerUrl.trim() : null)
 
   return (
     <Card className="p-4 bg-white/50 dark:bg-black/50">
@@ -246,12 +309,13 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
       <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
         <Label className="text-sm text-gray-700 dark:text-gray-300">Profile banner</Label>
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          Shown at the top of your dashboard profile card. After you choose a photo, set horizontal and vertical focus so the 3:1 crop matches what you want.
+          Shown at the top of your dashboard profile card. Choose a photo and crop position, then click{' '}
+          <span className="font-medium text-gray-600 dark:text-gray-300">Save changes</span> in settings to apply it.
         </p>
         <div className="relative rounded-xl overflow-hidden h-24 sm:h-28 border border-gray-200 dark:border-gray-700 bg-gradient-to-br from-slate-800 via-indigo-900/95 to-violet-900 dark:from-slate-900 dark:via-indigo-950 dark:to-violet-950">
-          {profile?.bannerUrl?.trim() ? (
+          {bannerPreviewSrc ? (
             <img
-              src={profile.bannerUrl.trim()}
+              src={bannerPreviewSrc}
               alt=""
               className="absolute inset-0 h-full w-full object-cover"
             />
@@ -261,14 +325,24 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
             aria-hidden
           />
           <div className="absolute bottom-2 right-2 flex items-center gap-2">
-            {profile?.bannerUrl?.trim() ? (
+            {(profile?.bannerUrl?.trim() || pendingBanner) && !pendingBannerRemove ? (
               <button
                 type="button"
-                onClick={handleBannerRemove}
+                onClick={handleBannerRemoveClick}
                 disabled={isUpdating}
                 className="text-xs px-2.5 py-1 rounded-md bg-white/90 dark:bg-gray-900/90 text-gray-800 dark:text-gray-200 border border-gray-200/80 dark:border-gray-600 hover:bg-white dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
               >
                 Remove
+              </button>
+            ) : null}
+            {pendingBannerRemove ? (
+              <button
+                type="button"
+                onClick={() => setPendingBannerRemove(false)}
+                disabled={isUpdating}
+                className="text-xs px-2.5 py-1 rounded-md bg-white/90 dark:bg-gray-900/90 text-gray-800 dark:text-gray-200 border border-gray-200/80 dark:border-gray-600 hover:bg-white dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+              >
+                Undo remove
               </button>
             ) : null}
             <button
@@ -278,7 +352,7 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
               className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md bg-white/90 dark:bg-gray-900/90 text-gray-800 dark:text-gray-200 border border-gray-200/80 dark:border-gray-600 hover:bg-white dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
             >
               <ImageIcon className="h-3.5 w-3.5" />
-              {profile?.bannerUrl?.trim() ? 'Change' : 'Upload'}
+              {profile?.bannerUrl?.trim() || pendingBanner ? 'Change' : 'Upload'}
             </button>
             <input
               type="file"
@@ -295,7 +369,9 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
         open={bannerFocalOpen}
         onOpenChange={(open) => {
           setBannerFocalOpen(open)
-          if (!open) setPendingBannerFile(null)
+          if (!open) {
+            setPendingBannerFile(null)
+          }
         }}
         file={pendingBannerFile}
         onConfirm={handleBannerFocalConfirm}
