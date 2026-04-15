@@ -10,7 +10,7 @@ import Link from 'next/link'
 import { calculateUserTimeStats } from '@/lib/timeTracking'
 import { startTimeTracking, endTimeTracking } from '@/lib/timeTracking'
 import { getUserSessions } from '@/lib/sessions'
-import { getMyLobbyGroup } from '@/lib/lobbyGroups'
+import { getMyLobbyGroup, type LobbyGroup } from '@/lib/lobbyGroups'
 import { upcomingGatheringsWindow } from '@/lib/lobbySchedule'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
@@ -37,6 +37,22 @@ type GroupSessionSummary = {
   clockId: number
   durationMinutes: number
   focusNodeCount: number
+}
+
+function lobbyPlanPanelState(myGroup: LobbyGroup | null) {
+  return {
+    plannedCount: myGroup?.scheduled_gatherings?.length ?? 0,
+    upcomingPlannedCount: myGroup
+      ? upcomingGatheringsWindow(myGroup.scheduled_gatherings).totalUpcoming
+      : 0,
+    groupSessionSummary: myGroup?.session
+      ? {
+          clockId: myGroup.session.mandala_clock_id,
+          durationMinutes: myGroup.session.session_duration_minutes,
+          focusNodeCount: myGroup.session.focus_node_indices.length,
+        }
+      : null,
+  }
 }
 
 export default function DashboardPage() {
@@ -107,21 +123,10 @@ export default function DashboardPage() {
           setTimeStats(timeStatsData)
           setScheduledSessionsCount(userSessions.filter((session) => session.status === 'waiting').length)
           setUpcomingScheduledSessions(upcoming)
-          const plannedCount = myGroup?.scheduled_gatherings?.length ?? 0
-          const upcomingPlannedCount = myGroup
-            ? upcomingGatheringsWindow(myGroup.scheduled_gatherings).totalUpcoming
-            : 0
-          setGroupPlannedSessionsCount(plannedCount)
-          setGroupUpcomingSessionsCount(upcomingPlannedCount)
-          setGroupSessionSummary(
-            myGroup?.session
-              ? {
-                  clockId: myGroup.session.mandala_clock_id,
-                  durationMinutes: myGroup.session.session_duration_minutes,
-                  focusNodeCount: myGroup.session.focus_node_indices.length,
-                }
-              : null
-          )
+          const lobbyPanel = lobbyPlanPanelState(myGroup)
+          setGroupPlannedSessionsCount(lobbyPanel.plannedCount)
+          setGroupUpcomingSessionsCount(lobbyPanel.upcomingPlannedCount)
+          setGroupSessionSummary(lobbyPanel.groupSessionSummary)
         }
       } catch (error) {
         if (mounted) {
@@ -137,6 +142,31 @@ export default function DashboardPage() {
       mounted = false
     }
   }, [user?.uid, authLoading, router])
+
+  useEffect(() => {
+    if (authLoading || !user?.uid) return
+
+    const refreshLobbyPanel = () => {
+      void (async () => {
+        try {
+          const myGroup = await getMyLobbyGroup(user.uid)
+          const lobbyPanel = lobbyPlanPanelState(myGroup)
+          setGroupPlannedSessionsCount(lobbyPanel.plannedCount)
+          setGroupUpcomingSessionsCount(lobbyPanel.upcomingPlannedCount)
+          setGroupSessionSummary(lobbyPanel.groupSessionSummary)
+        } catch (e) {
+          console.error('Lobby panel refresh failed:', e)
+        }
+      })()
+    }
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') refreshLobbyPanel()
+    }
+
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
+  }, [user?.uid, authLoading])
 
   useEffect(() => {
     let entryId: string | null = null

@@ -202,6 +202,26 @@ function isFresh(createdAt: Timestamp): boolean {
   return Date.now() - createdAt.toMillis() < LOBBY_GROUP_TTL_MS
 }
 
+/** Map a `lobby_groups` document where the user is a member (no TTL filter — used for “my group” reads). */
+function lobbyGroupFromFirestoreDoc(docId: string, data: Record<string, unknown>): LobbyGroup | null {
+  const created_at = data.created_at as Timestamp | undefined
+  if (!created_at) return null
+  const member_uids = Array.isArray(data.member_uids)
+    ? (data.member_uids as string[]).filter((u) => typeof u === 'string')
+    : []
+  const friends_code = typeof data.friends_code === 'string' ? data.friends_code : null
+  const row = data as Record<string, unknown>
+  return {
+    id: docId,
+    member_uids,
+    created_at,
+    friends_code,
+    member_cap: memberCapFromLobbyData(row, friends_code),
+    session: sessionFromFirestoreData(row),
+    scheduled_gatherings: parseScheduledGatheringsFromFirestore(row),
+  }
+}
+
 export async function listLobbyGroups(): Promise<LobbyGroup[]> {
   if (typeof window !== 'undefined') {
     const fromApi = await fetchLobbyGroupsViaApi()
@@ -241,7 +261,10 @@ export async function getMyLobbyGroup(userId: string): Promise<LobbyGroup | null
   if (typeof window !== 'undefined') {
     const fromApi = await fetchLobbyGroupsViaApi()
     if (fromApi !== null) {
-      return fromApi.find((g) => g.member_uids.includes(userId)) ?? null
+      const match = fromApi.find((g) => g.member_uids.includes(userId))
+      if (match) return match
+      // GET /api/lobby/groups omits TTL-expired groups; fall through to a direct read so
+      // schedule + session config still resolve for members of older groups.
     }
   }
 
@@ -255,23 +278,8 @@ export async function getMyLobbyGroup(userId: string): Promise<LobbyGroup | null
   const snapshot = await getDocs(q)
   if (snapshot.empty) return null
   const d = snapshot.docs[0]
-  const data = d.data()
-  const member_uids = Array.isArray(data.member_uids)
-    ? (data.member_uids as string[]).filter((u) => typeof u === 'string')
-    : []
-  const created_at = data.created_at as Timestamp
-  if (!created_at || !isFresh(created_at)) return null
-  const friends_code = typeof data.friends_code === 'string' ? data.friends_code : null
-  const row = data as Record<string, unknown>
-  return {
-    id: d.id,
-    member_uids,
-    created_at,
-    friends_code,
-    member_cap: memberCapFromLobbyData(row, friends_code),
-    session: sessionFromFirestoreData(row),
-    scheduled_gatherings: parseScheduledGatheringsFromFirestore(row),
-  }
+  const data = d.data() as Record<string, unknown>
+  return lobbyGroupFromFirestoreDoc(d.id, data)
 }
 
 /** Create a new solo group. Leaves any non-solo group first. */
