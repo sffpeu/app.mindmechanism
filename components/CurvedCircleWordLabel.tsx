@@ -1,6 +1,7 @@
 'use client'
 
 import { useId, useMemo } from 'react'
+import { motion } from 'framer-motion'
 
 const CX = 50
 const CY = 50
@@ -49,6 +50,8 @@ export type CurvedCircleWordLabelProps = {
   isHovered?: boolean
   onHoverIn?: () => void
   onHoverOut?: () => void
+  /** Gentle opacity pulse when this node has stayed selected longer than the page threshold (e.g. 1 min). */
+  longActivePulse?: boolean
   className?: string
 }
 
@@ -66,6 +69,7 @@ export function CurvedCircleWordLabel({
   isHovered = false,
   onHoverIn,
   onHoverOut,
+  longActivePulse = false,
   className,
 }: CurvedCircleWordLabelProps) {
   const reactId = useId()
@@ -116,19 +120,28 @@ export function CurvedCircleWordLabel({
         />
       )}
 
-      <text
+      <motion.text
         filter={`url(#${filterId})`}
         className="fill-current font-bold uppercase tracking-wide"
         style={{
           fontSize: fs,
           pointerEvents: 'none',
-          opacity: isHovered && interactive ? 1 : interactive ? 0.96 : 1,
         }}
+        animate={
+          longActivePulse
+            ? { opacity: [0.82, 1, 0.82] }
+            : { opacity: isHovered && interactive ? 1 : interactive ? 0.96 : 1 }
+        }
+        transition={
+          longActivePulse
+            ? { duration: 2.4, repeat: Infinity, ease: 'easeInOut' }
+            : { duration: 0.2 }
+        }
       >
         <textPath href={`#${pathId}`} startOffset="50%" textAnchor="middle" method="align" spacing="auto">
           {display}
         </textPath>
-      </text>
+      </motion.text>
     </svg>
   )
 }

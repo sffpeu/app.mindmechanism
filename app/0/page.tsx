@@ -42,6 +42,7 @@ import DotNavigation from '@/components/DotNavigation'
 import { clockTitles } from '@/lib/clockTitles'
 import { DEFAULT_WORDS_BY_CLOCK } from '@/lib/defaultWordsByClock'
 import { cn } from '@/lib/utils'
+import { useMultiNodeSelection } from '@/lib/useMultiNodeSelection'
 import { CurvedCircleWordLabel } from '@/components/CurvedCircleWordLabel'
 import { getSession } from '@/lib/sessions'
 
@@ -111,7 +112,7 @@ function NodesPageContent() {
     }
     return true
   })
-  const [selectedNodeIndex, setSelectedNodeIndex] = useState<number | null>(null)
+  const { toggleNode, isNodeSelected, shouldLongPulse } = useMultiNodeSelection()
   const [hoveredNodeIndex, setHoveredNodeIndex] = useState<number | null>(null)
   const [showWords, setShowWords] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -370,10 +371,6 @@ function NodesPageContent() {
     }
     loadGlossaryWords()
   }, [])
-
-  const handleNodeClick = (index: number) => {
-    setSelectedNodeIndex(selectedNodeIndex === index ? null : index)
-  }
 
   // Sentiment: very light fill for pill (hover/selected), outline for card
   const getSentimentStyles = (rating: '+' | '~' | '-' | undefined) => {
@@ -842,7 +839,7 @@ function NodesPageContent() {
                     const nodeRadius = 55 // Increased from 48 to move nodes further out
                     const x = 50 + nodeRadius * Math.cos(radians)
                     const y = 50 + nodeRadius * Math.sin(radians)
-                    const isSelected = selectedNodeIndex === index
+                    const isSelected = isNodeSelected(index)
                     const word = customWords[index] || defaultWords[index]
 
                     const nodeStyle = {
@@ -864,7 +861,7 @@ function NodesPageContent() {
                             transform: 'translate(-50%, -50%)',
                             zIndex: nodeStyle.zIndex,
                           }}
-                          onClick={() => handleNodeClick(index)}
+                          onClick={() => toggleNode(index)}
                           onMouseEnter={() => setHoveredNodeIndex(index)}
                           onMouseLeave={() => setHoveredNodeIndex(null)}
                         >
@@ -882,10 +879,10 @@ function NodesPageContent() {
                         </ClockFocusNodeAppear>
                         {showWords && isSelected && word && (
                           <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 900 }}>
-                            <AnimatePresence mode="wait">
+                            <AnimatePresence>
                               {selectedWord === word ? null : (
                                 <motion.div
-                                  key="pill"
+                                  key={`word-${index}`}
                                   className="absolute inset-0"
                                   initial={{ opacity: 0 }}
                                   animate={{ opacity: 1 }}
@@ -896,6 +893,7 @@ function NodesPageContent() {
                                     centerAngleDeg={angle}
                                     radiusPercent={nodeRadius + 5}
                                     isSelected={isSelected}
+                                    longActivePulse={shouldLongPulse(index)}
                                     interactive
                                     isHovered={pillHoveredWord === word}
                                     onHoverIn={() => setPillHoveredWord(word)}
