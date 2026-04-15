@@ -7,10 +7,37 @@ import { Label } from '@/components/ui/label'
 import { User, Camera, AlertCircle, ImageIcon } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { getAuth, updateProfile } from 'firebase/auth'
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { db } from '@/lib/firebase'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { db, getFirebaseStorage } from '@/lib/firebase'
+import { FirebaseError } from 'firebase/app'
 import { doc, setDoc, Firestore } from 'firebase/firestore'
 import { processBannerImageForUpload } from '@/lib/cropBannerImage'
+
+function bannerUploadErrorMessage(err: unknown): string {
+  if (err instanceof FirebaseError) {
+    if (err.code === 'storage/unauthorized') {
+      return 'Upload was denied. Sign out and sign in again, then retry.'
+    }
+    if (err.code === 'storage/unauthenticated') {
+      return 'You must be signed in to upload a banner.'
+    }
+    if (err.code === 'permission-denied') {
+      return 'Could not save the banner to your profile (permission denied). If this continues, contact support.'
+    }
+    if (err.code.startsWith('storage/')) {
+      return 'Could not upload the image. Check your connection and try again.'
+    }
+  }
+  if (err instanceof Error) {
+    if (/load image|dimensions|encode banner|processed/i.test(err.message)) {
+      return 'This image could not be processed. Try a standard JPG or PNG photo.'
+    }
+    if (err.message.includes('Firebase is not ready')) {
+      return err.message
+    }
+  }
+  return 'Failed to update profile banner. Please try again.'
+}
 
 interface PersonalInfoSettingsProps {
   onChangesPending?: (hasChanges: boolean) => void
@@ -24,7 +51,6 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
   const fileInputRef = useRef<HTMLInputElement>(null)
   const bannerInputRef = useRef<HTMLInputElement>(null)
   const auth = getAuth()
-  const storage = getStorage()
 
   useEffect(() => {
     const hasChanges = displayName.trim() !== (user?.displayName || '')
@@ -69,6 +95,7 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
 
     try {
       const file = event.target.files[0]
+      const storage = getFirebaseStorage()
       const imageRef = ref(storage, `profile-images/${auth.currentUser.uid}`)
       await uploadBytes(imageRef, file)
       const photoURL = await getDownloadURL(imageRef)
@@ -92,8 +119,11 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
     try {
       const file = event.target.files[0]
       const processed = await processBannerImageForUpload(file)
+      const storage = getFirebaseStorage()
       const bannerRef = ref(storage, `profile-banners/${auth.currentUser.uid}`)
-      await uploadBytes(bannerRef, processed, { contentType: 'image/jpeg' })
+      await uploadBytes(bannerRef, processed, {
+        contentType: processed.type || 'image/jpeg',
+      })
       const bannerUrl = await getDownloadURL(bannerRef)
 
       await setDoc(
@@ -103,8 +133,8 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
       )
       await refreshProfile()
     } catch (err) {
-      setError('Failed to update profile banner. Please try again.')
       console.error('Error updating profile banner:', err)
+      setError(bannerUploadErrorMessage(err))
     } finally {
       setIsUpdating(false)
       event.target.value = ''

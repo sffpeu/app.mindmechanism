@@ -1,4 +1,5 @@
-import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
+import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
+import { getStorage, type FirebaseStorage } from 'firebase/storage';
 import { getAuth, type Auth } from 'firebase/auth';
 import { 
   getFirestore, 
@@ -188,6 +189,17 @@ export function waitForFirebaseAuth(timeoutMs = 20000): Promise<Auth> {
     }
     tick()
   })
+}
+
+/** Use this inside handlers instead of `getStorage()` at module scope so the default app exists first. */
+export function getFirebaseStorage(): FirebaseStorage {
+  if (!isBrowser) {
+    throw new Error('Firebase Storage is only available in the browser.')
+  }
+  if (getApps().length === 0) {
+    throw new Error('Firebase is not ready. Refresh the page and try again.')
+  }
+  return getStorage(getApp())
 }
 
 export { app, auth, db };
