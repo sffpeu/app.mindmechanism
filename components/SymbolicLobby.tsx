@@ -21,6 +21,7 @@ import {
   Copy,
   ChevronDown,
   Calendar,
+  QrCode,
 } from 'lucide-react'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { toast } from 'sonner'
@@ -98,6 +99,7 @@ export function SymbolicLobby() {
   const [gatheringStartLocal, setGatheringStartLocal] = useState('')
   const [gatheringDurationMin, setGatheringDurationMin] = useState(10)
   const [gatheringLabel, setGatheringLabel] = useState('')
+  const [joinLink, setJoinLink] = useState('')
   const permissionHintShown = useRef(false)
   const sessionUiStorageKey = 'lobby.sessionConfig.expanded'
 
@@ -130,6 +132,14 @@ export function SymbolicLobby() {
       // ignore localStorage write failures
     }
   }, [showSessionConfig, sessionUiStorageKey])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const codeFromUrl = normalizeFriendsCode(new URLSearchParams(window.location.search).get('code') ?? '')
+    if (codeFromUrl) {
+      setFriendsCodeInput((prev) => prev || codeFromUrl)
+    }
+  }, [])
 
   const sessionConfig = useMemo((): LobbySessionConfigInput => {
     return {
@@ -166,6 +176,17 @@ export function SymbolicLobby() {
     !!myGroup &&
     (myGroup.session?.creator_uid === user.uid ||
       (myGroup.session?.creator_uid == null && myGroup.member_uids[0] === user.uid))
+  const qrImageUrl = joinLink
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(joinLink)}`
+    : null
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !myFriendsCode) {
+      setJoinLink('')
+      return
+    }
+    setJoinLink(`${window.location.origin}/lobby?code=${encodeURIComponent(myFriendsCode)}`)
+  }, [myFriendsCode])
 
   useEffect(() => {
     refresh()
@@ -282,6 +303,16 @@ export function SymbolicLobby() {
       toast.success('Friends code copied.')
     } catch {
       toast.error('Could not copy code on this device.')
+    }
+  }
+
+  const handleCopyJoinLink = async () => {
+    if (!joinLink) return
+    try {
+      await navigator.clipboard.writeText(joinLink)
+      toast.success('Join link copied.')
+    } catch {
+      toast.error('Could not copy the join link on this device.')
     }
   }
 
@@ -683,23 +714,69 @@ export function SymbolicLobby() {
           </Button>
         </div>
         {myFriendsCode ? (
-          <div className="mt-3 flex items-center gap-2 flex-wrap">
-            <span className="text-sm text-violet-700 dark:text-violet-300 font-semibold">
-              Join code:
-            </span>
-            <span className="text-lg sm:text-2xl font-extrabold tracking-widest text-purple-700 dark:text-purple-300 bg-purple-500/10 border border-purple-500/30 rounded-md px-3 py-1">
-              {myFriendsCode}
-            </span>
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              className="h-7 px-2"
-              onClick={handleCopyMyCode}
-              disabled={busyId !== null}
-            >
-              <Copy className="h-3.5 w-3.5" />
-            </Button>
+          <div className="mt-3 space-y-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm text-violet-700 dark:text-violet-300 font-semibold">
+                Join code:
+              </span>
+              <span className="text-lg sm:text-2xl font-extrabold tracking-widest text-purple-700 dark:text-purple-300 bg-purple-500/10 border border-purple-500/30 rounded-md px-3 py-1">
+                {myFriendsCode}
+              </span>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="h-7 px-2"
+                onClick={handleCopyMyCode}
+                disabled={busyId !== null}
+              >
+                <Copy className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+            {qrImageUrl ? (
+              <div className="rounded-xl border border-purple-500/25 bg-purple-500/[0.06] dark:bg-purple-500/10 p-3 sm:p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <QrCode className="h-4 w-4 text-purple-700 dark:text-purple-300" />
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                    Session QR for repeat group meetings
+                  </p>
+                </div>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                  Print this QR on flyers/posters. It opens the lobby with your friends code prefilled.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+                  <img
+                    src={qrImageUrl}
+                    alt={`QR code to join friends group ${myFriendsCode}`}
+                    className="h-36 w-36 rounded-md border border-black/10 dark:border-white/10 bg-white"
+                    loading="lazy"
+                  />
+                  <div className="space-y-2">
+                    <Input value={joinLink} readOnly className="max-w-[360px] text-xs" />
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={handleCopyJoinLink}
+                        disabled={busyId !== null}
+                      >
+                        Copy join link
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => window.open(qrImageUrl, '_blank', 'noopener,noreferrer')}
+                        disabled={busyId !== null}
+                      >
+                        Open QR image
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>
