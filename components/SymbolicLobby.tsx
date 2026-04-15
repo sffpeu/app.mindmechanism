@@ -187,7 +187,7 @@ export function SymbolicLobby() {
             <Button
               type="button"
               size="sm"
-              className="rounded-full gap-2 bg-violet-600 hover:bg-violet-700 text-white"
+              className="rounded-full gap-2 bg-blue-600 hover:bg-blue-700 text-white"
               onClick={handleAppear}
               disabled={!user?.uid || busyId !== null}
             >
