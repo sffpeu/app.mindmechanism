@@ -10,6 +10,7 @@ import { getAuth, updateProfile } from 'firebase/auth'
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { db } from '@/lib/firebase'
 import { doc, setDoc, Firestore } from 'firebase/firestore'
+import { processBannerImageForUpload } from '@/lib/cropBannerImage'
 
 interface PersonalInfoSettingsProps {
   onChangesPending?: (hasChanges: boolean) => void
@@ -90,8 +91,9 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
 
     try {
       const file = event.target.files[0]
+      const processed = await processBannerImageForUpload(file)
       const bannerRef = ref(storage, `profile-banners/${auth.currentUser.uid}`)
-      await uploadBytes(bannerRef, file)
+      await uploadBytes(bannerRef, processed, { contentType: 'image/jpeg' })
       const bannerUrl = await getDownloadURL(bannerRef)
 
       await setDoc(
@@ -197,7 +199,7 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
       <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
         <Label className="text-sm text-gray-700 dark:text-gray-300">Profile banner</Label>
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          Shown at the top of your dashboard profile card. Wide images (about 3:1) work best.
+          Shown at the top of your dashboard profile card. Larger photos are center-cropped to a 3:1 banner and saved at a standard size.
         </p>
         <div className="relative rounded-xl overflow-hidden h-24 sm:h-28 border border-gray-200 dark:border-gray-700 bg-gradient-to-br from-slate-800 via-indigo-900/95 to-violet-900 dark:from-slate-900 dark:via-indigo-950 dark:to-violet-950">
           {profile?.bannerUrl ? (
