@@ -18,7 +18,7 @@ const COLLECTION = 'lobby_groups'
 export const LOBBY_GROUP_TTL_MS = 4 * 60 * 60 * 1000
 
 type LobbyApiResult =
-  | { mode: 'success'; groupId?: string }
+  | { mode: 'success'; groupId?: string; friendsCode?: string }
   | { mode: 'fallback' }
   | { mode: 'error'; message: string }
 
@@ -55,13 +55,14 @@ async function fetchLobbyGroupsViaApi(): Promise<LobbyGroup[] | null> {
       return null
     }
     const json = (await res.json()) as {
-      groups?: Array<{ id: string; member_uids: string[]; created_at_ms: number }>
+      groups?: Array<{ id: string; member_uids: string[]; created_at_ms: number; friends_code?: string | null }>
     }
     const raw = json.groups ?? []
     return raw.map((g) => ({
       id: g.id,
       member_uids: g.member_uids.filter((u) => typeof u === 'string'),
       created_at: Timestamp.fromMillis(g.created_at_ms),
+      friends_code: typeof g.friends_code === 'string' ? g.friends_code : null,
     }))
   } catch {
     return null
@@ -70,8 +71,9 @@ async function fetchLobbyGroupsViaApi(): Promise<LobbyGroup[] | null> {
 
 /** Prefer server writes (bypasses client rules when Admin is configured). */
 async function callLobbyGroupsApi(payload: {
-  action: 'create' | 'join' | 'leave'
+  action: 'create' | 'create_friends' | 'join' | 'join_code' | 'leave'
   groupId?: string
+  friendsCode?: string
 }): Promise<LobbyApiResult> {
   if (typeof window === 'undefined') {
     return { mode: 'fallback' }
@@ -92,11 +94,11 @@ async function callLobbyGroupsApi(payload: {
     if (res.status === 503 || res.status === 401) {
       return { mode: 'fallback' }
     }
-    const json = (await res.json().catch(() => ({}))) as { error?: string; groupId?: string }
+    const json = (await res.json().catch(() => ({}))) as { error?: string; groupId?: string; friendsCode?: string }
     if (!res.ok) {
       return { mode: 'error', message: json.error || res.statusText }
     }
-    return { mode: 'success', groupId: json.groupId }
+    return { mode: 'success', groupId: json.groupId, friendsCode: json.friendsCode }
   } catch {
     return { mode: 'fallback' }
   }
@@ -106,6 +108,20 @@ export interface LobbyGroup {
   id: string
   member_uids: string[]
   created_at: Timestamp
+  friends_code?: string | null
+}
+
+export function normalizeFriendsCode(code: string): string {
+  return code.trim().toUpperCase().replace(/[^A-Z0-9]/g, '')
+}
+
+export function generateFriendsCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  let out = ''
+  for (let i = 0; i < 6; i++) {
+    out += chars[Math.floor(Math.random() * chars.length)]
+  }
+  return out
 }
 
 function isFresh(createdAt: Timestamp): boolean {
@@ -134,6 +150,7 @@ export async function listLobbyGroups(): Promise<LobbyGroup[]> {
         id: d.id,
         member_uids,
         created_at: data.created_at as Timestamp,
+        friends_code: typeof data.friends_code === 'string' ? data.friends_code : null,
       }
     })
     .filter((g) => g.created_at && isFresh(g.created_at) && g.member_uids.length > 0)
@@ -165,14 +182,22 @@ export async function getMyLobbyGroup(userId: string): Promise<LobbyGroup | null
     : []
   const created_at = data.created_at as Timestamp
   if (!created_at || !isFresh(created_at)) return null
-  return { id: d.id, member_uids, created_at }
+  return { id: d.id, member_uids, created_at, friends_code: typeof data.friends_code === 'string' ? data.friends_code : null }
 }
 
 /** Create a new solo group. Leaves any non-solo group first. */
-export async function createLobbyGroup(userId: string): Promise<string> {
+export async function createLobbyGroup(
+  userId: string,
+  options?: { friendsCode?: string | null }
+): Promise<string> {
   if (!userId) throw new Error('User ID is required')
+  const normalizedCode = options?.friendsCode ? normalizeFriendsCode(options.friendsCode) : ''
 
-  const api = await callLobbyGroupsApi({ action: 'create' })
+  const api = await callLobbyGroupsApi(
+    normalizedCode
+      ? { action: 'create_friends', friendsCode: normalizedCode }
+      : { action: 'create' }
+  )
   if (api.mode === 'success' && api.groupId) {
     return api.groupId
   }
@@ -193,8 +218,21 @@ export async function createLobbyGroup(userId: string): Promise<string> {
   const docRef = await addDoc(collection(db, COLLECTION), {
     member_uids: [userId],
     created_at: Timestamp.now(),
+    friends_code: normalizedCode || null,
   })
   return docRef.id
+}
+
+export async function createFriendsLobbyGroup(
+  userId: string,
+  requestedCode?: string
+): Promise<{ groupId: string; friendsCode: string }> {
+  const friendsCode = normalizeFriendsCode(requestedCode || generateFriendsCode())
+  if (friendsCode.length < 4) {
+    throw new Error('Friends code must be at least 4 characters')
+  }
+  const groupId = await createLobbyGroup(userId, { friendsCode })
+  return { groupId, friendsCode }
 }
 
 /** Leave current group if any, then append user to target group if there is room. */
@@ -242,6 +280,33 @@ export async function joinLobbyGroup(groupId: string, userId: string): Promise<v
       member_uids: [...members, userId],
     })
   })
+}
+
+export async function joinLobbyGroupByFriendsCode(
+  code: string,
+  userId: string
+): Promise<void> {
+  const friendsCode = normalizeFriendsCode(code)
+  if (!friendsCode) throw new Error('Friends code is required')
+
+  const api = await callLobbyGroupsApi({ action: 'join_code', friendsCode })
+  if (api.mode === 'success') {
+    return
+  }
+  if (api.mode === 'error') {
+    throw new Error(api.message)
+  }
+
+  if (!db) throw new Error('Firestore is not initialized')
+  const q = query(
+    collection(db, COLLECTION),
+    where('friends_code', '==', friendsCode),
+    limit(1)
+  )
+  const snap = await getDocs(q)
+  if (snap.empty) throw new Error('Friends group not found')
+  const target = snap.docs[0]
+  await joinLobbyGroup(target.id, userId)
 }
 
 /** Remove user from group; delete document if empty. */
