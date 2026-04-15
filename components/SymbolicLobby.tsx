@@ -55,8 +55,10 @@ import {
   buildGatheringIcs,
   downloadIcsFile,
   googleCalendarUrlForGathering,
+  LOBBY_SCHEDULE_UPCOMING_DISPLAY_LIMIT,
   newGatheringId,
   sortGatherings,
+  upcomingGatheringsWindow,
   validateScheduledGatherings,
 } from '@/lib/lobbySchedule'
 import { cn } from '@/lib/utils'
@@ -172,6 +174,12 @@ export function SymbolicLobby() {
   const myGroup = user?.uid
     ? groups.find((g) => g.member_uids.includes(user.uid)) ?? null
     : null
+  const gatheringSchedulePreview = useMemo(() => {
+    if (!myGroup) {
+      return { items: [] as LobbyScheduledGathering[], totalUpcoming: 0, pastCount: 0 }
+    }
+    return upcomingGatheringsWindow(myGroup.scheduled_gatherings)
+  }, [myGroup])
   const otherGroups = groups.filter((g) => g.id !== myGroup?.id)
   const myMemberCount = myGroup?.member_uids.length ?? 0
   const myFriendsCode = typeof myGroup?.friends_code === 'string' ? myGroup.friends_code : null
@@ -853,10 +861,10 @@ export function SymbolicLobby() {
           )}
           {myGroup.session ? (
             <div className="mb-4 rounded-xl border border-sky-500/25 bg-sky-500/[0.06] dark:bg-sky-500/10 px-3 py-3 text-sm">
-              <p className="font-semibold text-gray-900 dark:text-white mb-1">Gathering schedule</p>
+              <p className="font-semibold text-gray-900 dark:text-white mb-1">Group schedule — upcoming sessions</p>
               <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
-                Planned sits for this group. Add each time to your own calendar — everyone stays in sync symbolically,
-                not by sharing accounts.
+                The next {LOBBY_SCHEDULE_UPCOMING_DISPLAY_LIMIT} planned starts (local time). Export each to your own
+                calendar — everyone stays in sync symbolically, not by sharing accounts.
               </p>
               {isGroupCreator ? (
                 <div className="mb-4 space-y-3 rounded-lg border border-sky-500/20 bg-white/40 p-3 dark:border-white/10 dark:bg-black/20">
@@ -915,59 +923,72 @@ export function SymbolicLobby() {
                   </Button>
                 </div>
               ) : null}
-              {myGroup.scheduled_gatherings.length > 0 ? (
-                <ul className="space-y-2">
-                  {myGroup.scheduled_gatherings.map((g) => (
-                    <li
-                      key={g.id}
-                      className="flex flex-col gap-2 rounded-lg border border-sky-500/20 bg-white/50 px-3 py-2 dark:border-white/10 dark:bg-black/25 sm:flex-row sm:items-center sm:justify-between"
-                    >
-                      <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">
-                          {format(new Date(g.starts_at_ms), 'PPpp')}
-                        </p>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">
-                          {g.duration_minutes} minutes{g.label ? ` · ${g.label}` : ''}
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          className="h-8 gap-1"
-                          onClick={() => exportGatheringIcs(g)}
-                          disabled={busyId !== null}
-                        >
-                          <Calendar className="h-3.5 w-3.5" aria-hidden />
-                          .ics
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          className="h-8"
-                          onClick={() => openGatheringGoogle(g)}
-                          disabled={busyId !== null}
-                        >
-                          Google
-                        </Button>
-                        {isGroupCreator ? (
+              {gatheringSchedulePreview.totalUpcoming > 0 ? (
+                <>
+                  <ul className="space-y-2">
+                    {gatheringSchedulePreview.items.map((g) => (
+                      <li
+                        key={g.id}
+                        className="flex flex-col gap-2 rounded-lg border border-sky-500/20 bg-white/50 px-3 py-2 dark:border-white/10 dark:bg-black/25 sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            {format(new Date(g.starts_at_ms), 'PPpp')}
+                          </p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">
+                            {g.duration_minutes} minutes{g.label ? ` · ${g.label}` : ''}
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
                           <Button
                             type="button"
                             size="sm"
-                            variant="ghost"
-                            className="h-8"
-                            onClick={() => void removePlannedGathering(g.id)}
+                            variant="outline"
+                            className="h-8 gap-1"
+                            onClick={() => exportGatheringIcs(g)}
                             disabled={busyId !== null}
                           >
-                            Remove
+                            <Calendar className="h-3.5 w-3.5" aria-hidden />
+                            .ics
                           </Button>
-                        ) : null}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="h-8"
+                            onClick={() => openGatheringGoogle(g)}
+                            disabled={busyId !== null}
+                          >
+                            Google
+                          </Button>
+                          {isGroupCreator ? (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              className="h-8"
+                              onClick={() => void removePlannedGathering(g.id)}
+                              disabled={busyId !== null}
+                            >
+                              Remove
+                            </Button>
+                          ) : null}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                  {gatheringSchedulePreview.totalUpcoming > LOBBY_SCHEDULE_UPCOMING_DISPLAY_LIMIT ? (
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+                      Showing {LOBBY_SCHEDULE_UPCOMING_DISPLAY_LIMIT} of {gatheringSchedulePreview.totalUpcoming}{' '}
+                      upcoming sessions.
+                    </p>
+                  ) : null}
+                </>
+              ) : myGroup.scheduled_gatherings.length > 0 && gatheringSchedulePreview.pastCount > 0 ? (
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  No upcoming sessions — all {gatheringSchedulePreview.pastCount} planned times have passed.{' '}
+                  {isGroupCreator ? 'Add new times above.' : 'Ask the creator to add new times.'}
+                </p>
               ) : (
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   {isGroupCreator

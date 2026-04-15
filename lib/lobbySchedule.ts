@@ -1,6 +1,8 @@
 /** Planned lobby gatherings (calendar-friendly). Stored on `lobby_groups.scheduled_gatherings`. */
 
 export const LOBBY_SCHEDULE_MAX_GATHERINGS = 24
+/** Default number of future gatherings to show in the lobby schedule list. */
+export const LOBBY_SCHEDULE_UPCOMING_DISPLAY_LIMIT = 10
 /** Max ms in the future for a planned start (1 year). */
 export const LOBBY_SCHEDULE_MAX_FUTURE_MS = 366 * 24 * 60 * 60 * 1000
 
@@ -46,6 +48,30 @@ export function normalizeScheduledGatheringsFromClient(raw: unknown): LobbySched
 
 export function sortGatherings(g: LobbyScheduledGathering[]): LobbyScheduledGathering[] {
   return [...g].sort((a, b) => a.starts_at_ms - b.starts_at_ms || a.id.localeCompare(b.id))
+}
+
+/**
+ * Future gatherings (start at or after `nowMs`), oldest first, capped for UI.
+ * Use `totalUpcoming` to note when more exist beyond `items`.
+ */
+export function upcomingGatheringsWindow(
+  gatherings: LobbyScheduledGathering[],
+  options?: { limit?: number; nowMs?: number }
+): {
+  items: LobbyScheduledGathering[]
+  totalUpcoming: number
+  pastCount: number
+} {
+  const limit = options?.limit ?? LOBBY_SCHEDULE_UPCOMING_DISPLAY_LIMIT
+  const nowMs = options?.nowMs ?? Date.now()
+  const sorted = sortGatherings(gatherings)
+  const upcomingAll = sorted.filter((g) => g.starts_at_ms >= nowMs)
+  const pastCount = sorted.length - upcomingAll.length
+  return {
+    items: upcomingAll.slice(0, limit),
+    totalUpcoming: upcomingAll.length,
+    pastCount,
+  }
 }
 
 export function validateScheduledGatherings(
