@@ -6,22 +6,27 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { User, Camera, AlertCircle, ImageIcon } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
-import { getAuth, updateProfile } from 'firebase/auth'
+import { getAuth, updateProfile, type User } from 'firebase/auth'
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
-import { db, getFirebaseStorage } from '@/lib/firebase'
+import { getFirebaseStorage } from '@/lib/firebase'
 import { FirebaseError } from 'firebase/app'
-import { doc, setDoc, Firestore } from 'firebase/firestore'
 import { processBannerImageForUpload, type BannerFocalPoint } from '@/lib/cropBannerImage'
 import { BannerFocalDialog } from './BannerFocalDialog'
 
-/** Canonical banner URL lives on `user_profiles` (dashboard reads it reliably). Mirror to `users/` best-effort so wheel/settings stay aligned when rules allow. */
-async function persistBannerFirestore(fs: Firestore, uid: string, bannerUrl: string): Promise<void> {
-  const profileRef = doc(fs, 'user_profiles', uid)
-  await setDoc(profileRef, { bannerUrl }, { merge: true })
-  try {
-    await setDoc(doc(fs, 'users', uid), { bannerUrl }, { merge: true })
-  } catch (mirrorErr) {
-    console.warn('[banner] Saved to user_profiles; mirror to users/ failed:', mirrorErr)
+/** Persists banner URL via API + Firebase Admin (bypasses client Firestore rules mismatches). */
+async function persistBannerUrlAfterUpload(currentUser: User, bannerUrl: string): Promise<void> {
+  const idToken = await currentUser.getIdToken()
+  const res = await fetch('/api/profile/banner-url', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${idToken}`,
+    },
+    body: JSON.stringify({ bannerUrl }),
+  })
+  const data = (await res.json().catch(() => ({}))) as { error?: string }
+  if (!res.ok) {
+    throw new Error(data.error || `Could not save banner (${res.status})`)
   }
 }
 
@@ -34,7 +39,7 @@ function bannerUploadErrorMessage(err: unknown): string {
       return 'You must be signed in to upload a banner.'
     }
     if (err.code === 'permission-denied') {
-      return 'Could not save the banner to your profile (permission denied). If this continues, contact support.'
+      return 'Could not save the banner (permission denied). If this continues, contact support.'
     }
     if (err.code.startsWith('storage/')) {
       return 'Could not upload the image. Check your connection and try again.'
@@ -45,6 +50,15 @@ function bannerUploadErrorMessage(err: unknown): string {
       return 'This image could not be processed. Try a standard JPG or PNG photo.'
     }
     if (err.message.includes('Firebase is not ready')) {
+      return err.message
+    }
+    if (err.message.includes('Unauthorized') || err.message.includes('401')) {
+      return 'Your session may have expired. Sign out and sign in, then try again.'
+    }
+    if (err.message.includes('503') || err.message.includes('verify authentication')) {
+      return 'Could not save the banner (server configuration). Please try again later.'
+    }
+    if (err.message.startsWith('Could not save banner')) {
       return err.message
     }
   }
@@ -111,8 +125,8 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
           return
         }
 
-        if (bannerDirty && !db) {
-          setError('Could not save banner: database not ready.')
+        if (bannerDirty && !auth.currentUser) {
+          setError('You must be signed in to save the banner.')
           return
         }
 
@@ -128,26 +142,26 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
 
           const uid = auth.currentUser.uid
 
-          if (staged && db) {
+          if (staged) {
             const storage = getFirebaseStorage()
             const bannerRef = ref(storage, `profile-banners/${uid}`)
             await uploadBytes(bannerRef, staged.blob, {
               contentType: staged.blob.type || 'image/jpeg',
             })
             const bannerUrl = await getDownloadURL(bannerRef)
-            await persistBannerFirestore(db as Firestore, uid, bannerUrl)
+            await persistBannerUrlAfterUpload(auth.currentUser, bannerUrl)
             URL.revokeObjectURL(staged.previewUrl)
             setPendingBanner(null)
             setPendingBannerRemove(false)
             await refreshProfile()
             mergeProfilePatch({ bannerUrl })
-          } else if (removeStaged && db) {
+          } else if (removeStaged) {
             try {
               await deleteObject(ref(getFirebaseStorage(), `profile-banners/${uid}`))
             } catch {
               /* object may not exist */
             }
-            await persistBannerFirestore(db as Firestore, uid, '')
+            await persistBannerUrlAfterUpload(auth.currentUser, '')
             setPendingBannerRemove(false)
             await refreshProfile()
             mergeProfilePatch({ bannerUrl: '' })
@@ -213,7 +227,7 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
   const handleBannerFileChosen = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     event.target.value = ''
-    if (!file || !auth.currentUser || !db) return
+    if (!file || !auth.currentUser) return
     setPendingBannerRemove(false)
     setPendingBannerFile(file)
     setBannerFocalOpen(true)

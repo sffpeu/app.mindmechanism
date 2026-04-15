@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
-import { getAuth } from 'firebase-admin/auth'
 import { getFirestore, FieldValue, type Firestore, type Timestamp } from 'firebase-admin/firestore'
 import { getFirebaseAdminApp } from '@/lib/firebaseAdmin'
+import { verifyFirebaseRequestUid } from '@/lib/verifyFirebaseRequestUid'
 import {
   LOBBY_GROUP_MAX,
   LOBBY_GROUP_TTL_MS,
@@ -43,36 +42,6 @@ function adminFresh(createdAt: Timestamp | undefined): boolean {
   return Date.now() - createdAt.toMillis() < LOBBY_GROUP_TTL_MS
 }
 
-async function verifyUid(request: Request): Promise<string | null> {
-  const app = getFirebaseAdminApp()
-  const authAdmin = getAuth(app)
-
-  const bearer = request.headers.get('authorization')
-  if (bearer?.startsWith('Bearer ')) {
-    const raw = bearer.slice(7).trim()
-    if (raw) {
-      try {
-        const decoded = await authAdmin.verifyIdToken(raw)
-        return decoded.uid
-      } catch {
-        /* try cookie */
-      }
-    }
-  }
-
-  const cookieToken = cookies().get('__firebase_auth_token')?.value
-  if (cookieToken) {
-    try {
-      const decoded = await authAdmin.verifyIdToken(cookieToken)
-      return decoded.uid
-    } catch {
-      return null
-    }
-  }
-
-  return null
-}
-
 function getDb(): Firestore {
   const app = getFirebaseAdminApp()
   return getFirestore(app)
@@ -87,7 +56,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Admin unavailable' }, { status: 503 })
   }
 
-  const uid = await verifyUid(request)
+  const uid = await verifyFirebaseRequestUid(request)
   if (!uid) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
@@ -168,7 +137,7 @@ export async function POST(request: Request) {
     )
   }
 
-  const uid = await verifyUid(request)
+  const uid = await verifyFirebaseRequestUid(request)
   if (!uid) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
