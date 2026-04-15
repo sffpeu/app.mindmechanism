@@ -60,7 +60,12 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
   const [pendingBannerFile, setPendingBannerFile] = useState<File | null>(null)
   const [pendingBanner, setPendingBanner] = useState<PendingBannerState | null>(null)
   const [pendingBannerRemove, setPendingBannerRemove] = useState(false)
+  const pendingBannerRef = useRef<PendingBannerState | null>(null)
+  const pendingBannerRemoveRef = useRef(false)
   const auth = getAuth()
+
+  pendingBannerRef.current = pendingBanner
+  pendingBannerRemoveRef.current = pendingBannerRemove
 
   useEffect(() => {
     setDisplayName(user?.displayName || '')
@@ -73,12 +78,27 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
   }, [displayName, user?.displayName, pendingBanner, pendingBannerRemove, onChangesPending])
 
   useEffect(() => {
+    const notifySaveComplete = (success: boolean) => {
+      window.dispatchEvent(
+        new CustomEvent<{ success: boolean }>('settings-save-complete', { detail: { success } })
+      )
+    }
+
     const handleSave = async () => {
+      let closeDialog = false
       try {
-        if (!auth.currentUser) return
+        if (!auth.currentUser) {
+          closeDialog = true
+          return
+        }
         const nameChanged = displayName.trim() !== (user?.displayName || '')
-        const bannerDirty = pendingBanner !== null || pendingBannerRemove
-        if (!nameChanged && !bannerDirty) return
+        const staged = pendingBannerRef.current
+        const removeStaged = pendingBannerRemoveRef.current
+        const bannerDirty = staged !== null || removeStaged
+        if (!nameChanged && !bannerDirty) {
+          closeDialog = true
+          return
+        }
 
         if (bannerDirty && !db) {
           setError('Could not save banner: database not ready.')
@@ -97,41 +117,44 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
 
           const uid = auth.currentUser.uid
 
-          if (pendingBanner && db) {
+          if (staged && db) {
             const storage = getFirebaseStorage()
             const bannerRef = ref(storage, `profile-banners/${uid}`)
-            await uploadBytes(bannerRef, pendingBanner.blob, {
-              contentType: pendingBanner.blob.type || 'image/jpeg',
+            await uploadBytes(bannerRef, staged.blob, {
+              contentType: staged.blob.type || 'image/jpeg',
             })
             const bannerUrl = await getDownloadURL(bannerRef)
-            await setDoc(
-              doc(db as Firestore, 'users', uid),
-              { bannerUrl },
-              { merge: true }
-            )
-            URL.revokeObjectURL(pendingBanner.previewUrl)
+            const usersRef = doc(db as Firestore, 'users', uid)
+            const profileRef = doc(db as Firestore, 'user_profiles', uid)
+            await Promise.all([
+              setDoc(usersRef, { bannerUrl }, { merge: true }),
+              setDoc(profileRef, { bannerUrl }, { merge: true }),
+            ])
+            URL.revokeObjectURL(staged.previewUrl)
             setPendingBanner(null)
             setPendingBannerRemove(false)
             await refreshProfile()
             mergeProfilePatch({ bannerUrl })
-          } else if (pendingBannerRemove && db) {
+          } else if (removeStaged && db) {
             try {
               await deleteObject(ref(getFirebaseStorage(), `profile-banners/${uid}`))
             } catch {
               /* object may not exist */
             }
-            await setDoc(
-              doc(db as Firestore, 'users', uid),
-              { bannerUrl: '' },
-              { merge: true }
-            )
+            const usersRef = doc(db as Firestore, 'users', uid)
+            const profileRef = doc(db as Firestore, 'user_profiles', uid)
+            await Promise.all([
+              setDoc(usersRef, { bannerUrl: '' }, { merge: true }),
+              setDoc(profileRef, { bannerUrl: '' }, { merge: true }),
+            ])
             setPendingBannerRemove(false)
             await refreshProfile()
             mergeProfilePatch({ bannerUrl: '' })
           }
+          closeDialog = true
         } catch (err) {
           console.error('Settings save failed:', err)
-          if (pendingBanner || pendingBannerRemove) {
+          if (staged || removeStaged) {
             setError(bannerUploadErrorMessage(err))
           } else {
             setError('Failed to update display name. Please try again.')
@@ -140,14 +163,15 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
           setIsUpdating(false)
         }
       } finally {
-        window.dispatchEvent(new Event('settings-save-complete'))
+        notifySaveComplete(closeDialog)
       }
     }
 
     const handleCancel = () => {
       setDisplayName(user?.displayName || '')
-      if (pendingBanner?.previewUrl) {
-        URL.revokeObjectURL(pendingBanner.previewUrl)
+      const staged = pendingBannerRef.current
+      if (staged?.previewUrl) {
+        URL.revokeObjectURL(staged.previewUrl)
       }
       setPendingBanner(null)
       setPendingBannerRemove(false)
@@ -160,15 +184,7 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
       window.removeEventListener('settings-save', handleSave)
       window.removeEventListener('settings-cancel', handleCancel)
     }
-  }, [
-    auth.currentUser,
-    displayName,
-    user?.displayName,
-    pendingBanner,
-    pendingBannerRemove,
-    refreshProfile,
-    mergeProfilePatch,
-  ])
+  }, [displayName, user?.displayName, user?.uid, refreshProfile, mergeProfilePatch])
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!auth.currentUser || !event.target.files?.[0]) return
