@@ -143,7 +143,7 @@ interface DashboardRecentSessionsProps {
 }
 
 function isOpenOrIncomplete(s: Session): boolean {
-  return s.status === 'in_progress' || s.status === 'aborted';
+  return s.status === 'in_progress' || s.status === 'aborted' || s.status === 'waiting';
 }
 
 export function DashboardRecentSessions({ sessions: propSessions }: DashboardRecentSessionsProps) {
@@ -337,7 +337,7 @@ export function DashboardRecentSessions({ sessions: propSessions }: DashboardRec
           onClick={() => setOpenSessionsDialogOpen(true)}
         >
           <FolderOpen className="h-4 w-4" />
-          Open &amp; incomplete sessions
+          Open, incomplete &amp; waiting sessions
           <span className="tabular-nums rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-white/10 dark:text-gray-300">
             {openSessions.length}
           </span>
@@ -347,7 +347,7 @@ export function DashboardRecentSessions({ sessions: propSessions }: DashboardRec
       <Dialog open={openSessionsDialogOpen} onOpenChange={setOpenSessionsDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[min(90vh,720px)] flex flex-col gap-0 overflow-hidden p-0 sm:rounded-2xl">
           <DialogHeader className="px-6 pt-6 pb-2 text-left">
-            <DialogTitle>Open &amp; incomplete sessions</DialogTitle>
+            <DialogTitle>Open, incomplete &amp; waiting sessions</DialogTitle>
             <p className="text-sm text-gray-500 dark:text-gray-400 font-normal leading-relaxed pt-1">
               Continue from where you left off. Same actions as the cards above: Continue, Restart, or remove.
             </p>
