@@ -21,6 +21,7 @@ interface UserProfile {
   bio: string;
   birthdate: string;
   avatarUrl: string;
+  bannerUrl: string;
   preferences: {
     emailNotifications: boolean;
     allowLocationData: boolean;
@@ -45,6 +46,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
     bio: '',
     birthdate: '',
     avatarUrl: '',
+    bannerUrl: '',
     preferences: {
       emailNotifications: true,
       allowLocationData: false,
@@ -174,6 +176,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
         bio: profile.bio,
         birthdate: profile.birthdate,
         avatarUrl: profile.avatarUrl || user?.photoURL || '',
+        bannerUrl: profile.bannerUrl ?? '',
         preferences: {
           emailNotifications: profile.preferences.emailNotifications,
           allowLocationData: profile.preferences.allowLocationData,

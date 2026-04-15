@@ -22,6 +22,8 @@ export interface UserProfile {
   bio: string;
   birthdate: string;
   avatarUrl: string;
+  /** Custom wide image shown on the dashboard profile card; stored in Firestore + Storage. */
+  bannerUrl: string;
   preferences: {
     emailNotifications: boolean;
     allowLocationData: boolean;
@@ -60,7 +62,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const docSnap = await getDoc(docRef);
       
       if (docSnap.exists()) {
-        const profileData = docSnap.data() as UserProfile;
+        const raw = docSnap.data() as Partial<UserProfile>;
+        const profileData: UserProfile = {
+          username: raw.username ?? '',
+          bio: raw.bio ?? '',
+          birthdate: raw.birthdate ?? '',
+          avatarUrl: raw.avatarUrl ?? '',
+          bannerUrl: raw.bannerUrl ?? '',
+          preferences: {
+            emailNotifications: raw.preferences?.emailNotifications ?? true,
+            allowLocationData: raw.preferences?.allowLocationData ?? false,
+          },
+          security: {
+            sessionTimeout: raw.security?.sessionTimeout ?? 30,
+          },
+        };
         setProfile(profileData);
         return profileData;
       } else {
@@ -70,6 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           bio: '',
           birthdate: '',
           avatarUrl: '',
+          bannerUrl: '',
           preferences: {
             emailNotifications: true,
             allowLocationData: false,

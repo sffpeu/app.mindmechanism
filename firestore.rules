@@ -66,6 +66,12 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
+    // Extended profile (banner, preferences, etc.) — document id matches auth uid
+    match /user_profiles/{userId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isUserAuthenticated(userId);
+    }
+
     // Default rule - require authentication for all other reads
     match /{document=**} {
       allow read: if isAuthenticated();

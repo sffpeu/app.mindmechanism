@@ -4,21 +4,24 @@ import { useAuth } from '@/lib/FirebaseAuthContext'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { User, Camera, AlertCircle } from 'lucide-react'
+import { User, Camera, AlertCircle, ImageIcon } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { getAuth, updateProfile } from 'firebase/auth'
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { db } from '@/lib/firebase'
+import { doc, setDoc, Firestore } from 'firebase/firestore'
 
 interface PersonalInfoSettingsProps {
   onChangesPending?: (hasChanges: boolean) => void
 }
 
 export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsProps) {
-  const { user } = useAuth()
+  const { user, profile, refreshProfile } = useAuth()
   const [displayName, setDisplayName] = useState(user?.displayName || '')
   const [isUpdating, setIsUpdating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const bannerInputRef = useRef<HTMLInputElement>(null)
   const auth = getAuth()
   const storage = getStorage()
 
@@ -75,6 +78,51 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
     } catch (err) {
       setError('Failed to update profile image. Please try again.')
       console.error('Error updating profile image:', err)
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handleBannerUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!auth.currentUser || !event.target.files?.[0] || !db) return
+    setIsUpdating(true)
+    setError(null)
+
+    try {
+      const file = event.target.files[0]
+      const bannerRef = ref(storage, `profile-banners/${auth.currentUser.uid}`)
+      await uploadBytes(bannerRef, file)
+      const bannerUrl = await getDownloadURL(bannerRef)
+
+      await setDoc(
+        doc(db as Firestore, 'user_profiles', auth.currentUser.uid),
+        { bannerUrl },
+        { merge: true }
+      )
+      await refreshProfile()
+    } catch (err) {
+      setError('Failed to update profile banner. Please try again.')
+      console.error('Error updating profile banner:', err)
+    } finally {
+      setIsUpdating(false)
+      event.target.value = ''
+    }
+  }
+
+  const handleBannerRemove = async () => {
+    if (!auth.currentUser || !db) return
+    setIsUpdating(true)
+    setError(null)
+    try {
+      await setDoc(
+        doc(db as Firestore, 'user_profiles', auth.currentUser.uid),
+        { bannerUrl: '' },
+        { merge: true }
+      )
+      await refreshProfile()
+    } catch (err) {
+      setError('Failed to remove profile banner. Please try again.')
+      console.error('Error removing profile banner:', err)
     } finally {
       setIsUpdating(false)
     }
@@ -141,6 +189,55 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Profile banner — same persistence pattern as avatar: Storage + Firestore user_profiles */}
+      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
+        <Label className="text-sm text-gray-700 dark:text-gray-300">Profile banner</Label>
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          Shown at the top of your dashboard profile card. Wide images (about 3:1) work best.
+        </p>
+        <div className="relative rounded-xl overflow-hidden h-24 sm:h-28 border border-gray-200 dark:border-gray-700 bg-gradient-to-br from-slate-800 via-indigo-900/95 to-violet-900 dark:from-slate-900 dark:via-indigo-950 dark:to-violet-950">
+          {profile?.bannerUrl ? (
+            <img
+              src={profile.bannerUrl}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          ) : null}
+          <div
+            className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-black/10 pointer-events-none"
+            aria-hidden
+          />
+          <div className="absolute bottom-2 right-2 flex items-center gap-2">
+            {profile?.bannerUrl ? (
+              <button
+                type="button"
+                onClick={handleBannerRemove}
+                disabled={isUpdating}
+                className="text-xs px-2.5 py-1 rounded-md bg-white/90 dark:bg-gray-900/90 text-gray-800 dark:text-gray-200 border border-gray-200/80 dark:border-gray-600 hover:bg-white dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+              >
+                Remove
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => bannerInputRef.current?.click()}
+              disabled={isUpdating}
+              className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md bg-white/90 dark:bg-gray-900/90 text-gray-800 dark:text-gray-200 border border-gray-200/80 dark:border-gray-600 hover:bg-white dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+            >
+              <ImageIcon className="h-3.5 w-3.5" />
+              {profile?.bannerUrl ? 'Change' : 'Upload'}
+            </button>
+            <input
+              type="file"
+              ref={bannerInputRef}
+              onChange={handleBannerUpload}
+              accept="image/*"
+              className="hidden"
+            />
           </div>
         </div>
       </div>

@@ -63,7 +63,7 @@ function lobbyPlanPanelState(myGroup: LobbyGroup | null) {
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
-  const { user, loading: authLoading, signOut } = useAuth()
+  const { user, profile, loading: authLoading, signOut } = useAuth()
   const [timeStats, setTimeStats] = useState<TimeStats>({
     totalTime: 0,
     monthlyTime: 0,
@@ -252,32 +252,48 @@ export default function DashboardPage() {
               className="relative h-20 sm:h-24 overflow-hidden"
               aria-hidden
             >
-              <div
-                className="absolute inset-0 bg-gradient-to-br from-slate-800 via-indigo-900/95 to-violet-900 dark:from-slate-900 dark:via-indigo-950 dark:to-violet-950"
-                aria-hidden
-              />
-              <div
-                className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-violet-500/30 dark:bg-violet-400/20 blur-3xl"
-                aria-hidden
-              />
-              <div
-                className="absolute top-1/2 -left-8 h-32 w-32 rounded-full bg-indigo-500/25 dark:bg-indigo-400/15 blur-2xl"
-                aria-hidden
-              />
-              <svg
-                className="absolute inset-0 h-full w-full opacity-[0.07] dark:opacity-[0.12]"
-                aria-hidden
-              >
-                <defs>
-                  <linearGradient id="banner-arc" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="white" stopOpacity="0" />
-                    <stop offset="100%" stopColor="white" stopOpacity="1" />
-                  </linearGradient>
-                </defs>
-                <ellipse cx="50%" cy="60%" rx="55%" ry="45%" fill="none" stroke="url(#banner-arc)" strokeWidth="1.5" />
-                <ellipse cx="50%" cy="60%" rx="40%" ry="32%" fill="none" stroke="url(#banner-arc)" strokeWidth="1" />
-                <ellipse cx="50%" cy="60%" rx="25%" ry="20%" fill="none" stroke="url(#banner-arc)" strokeWidth="0.75" />
-              </svg>
+              {profile?.bannerUrl ? (
+                <>
+                  <img
+                    src={profile.bannerUrl}
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                  <div
+                    className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent dark:from-black/55"
+                    aria-hidden
+                  />
+                </>
+              ) : (
+                <>
+                  <div
+                    className="absolute inset-0 bg-gradient-to-br from-slate-800 via-indigo-900/95 to-violet-900 dark:from-slate-900 dark:via-indigo-950 dark:to-violet-950"
+                    aria-hidden
+                  />
+                  <div
+                    className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-violet-500/30 dark:bg-violet-400/20 blur-3xl"
+                    aria-hidden
+                  />
+                  <div
+                    className="absolute top-1/2 -left-8 h-32 w-32 rounded-full bg-indigo-500/25 dark:bg-indigo-400/15 blur-2xl"
+                    aria-hidden
+                  />
+                  <svg
+                    className="absolute inset-0 h-full w-full opacity-[0.07] dark:opacity-[0.12]"
+                    aria-hidden
+                  >
+                    <defs>
+                      <linearGradient id="banner-arc" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="white" stopOpacity="0" />
+                        <stop offset="100%" stopColor="white" stopOpacity="1" />
+                      </linearGradient>
+                    </defs>
+                    <ellipse cx="50%" cy="60%" rx="55%" ry="45%" fill="none" stroke="url(#banner-arc)" strokeWidth="1.5" />
+                    <ellipse cx="50%" cy="60%" rx="40%" ry="32%" fill="none" stroke="url(#banner-arc)" strokeWidth="1" />
+                    <ellipse cx="50%" cy="60%" rx="25%" ry="20%" fill="none" stroke="url(#banner-arc)" strokeWidth="0.75" />
+                  </svg>
+                </>
+              )}
               <div className="absolute inset-x-0 top-0 h-px bg-white/20" aria-hidden />
             </div>
 
