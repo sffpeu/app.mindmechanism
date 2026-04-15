@@ -40,6 +40,10 @@ type GroupSessionSummary = {
   focusNodeCount: number
 }
 
+/** Shared surface for Group Sessions + Recent Sessions panels (contrasts with dashboard gradient). */
+const DASHBOARD_VIOLET_PANEL =
+  'rounded-2xl border border-violet-200/90 dark:border-violet-500/30 overflow-hidden bg-violet-50/95 dark:bg-indigo-950/50 shadow-xl shadow-violet-200/40 dark:shadow-indigo-950/40 backdrop-blur-sm'
+
 function lobbyPlanPanelState(myGroup: LobbyGroup | null) {
   return {
     plannedCount: myGroup?.scheduled_gatherings?.length ?? 0,
@@ -368,7 +372,7 @@ export default function DashboardPage() {
 
           {/* Group Sessions — collapsible */}
           <section className="mt-8">
-            <Card className="rounded-2xl border border-violet-200/90 dark:border-violet-500/30 overflow-hidden bg-violet-50/95 dark:bg-indigo-950/50 shadow-xl shadow-violet-200/40 dark:shadow-indigo-950/40 backdrop-blur-sm">
+            <Card className={DASHBOARD_VIOLET_PANEL}>
               <button
                 type="button"
                 id="dashboard-creator-session-toggle"
@@ -502,7 +506,7 @@ export default function DashboardPage() {
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
               Continue or restart from your latest sessions. Times reflect when you left the session.
             </p>
-            <Card className="rounded-2xl border-0 p-4 sm:p-6 bg-white/90 dark:bg-white/5 shadow-xl shadow-gray-200/50 dark:shadow-none backdrop-blur-sm">
+            <Card className={cn(DASHBOARD_VIOLET_PANEL, 'p-4 sm:p-6')}>
               <DashboardRecentSessions ref={recentSessionsRef} />
             </Card>
           </section>
