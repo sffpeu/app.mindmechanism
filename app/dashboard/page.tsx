@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { User, Mail, Calendar, CalendarClock, LogIn, Pencil, LogOut, Clock3, XCircle } from 'lucide-react'
+import { User, Mail, Calendar, CalendarClock, LogIn, Pencil, LogOut, Clock3, XCircle, ChevronDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import Link from 'next/link'
@@ -20,6 +20,7 @@ import {
   type DashboardRecentSessionsHandle,
 } from '@/components/DashboardRecentSessions'
 import { clockTitles } from '@/lib/clockTitles'
+import { cn } from '@/lib/utils'
 
 interface TimeStats {
   totalTime: number
@@ -72,6 +73,7 @@ export default function DashboardPage() {
   const [groupPlannedSessionsCount, setGroupPlannedSessionsCount] = useState(0)
   const [groupUpcomingSessionsCount, setGroupUpcomingSessionsCount] = useState(0)
   const [groupSessionSummary, setGroupSessionSummary] = useState<GroupSessionSummary | null>(null)
+  const [creatorSessionPanelOpen, setCreatorSessionPanelOpen] = useState(false)
   const recentSessionsRef = useRef<DashboardRecentSessionsHandle>(null)
 
   useEffect(() => {
@@ -364,58 +366,83 @@ export default function DashboardPage() {
             </div>
           </Card>
 
-          {/* Session (creator sets for the group) */}
+          {/* Session (creator sets for the group) — collapsible */}
           <section className="mt-8">
-            <div className="flex items-start justify-between gap-3 mb-4">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-                  Session (creator sets for the group)
-                </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Planned sessions from your lobby group configuration.
-                </p>
-              </div>
-              <Button asChild type="button" variant="outline" size="sm" className="rounded-full">
-                <Link href="/lobby">Manage in Lobby</Link>
-              </Button>
-            </div>
-            <Card className="rounded-2xl border-0 p-4 sm:p-6 bg-white/90 dark:bg-white/5 shadow-xl shadow-gray-200/50 dark:shadow-none backdrop-blur-sm">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="rounded-xl border border-black/5 dark:border-white/10 bg-white/70 dark:bg-white/[0.03] px-3 py-3">
-                  <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Planned sessions</p>
-                  <p className="text-2xl font-semibold text-gray-900 dark:text-white tabular-nums mt-1">
-                    {groupPlannedSessionsCount}
-                  </p>
-                </div>
-                <div className="rounded-xl border border-black/5 dark:border-white/10 bg-white/70 dark:bg-white/[0.03] px-3 py-3">
-                  <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Upcoming planned</p>
-                  <p className="text-2xl font-semibold text-gray-900 dark:text-white tabular-nums mt-1">
-                    {groupUpcomingSessionsCount}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4 space-y-2 text-sm">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-gray-500 dark:text-gray-400">Mandala</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    {groupSessionSummary
-                      ? (clockTitles[groupSessionSummary.clockId] ?? `Clock ${groupSessionSummary.clockId}`)
-                      : 'Not set'}
+            <Card className="rounded-2xl border-0 overflow-hidden bg-white/90 dark:bg-white/5 shadow-xl shadow-gray-200/50 dark:shadow-none backdrop-blur-sm">
+              <button
+                type="button"
+                id="dashboard-creator-session-toggle"
+                aria-expanded={creatorSessionPanelOpen}
+                aria-controls="dashboard-creator-session-panel"
+                onClick={() => setCreatorSessionPanelOpen((open) => !open)}
+                className="flex w-full items-start justify-between gap-3 px-4 sm:px-6 py-4 text-left transition-colors hover:bg-gray-50/80 dark:hover:bg-white/[0.04]"
+              >
+                <span className="min-w-0">
+                  <span className="text-lg font-semibold text-gray-900 dark:text-white block">
+                    Session (creator sets for the group)
                   </span>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-gray-500 dark:text-gray-400">Session length</span>
-                  <span className="font-medium text-gray-900 dark:text-white tabular-nums">
-                    {groupSessionSummary ? `${groupSessionSummary.durationMinutes} min` : 'Not set'}
+                  <span className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 block">
+                    Planned sessions and mandala settings from Lobby. Tap to expand.
                   </span>
+                </span>
+                <ChevronDown
+                  className={cn(
+                    'h-5 w-5 shrink-0 text-gray-500 dark:text-gray-400 transition-transform duration-200 mt-0.5',
+                    creatorSessionPanelOpen ? 'rotate-180' : 'rotate-0'
+                  )}
+                  aria-hidden
+                />
+              </button>
+              {creatorSessionPanelOpen ? (
+                <div
+                  id="dashboard-creator-session-panel"
+                  role="region"
+                  aria-labelledby="dashboard-creator-session-toggle"
+                  className="border-t border-gray-100 dark:border-white/10 px-4 sm:px-6 pb-5 pt-1"
+                >
+                  <div className="flex justify-end mb-4">
+                    <Button asChild type="button" variant="outline" size="sm" className="rounded-full">
+                      <Link href="/lobby">Manage in Lobby</Link>
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-xl border border-black/5 dark:border-white/10 bg-white/70 dark:bg-white/[0.03] px-3 py-3">
+                      <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Planned sessions</p>
+                      <p className="text-2xl font-semibold text-gray-900 dark:text-white tabular-nums mt-1">
+                        {groupPlannedSessionsCount}
+                      </p>
+                    </div>
+                    <div className="rounded-xl border border-black/5 dark:border-white/10 bg-white/70 dark:bg-white/[0.03] px-3 py-3">
+                      <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Upcoming planned</p>
+                      <p className="text-2xl font-semibold text-gray-900 dark:text-white tabular-nums mt-1">
+                        {groupUpcomingSessionsCount}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-4 space-y-2 text-sm">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-gray-500 dark:text-gray-400">Mandala</span>
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {groupSessionSummary
+                          ? (clockTitles[groupSessionSummary.clockId] ?? `Clock ${groupSessionSummary.clockId}`)
+                          : 'Not set'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-gray-500 dark:text-gray-400">Session length</span>
+                      <span className="font-medium text-gray-900 dark:text-white tabular-nums">
+                        {groupSessionSummary ? `${groupSessionSummary.durationMinutes} min` : 'Not set'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-gray-500 dark:text-gray-400">Focus nodes</span>
+                      <span className="font-medium text-gray-900 dark:text-white tabular-nums">
+                        {groupSessionSummary ? groupSessionSummary.focusNodeCount : 0}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-gray-500 dark:text-gray-400">Focus nodes</span>
-                  <span className="font-medium text-gray-900 dark:text-white tabular-nums">
-                    {groupSessionSummary ? groupSessionSummary.focusNodeCount : 0}
-                  </span>
-                </div>
-              </div>
+              ) : null}
             </Card>
           </section>
 
