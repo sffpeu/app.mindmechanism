@@ -490,8 +490,8 @@ export default function NotesPage() {
                     'inline-flex items-center justify-center gap-2 rounded-xl border-2 border-transparent bg-transparent px-5 py-3 min-h-[3rem] w-full sm:w-auto sm:shrink-0 self-end sm:self-auto',
                     'text-base font-semibold text-green-600 dark:text-green-400',
                     'transition-colors',
-                    'hover:bg-slate-100/90 hover:text-green-700 dark:hover:bg-white/10 dark:hover:text-green-300',
-                    'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:dark:hover:bg-transparent',
+                    'hover:bg-white hover:text-green-700 dark:hover:bg-white dark:hover:text-green-600 hover:shadow-sm',
+                    'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:shadow-none disabled:dark:hover:bg-transparent',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500/40 focus-visible:ring-offset-2'
                   )}
                 >
