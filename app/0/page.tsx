@@ -42,7 +42,6 @@ import DotNavigation from '@/components/DotNavigation'
 import { clockTitles } from '@/lib/clockTitles'
 import { DEFAULT_WORDS_BY_CLOCK } from '@/lib/defaultWordsByClock'
 import { cn } from '@/lib/utils'
-import { useMultiNodeSelection } from '@/lib/useMultiNodeSelection'
 import { CurvedCircleWordLabel } from '@/components/CurvedCircleWordLabel'
 import { getSession } from '@/lib/sessions'
 
@@ -89,15 +88,6 @@ const CLOCK_HEX = ['#fd290a', '#fba63b', '#f7da5f', '#6dc037', '#156fde', '#9419
 const clockHex = CLOCK_HEX[CLOCK_INDEX]
 const satelliteConfigs = defaultSatelliteConfigs[CLOCK_INDEX] ?? []
 
-// Helper function to convert hex to rgb
-const hexToRgb = (hex: string) => {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result ? {
-    r: parseInt(result[1], 16),
-    g: parseInt(result[2], 16),
-    b: parseInt(result[3], 16)
-  } : null;
-};
 
 function NodesPageContent() {
   const searchParams = useSearchParams()
@@ -112,7 +102,7 @@ function NodesPageContent() {
     }
     return true
   })
-  const { toggleNode, isNodeSelected, shouldLongPulse, getLongPulseTravelRank } = useMultiNodeSelection()
+  const [selectedNodeIndex, setSelectedNodeIndex] = useState<number | null>(null)
   const [hoveredNodeIndex, setHoveredNodeIndex] = useState<number | null>(null)
   const [showWords, setShowWords] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -372,6 +362,10 @@ function NodesPageContent() {
     loadGlossaryWords()
   }, [])
 
+  const handleNodeClick = (index: number) => {
+    setSelectedNodeIndex(selectedNodeIndex === index ? null : index)
+  }
+
   // Sentiment: very light fill for pill (hover/selected), outline for card
   const getSentimentStyles = (rating: '+' | '~' | '-' | undefined) => {
     const r = rating ?? '~'
@@ -448,9 +442,6 @@ function NodesPageContent() {
     }
   }
 
-  // Get the RGB values for the glow effect (clock 1)
-  const clockColor = hexToRgb(clockHex)
-
   // Add getElapsedTime helper function
   const getElapsedTime = (startDateTime: Date): string => {
     const elapsed = Date.now() - startDateTime.getTime()
@@ -494,6 +485,18 @@ function NodesPageContent() {
 
     return () => clearInterval(autoSaveInterval)
   }, [sessionId, remainingTime, isPaused])
+
+
+  const remainingSessionTime = duration != null ? (sessionState.remainingTime ?? duration) : null
+  const totalForProgress =
+    duration != null && duration > 0
+      ? sessionTotalDuration ?? originalDurationFromUrl ?? originalDuration ?? duration
+      : null
+  const sessionProgress =
+    totalForProgress != null && totalForProgress > 0 && remainingSessionTime != null
+      ? Math.min(1, Math.max(0, (totalForProgress - remainingSessionTime) / totalForProgress))
+      : 0
+  const isSessionActive = duration != null && duration > 0 && remainingSessionTime != null && remainingSessionTime > 0
 
   if (isLoading) {
     return <div>Loading...</div>
@@ -696,72 +699,34 @@ function NodesPageContent() {
 
         <div className="flex-grow flex items-center justify-center min-h-0 overflow-visible py-8">
           <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px] overflow-visible">
-            {/* Session progress ring (clock page) — same formula as dashboard: progress = (total - remaining) / total; total from session when continuing */}
-            {duration != null && duration > 0 && (() => {
-              const remaining = sessionState.remainingTime ?? duration
-              const urlOriginal = typeof window !== 'undefined' ? (() => {
-                const p = new URLSearchParams(window.location.search)
-                const v = p.get('originalDuration')
-                const n = v ? parseInt(v, 10) : NaN
-                return !Number.isNaN(n) && n > 0 ? n : null
-              })() : null
-              const totalForProgress = sessionTotalDuration ?? urlOriginal ?? originalDurationFromUrl ?? originalDuration ?? duration
-              const progress = totalForProgress > 0 ? Math.min(1, Math.max(0, (totalForProgress - remaining) / totalForProgress)) : 0
-              const trailRadiusInViewBox = 91
-              return (
-                <motion.div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{ zIndex: 5 }}
-                  animate={{ rotate: rotation + entranceOffset }}
-                  transition={{ type: 'tween', duration: entranceOffset > 0 ? 0 : 0.016, ease: 'linear' }}
-                >
-                  <svg
-                    className="absolute inset-0 w-full h-full"
-                    viewBox="-20 -20 140 140"
-                    preserveAspectRatio="xMidYMid meet"
-                    style={{ overflow: 'visible' }}
-                  >
-                    <circle
-                      cx={50}
-                      cy={50}
-                      r={trailRadiusInViewBox}
-                      fill="none"
-                      stroke={clockHex}
-                      strokeWidth={1.5}
-                      strokeLinecap="round"
-                      strokeDasharray={`${progress * 2 * Math.PI * trailRadiusInViewBox} ${2 * Math.PI * trailRadiusInViewBox}`}
-                      transform="rotate(-90 50 50)"
-                      opacity={0.85}
-                    />
-                  </svg>
-                </motion.div>
-              )
-            })()}
-
-            {/* Pulsing glow (color-matched to dot menu) */}
-            {clockColor && (
+            {/* Session progress ring (clock page) */}
+            {duration != null && duration > 0 && (
               <motion.div
-                className="absolute inset-0 rounded-full"
-                style={{
-                  zIndex: 10,
-                  '--shadow-color': `${clockColor.r}, ${clockColor.g}, ${clockColor.b}`,
-                } as React.CSSProperties}
-                animate={{
-                  boxShadow: [
-                    "0 0 50px rgba(var(--shadow-color), 0)",
-                    "0 0 100px rgba(var(--shadow-color), 0.15)",
-                    "0 0 150px rgba(var(--shadow-color), 0.3)",
-                    "0 0 100px rgba(var(--shadow-color), 0.15)",
-                    "0 0 50px rgba(var(--shadow-color), 0)"
-                  ]
-                }}
-                transition={{
-                  duration: 60,
-                  ease: [0.4, 0, 0.6, 1],
-                  repeat: Infinity,
-                  times: [0, 0.25, 0.5, 0.75, 1]
-                }}
-              />
+                className="absolute inset-0 pointer-events-none"
+                style={{ zIndex: 5 }}
+                animate={{ rotate: rotation + entranceOffset }}
+                transition={{ type: 'tween', duration: entranceOffset > 0 ? 0 : 0.016, ease: 'linear' }}
+              >
+                <svg
+                  className="absolute inset-0 w-full h-full"
+                  viewBox="-20 -20 140 140"
+                  preserveAspectRatio="xMidYMid meet"
+                  style={{ overflow: 'visible' }}
+                >
+                  <circle
+                    cx={50}
+                    cy={50}
+                    r={91}
+                    fill="none"
+                    stroke={clockHex}
+                    strokeWidth={1.5}
+                    strokeLinecap="round"
+                    strokeDasharray={`${sessionProgress * 2 * Math.PI * 91} ${2 * Math.PI * 91}`}
+                    transform="rotate(-90 50 50)"
+                    opacity={0.85}
+                  />
+                </svg>
+              </motion.div>
             )}
 
             {/* Satellites layer (no session progress on clock — progress bar is at bottom of page so it never blocks focus nodes) */}
@@ -839,7 +804,7 @@ function NodesPageContent() {
                     const nodeRadius = 55 // Increased from 48 to move nodes further out
                     const x = 50 + nodeRadius * Math.cos(radians)
                     const y = 50 + nodeRadius * Math.sin(radians)
-                    const isSelected = isNodeSelected(index)
+                    const isSelected = selectedNodeIndex === index
                     const word = customWords[index] || defaultWords[index]
 
                     const nodeStyle = {
@@ -861,7 +826,7 @@ function NodesPageContent() {
                             transform: 'translate(-50%, -50%)',
                             zIndex: nodeStyle.zIndex,
                           }}
-                          onClick={() => toggleNode(index)}
+                          onClick={() => handleNodeClick(index)}
                           onMouseEnter={() => setHoveredNodeIndex(index)}
                           onMouseLeave={() => setHoveredNodeIndex(null)}
                         >
@@ -879,10 +844,10 @@ function NodesPageContent() {
                         </ClockFocusNodeAppear>
                         {showWords && isSelected && word && (
                           <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 900 }}>
-                            <AnimatePresence>
+                            <AnimatePresence mode="wait">
                               {selectedWord === word ? null : (
                                 <motion.div
-                                  key={`word-${index}`}
+                                  key="pill"
                                   className="absolute inset-0"
                                   initial={{ opacity: 0 }}
                                   animate={{ opacity: 1 }}
@@ -893,9 +858,7 @@ function NodesPageContent() {
                                     centerAngleDeg={angle}
                                     radiusPercent={nodeRadius + 5}
                                     isSelected={isSelected}
-                                    longActivePulse={shouldLongPulse(index)}
-                                    accentHex={clockHex}
-                                    breathTravel={getLongPulseTravelRank(index)}
+                                    textColor={isSessionActive && sessionProgress >= (((angle - 270 + 360) % 360) / 360) ? clockHex : '#ffffff'}
                                     interactive
                                     isHovered={pillHoveredWord === word}
                                     onHoverIn={() => setPillHoveredWord(word)}

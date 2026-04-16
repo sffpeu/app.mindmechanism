@@ -1,9 +1,6 @@
 'use client'
 
 import { useId, useMemo } from 'react'
-import { motion } from 'framer-motion'
-import { breathingFillAt, parseHexColor, type BreathTravel } from '@/lib/breathingColor'
-import { useBreathingNow } from '@/lib/useBreathingNow'
 
 const CX = 50
 const CY = 50
@@ -52,13 +49,8 @@ export type CurvedCircleWordLabelProps = {
   isHovered?: boolean
   onHoverIn?: () => void
   onHoverOut?: () => void
-  /** After threshold (e.g. 1 min): white ↔ wheel color breathing over 30s; multi-select staggers via `breathTravel`. */
-  longActivePulse?: boolean
-  /** Wheel accent (same hex as clock rim); required for long-active breathing. */
-  accentHex?: string
-  /** Rank among long-active nodes (sorted by index) so multiple words chase around the wheel. */
-  breathTravel?: BreathTravel | null
   className?: string
+  textColor?: string
 }
 
 /**
@@ -75,24 +67,12 @@ export function CurvedCircleWordLabel({
   isHovered = false,
   onHoverIn,
   onHoverOut,
-  longActivePulse = false,
-  accentHex,
-  breathTravel = null,
   className,
+  textColor = '#ffffff',
 }: CurvedCircleWordLabelProps) {
   const reactId = useId()
-  const breathTick = useBreathingNow(longActivePulse && !!accentHex)
-
-  const accentRgb = useMemo(() => (accentHex ? parseHexColor(accentHex) : null), [accentHex])
-
-  const breathingFill = useMemo(() => {
-    if (!longActivePulse || !accentRgb) return null
-    const travel = breathTravel ?? { rank: 0, total: 1 }
-    return breathingFillAt(breathTick, accentRgb, travel)
-  }, [longActivePulse, accentRgb, breathTravel, breathTick])
   const safeId = reactId.replace(/:/g, '')
   const pathId = `wheel-arc-${safeId}`
-  const filterId = `wheel-sh-${safeId}`
 
   const pathD = useMemo(() => {
     const half = halfSpanDegrees(word)
@@ -107,15 +87,12 @@ export function CurvedCircleWordLabel({
   return (
     <svg
       viewBox="0 0 100 100"
-      className={`h-full w-full overflow-visible text-black dark:text-white ${className ?? ''}`}
+      className={`h-full w-full overflow-visible ${className ?? ''}`}
+      style={{ color: textColor }}
       aria-hidden={!interactive}
       role={interactive ? 'presentation' : undefined}
     >
       <defs>
-        <filter id={filterId} x="-40%" y="-40%" width="180%" height="180%">
-          <feDropShadow dx="0" dy="0.4" stdDeviation="0.45" floodColor="white" floodOpacity="0.85" />
-          <feDropShadow dx="0" dy="0.6" stdDeviation="0.9" floodColor="black" floodOpacity="0.35" />
-        </filter>
         <path id={pathId} d={pathD} fill="none" />
       </defs>
 
@@ -137,25 +114,18 @@ export function CurvedCircleWordLabel({
         />
       )}
 
-      <motion.text
-        filter={`url(#${filterId})`}
-        className={breathingFill ? 'font-bold uppercase tracking-wide' : 'fill-current font-bold uppercase tracking-wide'}
+      <text
+        className="fill-current font-bold uppercase tracking-wide"
         style={{
           fontSize: fs,
           pointerEvents: 'none',
-          ...(breathingFill ? { fill: breathingFill } : {}),
+          opacity: isHovered && interactive ? 1 : interactive ? 0.96 : 1,
         }}
-        animate={
-          longActivePulse && breathingFill
-            ? { opacity: 1 }
-            : { opacity: isHovered && interactive ? 1 : interactive ? 0.96 : 1 }
-        }
-        transition={{ duration: longActivePulse && breathingFill ? 0 : 0.2 }}
       >
         <textPath href={`#${pathId}`} startOffset="50%" textAnchor="middle" method="align" spacing="auto">
           {display}
         </textPath>
-      </motion.text>
+      </text>
     </svg>
   )
 }
