@@ -45,8 +45,6 @@ import { cn } from '@/lib/utils'
 import { CurvedCircleWordLabel } from '@/components/CurvedCircleWordLabel'
 import { wordProgressAlongProgressRing } from '@/lib/sessionWordRingFill'
 import { getSession } from '@/lib/sessions'
-import { useSoundEffects } from '@/lib/sounds'
-import { useSessionProgressNodeSounds } from '@/lib/useSessionProgressNodeSounds'
 
 // Weather and Moon data interfaces
 interface WeatherResponse {
@@ -285,7 +283,6 @@ function NodesPageContent() {
   }
 
   const sessionState = useSessionTimer(duration, sessionId, handleSessionComplete)
-  const { playNodeReach } = useSoundEffects()
 
   const handlePauseResume = () => {
     if (duration != null) sessionState.onPauseResume()
@@ -506,13 +503,6 @@ function NodesPageContent() {
   const isSessionActive = duration != null && duration > 0 && remainingSessionTime != null && remainingSessionTime > 0
 
 
-  useSessionProgressNodeSounds({
-    sessionProgress,
-    isSessionActive,
-    selectedIndices: selectedNodeIndices,
-    focusNodes,
-    playNodeReach,
-  })
 
   if (isLoading) {
     return <div>Loading...</div>
