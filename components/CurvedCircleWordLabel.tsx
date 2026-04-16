@@ -36,6 +36,23 @@ function fontSizeUserUnits(word: string, isSelected: boolean): number {
   return isSelected ? base * 1.06 : base
 }
 
+function parseHex(hex: string): { r: number; g: number; b: number } | null {
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex.trim())
+  if (!m) return null
+  return { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) }
+}
+
+function lerpRgb(a: string, b: string, t: number): string {
+  const A = parseHex(a)
+  const B = parseHex(b)
+  if (!A || !B) return b
+  const u = Math.min(1, Math.max(0, t))
+  const r = Math.round(A.r + (B.r - A.r) * u)
+  const g = Math.round(A.g + (B.g - A.g) * u)
+  const bl = Math.round(A.b + (B.b - A.b) * u)
+  return `rgb(${r},${g},${bl})`
+}
+
 export type CurvedCircleWordLabelProps = {
   word: string
   /** Polar angle (degrees) of the label’s center on the wheel. */
@@ -50,7 +67,12 @@ export type CurvedCircleWordLabelProps = {
   onHoverIn?: () => void
   onHoverOut?: () => void
   className?: string
+  /** Single fill when not using letter reveal (default white). */
   textColor?: string
+  /** Session-style letter-by-letter fill from base → accent (0–1). Requires `accentColor`. */
+  letterRevealProgress?: number
+  baseColor?: string
+  accentColor?: string
 }
 
 /**
@@ -69,6 +91,9 @@ export function CurvedCircleWordLabel({
   onHoverOut,
   className,
   textColor = '#ffffff',
+  letterRevealProgress,
+  baseColor = '#ffffff',
+  accentColor,
 }: CurvedCircleWordLabelProps) {
   const reactId = useId()
   const safeId = reactId.replace(/:/g, '')
@@ -83,12 +108,16 @@ export function CurvedCircleWordLabel({
 
   const fs = fontSizeUserUnits(word, isSelected)
   const display = word.trim().toUpperCase()
+  const useLetterReveal = accentColor != null && letterRevealProgress != null
+  const chars = Array.from(display)
+  const letterCount = Math.max(chars.length, 1)
+  const p = Math.min(1, Math.max(0, letterRevealProgress ?? 0)) * letterCount
 
   return (
     <svg
       viewBox="0 0 100 100"
       className={`h-full w-full overflow-visible ${className ?? ''}`}
-      style={{ color: textColor }}
+      style={useLetterReveal ? undefined : { color: textColor }}
       aria-hidden={!interactive}
       role={interactive ? 'presentation' : undefined}
     >
@@ -123,7 +152,13 @@ export function CurvedCircleWordLabel({
         }}
       >
         <textPath href={`#${pathId}`} startOffset="50%" textAnchor="middle" method="align" spacing="auto">
-          {display}
+          {useLetterReveal
+            ? chars.map((ch, i) => (
+                <tspan key={`${i}-${ch}`} fill={lerpRgb(baseColor, accentColor!, Math.min(1, Math.max(0, p - i)))}>
+                  {ch}
+                </tspan>
+              ))
+            : display}
         </textPath>
       </text>
     </svg>

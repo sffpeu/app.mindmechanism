@@ -58,6 +58,8 @@ export const useSoundEffects = () => {
     playStep1,
     playStep2,
     playSuccess,
+    /** Short tick when session progress reaches a focus node on the wheel */
+    playNodeReach: playStep1,
     playDialog: (action: 'open' | 'close') => playDialog({ id: action }),
   };
 }; 

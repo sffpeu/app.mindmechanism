@@ -43,6 +43,8 @@ import { DEFAULT_WORDS_BY_CLOCK } from '@/lib/defaultWordsByClock'
 import { cn } from '@/lib/utils'
 import { CurvedCircleWordLabel } from '@/components/CurvedCircleWordLabel'
 import { getSession } from '@/lib/sessions'
+import { useSoundEffects } from '@/lib/sounds'
+import { useSessionProgressNodeSounds } from '@/lib/useSessionProgressNodeSounds'
 
 // Weather and Moon data interfaces
 interface WeatherResponse {
@@ -98,7 +100,7 @@ function NodesPageContent() {
     }
     return true
   })
-  const [selectedNodeIndex, setSelectedNodeIndex] = useState<number | null>(null)
+  const [selectedNodeIndices, setSelectedNodeIndices] = useState<number[]>([])
   const [hoveredNodeIndex, setHoveredNodeIndex] = useState<number | null>(null)
   const [showWords, setShowWords] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -123,7 +125,8 @@ function NodesPageContent() {
   const [glossaryWords, setGlossaryWords] = useState<GlossaryWord[]>([])
   const [loadingGlossary, setLoadingGlossary] = useState(true)
   const [selectedWord, setSelectedWord] = useState<string | null>(null)
-  const [pillHoveredWord, setPillHoveredWord] = useState<string | null>(null)
+  const [pillHoveredNodeIndex, setPillHoveredNodeIndex] = useState<number | null>(null)
+  const [glossaryOpenForNode, setGlossaryOpenForNode] = useState<number | null>(null)
   const [cardPosition, setCardPosition] = useState<{ x: number; y: number } | null>(null)
   const dragRef = useRef<{ startX: number; startY: number; startLeft: number; startTop: number } | null>(null)
   const isMountedRef = useRef(true)
@@ -281,6 +284,7 @@ function NodesPageContent() {
   }
 
   const sessionState = useSessionTimer(duration, sessionId, handleSessionComplete)
+  const { playNodeReach } = useSoundEffects()
 
   const handlePauseResume = () => {
     if (duration != null) sessionState.onPauseResume()
@@ -363,7 +367,9 @@ function NodesPageContent() {
   }, [])
 
   const handleNodeClick = (index: number) => {
-    setSelectedNodeIndex(selectedNodeIndex === index ? null : index)
+    setSelectedNodeIndices((prev) =>
+      prev.includes(index) ? prev.filter((j) => j !== index) : [...prev, index]
+    )
   }
 
   const getSentimentStyles = (rating: '+' | '~' | '-' | undefined) => {
@@ -455,6 +461,15 @@ function NodesPageContent() {
       ? Math.min(1, Math.max(0, (totalForProgress - remainingSessionTime) / totalForProgress))
       : 0
   const isSessionActive = duration != null && duration > 0 && remainingSessionTime != null && remainingSessionTime > 0
+
+
+  useSessionProgressNodeSounds({
+    sessionProgress,
+    isSessionActive,
+    selectedIndices: selectedNodeIndices,
+    focusNodes,
+    playNodeReach,
+  })
 
   if (isLoading) {
     return <div>Loading...</div>
@@ -762,7 +777,7 @@ function NodesPageContent() {
                     const nodeRadius = 55 // Increased from 48 to move nodes further out
                     const x = 50 + nodeRadius * Math.cos(radians)
                     const y = 50 + nodeRadius * Math.sin(radians)
-                    const isSelected = selectedNodeIndex === index
+                    const isSelected = selectedNodeIndices.includes(index)
                     const word = customWords[index] || defaultWords[index]
 
                     const nodeStyle = {
@@ -802,10 +817,10 @@ function NodesPageContent() {
                         </ClockFocusNodeAppear>
                         {showWords && isSelected && word && (
                           <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 900 }}>
-                            <AnimatePresence mode="wait">
-                              {selectedWord === word ? null : (
+                            <AnimatePresence>
+                              {selectedWord && glossaryOpenForNode === index ? null : (
                                 <motion.div
-                                  key="pill"
+                                  key={`pill-${index}`}
                                   className="absolute inset-0"
                                   initial={{ opacity: 0 }}
                                   animate={{ opacity: 1 }}
@@ -816,16 +831,19 @@ function NodesPageContent() {
                                     centerAngleDeg={angle}
                                     radiusPercent={nodeRadius + 5}
                                     isSelected={isSelected}
-                                    textColor={isSessionActive && sessionProgress >= (((angle - 270 + 360) % 360) / 360) ? clockHex : '#ffffff'}
+                                    letterRevealProgress={isSessionActive ? sessionProgress : 0}
+                                    baseColor="#ffffff"
+                                    accentColor={clockHex}
                                     interactive
-                                    isHovered={pillHoveredWord === word}
-                                    onHoverIn={() => setPillHoveredWord(word)}
-                                    onHoverOut={() => setPillHoveredWord(null)}
+                                    isHovered={pillHoveredNodeIndex === index}
+                                    onHoverIn={() => setPillHoveredNodeIndex(index)}
+                                    onHoverOut={() => setPillHoveredNodeIndex(null)}
                                     onActivate={(e) => {
                                       e.stopPropagation()
                                       const path = e.currentTarget as SVGPathElement
                                       const rect = path.ownerSVGElement?.getBoundingClientRect()
                                       if (rect) setCardPosition({ x: rect.left, y: rect.top })
+                                      setGlossaryOpenForNode(index)
                                       setSelectedWord(word)
                                     }}
                                   />
@@ -873,7 +891,7 @@ function NodesPageContent() {
                       </div>
                     </div>
                   </div>
-                  <button type="button" onClick={(e) => { e.stopPropagation(); setSelectedWord(null) }} className="absolute top-2 right-2 p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-700 dark:hover:text-white transition-colors" aria-label="Close card">
+                  <button type="button" onClick={(e) => { e.stopPropagation(); setSelectedWord(null); setGlossaryOpenForNode(null) }} className="absolute top-2 right-2 p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-700 dark:hover:text-white transition-colors" aria-label="Close card">
                     <X className="w-4 h-4" />
                   </button>
                   <div className="px-4 pb-4 pt-0 cursor-default">
