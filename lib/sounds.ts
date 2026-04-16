@@ -57,9 +57,9 @@ export const useSoundEffects = () => {
     playStart,
     playStep1,
     playStep2,
-    playSuccess,
-    /** Short tick when session progress reaches a focus node on the wheel */
+    /** Session sweep crossing a focus-node sector (same asset as step1, separate knob if needed later). */
     playNodeReach: playStep1,
+    playSuccess,
     playDialog: (action: 'open' | 'close') => playDialog({ id: action }),
   };
 }; 

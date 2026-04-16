@@ -42,6 +42,7 @@ import { clockTitles } from '@/lib/clockTitles'
 import { DEFAULT_WORDS_BY_CLOCK } from '@/lib/defaultWordsByClock'
 import { cn } from '@/lib/utils'
 import { CurvedCircleWordLabel } from '@/components/CurvedCircleWordLabel'
+import { wordProgressAlongProgressRing } from '@/lib/sessionWordRingFill'
 import { getSession } from '@/lib/sessions'
 import { useSoundEffects } from '@/lib/sounds'
 import { useSessionProgressNodeSounds } from '@/lib/useSessionProgressNodeSounds'
@@ -810,7 +811,7 @@ function NodesPageContent() {
                                     centerAngleDeg={angle}
                                     radiusPercent={nodeRadius + 5}
                                     isSelected={isSelected}
-                                    letterRevealProgress={isSessionActive ? sessionProgress : 0}
+                                    fillProgress={wordProgressAlongProgressRing(sessionProgress, index, focusNodes, isSessionActive)}
                                     baseColor="#ffffff"
                                     accentColor={clockHex}
                                     interactive

@@ -1,6 +1,7 @@
 'use client'
 
 import { useId, useMemo } from 'react'
+import { cn } from '@/lib/utils'
 
 const CX = 50
 const CY = 50
@@ -42,15 +43,19 @@ function parseHex(hex: string): { r: number; g: number; b: number } | null {
   return { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) }
 }
 
-function lerpRgb(a: string, b: string, t: number): string {
-  const A = parseHex(a)
-  const B = parseHex(b)
-  if (!A || !B) return b
+function toHexByte(n: number): string {
+  return Math.min(255, Math.max(0, n)).toString(16).padStart(2, '0')
+}
+
+function lerpHex(from: string, to: string, t: number): string {
+  const a = parseHex(from)
+  const b = parseHex(to)
+  if (!a || !b) return to
   const u = Math.min(1, Math.max(0, t))
-  const r = Math.round(A.r + (B.r - A.r) * u)
-  const g = Math.round(A.g + (B.g - A.g) * u)
-  const bl = Math.round(A.b + (B.b - A.b) * u)
-  return `rgb(${r},${g},${bl})`
+  const r = Math.round(a.r + (b.r - a.r) * u)
+  const g = Math.round(a.g + (b.g - a.g) * u)
+  const bl = Math.round(a.b + (b.b - a.b) * u)
+  return `#${toHexByte(r)}${toHexByte(g)}${toHexByte(bl)}`
 }
 
 export type CurvedCircleWordLabelProps = {
@@ -67,10 +72,10 @@ export type CurvedCircleWordLabelProps = {
   onHoverIn?: () => void
   onHoverOut?: () => void
   className?: string
-  /** Single fill when not using letter reveal (default white). */
+  /** Solid fill when `fillProgress` is not used (e.g. dashboard clock). */
   textColor?: string
-  /** Session-style letter-by-letter fill from base → accent (0–1). Requires `accentColor`. */
-  letterRevealProgress?: number
+  /** 0 = baseColor, 1 = accentColor; when set, drives fill for session ring sync. */
+  fillProgress?: number
   baseColor?: string
   accentColor?: string
 }
@@ -90,10 +95,10 @@ export function CurvedCircleWordLabel({
   onHoverIn,
   onHoverOut,
   className,
-  textColor = '#ffffff',
-  letterRevealProgress,
+  textColor,
+  fillProgress,
   baseColor = '#ffffff',
-  accentColor,
+  accentColor = '#ffffff',
 }: CurvedCircleWordLabelProps) {
   const reactId = useId()
   const safeId = reactId.replace(/:/g, '')
@@ -108,16 +113,19 @@ export function CurvedCircleWordLabel({
 
   const fs = fontSizeUserUnits(word, isSelected)
   const display = word.trim().toUpperCase()
-  const useLetterReveal = accentColor != null && letterRevealProgress != null
-  const chars = Array.from(display)
-  const letterCount = Math.max(chars.length, 1)
-  const p = Math.min(1, Math.max(0, letterRevealProgress ?? 0)) * letterCount
+
+  const useRingFill = typeof fillProgress === 'number'
+  const fillColor = useRingFill ? lerpHex(baseColor, accentColor, fillProgress) : textColor
 
   return (
     <svg
       viewBox="0 0 100 100"
-      className={`h-full w-full overflow-visible ${className ?? ''}`}
-      style={useLetterReveal ? undefined : { color: textColor }}
+      className={cn(
+        'h-full w-full overflow-visible',
+        !useRingFill && !textColor && 'text-black dark:text-white',
+        className
+      )}
+      style={fillColor ? { color: fillColor } : undefined}
       aria-hidden={!interactive}
       role={interactive ? 'presentation' : undefined}
     >
@@ -152,13 +160,7 @@ export function CurvedCircleWordLabel({
         }}
       >
         <textPath href={`#${pathId}`} startOffset="50%" textAnchor="middle" method="align" spacing="auto">
-          {useLetterReveal
-            ? chars.map((ch, i) => (
-                <tspan key={`${i}-${ch}`} fill={lerpRgb(baseColor, accentColor!, Math.min(1, Math.max(0, p - i)))}>
-                  {ch}
-                </tspan>
-              ))
-            : display}
+          {display}
         </textPath>
       </text>
     </svg>
