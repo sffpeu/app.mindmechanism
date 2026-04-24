@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { SpotifyTokens } from '@/lib/spotify'
 
 const CLOCK_COUNT = 9
 
@@ -57,6 +58,16 @@ interface SettingsState {
    */
   hueRoomIds: string[];
   setHueRoomIds: (ids: string[]) => void;
+
+  // ── Music ─────────────────────────────────────────────────────────────────
+
+  /** Spotify PKCE tokens. null = not connected */
+  spotifyTokens: SpotifyTokens | null;
+  setSpotifyTokens: (tokens: SpotifyTokens | null) => void;
+
+  /** Apple Music user token returned from MusicKit.authorize(). null = not connected */
+  appleMusicUserToken: string | null;
+  setAppleMusicUserToken: (token: string | null) => void;
 }
 
 export const useSettings = create<SettingsState>()(
@@ -98,6 +109,12 @@ export const useSettings = create<SettingsState>()(
 
       hueRoomIds: [],
       setHueRoomIds: (ids) => set({ hueRoomIds: ids }),
+
+      spotifyTokens: null,
+      setSpotifyTokens: (tokens) => set({ spotifyTokens: tokens }),
+
+      appleMusicUserToken: null,
+      setAppleMusicUserToken: (token) => set({ appleMusicUserToken: token }),
     }),
     {
       name: 'app-settings',

@@ -4,15 +4,20 @@ import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
-import { Volume2, VolumeX, Music2, ShoppingBag, Lock } from 'lucide-react'
+import {
+  Volume2, VolumeX, Music2, ShoppingBag, Lock,
+  CheckCircle2, Loader2, AlertCircle, LogOut,
+} from 'lucide-react'
 import { useSettings } from '@/lib/hooks/useSettings'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { clockTitles } from '@/lib/clockTitles'
 import { cn } from '@/lib/utils'
+import { startSpotifyAuth, spotifyTokensValid } from '@/lib/spotify'
+import { authorizeAppleMusic, unauthorizeAppleMusic } from '@/lib/appleMusicKit'
+import { useState, useCallback } from 'react'
 
 const CLOCK_COUNT = 9
 
-// Placeholder pack data — will come from a Firestore products collection
 const SOUND_PACKS = [
   {
     id: 'mm-foundations',
@@ -48,17 +53,132 @@ const SOUND_PACKS = [
   },
 ]
 
+// ── Service connect button ────────────────────────────────────────────────────
+
+type ConnectState = 'idle' | 'connecting' | 'connected' | 'error'
+
+function ServiceButton({
+  label,
+  icon,
+  state,
+  errorMsg,
+  onConnect,
+  onDisconnect,
+}: {
+  label: string
+  icon: React.ReactNode
+  state: ConnectState
+  errorMsg?: string
+  onConnect: () => void
+  onDisconnect: () => void
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <button
+        type="button"
+        onClick={state === 'connected' ? onDisconnect : onConnect}
+        disabled={state === 'connecting'}
+        className={cn(
+          'flex items-center justify-between gap-2 rounded-lg border py-2.5 px-3 text-sm transition-colors w-full',
+          state === 'connected'
+            ? 'border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400'
+            : state === 'error'
+            ? 'border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-900/10 text-red-600 dark:text-red-400'
+            : 'border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/40 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/60',
+          state === 'connecting' && 'opacity-60 cursor-not-allowed'
+        )}
+      >
+        <span className="flex items-center gap-2">
+          {icon}
+          {label}
+        </span>
+        {state === 'connecting' && <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />}
+        {state === 'connected' && (
+          <span className="flex items-center gap-1 text-xs">
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            <LogOut className="h-3 w-3 opacity-60" />
+          </span>
+        )}
+        {state === 'error' && <AlertCircle className="h-3.5 w-3.5 shrink-0" />}
+        {state === 'idle' && <span className="text-[10px] text-gray-400 shrink-0">Connect</span>}
+      </button>
+      {state === 'error' && errorMsg && (
+        <p className="text-[10px] text-red-500 dark:text-red-400 px-0.5">{errorMsg}</p>
+      )}
+    </div>
+  )
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
+
 export function SoundSettings() {
   const {
     soundEnabled, setSoundEnabled,
     tonesEnabled, setTonesEnabled,
     toneVolume, setToneVolume,
     clockToneMuted, setClockToneMuted,
+    spotifyTokens, setSpotifyTokens,
+    appleMusicUserToken, setAppleMusicUserToken,
   } = useSettings()
 
   const { profile } = useAuth()
   const tier = profile?.tier ?? 'open'
   const hasStreamingAccess = tier === 'standard' || tier === 'sovereign'
+
+  // Spotify
+  const [spotifyState, setSpotifyState] = useState<ConnectState>(
+    spotifyTokensValid(spotifyTokens) ? 'connected' : 'idle'
+  )
+  const [spotifyError, setSpotifyError] = useState<string | undefined>()
+
+  const connectSpotify = useCallback(() => {
+    setSpotifyState('connecting')
+    setSpotifyError(undefined)
+    try {
+      // startSpotifyAuth() redirects — state changes won't matter after this
+      startSpotifyAuth().catch((err: unknown) => {
+        setSpotifyState('error')
+        setSpotifyError(err instanceof Error ? err.message : 'Could not start Spotify auth')
+      })
+    } catch (err) {
+      setSpotifyState('error')
+      setSpotifyError(err instanceof Error ? err.message : 'Could not start Spotify auth')
+    }
+  }, [])
+
+  const disconnectSpotify = useCallback(() => {
+    setSpotifyTokens(null)
+    setSpotifyState('idle')
+  }, [setSpotifyTokens])
+
+  // Apple Music
+  const [appleState, setAppleState] = useState<ConnectState>(
+    appleMusicUserToken ? 'connected' : 'idle'
+  )
+  const [appleError, setAppleError] = useState<string | undefined>()
+
+  const connectAppleMusic = useCallback(async () => {
+    setAppleState('connecting')
+    setAppleError(undefined)
+    try {
+      const userToken = await authorizeAppleMusic()
+      setAppleMusicUserToken(userToken)
+      setAppleState('connected')
+    } catch (err) {
+      setAppleState('error')
+      setAppleError(err instanceof Error ? err.message : 'Apple Music authorisation failed')
+    }
+  }, [setAppleMusicUserToken])
+
+  const disconnectAppleMusic = useCallback(async () => {
+    try {
+      await unauthorizeAppleMusic()
+    } catch {
+      // best-effort
+    }
+    setAppleMusicUserToken(null)
+    setAppleState('idle')
+  }, [setAppleMusicUserToken])
 
   return (
     <div className="space-y-4">
@@ -161,8 +281,8 @@ export function SoundSettings() {
             <div>
               <p className="text-sm font-medium text-gray-900 dark:text-white">Your music</p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">
-                Bring your own playlist. Connect Apple Music or Spotify and your
-                library plays through sessions — your taste, the MM's structure.
+                Connect your streaming service — your playlists play through
+                sessions. Your taste, the MM's structure.
               </p>
             </div>
           </div>
@@ -171,21 +291,30 @@ export function SoundSettings() {
 
         {hasStreamingAccess ? (
           <div className="grid grid-cols-2 gap-2 pt-1">
-            {[
-              { label: 'Apple Music', icon: (
-                <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden><path d="M23.994 6.124a9.23 9.23 0 0 0-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 0 0-1.877-.726 10.496 10.496 0 0 0-1.564-.15c-.04-.003-.083-.01-.124-.013H5.986c-.152.01-.303.017-.455.026C4.786.07 4.043.15 3.34.428 2.004.958 1.04 1.88.475 3.208c-.192.448-.292.925-.363 1.408-.056.392-.088.785-.1 1.18 0 .032-.007.062-.01.093v12.223c.01.14.017.283.027.424.05.815.154 1.624.497 2.373.65 1.42 1.738 2.353 3.234 2.802.42.127.856.187 1.293.228.497.044.995.06 1.494.065h11.22c.54-.005 1.075-.047 1.61-.1.386-.04.772-.1 1.148-.213 1.357-.384 2.366-1.17 3.005-2.417.38-.754.487-1.566.535-2.39.01-.14.014-.28.018-.42V6.124zm-6.954 1.976l-5.8 3.35a.776.776 0 0 1-1.172-.668V4.6a.776.776 0 0 1 1.173-.668l5.8 3.348a.776.776 0 0 1 0 1.82z"/></svg>
-              )},
-              { label: 'Spotify', icon: (
-                <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current text-[#1DB954]" aria-hidden><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-              )},
-            ].map(({ label, icon }) => (
-              <button key={label} type="button" disabled
-                className="flex items-center justify-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 py-2.5 px-3 text-sm text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-60">
-                {icon}
-                {label}
-                <span className="text-[10px] text-gray-400 ml-auto">Soon</span>
-              </button>
-            ))}
+            <ServiceButton
+              label="Apple Music"
+              icon={
+                <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current shrink-0" aria-hidden>
+                  <path d="M23.994 6.124a9.23 9.23 0 0 0-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 0 0-1.877-.726 10.496 10.496 0 0 0-1.564-.15c-.04-.003-.083-.01-.124-.013H5.986c-.152.01-.303.017-.455.026C4.786.07 4.043.15 3.34.428 2.004.958 1.04 1.88.475 3.208c-.192.448-.292.925-.363 1.408-.056.392-.088.785-.1 1.18 0 .032-.007.062-.01.093v12.223c.01.14.017.283.027.424.05.815.154 1.624.497 2.373.65 1.42 1.738 2.353 3.234 2.802.42.127.856.187 1.293.228.497.044.995.06 1.494.065h11.22c.54-.005 1.075-.047 1.61-.1.386-.04.772-.1 1.148-.213 1.357-.384 2.366-1.17 3.005-2.417.38-.754.487-1.566.535-2.39.01-.14.014-.28.018-.42V6.124zm-6.954 1.976l-5.8 3.35a.776.776 0 0 1-1.172-.668V4.6a.776.776 0 0 1 1.173-.668l5.8 3.348a.776.776 0 0 1 0 1.82z"/>
+                </svg>
+              }
+              state={appleState}
+              errorMsg={appleError}
+              onConnect={connectAppleMusic}
+              onDisconnect={disconnectAppleMusic}
+            />
+            <ServiceButton
+              label="Spotify"
+              icon={
+                <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current text-[#1DB954] shrink-0" aria-hidden>
+                  <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+                </svg>
+              }
+              state={spotifyState}
+              errorMsg={spotifyError}
+              onConnect={connectSpotify}
+              onDisconnect={disconnectSpotify}
+            />
           </div>
         ) : (
           <p className="text-xs text-gray-400 dark:text-gray-500">
