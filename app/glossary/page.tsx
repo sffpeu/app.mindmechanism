@@ -314,23 +314,35 @@ export default function GlossaryPage() {
         <div className="flex-1 min-h-0 flex flex-col max-w-7xl mx-auto w-full px-4 py-6">
           <div className="mb-6 shrink-0">
             <h1 className="text-2xl font-semibold dark:text-white mb-2">Glossary</h1>
-            <p className="text-gray-600 dark:text-gray-400">Browse and search through meditation focus words</p>
+            <p className="text-gray-600 dark:text-gray-400">The vocabulary of the interior. Browse, search, and build your own word set.</p>
           </div>
 
-          <div className="flex-1 min-h-0 flex flex-col min-h-[320px] overflow-hidden">
-            <div className="flex-1 min-h-0 relative">
-              <GlossaryWordScrollList
-                loading={loading}
-                letterSections={letterSections}
-                scrollContainerRef={scrollContainerRef}
-                sectionRefsMap={sectionRefsMap}
-                selectedCard={selectedCard}
-                onSelectCard={setSelectedCard}
-                getDefaultIconStyle={getDefaultIconStyle}
-                clockHexPalette={CLOCK_HEX}
-              />
+          <div className="flex-1 min-h-0 flex flex-row overflow-hidden gap-0">
+            {/* Word list + toolbar */}
+            <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+              <div className="flex-1 min-h-0 relative">
+                <GlossaryWordScrollList
+                  loading={loading}
+                  letterSections={letterSections}
+                  scrollContainerRef={scrollContainerRef}
+                  sectionRefsMap={sectionRefsMap}
+                  selectedCard={selectedCard}
+                  onSelectCard={setSelectedCard}
+                  getDefaultIconStyle={getDefaultIconStyle}
+                  clockHexPalette={CLOCK_HEX}
+                />
+              </div>
+              {bottomChrome}
             </div>
-            {bottomChrome}
+
+            {/* Detail panel — same component as visual mode */}
+            {selectedCard && (
+              <GlossaryVisualWordPanel
+                word={selectedCard}
+                clockHexPalette={CLOCK_HEX}
+                onClose={() => setSelectedCard(null)}
+              />
+            )}
           </div>
         </div>
       )}

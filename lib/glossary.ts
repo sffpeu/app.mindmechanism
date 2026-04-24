@@ -1,9 +1,10 @@
 import { db } from './firebase';
-import { GlossaryWord, WordRating } from '@/types/Glossary';
-import { 
+import { GlossaryWord, GlossaryDefinition, WordRating } from '@/types/Glossary';
+import {
   collection,
   query as firestoreQuery,
   getDocs,
+  getDoc,
   addDoc,
   updateDoc,
   deleteDoc,
@@ -12,6 +13,52 @@ import {
   orderBy,
   Firestore
 } from 'firebase/firestore';
+
+/**
+ * Fetch IPA phonetic spelling from the Free Dictionary API.
+ * Returns the IPA string on success, empty string if not found or language unsupported.
+ * Languages supported by the API: en, es, fr, de, it, pt-BR, ru, ar, hi, ja, ko, tr.
+ */
+export async function fetchIpaPhonetic(word: string, language: string = 'en'): Promise<string> {
+  if (!word.trim() || language === 'other') return ''
+  try {
+    const res = await fetch(
+      `https://api.dictionaryapi.dev/api/v2/entries/${language}/${encodeURIComponent(word.toLowerCase().trim())}`,
+      { signal: AbortSignal.timeout(4000) }
+    )
+    if (!res.ok) return ''
+    const data = await res.json()
+    if (!Array.isArray(data) || data.length === 0) return ''
+    // Prefer a phonetic entry that has IPA text
+    const phonetics: Array<{ text?: string }> = data[0]?.phonetics ?? []
+    const ipaEntry = phonetics.find((p) => p.text?.startsWith('/') || p.text?.startsWith('['))
+    return ipaEntry?.text ?? data[0]?.phonetic ?? ''
+  } catch {
+    return ''
+  }
+}
+
+/**
+ * Fetch extended definition tiers from the separate `glossary_definitions` collection.
+ * Returns null if the document doesn't exist or access is denied by Firestore rules.
+ *
+ * Firestore security rules pattern (to add when subscription system is in place):
+ *   match /glossary_definitions/{wordId} {
+ *     allow read: if request.auth != null &&
+ *       request.auth.token.tier in ['standard', 'sovereign'];
+ *   }
+ */
+export async function getWordDefinition(wordId: string): Promise<GlossaryDefinition | null> {
+  try {
+    if (!db) return null
+    const docRef = doc(db as Firestore, 'glossary_definitions', wordId)
+    const snap = await getDoc(docRef)
+    if (!snap.exists()) return null
+    return { word_id: wordId, ...snap.data() } as GlossaryDefinition
+  } catch {
+    return null
+  }
+}
 import { testWords } from '@/lib/testWords';
 
 /** Words that appear under Default > ROOT in the glossary (clock_id 0). */
