@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { useTheme } from '@/app/ThemeContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { ClockBreathingTone } from '@/components/ClockBreathingTone'
+import { useHueSync } from '@/lib/hooks/useHueSync'
 import { ClockFocusNodeAppear } from '@/components/ClockFocusNodeAppear'
 import { ClockPageSettingsTrigger, ClockPageMenuContent, ClockPageIconButton } from '@/components/ClockPageSettingsTrigger'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -93,6 +94,7 @@ const satelliteConfigs = defaultSatelliteConfigs[CLOCK_INDEX] ?? []
 function NodesPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  useHueSync(CLOCK_INDEX)
   const { user, signOut } = useAuth()
   const { location } = useLocation()
   const [showElements, setShowElements] = useState(true)
