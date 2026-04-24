@@ -41,6 +41,12 @@ export interface UserProfile {
   bannerUrl: string;
   /** Optional image URLs layered on single-clock faces (index 0 = clock 1 … index 8 = clock 9). `users/{uid}`. */
   wheelFaceOverlays: string[];
+  /**
+   * Membership tier. Populated via Firebase custom auth token claim (`request.auth.token.tier`)
+   * or directly from the user's Firestore profile document.
+   * Defaults to 'open' when absent.
+   */
+  tier?: 'open' | 'standard' | 'sovereign';
   preferences: {
     emailNotifications: boolean;
     allowLocationData: boolean;

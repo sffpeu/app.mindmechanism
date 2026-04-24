@@ -3,7 +3,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { User, Mail, Calendar, CalendarClock, LogIn, Pencil, LogOut, Clock3, XCircle, ChevronDown } from 'lucide-react'
+import {
+  User, Mail, Calendar, CalendarClock, LogIn, Pencil, LogOut,
+  Clock3, XCircle, ChevronDown, CalendarDays, Users,
+} from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import Link from 'next/link'
@@ -40,10 +43,6 @@ type GroupSessionSummary = {
   focusNodeCount: number
 }
 
-/** Shared surface for Group Sessions + Recent Sessions panels (contrasts with dashboard gradient). */
-const DASHBOARD_VIOLET_PANEL =
-  'rounded-2xl border border-violet-200/90 dark:border-violet-500/30 overflow-hidden bg-violet-50/95 dark:bg-indigo-950/50 shadow-xl shadow-violet-200/40 dark:shadow-indigo-950/40 backdrop-blur-sm'
-
 function lobbyPlanPanelState(myGroup: LobbyGroup | null) {
   return {
     plannedCount: myGroup?.scheduled_gatherings?.length ?? 0,
@@ -59,6 +58,27 @@ function lobbyPlanPanelState(myGroup: LobbyGroup | null) {
       : null,
   }
 }
+
+// ─── TIER CONFIG ─────────────────────────────────────────────────────────────
+// Deliberately understated — no badge, no crown, no rank signalling.
+// The label and color are drawn from the MM's own vocabulary.
+
+const TIER_CONFIG = {
+  open: {
+    label: 'Open',
+    color: 'text-gray-500 dark:text-gray-400',
+  },
+  standard: {
+    label: 'Standard',
+    color: 'text-sky-600 dark:text-sky-400',
+  },
+  sovereign: {
+    label: 'Sovereign',
+    color: 'text-violet-600 dark:text-violet-400',
+  },
+} as const
+
+// ─── COMPONENT ────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false)
@@ -77,22 +97,17 @@ export default function DashboardPage() {
   const [groupPlannedSessionsCount, setGroupPlannedSessionsCount] = useState(0)
   const [groupUpcomingSessionsCount, setGroupUpcomingSessionsCount] = useState(0)
   const [groupSessionSummary, setGroupSessionSummary] = useState<GroupSessionSummary | null>(null)
-  const [creatorSessionPanelOpen, setCreatorSessionPanelOpen] = useState(false)
+  const [scheduledPanelOpen, setScheduledPanelOpen] = useState(false)
   const recentSessionsRef = useRef<DashboardRecentSessionsHandle>(null)
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
     let mounted = true
-
     const init = async () => {
       try {
         if (authLoading || !user) {
-          if (!authLoading && !user) {
-            router.push('/home')
-          }
+          if (!authLoading && !user) router.push('/home')
           return
         }
         setIsInitializing(true)
@@ -103,73 +118,51 @@ export default function DashboardPage() {
         ])
         if (mounted) {
           let myGroup = null
-          try {
-            myGroup = await getMyLobbyGroup(user.uid)
-          } catch (groupError) {
-            console.error('Failed to load lobby group for dashboard summary:', groupError)
-          }
+          try { myGroup = await getMyLobbyGroup(user.uid) } catch {}
 
           const now = Date.now()
           const upcoming = userSessions
-            .filter((session) => session.status === 'waiting')
-            .map((session) => {
-              const raw = typeof session.scheduled_start_time === 'string' ? session.scheduled_start_time : ''
-              const startsMs = raw ? new Date(raw).getTime() : NaN
-              if (!Number.isFinite(startsMs) || startsMs < now) return null
-              return {
-                id: session.id,
-                clockId: session.clock_id,
-                startsAt: new Date(startsMs),
-              } satisfies UpcomingScheduledSession
+            .filter((s) => s.status === 'waiting')
+            .map((s) => {
+              const raw = typeof s.scheduled_start_time === 'string' ? s.scheduled_start_time : ''
+              const ms = raw ? new Date(raw).getTime() : NaN
+              if (!Number.isFinite(ms) || ms < now) return null
+              return { id: s.id, clockId: s.clock_id, startsAt: new Date(ms) } satisfies UpcomingScheduledSession
             })
             .filter((v): v is UpcomingScheduledSession => v !== null)
             .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime())
             .slice(0, 10)
 
           setTimeStats(timeStatsData)
-          setScheduledSessionsCount(userSessions.filter((session) => session.status === 'waiting').length)
+          setScheduledSessionsCount(userSessions.filter((s) => s.status === 'waiting').length)
           setUpcomingScheduledSessions(upcoming)
-          const lobbyPanel = lobbyPlanPanelState(myGroup)
-          setGroupPlannedSessionsCount(lobbyPanel.plannedCount)
-          setGroupUpcomingSessionsCount(lobbyPanel.upcomingPlannedCount)
-          setGroupSessionSummary(lobbyPanel.groupSessionSummary)
+          const lp = lobbyPlanPanelState(myGroup)
+          setGroupPlannedSessionsCount(lp.plannedCount)
+          setGroupUpcomingSessionsCount(lp.upcomingPlannedCount)
+          setGroupSessionSummary(lp.groupSessionSummary)
         }
       } catch (error) {
-        if (mounted) {
-          setAuthError(error instanceof Error ? error.message : 'Failed to load profile')
-        }
+        if (mounted) setAuthError(error instanceof Error ? error.message : 'Failed to load profile')
       } finally {
         if (mounted) setIsInitializing(false)
       }
     }
-
     init()
-    return () => {
-      mounted = false
-    }
+    return () => { mounted = false }
   }, [user?.uid, authLoading, router])
 
   useEffect(() => {
     if (authLoading || !user?.uid) return
-
-    const refreshLobbyPanel = () => {
-      void (async () => {
-        try {
-          const myGroup = await getMyLobbyGroup(user.uid)
-          const lobbyPanel = lobbyPlanPanelState(myGroup)
-          setGroupPlannedSessionsCount(lobbyPanel.plannedCount)
-          setGroupUpcomingSessionsCount(lobbyPanel.upcomingPlannedCount)
-          setGroupSessionSummary(lobbyPanel.groupSessionSummary)
-        } catch (e) {
-          console.error('Lobby panel refresh failed:', e)
-        }
-      })()
-    }
-
-    const onVisibility = () => {
-      if (document.visibilityState === 'visible') refreshLobbyPanel()
-    }
-
+    const refresh = () => void (async () => {
+      try {
+        const myGroup = await getMyLobbyGroup(user.uid)
+        const lp = lobbyPlanPanelState(myGroup)
+        setGroupPlannedSessionsCount(lp.plannedCount)
+        setGroupUpcomingSessionsCount(lp.upcomingPlannedCount)
+        setGroupSessionSummary(lp.groupSessionSummary)
+      } catch {}
+    })()
+    const onVisibility = () => { if (document.visibilityState === 'visible') refresh() }
     document.addEventListener('visibilitychange', onVisibility)
     return () => document.removeEventListener('visibilitychange', onVisibility)
   }, [user?.uid, authLoading])
@@ -177,25 +170,22 @@ export default function DashboardPage() {
   useEffect(() => {
     let entryId: string | null = null
     let mounted = true
-
-    const startTracking = async () => {
+    const start = async () => {
       if (user?.uid && mounted) {
         entryId = await startTimeTracking(user.uid, 'dashboard')
         if (mounted) setTimeEntryId(entryId)
       }
     }
-
-    startTracking()
-    return () => {
-      mounted = false
-      if (entryId) endTimeTracking(entryId)
-    }
+    start()
+    return () => { mounted = false; if (entryId) endTimeTracking(entryId) }
   }, [user?.uid])
+
+  // ─── Guards ────────────────────────────────────────────────────────────────
 
   if (isInitializing || authLoading) {
     return (
       <div className="h-full flex items-center justify-center bg-gray-50/80 dark:bg-black/95">
-        <LoadingSpinner size="lg" isLoading={isInitializing || authLoading} />
+        <LoadingSpinner size="lg" isLoading />
       </div>
     )
   }
@@ -204,354 +194,306 @@ export default function DashboardPage() {
     return (
       <div className="h-full flex items-center justify-center bg-gray-50 dark:bg-black/95">
         <div className="text-center px-4">
-          <div className="text-red-500 mb-4">
-            <XCircle className="h-12 w-12 mx-auto" />
-          </div>
+          <XCircle className="h-12 w-12 mx-auto text-red-500 mb-4" />
           <p className="text-gray-600 dark:text-gray-300">{authError}</p>
-          <Button
-            onClick={() => window.location.reload()}
-            className="mt-4 rounded-full"
-          >
-            Retry
-          </Button>
+          <Button onClick={() => window.location.reload()} className="mt-4 rounded-full">Retry</Button>
         </div>
       </div>
     )
   }
 
-  if (!mounted || !user) {
-    return null
-  }
+  if (!mounted || !user) return null
 
   const memberSince = user.metadata?.creationTime
-    ? new Date(user.metadata.creationTime).toLocaleDateString('en-US', {
-        month: 'long',
-        year: 'numeric',
-      })
+    ? new Date(user.metadata.creationTime).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
     : null
+
+  const tier = profile?.tier ?? 'open'
+  const tierCfg = TIER_CONFIG[tier]
+
+  // Counts for the scheduled/group drawer badge
+  const scheduledActivityCount = scheduledSessionsCount + groupUpcomingSessionsCount
 
   return (
     <ProtectedRoute>
       <div className="h-full overflow-hidden flex flex-col bg-gradient-to-b from-gray-50 to-gray-100/80 dark:from-black dark:to-gray-950/50">
         <div className="flex-1 min-h-0 overflow-y-auto">
-          <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-          {/* Dashboard title */}
-          <header className="mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-              Dashboard
-            </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-              Your account and recent sessions at a glance.
-            </p>
-          </header>
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
 
-          <section
-            className="mb-6 rounded-2xl border border-violet-200/90 bg-violet-50/90 p-4 dark:border-violet-500/25 dark:bg-indigo-950/45"
-            aria-label="Practice shortcuts"
-          >
-            <p className="text-xs font-medium uppercase tracking-wide text-violet-800 dark:text-violet-200/90">
-              Practice
-            </p>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-              Open the home mandala, start a timed session, or review vocabulary.
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Button size="sm" className="rounded-full" asChild>
-                <Link href="/layers">Home mandala</Link>
-              </Button>
-              <Button size="sm" variant="secondary" className="rounded-full" asChild>
-                <Link href="/sessions">Sessions</Link>
-              </Button>
-              <Button size="sm" variant="outline" className="rounded-full border-violet-300/80 bg-white/80 dark:border-violet-500/40 dark:bg-black/30" asChild>
-                <Link href="/glossary">Glossary</Link>
-              </Button>
-              <Button size="sm" variant="outline" className="rounded-full border-violet-300/80 bg-white/80 dark:border-violet-500/40 dark:bg-black/30" asChild>
-                <Link href="/notes">Notes</Link>
-              </Button>
-            </div>
-          </section>
-
-          {/* Profile card */}
-          <Card className="overflow-hidden rounded-2xl bg-white/90 dark:bg-white/5 border-0 shadow-xl shadow-gray-200/50 dark:shadow-none backdrop-blur-sm">
-            {/* Banner — compact strip, no overlap with content */}
-            <div
-              className="relative h-20 sm:h-24 overflow-hidden"
-              aria-hidden
-            >
-              {profile?.bannerUrl?.trim() ? (
-                <>
-                  <img
-                    src={profile.bannerUrl.trim()}
-                    alt=""
-                    className="absolute inset-0 h-full w-full object-cover"
-                  />
-                  <div
-                    className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent dark:from-black/55"
-                    aria-hidden
-                  />
-                </>
-              ) : (
-                <>
-                  <div
-                    className="absolute inset-0 bg-gradient-to-br from-slate-800 via-indigo-900/95 to-violet-900 dark:from-slate-900 dark:via-indigo-950 dark:to-violet-950"
-                    aria-hidden
-                  />
-                  <div
-                    className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-violet-500/30 dark:bg-violet-400/20 blur-3xl"
-                    aria-hidden
-                  />
-                  <div
-                    className="absolute top-1/2 -left-8 h-32 w-32 rounded-full bg-indigo-500/25 dark:bg-indigo-400/15 blur-2xl"
-                    aria-hidden
-                  />
-                  <svg
-                    className="absolute inset-0 h-full w-full opacity-[0.07] dark:opacity-[0.12]"
-                    aria-hidden
-                  >
-                    <defs>
-                      <linearGradient id="banner-arc" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="white" stopOpacity="0" />
-                        <stop offset="100%" stopColor="white" stopOpacity="1" />
-                      </linearGradient>
-                    </defs>
-                    <ellipse cx="50%" cy="60%" rx="55%" ry="45%" fill="none" stroke="url(#banner-arc)" strokeWidth="1.5" />
-                    <ellipse cx="50%" cy="60%" rx="40%" ry="32%" fill="none" stroke="url(#banner-arc)" strokeWidth="1" />
-                    <ellipse cx="50%" cy="60%" rx="25%" ry="20%" fill="none" stroke="url(#banner-arc)" strokeWidth="0.75" />
-                  </svg>
-                </>
-              )}
-              <div className="absolute inset-x-0 top-0 h-px bg-white/20" aria-hidden />
-            </div>
-
-            {/* Profile: avatar + name in content area (no overlap, nothing clipped) */}
-            <div className="px-4 sm:px-6 pt-5 pb-6">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <Avatar className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl border-2 border-white dark:border-gray-800 shadow-lg flex-shrink-0 ring-1 ring-black/5 dark:ring-white/10">
-                  <AvatarImage src={user.photoURL || undefined} className="object-cover" />
-                  <AvatarFallback className="rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-xl font-semibold">
-                    {user.displayName
-                      ? user.displayName
-                          .split(/\s+/)
-                          .map((n) => n[0])
-                          .join('')
-                          .slice(0, 2)
-                          .toUpperCase()
-                      : <User className="h-8 w-8" />}
-                  </AvatarFallback>
-                </Avatar>
-
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate">
-                    {user.displayName || 'User'}
-                  </h2>
-                  <div className="flex items-center gap-2 mt-1 text-gray-500 dark:text-gray-400">
-                    <Mail className="h-4 w-4 flex-shrink-0 opacity-70" />
-                    <span className="text-sm truncate">{user.email}</span>
-                  </div>
-                </div>
+            {/* ── Profile card ──────────────────────────────────────────── */}
+            <Card className="overflow-hidden rounded-2xl bg-white/90 dark:bg-white/5 border-0 shadow-xl shadow-gray-200/50 dark:shadow-none backdrop-blur-sm">
+              {/* Banner */}
+              <div className="relative h-20 sm:h-24 overflow-hidden" aria-hidden>
+                {profile?.bannerUrl?.trim() ? (
+                  <>
+                    <img src={profile.bannerUrl.trim()} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent dark:from-black/55" />
+                  </>
+                ) : (
+                  <>
+                    <div className="absolute inset-0 bg-gradient-to-br from-slate-800 via-indigo-900/95 to-violet-900 dark:from-slate-900 dark:via-indigo-950 dark:to-violet-950" />
+                    <div className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-violet-500/30 dark:bg-violet-400/20 blur-3xl" />
+                    <div className="absolute top-1/2 -left-8 h-32 w-32 rounded-full bg-indigo-500/25 dark:bg-indigo-400/15 blur-2xl" />
+                    <svg className="absolute inset-0 h-full w-full opacity-[0.07] dark:opacity-[0.12]" aria-hidden>
+                      <defs>
+                        <linearGradient id="banner-arc" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="white" stopOpacity="0" />
+                          <stop offset="100%" stopColor="white" stopOpacity="1" />
+                        </linearGradient>
+                      </defs>
+                      <ellipse cx="50%" cy="60%" rx="55%" ry="45%" fill="none" stroke="url(#banner-arc)" strokeWidth="1.5" />
+                      <ellipse cx="50%" cy="60%" rx="40%" ry="32%" fill="none" stroke="url(#banner-arc)" strokeWidth="1" />
+                      <ellipse cx="50%" cy="60%" rx="25%" ry="20%" fill="none" stroke="url(#banner-arc)" strokeWidth="0.75" />
+                    </svg>
+                  </>
+                )}
+                <div className="absolute inset-x-0 top-0 h-px bg-white/20" />
               </div>
 
-              {/* Meta */}
-              <div className="mt-6 pt-6 border-t border-gray-100 dark:border-white/10 space-y-3">
-                {timeStats.lastSignInTime && (
+              {/* Content */}
+              <div className="px-4 sm:px-6 pt-5 pb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <Avatar className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl border-2 border-white dark:border-gray-800 shadow-lg flex-shrink-0 ring-1 ring-black/5 dark:ring-white/10">
+                    <AvatarImage src={user.photoURL || undefined} className="object-cover" />
+                    <AvatarFallback className="rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-xl font-semibold">
+                      {user.displayName
+                        ? user.displayName.split(/\s+/).map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+                        : <User className="h-8 w-8" />}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate">
+                      {user.displayName || 'User'}
+                    </h2>
+                    <div className="flex items-center gap-2 mt-1 text-gray-500 dark:text-gray-400">
+                      <Mail className="h-4 w-4 flex-shrink-0 opacity-70" />
+                      <span className="text-sm truncate">{user.email}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Meta rows */}
+                <div className="mt-6 pt-6 border-t border-gray-100 dark:border-white/10 space-y-3">
+                  {timeStats.lastSignInTime && (
+                    <div className="flex items-center justify-between gap-3 text-sm">
+                      <span className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                        <LogIn className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                        Last sign in
+                      </span>
+                      <span className="font-medium text-gray-900 dark:text-white tabular-nums">
+                        {timeStats.lastSignInTime.toLocaleString()}
+                      </span>
+                    </div>
+                  )}
+                  {memberSince && (
+                    <div className="flex items-center justify-between gap-3 text-sm">
+                      <span className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                        <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                        Member since
+                      </span>
+                      <span className="font-medium text-gray-900 dark:text-white">{memberSince}</span>
+                    </div>
+                  )}
+                  {/* Tier — discrete, informational only */}
                   <div className="flex items-center justify-between gap-3 text-sm">
                     <span className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                      <LogIn className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                      Last sign in
+                      <span className="h-4 w-4 flex items-center justify-center text-[10px] font-semibold text-gray-400 dark:text-gray-500">M</span>
+                      Membership
                     </span>
-                    <span className="font-medium text-gray-900 dark:text-white tabular-nums">
-                      {timeStats.lastSignInTime.toLocaleString()}
-                    </span>
-                  </div>
-                )}
-                {memberSince && (
-                  <div className="flex items-center justify-between gap-3 text-sm">
-                    <span className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                      <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                      Member since
-                    </span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {memberSince}
+                    <span className={cn('font-medium tabular-nums', tierCfg.color)}>
+                      {tierCfg.label}
                     </span>
                   </div>
-                )}
+                </div>
+
+                {/* Actions */}
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Button variant="outline" size="sm" asChild className="gap-2 rounded-full px-5">
+                    <Link href="/settings">
+                      <Pencil className="h-4 w-4" />
+                      Edit profile
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="ghost" size="sm"
+                    onClick={() => signOut()}
+                    className="gap-2 rounded-full px-5 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sign out
+                  </Button>
+                </div>
+              </div>
+            </Card>
+
+            {/* ── Recent Sessions ───────────────────────────────────────── */}
+            <section>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                Recent Sessions
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                Continue or restart from your latest sessions.
+              </p>
+              <Card className="rounded-2xl border border-violet-200/90 dark:border-violet-500/30 overflow-hidden bg-violet-50/95 dark:bg-indigo-950/50 shadow-xl shadow-violet-200/40 dark:shadow-indigo-950/40 backdrop-blur-sm p-4 sm:p-6">
+                <DashboardRecentSessions ref={recentSessionsRef} />
+              </Card>
+            </section>
+
+            {/* ── Practice shortcuts ────────────────────────────────────── */}
+            <section
+              className="rounded-2xl border border-violet-200/90 bg-violet-50/90 p-4 dark:border-violet-500/25 dark:bg-indigo-950/45"
+              aria-label="Practice shortcuts"
+            >
+              <p className="text-xs font-medium uppercase tracking-wide text-violet-800 dark:text-violet-200/90 mb-3">
+                Practice
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" className="rounded-full" asChild>
+                  <Link href="/layers">Home mandala</Link>
+                </Button>
+                <Button size="sm" variant="secondary" className="rounded-full" asChild>
+                  <Link href="/sessions">Sessions</Link>
+                </Button>
+                <Button size="sm" variant="outline" className="rounded-full border-violet-300/80 bg-white/80 dark:border-violet-500/40 dark:bg-black/30" asChild>
+                  <Link href="/glossary">Glossary</Link>
+                </Button>
+                <Button size="sm" variant="outline" className="rounded-full border-violet-300/80 bg-white/80 dark:border-violet-500/40 dark:bg-black/30" asChild>
+                  <Link href="/notes">Notes</Link>
+                </Button>
+              </div>
+            </section>
+
+            {/* ── Scheduled & Group — collapsed by default ──────────────── */}
+            <section>
+              <Card className="rounded-2xl border border-black/5 dark:border-white/10 overflow-hidden bg-white/90 dark:bg-white/5 shadow-sm backdrop-blur-sm">
                 <button
                   type="button"
-                  onClick={() => recentSessionsRef.current?.openOpenSessionsDialog('waiting')}
-                  aria-label="View waiting lobby sessions"
-                  className="flex w-full items-center justify-between gap-3 rounded-lg text-left text-sm text-gray-900 dark:text-white transition-colors hover:bg-gray-50 dark:hover:bg-white/5 -mx-2 px-2 py-1.5 -my-0.5"
+                  aria-expanded={scheduledPanelOpen}
+                  onClick={() => setScheduledPanelOpen((v) => !v)}
+                  className="flex w-full items-center justify-between gap-3 px-4 sm:px-6 py-4 text-left transition-colors hover:bg-gray-50 dark:hover:bg-white/5"
                 >
-                  <span className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                    <CalendarClock className="h-4 w-4 flex-shrink-0 text-gray-400 dark:text-gray-500" />
-                    Scheduled sessions
+                  <span className="flex items-center gap-3 min-w-0">
+                    <CalendarDays className="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500" />
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Scheduled &amp; Group
+                    </span>
+                    {scheduledActivityCount > 0 && (
+                      <span className="inline-flex items-center justify-center h-5 min-w-5 rounded-full bg-violet-100 dark:bg-violet-900/50 px-1.5 text-[11px] font-semibold text-violet-700 dark:text-violet-300">
+                        {scheduledActivityCount}
+                      </span>
+                    )}
                   </span>
-                  <span className="font-medium text-gray-900 dark:text-white tabular-nums">
-                    {scheduledSessionsCount}
-                  </span>
+                  <ChevronDown
+                    className={cn(
+                      'h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500 transition-transform duration-200',
+                      scheduledPanelOpen ? 'rotate-180' : 'rotate-0'
+                    )}
+                    aria-hidden
+                  />
                 </button>
-              </div>
 
-              {/* Actions — pill-shaped buttons */}
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Button variant="outline" size="sm" asChild className="gap-2 rounded-full px-5">
-                  <Link href="/settings">
-                    <Pencil className="h-4 w-4" />
-                    Edit profile
-                  </Link>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => signOut()}
-                  className="gap-2 rounded-full px-5 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Sign out
-                </Button>
-              </div>
-            </div>
-          </Card>
+                {scheduledPanelOpen && (
+                  <div className="border-t border-black/5 dark:border-white/10 px-4 sm:px-6 pb-5 pt-4 space-y-6">
 
-          {/* Group Sessions — collapsible */}
-          <section className="mt-8">
-            <Card className={DASHBOARD_VIOLET_PANEL}>
-              <button
-                type="button"
-                id="dashboard-creator-session-toggle"
-                aria-expanded={creatorSessionPanelOpen}
-                aria-controls="dashboard-creator-session-panel"
-                onClick={() => setCreatorSessionPanelOpen((open) => !open)}
-                className="flex w-full items-start justify-between gap-3 px-4 sm:px-6 py-4 text-left transition-colors hover:bg-violet-100/80 dark:hover:bg-indigo-900/45"
-              >
-                <span className="min-w-0">
-                  <span className="text-lg font-semibold text-gray-900 dark:text-white block">
-                    Group Sessions
-                  </span>
-                  <span className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 block">
-                    Planned sessions and mandala settings from Lobby. Tap to expand.
-                  </span>
-                </span>
-                <ChevronDown
-                  className={cn(
-                    'h-5 w-5 shrink-0 text-violet-600 dark:text-violet-300 transition-transform duration-200 mt-0.5',
-                    creatorSessionPanelOpen ? 'rotate-180' : 'rotate-0'
-                  )}
-                  aria-hidden
-                />
-              </button>
-              {creatorSessionPanelOpen ? (
-                <div
-                  id="dashboard-creator-session-panel"
-                  role="region"
-                  aria-labelledby="dashboard-creator-session-toggle"
-                  className="border-t border-violet-200/80 dark:border-violet-500/25 px-4 sm:px-6 pb-5 pt-1"
-                >
-                  <div className="flex justify-end mb-4">
-                    <Button asChild type="button" variant="outline" size="sm" className="rounded-full bg-white/90 dark:bg-indigo-950/60 border-violet-200/90 dark:border-violet-500/35">
-                      <Link href="/lobby">Manage in Lobby</Link>
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="rounded-xl border border-violet-200/70 dark:border-white/10 bg-white/90 dark:bg-black/25 px-3 py-3">
-                      <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Planned sessions</p>
-                      <p className="text-2xl font-semibold text-gray-900 dark:text-white tabular-nums mt-1">
-                        {groupPlannedSessionsCount}
-                      </p>
-                    </div>
-                    <div className="rounded-xl border border-violet-200/70 dark:border-white/10 bg-white/90 dark:bg-black/25 px-3 py-3">
-                      <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Upcoming planned</p>
-                      <p className="text-2xl font-semibold text-gray-900 dark:text-white tabular-nums mt-1">
-                        {groupUpcomingSessionsCount}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-4 space-y-2 text-sm">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-gray-500 dark:text-gray-400">Mandala</span>
-                      <span className="font-medium text-gray-900 dark:text-white">
-                        {groupSessionSummary
-                          ? (clockTitles[groupSessionSummary.clockId] ?? `Clock ${groupSessionSummary.clockId}`)
-                          : 'Not set'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-gray-500 dark:text-gray-400">Session length</span>
-                      <span className="font-medium text-gray-900 dark:text-white tabular-nums">
-                        {groupSessionSummary ? `${groupSessionSummary.durationMinutes} min` : 'Not set'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-gray-500 dark:text-gray-400">Focus nodes</span>
-                      <span className="font-medium text-gray-900 dark:text-white tabular-nums">
-                        {groupSessionSummary ? groupSessionSummary.focusNodeCount : 0}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ) : null}
-            </Card>
-          </section>
-
-          {/* Upcoming scheduled sessions */}
-          <section className="mt-8">
-            <div className="flex items-start justify-between gap-3 mb-4">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-                  Upcoming Scheduled Sessions
-                </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Next planned starts from your waiting lobby sessions.
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="rounded-full"
-                onClick={() => recentSessionsRef.current?.openOpenSessionsDialog('waiting')}
-              >
-                Open waiting
-              </Button>
-            </div>
-            <Card className="rounded-2xl border-0 p-4 sm:p-6 bg-white/90 dark:bg-white/5 shadow-xl shadow-gray-200/50 dark:shadow-none backdrop-blur-sm">
-              {upcomingScheduledSessions.length > 0 ? (
-                <ul className="space-y-2">
-                  {upcomingScheduledSessions.map((session) => (
-                    <li
-                      key={session.id}
-                      className="flex items-center justify-between gap-3 rounded-xl border border-black/5 dark:border-white/10 bg-white/70 dark:bg-white/[0.03] px-3 py-2.5"
-                    >
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                          {clockTitles[session.clockId] ?? `Clock ${session.clockId}`} session
-                        </p>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">
-                          {session.startsAt.toLocaleString()}
-                        </p>
+                    {/* Upcoming scheduled sessions */}
+                    <div>
+                      <div className="flex items-center justify-between gap-3 mb-3">
+                        <div className="flex items-center gap-2">
+                          <CalendarClock className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Upcoming scheduled
+                          </h3>
+                        </div>
+                        <Button
+                          type="button" variant="ghost" size="sm"
+                          className="rounded-full text-xs h-7 px-3"
+                          onClick={() => recentSessionsRef.current?.openOpenSessionsDialog('waiting')}
+                        >
+                          View all
+                        </Button>
                       </div>
-                      <Clock3 className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-400" aria-hidden />
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  No future scheduled sessions found. Planned sessions will appear here automatically.
-                </p>
-              )}
-            </Card>
-          </section>
+                      {upcomingScheduledSessions.length > 0 ? (
+                        <ul className="space-y-2">
+                          {upcomingScheduledSessions.map((s) => (
+                            <li
+                              key={s.id}
+                              className="flex items-center justify-between gap-3 rounded-xl border border-black/5 dark:border-white/10 bg-gray-50/80 dark:bg-white/[0.03] px-3 py-2.5"
+                            >
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                  {clockTitles[s.clockId] ?? `Clock ${s.clockId}`} session
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  {s.startsAt.toLocaleString()}
+                                </p>
+                              </div>
+                              <Clock3 className="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500" aria-hidden />
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          No upcoming sessions.
+                        </p>
+                      )}
+                    </div>
 
-          <section className="mt-8">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-              Recent Sessions
-            </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              Continue or restart from your latest sessions. Times reflect when you left the session.
-            </p>
-            <Card className={cn(DASHBOARD_VIOLET_PANEL, 'p-4 sm:p-6')}>
-              <DashboardRecentSessions ref={recentSessionsRef} />
-            </Card>
-          </section>
+                    {/* Group sessions */}
+                    <div>
+                      <div className="flex items-center justify-between gap-3 mb-3">
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Group sessions
+                          </h3>
+                        </div>
+                        <Button asChild type="button" variant="ghost" size="sm" className="rounded-full text-xs h-7 px-3">
+                          <Link href="/lobby">Lobby</Link>
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 mb-3">
+                        <div className="rounded-xl border border-black/5 dark:border-white/10 bg-gray-50/80 dark:bg-white/[0.03] px-3 py-3">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Planned</p>
+                          <p className="text-xl font-semibold text-gray-900 dark:text-white tabular-nums mt-0.5">
+                            {groupPlannedSessionsCount}
+                          </p>
+                        </div>
+                        <div className="rounded-xl border border-black/5 dark:border-white/10 bg-gray-50/80 dark:bg-white/[0.03] px-3 py-3">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Upcoming</p>
+                          <p className="text-xl font-semibold text-gray-900 dark:text-white tabular-nums mt-0.5">
+                            {groupUpcomingSessionsCount}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-gray-500 dark:text-gray-400">Mandala</span>
+                          <span className="font-medium text-gray-900 dark:text-white">
+                            {groupSessionSummary
+                              ? (clockTitles[groupSessionSummary.clockId] ?? `Clock ${groupSessionSummary.clockId}`)
+                              : 'Not set'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-gray-500 dark:text-gray-400">Session length</span>
+                          <span className="font-medium text-gray-900 dark:text-white tabular-nums">
+                            {groupSessionSummary ? `${groupSessionSummary.durationMinutes} min` : 'Not set'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-gray-500 dark:text-gray-400">Focus nodes</span>
+                          <span className="font-medium text-gray-900 dark:text-white tabular-nums">
+                            {groupSessionSummary ? groupSessionSummary.focusNodeCount : 0}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                )}
+              </Card>
+            </section>
+
           </div>
         </div>
       </div>
