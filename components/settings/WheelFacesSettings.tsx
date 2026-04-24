@@ -10,6 +10,7 @@ import { db, getFirebaseStorage } from '@/lib/firebase'
 import { doc, setDoc, Firestore } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import { emptyWheelFaceOverlays, WHEEL_FACE_COUNT } from '@/lib/wheelFaceOverlays'
+import { clockTitles } from '@/lib/clockTitles'
 
 export function WheelFacesSettings() {
   const { user, profile, refreshProfile, mergeProfilePatch } = useAuth()
@@ -87,8 +88,8 @@ export function WheelFacesSettings() {
               key={index}
               className="flex flex-col items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-900/40 p-2"
             >
-              <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400 tabular-nums">
-                Face {index + 1}
+              <span className="text-[9px] font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400 truncate w-full text-center">
+                {clockTitles[index] ?? `Face ${index + 1}`}
               </span>
               <div className="relative h-16 w-16 rounded-full overflow-hidden ring-1 ring-black/10 dark:ring-white/10 bg-gray-200 dark:bg-gray-800">
                 <img
