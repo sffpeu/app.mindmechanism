@@ -22,10 +22,33 @@ interface SettingsState {
 
   /**
    * Smart Home: connected hub type.
-   * null = not connected. Populated after OAuth / local pairing flow.
+   * null = not connected. Populated after local pairing flow.
    */
   smartHomeHub: 'hue' | 'ikea' | null;
   setSmartHomeHub: (hub: 'hue' | 'ikea' | null) => void;
+
+  /** Hue bridge local IP address (e.g. "192.168.1.42") */
+  hueBridgeIp: string | null;
+  setHueBridgeIp: (ip: string | null) => void;
+
+  /** Hue API key (username returned from bridge pairing) */
+  hueApiKey: string | null;
+  setHueApiKey: (key: string | null) => void;
+
+  /** Whether to sync wheel colours to Hue lights on clock pages */
+  hueEnabled: boolean;
+  setHueEnabled: (enabled: boolean) => void;
+
+  /** Hue light brightness 1–254. Default 180 */
+  hueBrightness: number;
+  setHueBrightness: (bri: number) => void;
+
+  /**
+   * Optional allowlist of light IDs to control.
+   * Empty array means all lights on the bridge.
+   */
+  hueLightIds: string[];
+  setHueLightIds: (ids: string[]) => void;
 }
 
 export const useSettings = create<SettingsState>()(
@@ -49,6 +72,21 @@ export const useSettings = create<SettingsState>()(
 
       smartHomeHub: null,
       setSmartHomeHub: (hub) => set({ smartHomeHub: hub }),
+
+      hueBridgeIp: null,
+      setHueBridgeIp: (ip) => set({ hueBridgeIp: ip }),
+
+      hueApiKey: null,
+      setHueApiKey: (key) => set({ hueApiKey: key }),
+
+      hueEnabled: true,
+      setHueEnabled: (enabled) => set({ hueEnabled: enabled }),
+
+      hueBrightness: 180,
+      setHueBrightness: (bri) => set({ hueBrightness: Math.max(1, Math.min(254, bri)) }),
+
+      hueLightIds: [],
+      setHueLightIds: (ids) => set({ hueLightIds: ids }),
     }),
     {
       name: 'app-settings',
