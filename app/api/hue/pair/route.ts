@@ -6,6 +6,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { bridgeRequest, parseBridgeJson } from '@/lib/hueBridge'
 
+export const runtime = 'nodejs'
+
 interface HuePairSuccess { success: { username: string } }
 interface HuePairError   { error:   { type: number; description: string } }
 type HuePairResult = HuePairSuccess | HuePairError

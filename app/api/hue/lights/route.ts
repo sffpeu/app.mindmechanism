@@ -9,6 +9,8 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { bridgeRequest, parseBridgeJson } from '@/lib/hueBridge'
+
+export const runtime = 'nodejs'
 import type { HueLightState } from '@/lib/hueColors'
 
 interface LightsBody {
