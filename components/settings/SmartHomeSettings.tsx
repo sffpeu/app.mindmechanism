@@ -42,7 +42,8 @@ export function SmartHomeSettings() {
             <div>
               <p className="text-sm font-medium text-gray-900 dark:text-white">Philips Hue</p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                Requires Hue developer API registration. Integration in development.
+                We are applying to Philips directly for developer partnership.
+                Integration will ship once that is in place.
               </p>
             </div>
           </div>
