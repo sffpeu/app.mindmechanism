@@ -214,6 +214,11 @@ function NodesPageContent() {
       try {
         const decodedWords = JSON.parse(decodeURIComponent(wordsParam))
         setCustomWords(decodedWords)
+        // Auto-select all nodes that have a word assigned when session starts
+        const autoSelected = (decodedWords as string[])
+          .map((w: string, i: number) => (w?.trim() ? i : -1))
+          .filter((i: number) => i >= 0)
+        if (autoSelected.length > 0) setSelectedNodeIndices(autoSelected)
       } catch (error) {
         console.error('Error decoding words:', error)
         setCustomWords([])
