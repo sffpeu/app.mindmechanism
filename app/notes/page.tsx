@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, type ComponentType, type MouseEvent } from 'react'
+import { useState, useEffect, useRef, type ComponentType, type MouseEvent } from 'react'
 import { Card } from '@/components/ui/card'
 import {
   Clock,
@@ -24,6 +24,8 @@ import {
   Activity,
   Users,
   ChevronDown,
+  Mic,
+  MicOff,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -101,6 +103,9 @@ const clockColors = [
   'text-cyan-500 bg-cyan-500'
 ]
 
+// Exact accent hex per wheel — matches clock pages
+const CLOCK_HEX = ['#fd290a', '#fba63b', '#f7da5f', '#6dc037', '#156fde', '#941952', '#541b96', '#ee5fa7', '#56c1ff']
+
 type EnvIcon = ComponentType<{ className?: string }>
 
 function EnvMetricRow({
@@ -173,6 +178,13 @@ export default function NotesPage() {
   const [savedNotesPanelOpen, setSavedNotesPanelOpen] = useState(true)
   const { playSuccess } = useSoundEffects()
 
+  // Voice input state
+  const [isListening, setIsListening] = useState(false)
+  const [voiceTarget, setVoiceTarget] = useState<'title' | 'body' | null>(null)
+  const [interimTranscript, setInterimTranscript] = useState('')
+  const recognitionRef = useRef<any>(null)
+  const autoSelectedRef = useRef(false)
+
   useEffect(() => {
     setEnvSnapshotExpanded(false)
   }, [selectedNote?.id])
@@ -184,6 +196,14 @@ export default function NotesPage() {
       try {
         const sessions = await getUserSessions(user.uid);
         setRecentSessions(sessions);
+        // Auto-link to most recent completed session on first load
+        if (!autoSelectedRef.current) {
+          autoSelectedRef.current = true
+          const latest = [...sessions]
+            .filter((s) => s.status === 'completed')
+            .sort((a, b) => b.start_time.toDate().getTime() - a.start_time.toDate().getTime())[0]
+          if (latest) setSelectedSessionId(latest.id)
+        }
       } catch (error) {
         console.error('Error loading sessions:', error);
         toast({
@@ -324,6 +344,76 @@ export default function NotesPage() {
     setSelectedSessionId('none')
   }
 
+  // Accent colour for voice UI — matches the linked session's wheel, or a neutral violet
+  const voiceAccentColor =
+    selectedSessionId !== 'none'
+      ? (CLOCK_HEX[recentSessions.find((s) => s.id === selectedSessionId)?.clock_id ?? -1] ?? '#8b5cf6')
+      : '#8b5cf6'
+
+  const toggleVoice = (target: 'title' | 'body') => {
+    // Stop if already listening (regardless of target)
+    if (isListening) {
+      recognitionRef.current?.stop()
+      setIsListening(false)
+      setVoiceTarget(null)
+      setInterimTranscript('')
+      return
+    }
+
+    const SR =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition
+    if (!SR) {
+      toast({ title: 'Voice input not supported', description: 'Please use Chrome or Safari.' })
+      return
+    }
+
+    const recognition = new SR()
+    recognition.continuous = true
+    recognition.interimResults = true
+    recognition.lang = 'en-US'
+
+    recognition.onresult = (event: any) => {
+      let finalChunk = ''
+      let interimChunk = ''
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          finalChunk += event.results[i][0].transcript
+        } else {
+          interimChunk += event.results[i][0].transcript
+        }
+      }
+      if (finalChunk) {
+        const chunk = finalChunk.trim()
+        if (target === 'title') {
+          setNoteTitle((prev) => (prev ? prev + ' ' : '') + chunk)
+        } else {
+          setNoteContent((prev) => (prev ? prev + ' ' : '') + chunk)
+        }
+        setInterimTranscript('')
+      } else {
+        setInterimTranscript(interimChunk)
+      }
+    }
+
+    recognition.onerror = () => {
+      setIsListening(false)
+      setVoiceTarget(null)
+      setInterimTranscript('')
+    }
+
+    recognition.onend = () => {
+      setIsListening(false)
+      setVoiceTarget(null)
+      setInterimTranscript('')
+    }
+
+    recognitionRef.current = recognition
+    recognition.start()
+    setIsListening(true)
+    setVoiceTarget(target)
+  }
+
   const formatDate = (timestamp: any) => {
     if (!timestamp) return ''
     const date = timestamp.toDate()
@@ -423,9 +513,24 @@ export default function NotesPage() {
               </div>
             </div>
           )}
-          <div className="space-y-1">
-            <p className="text-xs text-gray-500 dark:text-gray-400">Words</p>
-            <p className="text-sm">{session.words.join(', ')}</p>
+          <div className="space-y-1.5">
+            <p className="text-xs text-gray-500 dark:text-gray-400">Nodes</p>
+            <div className="flex flex-wrap gap-1.5">
+              {session.words.map((word, i) => (
+                <span
+                  key={i}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide"
+                  style={{
+                    backgroundColor: `${CLOCK_HEX[session.clock_id]}18`,
+                    color: CLOCK_HEX[session.clock_id],
+                    border: `1px solid ${CLOCK_HEX[session.clock_id]}40`,
+                  }}
+                >
+                  <span className="opacity-50 font-normal">{i + 1}</span>
+                  {word.toUpperCase()}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       ),
@@ -966,6 +1071,95 @@ export default function NotesPage() {
 
               <div className="space-y-3">
                 {(!selectedNote || isEditing) && (
+                  <>
+                    {/* Title */}
+                    <div className="space-y-1.5">
+                      <label htmlFor="note-title" className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                        Title
+                      </label>
+                      <div className="flex gap-2">
+                        <Input
+                          id="note-title"
+                          placeholder="Give your note a short title"
+                          value={noteTitle}
+                          onChange={(e) => setNoteTitle(e.target.value)}
+                          className="bg-white dark:bg-black/40 flex-1"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => toggleVoice('title')}
+                          title={isListening && voiceTarget === 'title' ? 'Stop recording' : 'Dictate title'}
+                          className={cn(
+                            'flex items-center justify-center w-10 h-10 rounded-lg border-2 shrink-0 transition-all',
+                            isListening && voiceTarget === 'title'
+                              ? 'border-transparent animate-pulse text-white'
+                              : 'border-black/10 dark:border-white/15 bg-white dark:bg-black/40 text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-white'
+                          )}
+                          style={
+                            isListening && voiceTarget === 'title'
+                              ? { backgroundColor: voiceAccentColor }
+                              : {}
+                          }
+                        >
+                          {isListening && voiceTarget === 'title' ? (
+                            <MicOff className="h-4 w-4" />
+                          ) : (
+                            <Mic className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Body + voice button */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label htmlFor="note-body" className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                          Note
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => toggleVoice('body')}
+                          title={isListening && voiceTarget === 'body' ? 'Stop recording' : 'Dictate note'}
+                          className={cn(
+                            'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-medium transition-all',
+                            isListening && voiceTarget === 'body'
+                              ? 'border-transparent animate-pulse text-white'
+                              : 'border-black/10 dark:border-white/15 bg-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10'
+                          )}
+                          style={
+                            isListening && voiceTarget === 'body'
+                              ? { backgroundColor: voiceAccentColor }
+                              : {}
+                          }
+                        >
+                          {isListening && voiceTarget === 'body' ? (
+                            <><MicOff className="h-3.5 w-3.5" /><span>Stop</span></>
+                          ) : (
+                            <><Mic className="h-3.5 w-3.5" /><span>Voice</span></>
+                          )}
+                        </button>
+                      </div>
+                      <Textarea
+                        id="note-body"
+                        placeholder="Write freely—everything saves to your account."
+                        value={noteContent}
+                        onChange={(e) => setNoteContent(e.target.value)}
+                        className="min-h-[280px] sm:min-h-[360px] md:min-h-[420px] resize-y text-sm bg-white dark:bg-black/40"
+                      />
+                      {isListening && voiceTarget === 'body' && (
+                        <p
+                          className="text-xs italic px-1 min-h-[1.25rem] transition-colors"
+                          style={{ color: voiceAccentColor }}
+                        >
+                          {interimTranscript || 'Listening…'}
+                        </p>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {/* Session link — after title/body so the writing comes first */}
+                {(!selectedNote || isEditing) && (
                   <div className="rounded-lg border border-black/5 dark:border-white/10 bg-gray-50 dark:bg-black/20 p-3 space-y-2">
                     <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Link to session</label>
                     <Select value={selectedSessionId} onValueChange={(value) => setSelectedSessionId(value)}>
@@ -977,8 +1171,14 @@ export default function NotesPage() {
                         {recentSessions.map((session) => (
                           <SelectItem key={session.id} value={session.id}>
                             <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${clockColors[session.clock_id].split(' ')[1]}`} />
-                              <span className={`font-medium ${clockColors[session.clock_id].split(' ')[0]}`}>
+                              <div
+                                className="w-2 h-2 rounded-full shrink-0"
+                                style={{ backgroundColor: CLOCK_HEX[session.clock_id] }}
+                              />
+                              <span
+                                className="font-medium"
+                                style={{ color: CLOCK_HEX[session.clock_id] }}
+                              >
                                 {clockTitles[session.clock_id]}
                               </span>
                             </div>
@@ -992,11 +1192,16 @@ export default function NotesPage() {
                         const session = recentSessions.find((s) => s.id === selectedSessionId)
                         if (!session) return null
                         const groupMeta = sessionGroupDisplay(session)
+                        const hex = CLOCK_HEX[session.clock_id]
                         return (
-                          <div className="rounded-md border border-black/5 dark:border-white/10 bg-white/80 dark:bg-black/30 p-2 space-y-1.5">
+                          <div className="rounded-md border border-black/5 dark:border-white/10 bg-white/80 dark:bg-black/30 p-2.5 space-y-2">
+                            {/* Wheel + status */}
                             <div className="flex flex-wrap items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${clockColors[session.clock_id].split(' ')[1]}`} />
-                              <span className={`text-sm font-medium ${clockColors[session.clock_id].split(' ')[0]}`}>
+                              <div
+                                className="w-2.5 h-2.5 rounded-full shrink-0"
+                                style={{ backgroundColor: hex }}
+                              />
+                              <span className="text-sm font-semibold" style={{ color: hex }}>
                                 {clockTitles[session.clock_id]}
                               </span>
                               <span
@@ -1015,7 +1220,24 @@ export default function NotesPage() {
                                     : 'Aborted'}
                               </span>
                             </div>
-                            <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2">{session.words.join(', ')}</p>
+                            {/* Node pills */}
+                            <div className="flex flex-wrap gap-1.5">
+                              {session.words.map((word, i) => (
+                                <span
+                                  key={i}
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide"
+                                  style={{
+                                    backgroundColor: `${hex}18`,
+                                    color: hex,
+                                    border: `1px solid ${hex}40`,
+                                  }}
+                                >
+                                  <span className="opacity-50 font-normal">{i + 1}</span>
+                                  {word.toUpperCase()}
+                                </span>
+                              ))}
+                            </div>
+                            {/* Meta */}
                             <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-gray-500 dark:text-gray-400">
                               <span className="inline-flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
@@ -1027,46 +1249,15 @@ export default function NotesPage() {
                               </span>
                             </div>
                             {groupMeta && (
-                              <div className="flex items-center gap-1.5 text-[10px] text-indigo-600 dark:text-indigo-400 pt-0.5">
+                              <div className="flex items-center gap-1.5 text-[10px] text-indigo-600 dark:text-indigo-400">
                                 <Users className="h-3 w-3 shrink-0" aria-hidden />
-                                <span>
-                                  {groupMeta.typeLabel} · {groupMeta.participantsLabel}
-                                </span>
+                                <span>{groupMeta.typeLabel} · {groupMeta.participantsLabel}</span>
                               </div>
                             )}
                           </div>
                         )
                       })()}
                   </div>
-                )}
-
-                {(!selectedNote || isEditing) && (
-                  <>
-                    <div className="space-y-1.5">
-                      <label htmlFor="note-title" className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                        Title
-                      </label>
-                      <Input
-                        id="note-title"
-                        placeholder="Give your note a short title"
-                        value={noteTitle}
-                        onChange={(e) => setNoteTitle(e.target.value)}
-                        className="bg-white dark:bg-black/40"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label htmlFor="note-body" className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                        Note
-                      </label>
-                      <Textarea
-                        id="note-body"
-                        placeholder="Write freely—everything saves to your account."
-                        value={noteContent}
-                        onChange={(e) => setNoteContent(e.target.value)}
-                        className="min-h-[280px] sm:min-h-[360px] md:min-h-[420px] resize-y text-sm bg-white dark:bg-black/40"
-                      />
-                    </div>
-                  </>
                 )}
               </div>
             </Card>
