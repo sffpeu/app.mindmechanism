@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { X, Lock } from 'lucide-react'
+import { X } from 'lucide-react'
 import { clockTitles } from '@/lib/clockTitles'
 import { cn } from '@/lib/utils'
 import type { GlossaryWord, GlossaryDefinition } from '@/types/Glossary'
@@ -147,30 +147,7 @@ export function GlossaryVisualWordPanel({ word, clockHexPalette, onClose }: Glos
           </div>
         )}
 
-        {/* Tier prompts — shown when no extended content is available yet */}
-        {!loadingExt && !extDef?.standard && (
-          <div className="rounded-lg border border-black/5 dark:border-white/10 p-3 flex items-start gap-2.5">
-            <Lock className="h-3.5 w-3.5 shrink-0 mt-0.5 text-gray-400 dark:text-gray-500" />
-            <div>
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Standard Definition</p>
-              <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5 leading-relaxed">
-                Extended definition available on the Standard tier.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {!loadingExt && !extDef?.academic && (
-          <div className="rounded-lg border border-black/5 dark:border-white/10 p-3 flex items-start gap-2.5">
-            <Lock className="h-3.5 w-3.5 shrink-0 mt-0.5 text-gray-400 dark:text-gray-500" />
-            <div>
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Sovereign Definition</p>
-              <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5 leading-relaxed">
-                Academic and clinical depth available on the Sovereign tier.
-              </p>
-            </div>
-          </div>
-        )}
+        {/* Tier prompts hidden during development — re-enable when subscription system is live */}
       </div>
     </aside>
   )
