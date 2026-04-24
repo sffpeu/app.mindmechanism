@@ -1,15 +1,17 @@
 /**
  * hueBridge.ts — server-only helper for Philips Hue local bridge requests.
  *
- * Uses Node.js http/https modules directly so we can:
- *   • Accept the bridge's self-signed TLS certificate
- *   • Try HTTPS first (Bridge v2 firmware prefers it), validate the response
- *     looks like JSON before accepting it; fall back to HTTP if not
- *   • Give descriptive errors that include the raw bridge response
+ * Uses Node.js http/https modules with an explicit https.Agent so that
+ * rejectUnauthorized: false is guaranteed to apply (bridge uses self-signed cert).
  */
 
 import http from 'http'
 import https from 'https'
+
+// Reuse a single agent for all HTTPS bridge requests within this process.
+// Explicitly set rejectUnauthorized via the agent — more reliable than the
+// per-request options approach in some Node.js versions.
+const HTTPS_AGENT = new https.Agent({ rejectUnauthorized: false })
 
 interface BridgeResponse {
   statusCode: number
@@ -22,10 +24,9 @@ function nodeRequest(
   path: string,
   method: string,
   body?: string,
-  timeoutMs = 5000
+  timeoutMs = 6000
 ): Promise<BridgeResponse> {
   return new Promise((resolve, reject) => {
-    const lib = scheme === 'https' ? https : http
     const options: https.RequestOptions = {
       hostname,
       port: scheme === 'https' ? 443 : 80,
@@ -33,20 +34,24 @@ function nodeRequest(
       method,
       headers: {
         'Content-Type': 'application/json',
-        ...(body ? { 'Content-Length': Buffer.byteLength(body) } : {}),
+        ...(body ? { 'Content-Length': String(Buffer.byteLength(body)) } : {}),
       },
-      rejectUnauthorized: false, // bridge uses a self-signed cert
+      agent: scheme === 'https' ? HTTPS_AGENT : undefined,
     }
 
+    const lib = scheme === 'https' ? https : http
     const req = lib.request(options, (res) => {
-      let data = ''
-      res.on('data', (chunk: Buffer) => { data += chunk.toString() })
-      res.on('end', () => resolve({ statusCode: res.statusCode ?? 200, body: data }))
+      const chunks: Buffer[] = []
+      res.on('data', (chunk: Buffer) => chunks.push(chunk))
+      res.on('end', () => {
+        const raw = Buffer.concat(chunks).toString('utf8')
+        resolve({ statusCode: res.statusCode ?? 200, body: raw })
+      })
     })
 
     req.on('error', reject)
     req.setTimeout(timeoutMs, () => {
-      req.destroy(new Error(`Bridge did not respond within ${timeoutMs / 1000}s`))
+      req.destroy(new Error(`No response from bridge within ${timeoutMs / 1000}s`))
     })
 
     if (body) req.write(body)
@@ -60,9 +65,9 @@ function looksLikeJson(s: string): boolean {
 }
 
 /**
- * Try HTTPS first. If the response doesn't look like JSON (bridge web UI
- * may answer on 443 before the API does), fall back to plain HTTP.
- * Throws with a descriptive message including raw response if both fail.
+ * Try HTTPS first (Bridge v2). If the response isn't JSON (web UI on port 443),
+ * fall back to HTTP (Bridge v1 / nginx redirect path won't apply for POST).
+ * Returns raw BridgeResponse — caller calls parseBridgeJson to decode.
  */
 export async function bridgeRequest(
   hostname: string,
@@ -72,36 +77,35 @@ export async function bridgeRequest(
 ): Promise<BridgeResponse> {
   const trace: string[] = []
 
-  // ── HTTPS attempt ────────────────────────────────────────────────────────
   try {
-    const res = await nodeRequest('https', hostname, path, method, body, 5000)
+    const res = await nodeRequest('https', hostname, path, method, body)
     if (looksLikeJson(res.body)) return res
-    // Got a response but it's not JSON (likely the bridge web UI)
-    trace.push(`HTTPS port 443 → non-JSON (${res.statusCode}): ${res.body.slice(0, 120).replace(/\n/g, ' ')}`)
+    trace.push(`HTTPS→ non-JSON [${res.statusCode}]: ${res.body.slice(0, 160).replace(/\s+/g, ' ')}`)
   } catch (e) {
-    trace.push(`HTTPS port 443 → ${e instanceof Error ? e.message : String(e)}`)
+    trace.push(`HTTPS→ ${e instanceof Error ? e.message : String(e)}`)
   }
 
-  // ── HTTP fallback ────────────────────────────────────────────────────────
   try {
-    const res = await nodeRequest('http', hostname, path, method, body, 5000)
-    return res // return whatever HTTP gives us — let caller validate
+    const res = await nodeRequest('http', hostname, path, method, body)
+    if (looksLikeJson(res.body)) return res
+    trace.push(`HTTP→ non-JSON [${res.statusCode}]: ${res.body.slice(0, 160).replace(/\s+/g, ' ')}`)
   } catch (e) {
-    trace.push(`HTTP port 80 → ${e instanceof Error ? e.message : String(e)}`)
+    trace.push(`HTTP→ ${e instanceof Error ? e.message : String(e)}`)
   }
 
-  throw new Error(`Could not reach Hue bridge at ${hostname}:\n${trace.join('\n')}`)
+  // Both attempts gave non-JSON or failed — include trace in error so the
+  // pair API route can surface it to the UI for diagnosis.
+  throw new Error(`Hue bridge at ${hostname} did not return JSON:\n${trace.join('\n')}`)
 }
 
 /**
- * Parse JSON from a bridge response body.
- * Throws with the raw body included so callers can surface it to the user.
+ * Parse bridge JSON. Throws with the raw body visible so failures are diagnosable.
  */
 export function parseBridgeJson<T = unknown>(raw: string): T {
   try {
     return JSON.parse(raw) as T
   } catch {
-    const preview = raw.slice(0, 200).replace(/\n/g, ' ')
-    throw new Error(`Bridge returned non-JSON response: "${preview}"`)
+    const preview = raw.slice(0, 300).replace(/\s+/g, ' ')
+    throw new Error(`Bridge returned non-JSON: "${preview}"`)
   }
 }

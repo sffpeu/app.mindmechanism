@@ -1,14 +1,6 @@
 /**
  * POST /api/hue/pair
  * Body: { bridgeIp: string }
- *
- * Proxies the Hue bridge button-press pairing call.
- * Tries HTTPS first (Bridge v2 new firmware), falls back to HTTP (Bridge v1).
- * Self-signed certificate is accepted.
- *
- * User must press the physical button on the bridge before calling this.
- * On success: { username: string }
- * On failure: { error: string }
  */
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -35,14 +27,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid bridge IP address' }, { status: 400 })
   }
 
-  try {
-    const payload = JSON.stringify({ devicetype: 'mindmechanism#webapp', generateclientkey: true })
-    const res = await bridgeRequest(bridgeIp, '/api', 'POST', payload)
-    const data = parseBridgeJson<HuePairResult[]>(res.body)
+  const payload = JSON.stringify({ devicetype: 'mindmechanism#webapp', generateclientkey: true })
 
+  let rawBody = ''
+  try {
+    const res = await bridgeRequest(bridgeIp, '/api', 'POST', payload)
+    rawBody = res.body
+
+    // Log to dev server terminal so we can see exactly what the bridge returned
+    console.log('[hue/pair] raw bridge response:', rawBody.slice(0, 400))
+
+    const data = parseBridgeJson<HuePairResult[]>(rawBody)
     const first = Array.isArray(data) ? data[0] : null
+
     if (!first) {
-      return NextResponse.json({ error: 'Unexpected response from bridge' }, { status: 502 })
+      return NextResponse.json({ error: 'Empty response from bridge' }, { status: 502 })
     }
 
     if ('success' in first && first.success?.username) {
@@ -52,17 +51,15 @@ export async function POST(req: NextRequest) {
     if ('error' in first) {
       const { type, description } = first.error
       const message = type === 101
-        ? 'Press the button on your Hue bridge, then try again within 30 seconds.'
-        : description
+        ? 'Press the button on your Hue bridge, then click Connect within 30 seconds.'
+        : `Bridge error ${type}: ${description}`
       return NextResponse.json({ error: message }, { status: 409 })
     }
 
-    return NextResponse.json({ error: 'Unexpected response from bridge' }, { status: 502 })
+    return NextResponse.json({ error: 'Unexpected response from bridge', raw: rawBody.slice(0, 200) }, { status: 502 })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
-    return NextResponse.json(
-      { error: `Could not reach bridge at ${bridgeIp}: ${message}` },
-      { status: 502 }
-    )
+    console.error('[hue/pair] error:', message, '| raw so far:', rawBody.slice(0, 200))
+    return NextResponse.json({ error: message }, { status: 502 })
   }
 }
