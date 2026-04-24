@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
 import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 import {
   Lightbulb,
   Wifi,
@@ -49,7 +50,9 @@ export function SmartHomeSettings() {
   const isConnected = !!(hueBridgeIp && hueApiKey)
 
   const [step, setStep] = useState<PairingStep>(isConnected ? 'connected' : 'idle')
+  const [discovering, setDiscovering] = useState(false)
   const [discovered, setDiscovered] = useState<DiscoveredBridge[]>([])
+  const [manualIp, setManualIp] = useState('')
   const [selectedBridge, setSelectedBridge] = useState<string>(hueBridgeIp ?? '')
   const [errorMsg, setErrorMsg] = useState('')
 
@@ -120,7 +123,7 @@ export function SmartHomeSettings() {
   // ── Discovery ────────────────────────────────────────────────────────────
 
   const handleDiscover = async () => {
-    setStep('discovering')
+    setDiscovering(true)
     setErrorMsg('')
     try {
       const res = await fetch('/api/hue/discover')
@@ -129,14 +132,17 @@ export function SmartHomeSettings() {
         throw new Error(('error' in data ? data.error : null) ?? 'Discovery failed')
       }
       if (!Array.isArray(data) || data.length === 0) {
-        throw new Error('No Hue bridge found on this network. Make sure it is powered on and connected.')
+        throw new Error('No Hue bridge found automatically. Enter the IP address manually instead.')
       }
       setDiscovered(data)
       setSelectedBridge(data[0].internalipaddress)
+      setManualIp(data[0].internalipaddress)
       setStep('discovered')
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Discovery failed')
       setStep('error')
+    } finally {
+      setDiscovering(false)
     }
   }
 
@@ -404,33 +410,62 @@ export function SmartHomeSettings() {
         {/* Not connected — pairing flow */}
         {!isConnected && (
           <div className="space-y-3">
-            {step === 'idle' && (
-              <button
-                type="button"
-                onClick={handleDiscover}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 py-2.5 text-sm text-gray-700 dark:text-gray-300 bg-white/60 dark:bg-gray-900/30 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors"
-              >
-                <Search className="h-4 w-4" />
-                Find bridge on this network
-              </button>
-            )}
 
-            {step === 'discovering' && (
-              <div className="flex items-center justify-center gap-2 py-3 text-sm text-gray-500 dark:text-gray-400">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Searching for bridges…
-              </div>
-            )}
-
-            {step === 'discovered' && (
+            {/* Step 1: IP entry (always visible until pairing starts) */}
+            {(step === 'idle' || step === 'discovered' || step === 'error') && (
               <div className="space-y-3">
-                {discovered.length > 1 ? (
+
+                {/* Manual IP — primary path */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-gray-600 dark:text-gray-400">
+                    Bridge IP address
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="text"
+                      placeholder="192.168.1.x"
+                      value={manualIp}
+                      onChange={(e) => {
+                        setManualIp(e.target.value)
+                        setSelectedBridge(e.target.value.trim())
+                        if (step === 'error') setStep('idle')
+                      }}
+                      className="font-mono text-sm bg-white dark:bg-gray-900"
+                      aria-label="Hue bridge IP address"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleDiscover}
+                      disabled={discovering}
+                      title="Auto-discover bridge on this network"
+                      className="shrink-0 flex items-center gap-1.5 rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 text-xs text-gray-600 dark:text-gray-400 bg-white/60 dark:bg-gray-900/30 hover:bg-gray-50 dark:hover:bg-gray-800/40 disabled:opacity-50 transition-colors"
+                    >
+                      {discovering
+                        ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        : <Search className="h-3.5 w-3.5" />}
+                      Auto
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-gray-400 dark:text-gray-500">
+                    Find the IP in the Hue app: Settings → My Hue System → Hue Bridge → IP address.
+                    Or hit Auto to search the network.
+                  </p>
+                </div>
+
+                {/* Auto-discovered options (shown inline when found) */}
+                {step === 'discovered' && discovered.length > 0 && (
                   <div className="space-y-1">
+                    <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+                      Found on network
+                    </p>
                     {discovered.map((b) => (
                       <button
                         key={b.id}
                         type="button"
-                        onClick={() => setSelectedBridge(b.internalipaddress)}
+                        onClick={() => {
+                          setSelectedBridge(b.internalipaddress)
+                          setManualIp(b.internalipaddress)
+                        }}
                         className={cn(
                           'w-full flex items-center justify-between rounded-md border px-3 py-2 text-sm transition-colors',
                           selectedBridge === b.internalipaddress
@@ -439,33 +474,40 @@ export function SmartHomeSettings() {
                         )}
                       >
                         <span className="font-mono text-xs">{b.internalipaddress}</span>
-                        <span className="text-[10px] text-gray-400">{b.id.slice(0, 8)}</span>
+                        <span className="text-[10px] text-gray-400">Use this</span>
                       </button>
                     ))}
                   </div>
-                ) : (
-                  <div className="flex items-center gap-2 rounded-md bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700 px-3 py-2">
-                    <Wifi className="h-4 w-4 text-green-500 shrink-0" />
-                    <span className="text-sm text-gray-700 dark:text-gray-300 font-mono">{discovered[0]?.internalipaddress}</span>
-                    <span className="text-xs text-gray-400 ml-auto">Found</span>
+                )}
+
+                {/* Error */}
+                {step === 'error' && errorMsg && (
+                  <div className="flex items-start gap-2 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800/40 p-3">
+                    <AlertCircle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <p className="text-xs text-red-700 dark:text-red-400">{errorMsg}</p>
                   </div>
                 )}
 
-                <div className="rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 p-3">
-                  <p className="text-xs font-medium text-amber-800 dark:text-amber-300">Press the button on your Hue bridge</p>
-                  <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">Then click Connect within 30 seconds.</p>
-                </div>
-
-                <div className="flex gap-2">
-                  <button type="button" onClick={() => setStep('idle')}
-                    className="flex-1 rounded-lg border border-gray-200 dark:border-gray-700 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
-                    Back
-                  </button>
-                  <button type="button" onClick={handlePair}
-                    className="flex-1 rounded-lg border border-violet-400 dark:border-violet-600 py-2 text-sm font-medium text-violet-700 dark:text-violet-300 bg-violet-50/50 dark:bg-violet-950/20 hover:bg-violet-100/60 dark:hover:bg-violet-900/30 transition-colors">
-                    Connect
-                  </button>
-                </div>
+                {/* Bridge button prompt + connect */}
+                {selectedBridge && (
+                  <>
+                    <div className="rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 p-3">
+                      <p className="text-xs font-medium text-amber-800 dark:text-amber-300">
+                        Press the button on your Hue bridge
+                      </p>
+                      <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+                        Then click Connect within 30 seconds.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handlePair}
+                      className="w-full rounded-lg border border-violet-400 dark:border-violet-600 py-2.5 text-sm font-medium text-violet-700 dark:text-violet-300 bg-violet-50/50 dark:bg-violet-950/20 hover:bg-violet-100/60 dark:hover:bg-violet-900/30 transition-colors"
+                    >
+                      Connect to {selectedBridge}
+                    </button>
+                  </>
+                )}
               </div>
             )}
 
@@ -476,18 +518,6 @@ export function SmartHomeSettings() {
               </div>
             )}
 
-            {step === 'error' && (
-              <div className="space-y-3">
-                <div className="flex items-start gap-2 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800/40 p-3">
-                  <AlertCircle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
-                  <p className="text-xs text-red-700 dark:text-red-400">{errorMsg}</p>
-                </div>
-                <button type="button" onClick={() => setStep('idle')}
-                  className="w-full rounded-lg border border-gray-200 dark:border-gray-700 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
-                  Try again
-                </button>
-              </div>
-            )}
           </div>
         )}
       </Card>
