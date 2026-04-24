@@ -1,23 +1,17 @@
 /**
  * GET /api/hue/rooms?bridgeIp=...&apiKey=...
  *
- * Returns the bridge's named rooms (groups of type "Room") and
- * individual lights, so the client can build a room-selection UI.
- *
- * Response shape:
- * {
- *   rooms: Array<{ id: string; name: string; lightIds: string[] }>
- *   lights: Record<string, { name: string; type: string }>
- * }
+ * Returns the bridge's named rooms (groups of type "Room") and light names.
+ * Tries HTTPS first, falls back to HTTP. Self-signed cert accepted.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { bridgeRequest, parseBridgeJson } from '@/lib/hueBridge'
 
 interface HueGroup {
   name: string
   type: string
   lights: string[]
-  state?: { all_on: boolean; any_on: boolean }
 }
 
 interface HueLight {
@@ -39,22 +33,17 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid bridge IP' }, { status: 400 })
   }
 
-  const base = `http://${bridgeIp}/api/${apiKey}`
+  const base = `/api/${apiKey}`
 
   try {
     const [groupsRes, lightsRes] = await Promise.all([
-      fetch(`${base}/groups`, { signal: AbortSignal.timeout(6000) }),
-      fetch(`${base}/lights`, { signal: AbortSignal.timeout(6000) }),
+      bridgeRequest(bridgeIp, `${base}/groups`),
+      bridgeRequest(bridgeIp, `${base}/lights`),
     ])
 
-    if (!groupsRes.ok || !lightsRes.ok) {
-      return NextResponse.json({ error: 'Bridge returned an error fetching rooms/lights' }, { status: 502 })
-    }
+    const rawGroups = parseBridgeJson<Record<string, HueGroup>>(groupsRes.body)
+    const rawLights = parseBridgeJson<Record<string, HueLight>>(lightsRes.body)
 
-    const rawGroups = (await groupsRes.json()) as Record<string, HueGroup>
-    const rawLights = (await lightsRes.json()) as Record<string, HueLight>
-
-    // Keep only groups of type "Room" (Hue's room grouping)
     const rooms = Object.entries(rawGroups)
       .filter(([, g]) => g.type === 'Room')
       .map(([id, g]) => ({ id, name: g.name, lightIds: g.lights ?? [] }))

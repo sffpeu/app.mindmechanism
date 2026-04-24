@@ -1,22 +1,14 @@
 /**
  * POST /api/hue/lights
- *
- * Body: {
- *   bridgeIp: string
- *   apiKey:   string          (username from pairing)
- *   state:    HueLightState   (xy, bri, transitiontime, on)
- *   lightIds?: string[]       (optional — omit to address all lights)
- * }
+ * Body: { bridgeIp, apiKey, state, lightIds? }
  *
  * Sets one or more lights to the given state via the local Hue CLIP v1 API.
- * When lightIds is omitted the route fetches the bridge's light list first
- * and addresses each light individually (Hue v1 has no "all lights" shortcut
- * that works reliably across firmware versions).
- *
- * Returns: { ok: true, addressed: number } on success.
+ * Tries HTTPS first (Bridge v2), falls back to HTTP. Self-signed cert accepted.
+ * When lightIds is omitted, fetches all lights and addresses each.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { bridgeRequest, parseBridgeJson } from '@/lib/hueBridge'
 import type { HueLightState } from '@/lib/hueColors'
 
 interface LightsBody {
@@ -26,9 +18,7 @@ interface LightsBody {
   lightIds?: string[]
 }
 
-// Safety limits
 const MAX_LIGHTS = 50
-const REQUEST_TIMEOUT_MS = 6000
 
 export async function POST(req: NextRequest) {
   let body: LightsBody
@@ -43,25 +33,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'bridgeIp, apiKey and state are required' }, { status: 400 })
   }
 
-  // SSRF guard
   const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$|^[\w.-]+\.local$/
   if (!ipPattern.test(bridgeIp.trim())) {
     return NextResponse.json({ error: 'Invalid bridge IP address' }, { status: 400 })
   }
 
-  const base = `http://${bridgeIp}/api/${apiKey}`
-
-  // Resolve light IDs
+  const base = `/api/${apiKey}`
   let ids: string[] = lightIds ?? []
+
   if (ids.length === 0) {
     try {
-      const listRes = await fetch(`${base}/lights`, {
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      })
-      if (!listRes.ok) {
-        return NextResponse.json({ error: 'Could not fetch light list from bridge' }, { status: 502 })
-      }
-      const lights = (await listRes.json()) as Record<string, unknown>
+      const res = await bridgeRequest(bridgeIp, `${base}/lights`)
+      const lights = parseBridgeJson<Record<string, unknown>>(res.body)
       ids = Object.keys(lights).slice(0, MAX_LIGHTS)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error'
@@ -73,16 +56,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, addressed: 0, note: 'No lights found on bridge' })
   }
 
-  // Send state to each light (fire-and-forget race — we don't fail on individual light errors)
+  const statePayload = JSON.stringify(state)
   const results = await Promise.allSettled(
-    ids.map((id) =>
-      fetch(`${base}/lights/${id}/state`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(state),
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      })
-    )
+    ids.map((id) => bridgeRequest(bridgeIp, `${base}/lights/${id}/state`, 'PUT', statePayload))
   )
 
   const succeeded = results.filter((r) => r.status === 'fulfilled').length

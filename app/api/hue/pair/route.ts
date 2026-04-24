@@ -1,21 +1,25 @@
 /**
  * POST /api/hue/pair
- *
  * Body: { bridgeIp: string }
  *
- * Proxies the Hue bridge pairing call (CLIP v1).
- * The user must press the physical button on the bridge first — this endpoint
- * should be called within ~30 seconds of the button press.
+ * Proxies the Hue bridge button-press pairing call.
+ * Tries HTTPS first (Bridge v2 new firmware), falls back to HTTP (Bridge v1).
+ * Self-signed certificate is accepted.
  *
- * On success returns: { username: string } — store this as the API key.
- * On failure returns: { error: string, hueErrors?: object[] }
+ * User must press the physical button on the bridge before calling this.
+ * On success: { username: string }
+ * On failure: { error: string }
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { bridgeRequest, parseBridgeJson } from '@/lib/hueBridge'
+
+interface HuePairSuccess { success: { username: string } }
+interface HuePairError   { error:   { type: number; description: string } }
+type HuePairResult = HuePairSuccess | HuePairError
 
 export async function POST(req: NextRequest) {
   let bridgeIp: string
-
   try {
     const body = (await req.json()) as { bridgeIp?: string }
     if (!body.bridgeIp || typeof body.bridgeIp !== 'string') {
@@ -26,41 +30,39 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  // Basic IP/hostname sanity check — no arbitrary SSRF
   const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$|^[\w.-]+\.local$/
   if (!ipPattern.test(bridgeIp)) {
     return NextResponse.json({ error: 'Invalid bridge IP address' }, { status: 400 })
   }
 
   try {
-    const res = await fetch(`http://${bridgeIp}/api`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ devicetype: 'mindmechanism#webapp', generateclientkey: true }),
-      signal: AbortSignal.timeout(8000),
-    })
+    const payload = JSON.stringify({ devicetype: 'mindmechanism#webapp', generateclientkey: true })
+    const res = await bridgeRequest(bridgeIp, '/api', 'POST', payload)
+    const data = parseBridgeJson<HuePairResult[]>(res.body)
 
-    const data = (await res.json()) as Array<{ success?: { username: string }; error?: { type: number; description: string } }>
-
-    // Hue API always returns 200 — check body for errors
     const first = Array.isArray(data) ? data[0] : null
-    if (first?.success?.username) {
+    if (!first) {
+      return NextResponse.json({ error: 'Unexpected response from bridge' }, { status: 502 })
+    }
+
+    if ('success' in first && first.success?.username) {
       return NextResponse.json({ username: first.success.username })
     }
 
-    if (first?.error) {
+    if ('error' in first) {
       const { type, description } = first.error
-      // type 101 = "link button not pressed"
-      const message =
-        type === 101
-          ? 'Press the button on your Hue bridge, then try again within 30 seconds.'
-          : description
-      return NextResponse.json({ error: message, hueErrors: data }, { status: 409 })
+      const message = type === 101
+        ? 'Press the button on your Hue bridge, then try again within 30 seconds.'
+        : description
+      return NextResponse.json({ error: message }, { status: 409 })
     }
 
-    return NextResponse.json({ error: 'Unexpected response from bridge', raw: data }, { status: 502 })
+    return NextResponse.json({ error: 'Unexpected response from bridge' }, { status: 502 })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
-    return NextResponse.json({ error: `Could not reach bridge at ${bridgeIp}: ${message}` }, { status: 502 })
+    return NextResponse.json(
+      { error: `Could not reach bridge at ${bridgeIp}: ${message}` },
+      { status: 502 }
+    )
   }
 }
