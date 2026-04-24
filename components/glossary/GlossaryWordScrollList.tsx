@@ -29,7 +29,6 @@ export type GlossaryWordScrollListProps = {
   sectionRefsMap: MutableRefObject<Record<string, HTMLDivElement | null>>
   selectedCard: GlossaryWord | null
   onSelectCard: (word: GlossaryWord | null) => void
-  getDefaultIconStyle: (clockId: number | undefined) => { backgroundColor: string; color: string } | undefined
   clockHexPalette: readonly string[]
 }
 
@@ -40,7 +39,6 @@ export function GlossaryWordScrollList({
   sectionRefsMap,
   selectedCard,
   onSelectCard,
-  getDefaultIconStyle,
   clockHexPalette,
 }: GlossaryWordScrollListProps) {
   return (
@@ -107,21 +105,24 @@ export function GlossaryWordScrollList({
                         }
                       }}
                     >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1 min-w-0">
-                          <h3
-                            className={cn(
-                              'text-lg font-medium mb-0.5 truncate',
-                              useClockCard ? 'text-gray-900 dark:text-white' : 'text-black dark:text-white'
-                            )}
+                      {/* Wheel title row */}
+                      <div className="flex items-center justify-between mb-1">
+                        {useClockCard && word.clock_id != null ? (
+                          <p
+                            className="text-[10px] font-semibold uppercase tracking-widest truncate"
+                            style={{ color: tint.hex }}
                           >
-                            {word.word}
-                          </h3>
-                          {word.phonetic_spelling && (
-                            <span className="text-sm text-gray-500 dark:text-gray-400 block">{word.phonetic_spelling}</span>
-                          )}
-                        </div>
-                        <div className="flex items-center ml-4 space-x-1.5 shrink-0">
+                            {clockTitles[word.clock_id]}
+                          </p>
+                        ) : word.source === 'user' ? (
+                          <span className="text-[10px] font-semibold uppercase tracking-widest text-purple-500 dark:text-purple-400">
+                            My Word
+                          </span>
+                        ) : (
+                          <span />
+                        )}
+                        {/* Badges: grade + rating */}
+                        <div className="flex items-center ml-2 space-x-1.5 shrink-0">
                           <div
                             className={cn(
                               'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
@@ -146,19 +147,28 @@ export function GlossaryWordScrollList({
                           >
                             {word.rating}
                           </div>
-                          {word.source === 'user' ? (
+                          {word.source === 'user' && (
                             <UserCircle2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                          ) : getDefaultIconStyle(word.clock_id) ? (
-                            <div
-                              className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium shrink-0"
-                              style={getDefaultIconStyle(word.clock_id)}
-                            >
-                              {word.clock_id != null ? (clockTitles[word.clock_id]?.[0] ?? '') : ''}
-                            </div>
-                          ) : null}
+                          )}
                         </div>
                       </div>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-2">{word.definition}</p>
+
+                      {/* Word + phonetic */}
+                      <h3
+                        className={cn(
+                          'text-lg font-medium truncate',
+                          useClockCard ? 'text-gray-900 dark:text-white' : 'text-black dark:text-white'
+                        )}
+                      >
+                        {word.word}
+                      </h3>
+                      {word.phonetic_spelling && (
+                        <span className="text-xs text-gray-500 dark:text-gray-400 font-mono block mb-1">
+                          {word.phonetic_spelling}
+                        </span>
+                      )}
+
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mt-1 line-clamp-2">{word.definition}</p>
                     </button>
                   )
                 })}

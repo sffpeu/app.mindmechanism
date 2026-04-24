@@ -42,12 +42,6 @@ export default function GlossaryPage() {
 
   const CLOCK_HEX = ['#fd290a', '#fba63b', '#f7da5f', '#6dc037', '#156fde', '#941952', '#541b96', '#ee5fa7', '#56c1ff']
 
-  const getDefaultIconStyle = (clockId: number | undefined) => {
-    if (clockId == null || clockId < 0 || clockId >= CLOCK_HEX.length) return undefined
-    const hex = CLOCK_HEX[clockId]
-    return { backgroundColor: `${hex}20`, color: hex }
-  }
-
   useEffect(() => {
     loadWords()
   }, [])
@@ -328,7 +322,6 @@ export default function GlossaryPage() {
                   sectionRefsMap={sectionRefsMap}
                   selectedCard={selectedCard}
                   onSelectCard={setSelectedCard}
-                  getDefaultIconStyle={getDefaultIconStyle}
                   clockHexPalette={CLOCK_HEX}
                 />
               </div>
