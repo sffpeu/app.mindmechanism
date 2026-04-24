@@ -44,11 +44,19 @@ interface SettingsState {
   setHueBrightness: (bri: number) => void;
 
   /**
-   * Optional allowlist of light IDs to control.
+   * Resolved light IDs to control (derived from room selection).
    * Empty array means all lights on the bridge.
    */
   hueLightIds: string[];
   setHueLightIds: (ids: string[]) => void;
+
+  /**
+   * Selected room (group) IDs — used to restore the room picker UI
+   * and to re-derive hueLightIds if the light list changes.
+   * Empty array = no rooms selected = all lights.
+   */
+  hueRoomIds: string[];
+  setHueRoomIds: (ids: string[]) => void;
 }
 
 export const useSettings = create<SettingsState>()(
@@ -87,6 +95,9 @@ export const useSettings = create<SettingsState>()(
 
       hueLightIds: [],
       setHueLightIds: (ids) => set({ hueLightIds: ids }),
+
+      hueRoomIds: [],
+      setHueRoomIds: (ids) => set({ hueRoomIds: ids }),
     }),
     {
       name: 'app-settings',
