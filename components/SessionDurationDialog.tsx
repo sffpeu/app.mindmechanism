@@ -1111,7 +1111,7 @@ export function SessionDurationDialog({
                             placeholder="Enter duration"
                             className={cn(
                               "h-10 text-base",
-                              "border-gray-200 dark:border-gray-800 dark:text-white dark:bg-black",
+                              "border-gray-200 dark:border-gray-800 text-gray-900 bg-white dark:text-white dark:bg-black",
                               "hover:border-gray-300 dark:hover:border-gray-700",
                               "placeholder:text-gray-400 dark:placeholder:text-gray-500",
                               isCustom && isCustomConfirmed && "ring-1",
