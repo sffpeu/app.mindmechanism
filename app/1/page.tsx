@@ -101,6 +101,13 @@ function NodesPageContent() {
   })
   const [selectedNodeIndices, setSelectedNodeIndices] = useState<number[]>([])
   const [hoveredNodeIndex, setHoveredNodeIndex] = useState<number | null>(null)
+  const [nodeNumbersVisible, setNodeNumbersVisible] = useState(true)
+  const nodeNumberTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const resetNodeNumberTimer = useCallback(() => {
+    setNodeNumbersVisible(true)
+    if (nodeNumberTimerRef.current) clearTimeout(nodeNumberTimerRef.current)
+    nodeNumberTimerRef.current = setTimeout(() => setNodeNumbersVisible(false), 3000)
+  }, [])
   const [showWords, setShowWords] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('showWords')
@@ -669,7 +676,7 @@ function NodesPageContent() {
         )}
 
         <div className="flex-grow flex items-center justify-center min-h-0 overflow-visible py-8">
-          <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px] overflow-visible">
+          <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px] overflow-visible" onPointerMove={resetNodeNumberTimer} onPointerDown={resetNodeNumberTimer}>
             <ClockBreathingGlow clockHex={clockHex} sessionActive={isSessionActive} />
             {/* Session progress ring (clock page) */}
             {duration != null && duration > 0 && (
@@ -803,12 +810,13 @@ function NodesPageContent() {
                           onMouseLeave={() => setHoveredNodeIndex(null)}
                         >
                           <span
-                            className="flex-shrink-0 flex items-center justify-center text-white text-[10px] font-medium pointer-events-none select-none rounded-full"
+                            className="flex-shrink-0 flex items-center justify-center text-white text-[10px] font-medium pointer-events-none select-none rounded-full transition-opacity duration-700"
                             style={{
                               ...getFocusNodeStyle(index, isSelected),
                               width: 18,
                               height: 18,
                               transform: 'none',
+                              opacity: nodeNumbersVisible ? 1 : 0,
                             }}
                           >
                             {index + 1}
