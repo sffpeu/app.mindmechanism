@@ -545,7 +545,7 @@ export default function NotesPage() {
     return (
       <div className="h-full overflow-hidden flex flex-col bg-gray-50 dark:bg-black/95">
         <div className="flex-1 min-h-0 overflow-y-auto">
-          <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="max-w-7xl mx-auto pl-16 pr-4 py-6">
             <div className="text-center py-8">
               <h2 className="text-xl font-medium text-black dark:text-white mb-2">Sign In Required</h2>
               <p className="text-gray-500 dark:text-gray-400">Please sign in to view and manage your notes.</p>
@@ -559,7 +559,7 @@ export default function NotesPage() {
   return (
     <div className="h-full overflow-hidden flex flex-col bg-gray-50 dark:bg-black/95">
       <div className="flex-1 min-h-0 overflow-y-auto">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="max-w-7xl mx-auto pl-16 pr-4 py-6">
           <div className="mb-6 flex flex-col gap-4">
             <div className="min-w-0">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Notes</h1>

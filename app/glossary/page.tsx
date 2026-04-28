@@ -302,10 +302,10 @@ export default function GlossaryPage() {
               />
             )}
           </div>
-          <div className="max-w-7xl mx-auto w-full px-4 shrink-0">{bottomChrome}</div>
+          <div className="max-w-7xl mx-auto w-full pl-16 pr-4 shrink-0">{bottomChrome}</div>
         </>
       ) : (
-        <div className="flex-1 min-h-0 flex flex-col max-w-7xl mx-auto w-full px-4 py-6">
+        <div className="flex-1 min-h-0 flex flex-col max-w-7xl mx-auto w-full pl-16 pr-4 py-6">
           <div className="mb-6 shrink-0">
             <h1 className="text-2xl font-semibold dark:text-white mb-2">Glossary</h1>
             <p className="text-gray-600 dark:text-gray-400">The vocabulary of the interior. Browse, search, and build your own word set.</p>
