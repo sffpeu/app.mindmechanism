@@ -83,45 +83,47 @@ export function SessionPresenceBroadcast({ uid, clockIndex, clockHex, durationMi
 
   return (
     <>
-      {/* Broadcast toggle — compact icon when off, pill with "Live" label when on */}
-      <div className="relative flex items-center">
+      {/* Broadcast toggle — always a labeled pill, colour-coded when live */}
+      <button
+        type="button"
+        onClick={toggle}
+        aria-label={broadcasting ? 'Stop broadcasting' : 'Broadcast your presence'}
+        className={cn(
+          'flex items-center gap-2 h-8 rounded-full px-3 text-xs font-medium transition-all duration-200',
+          broadcasting
+            ? ''
+            : 'bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 border border-black/10 dark:border-white/15 hover:bg-black/10 dark:hover:bg-white/15'
+        )}
+        style={broadcasting ? {
+          backgroundColor: `${clockHex}22`,
+          border: `1px solid ${clockHex}55`,
+          color: clockHex,
+          boxShadow: `0 0 12px ${clockHex}44`,
+        } : undefined}
+      >
         {broadcasting ? (
-          <button
-            type="button"
-            onClick={toggle}
-            aria-label="Stop broadcasting"
-            className="flex items-center gap-1.5 h-7 rounded-full px-2.5 text-[11px] font-medium tracking-wide transition-all duration-200"
-            style={{
-              backgroundColor: `${clockHex}22`,
-              border: `1px solid ${clockHex}55`,
-              color: clockHex,
-              boxShadow: `0 0 10px ${clockHex}44`,
-            }}
-          >
+          <>
             <span
-              className="h-1.5 w-1.5 rounded-full animate-pulse shrink-0"
+              className="h-2 w-2 rounded-full animate-pulse shrink-0"
               style={{ backgroundColor: clockHex }}
             />
             Live
             {joinCount > 0 && (
               <span
-                className="ml-0.5 h-4 w-4 rounded-full flex items-center justify-center text-[9px] font-bold"
+                className="h-4 w-4 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0"
                 style={{ backgroundColor: clockHex, color: '#fff' }}
               >
                 {joinCount}
               </span>
             )}
-          </button>
+          </>
         ) : (
-          <ClockPageIconButton
-            clockHex={clockHex}
-            onClick={toggle}
-            aria-label="Broadcast your presence"
-          >
-            <Radio className="h-2.5 w-2.5" style={{ color: 'currentColor' }} />
-          </ClockPageIconButton>
+          <>
+            <Radio className="h-3 w-3 shrink-0" />
+            Broadcast
+          </>
         )}
-      </div>
+      </button>
 
       {/* Companion message — transparent, dignified */}
       <AnimatePresence>

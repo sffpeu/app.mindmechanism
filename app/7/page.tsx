@@ -633,15 +633,18 @@ function NodesPageContent() {
                   </div>
             </div>
           </DraggableClockPanel>
-          {user?.uid && (
+        </div>
+
+        {user?.uid && (
+          <div className={cn("fixed bottom-14 right-14 z-50 transition-opacity duration-700", isIdle && "opacity-0 pointer-events-none")}>
             <SessionPresenceBroadcast
               uid={user.uid}
               clockIndex={7}
               clockHex={clockHex}
               durationMins={duration != null ? Math.round(duration / 60) : null}
             />
-          )}
-        </div>
+          </div>
+        )}
 
         <div className="flex-grow flex items-center justify-center min-h-0 overflow-visible py-8">
           <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px] overflow-visible">

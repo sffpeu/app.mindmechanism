@@ -115,14 +115,18 @@ export function CurvedCircleWordLabel({
   const display = word.trim().toUpperCase()
 
   const useRingFill = typeof fillProgress === 'number'
-  const fillColor = useRingFill ? lerpHex(baseColor, accentColor, fillProgress) : textColor
+  // When fillProgress is 0 (no session progress) fall back to CSS theme color so white
+  // text doesn't become invisible on light backgrounds
+  const fillColor = useRingFill && fillProgress > 0
+    ? lerpHex(baseColor, accentColor, fillProgress)
+    : textColor
 
   return (
     <svg
       viewBox="0 0 100 100"
       className={cn(
         'h-full w-full overflow-visible',
-        !useRingFill && !textColor && 'text-black dark:text-white',
+        !fillColor && 'text-black dark:text-white',
         className
       )}
       style={fillColor ? { color: fillColor } : undefined}
