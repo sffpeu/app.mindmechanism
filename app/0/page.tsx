@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { useTheme } from '@/app/ThemeContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { ClockBreathingTone } from '@/components/ClockBreathingTone'
+import { ClockBreathingGlow } from '@/components/ClockBreathingGlow'
 import { useHueSync } from '@/lib/hooks/useHueSync'
 import { useIdleFade } from '@/lib/hooks/useIdleFade'
 import { ClockFocusNodeAppear } from '@/components/ClockFocusNodeAppear'
@@ -711,6 +712,7 @@ function NodesPageContent() {
 
         <div className="flex-grow flex items-center justify-center min-h-0 overflow-visible py-8">
           <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px] overflow-visible">
+            <ClockBreathingGlow clockHex={clockHex} />
             {/* Session progress ring (clock page) */}
             {duration != null && duration > 0 && (
               <motion.div
