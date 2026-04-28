@@ -64,9 +64,11 @@ export function AppDock() {
     <>
       {/* Above clock DotNavigation (z-[10000]) so main nav stays clickable during sessions */}
       <div className={cn(
-        "fixed left-0 top-0 bottom-0 z-[12000] flex items-center pointer-events-none pl-3 transition-opacity duration-700",
+        "fixed left-0 top-0 bottom-0 z-[12000] flex flex-col items-start justify-center pointer-events-none pl-3 transition-opacity duration-700",
         isClockPage && isIdle && "opacity-0 pointer-events-none"
       )}>
+        {/* Broadcast pill slot — clock pages portal SessionPresenceBroadcast here */}
+        <div id="dock-broadcast-slot" className="pointer-events-auto" />
         <div className="pointer-events-auto">
           <Dock orientation="vertical" className="items-start">
             {navItems.map((item) => {
@@ -108,20 +110,6 @@ export function AppDock() {
                 </Link>
               );
             })}
-            {/* Info */}
-            <a
-              href="#"
-              onClick={(e) => { e.preventDefault(); setIsInfoOpen(true); }}
-              className="outline-none border-none cursor-pointer no-underline"
-              aria-label="Open information"
-            >
-              <DockItem className="aspect-square rounded-full bg-gray-200 dark:bg-neutral-800 hover:bg-gray-300 dark:hover:bg-neutral-700">
-                <DockLabel>Info</DockLabel>
-                <DockIcon>
-                  <Info className="h-full w-full text-neutral-600 dark:text-neutral-300" />
-                </DockIcon>
-              </DockItem>
-            </a>
             {/* Settings */}
             <a
               href="#"

@@ -641,15 +641,14 @@ function NodesPageContent() {
             </div>
           </DraggableClockPanel>
         </div>
-        {user?.uid && (
-          <div className={cn("fixed top-4 left-4 z-50 transition-opacity duration-700", isIdle && "opacity-0 pointer-events-none")}>
-            <SessionPresenceBroadcast
-              uid={user.uid}
-              clockIndex={4}
-              clockHex={clockHex}
-              durationMins={duration != null ? Math.round(duration / 60) : null}
-            />
-          </div>
+        {user?.uid && mounted && createPortal(
+          <SessionPresenceBroadcast
+            uid={user.uid}
+            clockIndex={4}
+            clockHex={clockHex}
+            durationMins={duration != null ? Math.round(duration / 60) : null}
+          />,
+          document.getElementById('dock-broadcast-slot') ?? document.body
         )}
 
         <div className="flex-grow flex items-center justify-center min-h-0 overflow-visible py-8">
