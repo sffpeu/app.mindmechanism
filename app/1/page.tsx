@@ -108,6 +108,7 @@ function NodesPageContent() {
     return true
   })
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [isInfoOpen, setIsInfoOpen] = useState(false)
   const { isDarkMode, setIsDarkMode } = useTheme()
   const [remainingTime, setRemainingTime] = useState<number | null>(null)
   const [isPaused, setIsPaused] = useState(false)
@@ -514,13 +515,13 @@ function NodesPageContent() {
               onPauseResume={handlePauseResume}
             />
           )}
-          <div className="group relative">
-            <ClockPageIconButton clockHex={clockHex} aria-label="Clock Information">
+          <div className="relative">
+            <ClockPageIconButton clockHex={clockHex} aria-label="Clock Information" onClick={() => setIsInfoOpen(o => !o)}>
               <Info className="h-2.5 w-2.5" style={{ color: 'currentColor' }} />
             </ClockPageIconButton>
-            <div className="absolute bottom-full left-0 mb-2 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 origin-bottom-left z-[1001]">
-              <Card className="w-[300px] bg-white/90 dark:bg-black/90 backdrop-blur-sm border-black/5 dark:border-white/10">
-                <CardContent className="p-4">
+          </div>
+          <DraggableClockPanel open={isInfoOpen} onClose={() => setIsInfoOpen(false)} clockHex={clockHex} clockIndex={1} instanceId="info-1" panelWidth="300px">
+            <div className="p-3 max-h-[70vh] overflow-y-auto">
                   <div className="space-y-3">
                     {/* Clock Title and Description */}
                     <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10 text-center">
@@ -651,10 +652,8 @@ function NodesPageContent() {
                       )}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
             </div>
-          </div>
+          </DraggableClockPanel>
           {user?.uid && (
             <SessionPresenceBroadcast
               uid={user.uid}

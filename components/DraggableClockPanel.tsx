@@ -13,27 +13,41 @@ type Props = {
   clockHex: string
   clockIndex: number
   children: React.ReactNode
+  /** Override localStorage position key — use different instanceId for multiple panels per clock */
+  instanceId?: string
+  /** Fixed pixel width, e.g. "300px". Overrides default min/max-width. */
+  panelWidth?: string
 }
 
-function defaultPos(): Pos {
+function defaultPos(panelWidth?: string): Pos {
   if (typeof window === 'undefined') return { x: 16, y: 56 }
-  return { x: window.innerWidth - 210, y: 56 }
+  const w = parseInt(panelWidth ?? '176', 10) || 176
+  return { x: window.innerWidth - w - 16, y: 56 }
 }
 
-function savedPos(clockIndex: number): Pos | null {
+function savedPos(key: string): Pos | null {
   try {
-    const raw = localStorage.getItem(`clockPanelPos_${clockIndex}`)
+    const raw = localStorage.getItem(key)
     return raw ? JSON.parse(raw) : null
   } catch {
     return null
   }
 }
 
-export function DraggableClockPanel({ open, onClose, clockHex, clockIndex, children }: Props) {
+export function DraggableClockPanel({
+  open,
+  onClose,
+  clockHex,
+  clockIndex,
+  children,
+  instanceId,
+  panelWidth,
+}: Props) {
   const [mounted, setMounted] = useState(false)
   const [pos, setPos] = useState<Pos>({ x: 16, y: 56 })
   const posRef = useRef<Pos>({ x: 16, y: 56 })
   const isMountedRef = useRef(true)
+  const storageKey = `clockPanelPos_${instanceId ?? clockIndex}`
 
   const setPosition = useCallback((p: Pos) => {
     posRef.current = p
@@ -47,9 +61,9 @@ export function DraggableClockPanel({ open, onClose, clockHex, clockIndex, child
 
   useEffect(() => {
     if (!open) return
-    const p = savedPos(clockIndex) ?? defaultPos()
+    const p = savedPos(storageKey) ?? defaultPos(panelWidth)
     setPosition(p)
-  }, [open, clockIndex, setPosition])
+  }, [open, storageKey, panelWidth, setPosition])
 
   useEffect(() => {
     if (!open || !mounted) return
@@ -76,14 +90,14 @@ export function DraggableClockPanel({ open, onClose, clockHex, clockIndex, child
     }
 
     const onUp = () => {
-      localStorage.setItem(`clockPanelPos_${clockIndex}`, JSON.stringify(posRef.current))
+      localStorage.setItem(storageKey, JSON.stringify(posRef.current))
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mouseup', onUp)
     }
 
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseup', onUp)
-  }, [clockIndex, setPosition])
+  }, [storageKey, setPosition])
 
   const handleGripTouchStart = useCallback((e: React.TouchEvent) => {
     const touch = e.touches[0]
@@ -102,14 +116,14 @@ export function DraggableClockPanel({ open, onClose, clockHex, clockIndex, child
     }
 
     const onEnd = () => {
-      localStorage.setItem(`clockPanelPos_${clockIndex}`, JSON.stringify(posRef.current))
+      localStorage.setItem(storageKey, JSON.stringify(posRef.current))
       window.removeEventListener('touchmove', onMove)
       window.removeEventListener('touchend', onEnd)
     }
 
     window.addEventListener('touchmove', onMove, { passive: true })
     window.addEventListener('touchend', onEnd)
-  }, [clockIndex, setPosition])
+  }, [storageKey, setPosition])
 
   if (!mounted || !open) return null
 
@@ -119,9 +133,10 @@ export function DraggableClockPanel({ open, onClose, clockHex, clockIndex, child
         position: 'fixed',
         left: pos.x,
         top: pos.y,
-        zIndex: 1100,
-        minWidth: '11rem',
-        maxWidth: '16rem',
+        zIndex: 13000,
+        ...(panelWidth
+          ? { width: panelWidth }
+          : { minWidth: '11rem', maxWidth: '16rem' }),
       }}
       className="rounded-md border border-black/10 dark:border-white/10 bg-white dark:bg-gray-950 shadow-lg overflow-hidden select-none"
     >
