@@ -8,7 +8,7 @@ import {
   Clock,
   ClipboardList,
   BookOpen,
-  Users,
+  Info,
   Settings,
   Sun,
   Moon,
@@ -20,6 +20,7 @@ import { useTheme } from '@/app/ThemeContext';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { SettingsDialog } from '@/components/settings/SettingsDialog';
+import { AppInfoOverlay } from '@/components/AppInfoOverlay';
 import { useAuth } from '@/lib/FirebaseAuthContext';
 import { useFullscreen } from '@/lib/hooks/useFullscreen';
 import { useIdleFade } from '@/lib/hooks/useIdleFade';
@@ -35,7 +36,6 @@ const navItems = [
   { title: 'Home', href: '/layers', icon: Home },
   { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { title: 'Sessions', href: '/sessions', icon: Clock },
-  { title: 'Lobby', href: '/lobby', icon: Users },
   { title: 'Notes', href: '/notes', icon: ClipboardList },
   { title: 'Glossary', href: '/glossary', icon: BookOpen },
 ];
@@ -46,6 +46,7 @@ export function AppDock() {
   const { user, loading } = useAuth();
   const { isDarkMode, setIsDarkMode } = useTheme();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { isFullscreen, toggle: toggleFullscreen, supported: fullscreenSupported } = useFullscreen();
 
@@ -107,6 +108,21 @@ export function AppDock() {
                 </Link>
               );
             })}
+            {/* Info */}
+            <a
+              href="#"
+              onClick={(e) => { e.preventDefault(); setIsInfoOpen(true); }}
+              className="outline-none border-none cursor-pointer no-underline"
+              aria-label="Open information"
+            >
+              <DockItem className="aspect-square rounded-full bg-gray-200 dark:bg-neutral-800 hover:bg-gray-300 dark:hover:bg-neutral-700">
+                <DockLabel>Info</DockLabel>
+                <DockIcon>
+                  <Info className="h-full w-full text-neutral-600 dark:text-neutral-300" />
+                </DockIcon>
+              </DockItem>
+            </a>
+            {/* Settings */}
             <a
               href="#"
               onClick={(e) => {
@@ -168,9 +184,24 @@ export function AppDock() {
           </Dock>
         </div>
       </div>
+      {/* Persistent ⓘ button — top-left, never idle-fades, visible on every page */}
+      <button
+        type="button"
+        onClick={() => setIsInfoOpen(true)}
+        aria-label="Open information"
+        className="fixed top-4 left-4 z-[12001] flex items-center justify-center h-8 w-8 rounded-full bg-black/5 dark:bg-white/10 text-black/40 dark:text-white/40 border border-black/8 dark:border-white/12 hover:bg-black/10 dark:hover:bg-white/15 hover:text-black/70 dark:hover:text-white/70 transition-all duration-200"
+      >
+        <Info className="h-3.5 w-3.5" />
+      </button>
+
       <SettingsDialog
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
+      />
+      <AppInfoOverlay
+        clockHex="#8b5cf6"
+        open={isInfoOpen}
+        onOpenChange={setIsInfoOpen}
       />
     </>
   );
