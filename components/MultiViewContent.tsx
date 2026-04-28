@@ -15,7 +15,9 @@ export interface MultiViewContentProps {
 
 /** Large hover/focus background clock on /layers (outer ring only). */
 const LAYERS_LARGE_BG_CLOCK_OPACITY_LIGHT = 0.03
-const LAYERS_LARGE_BG_CLOCK_OPACITY_DARK = 0.05
+const LAYERS_LARGE_BG_CLOCK_OPACITY_DARK = 0.16
+
+const CLOCK_HEX = ['#fd290a','#fba63b','#f7da5f','#6dc037','#156fde','#941952','#541b96','#ee5fa7','#56c1ff']
 
 export function MultiViewContent({ type }: MultiViewContentProps) {
   const [showElements, setShowElements] = useState(true)
@@ -309,12 +311,14 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
               </div>
             </motion.div>
 
-            {/* Large hover/focus background clock — 3% light, 5% dark */}
+            {/* Large hover/focus background clock */}
             {(hoveredOuterClockIndex !== null || focusedOuterClockIndex !== null) && (() => {
               const index = hoveredOuterClockIndex ?? focusedOuterClockIndex ?? 0
               const clock = clockSettings[index]
               if (!clock) return null
               const clockRotation = focusedOuterClockIndex === index ? 0 : getClockRotation(clock)
+              const hex = CLOCK_HEX[index] ?? '#ffffff'
+              const imgTransform = `translate(${clock.imageX ?? 0}%, ${clock.imageY ?? 0}%) rotate(${clock.imageOrientation ?? 0}deg) scale(${clock.imageScale ?? 1})`
               return (
                 <motion.div
                   key={`large-hover-clock-${index}`}
@@ -322,33 +326,39 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                   style={{ zIndex: 25 }}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ duration: 0.2 }}
+                  transition={{ duration: 0.3 }}
                 >
                   <div
                     className="fixed top-1/2 right-8 w-[2500px] aspect-square"
-                    style={{
-                      transform: 'translate(50%, -50%)',
-                      transformOrigin: 'center',
-                    }}
+                    style={{ transform: 'translate(50%, -50%)', transformOrigin: 'center' }}
                   >
+                    {/* Dark mode: static colored fog/glow behind the rotating mandala */}
+                    {isDarkMode && (
+                      <div
+                        className="absolute inset-0 rounded-full"
+                        style={{
+                          background: `radial-gradient(circle, ${hex}28 0%, ${hex}0e 40%, transparent 68%)`,
+                        }}
+                      />
+                    )}
+
                     <motion.div
                       className="absolute inset-0 rounded-full overflow-visible"
                       style={{ transformOrigin: 'center', willChange: 'transform' }}
                       animate={{ rotate: clockRotation }}
                       transition={{ type: 'tween', duration: focusedOuterClockIndex === index ? 0.3 : 0.016, ease: 'linear' }}
                     >
-                        <div
-                          className="absolute inset-0"
-                          style={{
-                            opacity: isDarkMode
-                              ? LAYERS_LARGE_BG_CLOCK_OPACITY_DARK
-                              : LAYERS_LARGE_BG_CLOCK_OPACITY_LIGHT,
-                            transform: `translate(${clock.imageX ?? 0}%, ${clock.imageY ?? 0}%) rotate(${clock.imageOrientation ?? 0}deg) scale(${clock.imageScale ?? 1})`,
-                            willChange: 'transform',
-                            transformOrigin: 'center',
-                            mixBlendMode: isDarkMode ? 'screen' : 'multiply',
-                          }}
-                        >
+                      {/* Mandala structure */}
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          opacity: isDarkMode ? LAYERS_LARGE_BG_CLOCK_OPACITY_DARK : LAYERS_LARGE_BG_CLOCK_OPACITY_LIGHT,
+                          transform: imgTransform,
+                          willChange: 'transform',
+                          transformOrigin: 'center',
+                          mixBlendMode: isDarkMode ? 'screen' : 'multiply',
+                        }}
+                      >
                         <Image
                           src={clock.imageUrl}
                           alt=""
@@ -358,6 +368,20 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                           loading="eager"
                         />
                       </div>
+
+                      {/* Dark mode: color-tint overlay — multiply turns white mandala lines → clock color */}
+                      {isDarkMode && (
+                        <div
+                          className="absolute inset-0 rounded-full"
+                          style={{
+                            transform: imgTransform,
+                            transformOrigin: 'center',
+                            backgroundColor: hex,
+                            opacity: 0.10,
+                            mixBlendMode: 'multiply',
+                          }}
+                        />
+                      )}
                     </motion.div>
                   </div>
                 </motion.div>
