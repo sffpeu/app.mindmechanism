@@ -636,7 +636,7 @@ function NodesPageContent() {
         </div>
 
         {user?.uid && (
-          <div className={cn("fixed bottom-14 right-14 z-50 transition-opacity duration-700", isIdle && "opacity-0 pointer-events-none")}>
+          <div className={cn("fixed top-4 left-4 z-50 transition-opacity duration-700", isIdle && "opacity-0 pointer-events-none")}>
             <SessionPresenceBroadcast
               uid={user.uid}
               clockIndex={7}
