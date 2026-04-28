@@ -33,6 +33,7 @@ import { ClockWheelFaceOverlay } from '@/components/ClockWheelFaceOverlay'
 import { ClockPageSatelliteLayer } from '@/components/ClockPageSatelliteLayer'
 import { SessionTimer } from '@/components/SessionTimer'
 import { SessionPresenceBroadcast } from '@/components/SessionPresenceBroadcast'
+import { AppInfoOverlay } from '@/components/AppInfoOverlay'
 import { useSessionTimer } from '@/lib/useSessionTimer'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useLocation } from '@/lib/hooks/useLocation'
@@ -643,16 +644,40 @@ function NodesPageContent() {
           </DraggableClockPanel>
         </div>
 
-        {user?.uid && (
-          <div className={cn("fixed top-4 left-4 z-50 transition-opacity duration-700", isIdle && "opacity-0 pointer-events-none")}>
+        {/* Top-left cluster: broadcast pill + info trigger */}
+
+
+        <div className={cn("fixed top-4 left-4 z-50 flex flex-col items-start gap-2 transition-opacity duration-700", isIdle && "opacity-0 pointer-events-none")}>
+
+
+          {user?.uid && (
+
+
             <SessionPresenceBroadcast
+
+
               uid={user.uid}
+
+
               clockIndex={7}
+
+
               clockHex={clockHex}
+
+
               durationMins={duration != null ? Math.round(duration / 60) : null}
+
+
             />
-          </div>
-        )}
+
+
+          )}
+
+
+          <AppInfoOverlay clockHex={clockHex} />
+
+
+        </div>
 
         <div className="flex-grow flex items-center justify-center min-h-0 overflow-visible py-8">
           <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px] overflow-visible" onPointerMove={resetNodeNumberTimer} onPointerDown={resetNodeNumberTimer}>
