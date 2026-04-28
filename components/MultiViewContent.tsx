@@ -15,7 +15,7 @@ export interface MultiViewContentProps {
 
 /** Large hover/focus background clock on /layers (outer ring only). */
 const LAYERS_LARGE_BG_CLOCK_OPACITY_LIGHT = 0.03
-const LAYERS_LARGE_BG_CLOCK_OPACITY_DARK = 0.16
+const LAYERS_LARGE_BG_CLOCK_OPACITY_DARK = 0.09
 
 const CLOCK_HEX = ['#fd290a','#fba63b','#f7da5f','#6dc037','#156fde','#941952','#541b96','#ee5fa7','#56c1ff']
 
@@ -337,7 +337,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                       <div
                         className="absolute inset-0 rounded-full"
                         style={{
-                          background: `radial-gradient(circle, ${hex}28 0%, ${hex}0e 40%, transparent 68%)`,
+                          background: `radial-gradient(circle, ${hex}18 0%, ${hex}08 40%, transparent 68%)`,
                         }}
                       />
                     )}
@@ -377,7 +377,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                             transform: imgTransform,
                             transformOrigin: 'center',
                             backgroundColor: hex,
-                            opacity: 0.10,
+                            opacity: 0.06,
                             mixBlendMode: 'multiply',
                           }}
                         />
