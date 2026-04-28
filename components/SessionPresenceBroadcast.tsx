@@ -28,11 +28,13 @@ export function SessionPresenceBroadcast({ uid, clockIndex, clockHex, durationMi
   const companionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const unsubRef = useRef<(() => void) | null>(null)
 
-  const startBroadcast = useCallback(async () => {
-    await setPresence(uid, clockIndex, durationMins)
+  const startBroadcast = useCallback(() => {
+    // Optimistic UI — show live state immediately; Firestore write is best-effort
     setBroadcasting(true)
     setJoinCount(0)
     setCompanionVisible(false)
+
+    setPresence(uid, clockIndex, durationMins).catch(() => null)
 
     // Watch our own presence doc for joins
     unsubRef.current = subscribePresence((docs) => {
@@ -55,8 +57,8 @@ export function SessionPresenceBroadcast({ uid, clockIndex, clockHex, durationMi
     }, COMPANION_DELAY_MS)
   }, [uid, clockIndex, durationMins])
 
-  const stopBroadcast = useCallback(async () => {
-    await clearPresence(uid)
+  const stopBroadcast = useCallback(() => {
+    clearPresence(uid).catch(() => null)
     setBroadcasting(false)
     setCompanionVisible(false)
     setJoinCount(0)

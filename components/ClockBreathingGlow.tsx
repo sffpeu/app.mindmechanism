@@ -16,8 +16,8 @@ export function ClockBreathingGlow({ clockHex, sessionActive }: Props) {
           key="breathing-glow"
           className="absolute rounded-full pointer-events-none"
           style={{
-            inset: '-12%',
-            background: `radial-gradient(circle, ${clockHex}66 0%, ${clockHex}33 40%, transparent 70%)`,
+            inset: '-35%',
+            background: `radial-gradient(circle, ${clockHex}55 0%, ${clockHex}2a 45%, transparent 72%)`,
             zIndex: 0,
           }}
           initial={{ opacity: 0 }}
