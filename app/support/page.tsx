@@ -292,11 +292,52 @@ function SupportContent() {
         </div>
       </section>
 
-      {/* Disclaimer */}
+      {/* About & contact */}
+      <section className="border-t border-black/5 dark:border-white/5 pt-6">
+        <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">
+          About this service
+        </h2>
+        <Card className="p-4 bg-white/80 dark:bg-white/[0.04] border border-black/5 dark:border-white/10 space-y-3 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+          <p>
+            Mind Mechanism is an independent wellbeing tool created by{' '}
+            <strong className="text-gray-900 dark:text-white">Sean Fortune</strong> (The One-Legged Poet).
+            It is a personal practice environment, not a clinical platform.
+          </p>
+          <p>
+            This support directory exists to ensure that anyone who needs real-world help can find it quickly.
+            It is not a substitute for professional care and does not provide crisis intervention.
+          </p>
+          <div className="pt-1 space-y-1 text-xs text-gray-500 dark:text-gray-400">
+            <p>
+              Contact:{' '}
+              <a
+                href="mailto:future@theoneleggedpoet.com"
+                className="text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                future@theoneleggedpoet.com
+              </a>
+            </p>
+            <p>
+              Web:{' '}
+              <a
+                href="https://www.theoneleggedpoet.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-0.5"
+              >
+                theoneleggedpoet.com <ExternalLink className="h-2.5 w-2.5" />
+              </a>
+            </p>
+          </div>
+        </Card>
+      </section>
+
+      {/* Legal disclaimer */}
       <p className="text-[11px] text-gray-400 dark:text-gray-600 leading-relaxed border-t border-black/5 dark:border-white/5 pt-6">
-        The Mind Mechanism is not a medical service and is not a substitute for professional care.
+        Mind Mechanism is not a medical service and is not a substitute for professional care.
         Directory listings are sourced from public databases and have not been independently vetted.
         In a mental health crisis, please contact a qualified professional or call your local emergency services.
+        Mind Mechanism accepts no liability for the accuracy, availability, or conduct of any third-party service listed here.
       </p>
 
     </div>

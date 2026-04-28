@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { motion, useMotionValue } from 'framer-motion'
 import { X, GripHorizontal } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+type Pos = { x: number; y: number }
 
 type Props = {
   open: boolean
@@ -14,12 +15,12 @@ type Props = {
   children: React.ReactNode
 }
 
-function defaultPos() {
-  if (typeof window === 'undefined') return { x: 0, y: 56 }
-  return { x: window.innerWidth - 195, y: 56 }
+function defaultPos(): Pos {
+  if (typeof window === 'undefined') return { x: 16, y: 56 }
+  return { x: window.innerWidth - 210, y: 56 }
 }
 
-function savedPos(clockIndex: number): { x: number; y: number } | null {
+function savedPos(clockIndex: number): Pos | null {
   try {
     const raw = localStorage.getItem(`clockPanelPos_${clockIndex}`)
     return raw ? JSON.parse(raw) : null
@@ -30,17 +31,25 @@ function savedPos(clockIndex: number): { x: number; y: number } | null {
 
 export function DraggableClockPanel({ open, onClose, clockHex, clockIndex, children }: Props) {
   const [mounted, setMounted] = useState(false)
-  const x = useMotionValue(0)
-  const y = useMotionValue(56)
+  const [pos, setPos] = useState<Pos>({ x: 16, y: 56 })
+  const posRef = useRef<Pos>({ x: 16, y: 56 })
+  const isMountedRef = useRef(true)
 
-  useEffect(() => setMounted(true), [])
+  const setPosition = useCallback((p: Pos) => {
+    posRef.current = p
+    setPos(p)
+  }, [])
+
+  useEffect(() => {
+    setMounted(true)
+    return () => { isMountedRef.current = false }
+  }, [])
 
   useEffect(() => {
     if (!open) return
-    const pos = savedPos(clockIndex) ?? defaultPos()
-    x.set(pos.x)
-    y.set(pos.y)
-  }, [open, clockIndex, x, y])
+    const p = savedPos(clockIndex) ?? defaultPos()
+    setPosition(p)
+  }, [open, clockIndex, setPosition])
 
   useEffect(() => {
     if (!open || !mounted) return
@@ -51,28 +60,82 @@ export function DraggableClockPanel({ open, onClose, clockHex, clockIndex, child
     return () => window.removeEventListener('keydown', handleKey)
   }, [open, mounted, onClose])
 
+  const handleGripMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    const startX = e.clientX
+    const startY = e.clientY
+    const startPosX = posRef.current.x
+    const startPosY = posRef.current.y
+
+    const onMove = (ev: MouseEvent) => {
+      if (!isMountedRef.current) return
+      setPosition({
+        x: startPosX + ev.clientX - startX,
+        y: startPosY + ev.clientY - startY,
+      })
+    }
+
+    const onUp = () => {
+      localStorage.setItem(`clockPanelPos_${clockIndex}`, JSON.stringify(posRef.current))
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }, [clockIndex, setPosition])
+
+  const handleGripTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0]
+    const startX = touch.clientX
+    const startY = touch.clientY
+    const startPosX = posRef.current.x
+    const startPosY = posRef.current.y
+
+    const onMove = (ev: TouchEvent) => {
+      if (!isMountedRef.current) return
+      const t = ev.touches[0]
+      setPosition({
+        x: startPosX + t.clientX - startX,
+        y: startPosY + t.clientY - startY,
+      })
+    }
+
+    const onEnd = () => {
+      localStorage.setItem(`clockPanelPos_${clockIndex}`, JSON.stringify(posRef.current))
+      window.removeEventListener('touchmove', onMove)
+      window.removeEventListener('touchend', onEnd)
+    }
+
+    window.addEventListener('touchmove', onMove, { passive: true })
+    window.addEventListener('touchend', onEnd)
+  }, [clockIndex, setPosition])
+
   if (!mounted || !open) return null
 
   return createPortal(
-    <motion.div
-      drag
-      dragMomentum={false}
-      style={{ x, y, position: 'fixed', top: 0, left: 0, zIndex: 500 }}
-      onDragEnd={() => {
-        localStorage.setItem(
-          `clockPanelPos_${clockIndex}`,
-          JSON.stringify({ x: x.get(), y: y.get() })
-        )
+    <div
+      style={{
+        position: 'fixed',
+        left: pos.x,
+        top: pos.y,
+        zIndex: 1100,
+        minWidth: '11rem',
+        maxWidth: '16rem',
       }}
-      className="min-w-[11rem] max-w-[16rem] rounded-md border border-black/10 dark:border-white/10 bg-white dark:bg-gray-950 shadow-lg overflow-hidden select-none"
+      className="rounded-md border border-black/10 dark:border-white/10 bg-white dark:bg-gray-950 shadow-lg overflow-hidden select-none"
     >
+      {/* Grip bar — drag target */}
       <div
-        className="flex items-center justify-between px-2 py-1 cursor-grab active:cursor-grabbing border-b border-black/5 dark:border-white/10"
+        className="flex items-center justify-between px-2 py-1.5 cursor-grab active:cursor-grabbing border-b border-black/5 dark:border-white/10"
         style={{ borderBottomColor: `${clockHex}33` }}
+        onMouseDown={handleGripMouseDown}
+        onTouchStart={handleGripTouchStart}
       >
         <GripHorizontal className="h-3 w-3 text-gray-400" aria-hidden />
         <button
           type="button"
+          onMouseDown={(e) => e.stopPropagation()}
           onClick={onClose}
           className="h-4 w-4 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
           aria-label="Close panel"
@@ -81,7 +144,7 @@ export function DraggableClockPanel({ open, onClose, clockHex, clockIndex, child
         </button>
       </div>
       <div className="py-1">{children}</div>
-    </motion.div>,
+    </div>,
     document.body
   )
 }

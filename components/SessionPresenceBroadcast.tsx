@@ -83,27 +83,43 @@ export function SessionPresenceBroadcast({ uid, clockIndex, clockHex, durationMi
 
   return (
     <>
-      {/* Broadcast toggle button — sits alongside the existing clock chrome */}
-      <div className="relative">
-        <ClockPageIconButton
-          clockHex={clockHex}
-          onClick={toggle}
-          aria-label={broadcasting ? 'Stop broadcasting presence' : 'Broadcast your presence'}
-          className={cn(broadcasting && 'ring-1')}
-          style={broadcasting ? { boxShadow: `0 0 6px ${clockHex}66` } : undefined}
-        >
-          <Radio
-            className={cn('h-2.5 w-2.5', broadcasting && 'animate-pulse')}
-            style={{ color: 'currentColor' }}
-          />
-        </ClockPageIconButton>
-        {/* Real-join indicator */}
-        {broadcasting && joinCount > 0 && (
-          <span
-            className="absolute -top-1 -right-1 h-2 w-2 rounded-full"
-            style={{ backgroundColor: clockHex }}
-            aria-label={`${joinCount} presence${joinCount > 1 ? 's' : ''} joined`}
-          />
+      {/* Broadcast toggle — compact icon when off, pill with "Live" label when on */}
+      <div className="relative flex items-center">
+        {broadcasting ? (
+          <button
+            type="button"
+            onClick={toggle}
+            aria-label="Stop broadcasting"
+            className="flex items-center gap-1.5 h-7 rounded-full px-2.5 text-[11px] font-medium tracking-wide transition-all duration-200"
+            style={{
+              backgroundColor: `${clockHex}22`,
+              border: `1px solid ${clockHex}55`,
+              color: clockHex,
+              boxShadow: `0 0 10px ${clockHex}44`,
+            }}
+          >
+            <span
+              className="h-1.5 w-1.5 rounded-full animate-pulse shrink-0"
+              style={{ backgroundColor: clockHex }}
+            />
+            Live
+            {joinCount > 0 && (
+              <span
+                className="ml-0.5 h-4 w-4 rounded-full flex items-center justify-center text-[9px] font-bold"
+                style={{ backgroundColor: clockHex, color: '#fff' }}
+              >
+                {joinCount}
+              </span>
+            )}
+          </button>
+        ) : (
+          <ClockPageIconButton
+            clockHex={clockHex}
+            onClick={toggle}
+            aria-label="Broadcast your presence"
+          >
+            <Radio className="h-2.5 w-2.5" style={{ color: 'currentColor' }} />
+          </ClockPageIconButton>
         )}
       </div>
 

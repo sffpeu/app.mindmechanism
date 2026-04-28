@@ -22,6 +22,8 @@ import { createPortal } from 'react-dom';
 import { SettingsDialog } from '@/components/settings/SettingsDialog';
 import { useAuth } from '@/lib/FirebaseAuthContext';
 import { useFullscreen } from '@/lib/hooks/useFullscreen';
+import { useIdleFade } from '@/lib/hooks/useIdleFade';
+import { cn } from '@/lib/utils';
 
 function isPublicAuthPath(pathname: string | null) {
   if (!pathname) return true;
@@ -54,10 +56,16 @@ export function AppDock() {
   const showDock =
     !isPublicAuthPath(pathname) && (loading || user !== null);
 
+  const isClockPage = /^\/[0-8]$/.test(pathname ?? '')
+  const { isIdle } = useIdleFade()
+
   const dockUi = (
     <>
       {/* Above clock DotNavigation (z-[10000]) so main nav stays clickable during sessions */}
-      <div className="fixed left-0 top-0 bottom-0 z-[12000] flex items-center pointer-events-none pl-3">
+      <div className={cn(
+        "fixed left-0 top-0 bottom-0 z-[12000] flex items-center pointer-events-none pl-3 transition-opacity duration-700",
+        isClockPage && isIdle && "opacity-0 pointer-events-none"
+      )}>
         <div className="pointer-events-auto">
           <Dock orientation="vertical" className="items-start">
             {navItems.map((item) => {
