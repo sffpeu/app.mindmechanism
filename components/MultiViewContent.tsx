@@ -5,7 +5,7 @@ import { useTheme } from '@/app/ThemeContext'
 import DotNavigation from '@/components/DotNavigation'
 import { clockSettings } from '@/lib/clockSettings'
 import Image from 'next/image'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { clockSatellites, defaultSatelliteConfigs } from '@/lib/satelliteDefaults'
 import { SatelliteNameLabel } from '@/components/SatelliteNameLabel'
 
@@ -26,6 +26,21 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
   const [focusedOuterClockIndex, setFocusedOuterClockIndex] = useState<number | null>(null)
   const [rotationValues, setRotationValues] = useState<Record<number, number[]>>({})
   const animationRef = useRef<number>()
+  const [visibleNumbers, setVisibleNumbers] = useState<Record<number, boolean>>({})
+  const numberTimersRef = useRef<Record<number, ReturnType<typeof setTimeout>>>({})
+
+  const showNumberForClock = useCallback((index: number) => {
+    if (numberTimersRef.current[index]) clearTimeout(numberTimersRef.current[index])
+    setVisibleNumbers((prev) => ({ ...prev, [index]: true }))
+    numberTimersRef.current[index] = setTimeout(() => {
+      setVisibleNumbers((prev) => ({ ...prev, [index]: false }))
+    }, 3000)
+  }, [])
+
+  useEffect(() => {
+    const timers = numberTimersRef.current
+    return () => { Object.values(timers).forEach(clearTimeout) }
+  }, [])
 
   // Initialize and update current time with optimized animation frame
   useEffect(() => {
@@ -435,18 +450,26 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                 const labelY = 50 + labelRadius * Math.sin(radians)
                 return (
                   <Fragment key={index}>
-                    {/* Clock number label outside ring, corresponding to this mini clock */}
-                    <div
-                      className="absolute flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-400 pointer-events-none"
-                      style={{
-                        left: `${labelX}%`,
-                        top: `${labelY}%`,
-                        transform: 'translate(-50%, -50%)',
-                        zIndex: 55,
-                      }}
-                    >
-                      {index + 1}
-                    </div>
+                    {/* Clock number — fades in on hover, fades out 3s after pointer leaves */}
+                    <AnimatePresence>
+                      {visibleNumbers[index] && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.4 }}
+                          className="absolute flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-400 pointer-events-none"
+                          style={{
+                            left: `${labelX}%`,
+                            top: `${labelY}%`,
+                            transform: 'translate(-50%, -50%)',
+                            zIndex: 55,
+                          }}
+                        >
+                          {index + 1}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                     <div
                       className="absolute aspect-square transition-transform duration-200 pointer-events-auto cursor-pointer"
                       style={{
@@ -456,7 +479,7 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                         transform: 'translate(-50%, -50%)',
                         zIndex: 30,
                       }}
-                      onMouseEnter={() => setHoveredOuterClockIndex(index)}
+                      onMouseEnter={() => { setHoveredOuterClockIndex(index); showNumberForClock(index) }}
                       onMouseLeave={() => setHoveredOuterClockIndex(null)}
                       onClick={() => setFocusedOuterClockIndex((prev) => (prev === index ? null : index))}
                     >
