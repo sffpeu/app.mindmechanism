@@ -232,10 +232,21 @@ function Placeholder({
 
 type Props = {
   clockHex: string
+  /** Controlled mode: pass open + onOpenChange to drive from a parent (e.g. AppDock).
+   *  In controlled mode the internal trigger button is not rendered. */
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
-export function AppInfoOverlay({ clockHex }: Props) {
-  const [open, setOpen] = useState(false)
+export function AppInfoOverlay({ clockHex, open: openProp, onOpenChange }: Props) {
+  const controlled = openProp !== undefined
+  const [internalOpen, setInternalOpen] = useState(false)
+  const open = controlled ? openProp! : internalOpen
+  const setOpen = (v: boolean) => {
+    if (controlled) onOpenChange?.(v)
+    else setInternalOpen(v)
+  }
+
   const [activeTab, setActiveTab] = useState<TabId>('mechanism')
   const [mounted, setMounted] = useState(false)
 
@@ -345,15 +356,17 @@ export function AppInfoOverlay({ clockHex }: Props) {
 
   return (
     <>
-      {/* Trigger — styled to match the broadcast pill */}
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label="Open information"
-        className="flex items-center justify-center h-8 w-8 rounded-full bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 border border-black/10 dark:border-white/15 hover:bg-black/10 dark:hover:bg-white/15 transition-all duration-200"
-      >
-        <Info className="h-3.5 w-3.5" />
-      </button>
+      {/* Trigger button — only in uncontrolled (standalone) mode */}
+      {!controlled && (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="Open information"
+          className="flex items-center justify-center h-8 w-8 rounded-full bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 border border-black/10 dark:border-white/15 hover:bg-black/10 dark:hover:bg-white/15 transition-all duration-200"
+        >
+          <Info className="h-3.5 w-3.5" />
+        </button>
+      )}
 
       {mounted && createPortal(overlay, document.body)}
     </>
