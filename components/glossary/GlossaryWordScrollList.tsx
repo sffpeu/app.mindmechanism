@@ -5,6 +5,7 @@ import { UserCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { clockTitles } from '@/lib/clockTitles'
 import type { GlossaryWord } from '@/types/Glossary'
+import { SpeakButton } from '@/components/glossary/SpeakButton'
 
 export type LetterSection = [string, GlossaryWord[]]
 
@@ -154,14 +155,22 @@ export function GlossaryWordScrollList({
                       </div>
 
                       {/* Word + phonetic */}
-                      <h3
-                        className={cn(
-                          'text-lg font-medium truncate',
-                          useClockCard ? 'text-gray-900 dark:text-white' : 'text-black dark:text-white'
-                        )}
-                      >
-                        {word.word}
-                      </h3>
+                      <div className="flex items-center gap-1.5">
+                        <h3
+                          className={cn(
+                            'text-lg font-medium truncate',
+                            useClockCard ? 'text-gray-900 dark:text-white' : 'text-black dark:text-white'
+                          )}
+                        >
+                          {word.word}
+                        </h3>
+                        <SpeakButton
+                          word={word.word}
+                          language={word.language}
+                          audioUrl={word.audio_url}
+                          hex={tint?.hex}
+                        />
+                      </div>
                       {word.phonetic_spelling && (
                         <span className="text-xs text-gray-500 dark:text-gray-400 font-mono block mb-1">
                           {word.phonetic_spelling}

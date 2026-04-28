@@ -62,6 +62,7 @@ import {
   validateScheduledGatherings,
 } from '@/lib/lobbySchedule'
 import { cn } from '@/lib/utils'
+import { LobbyOpenField } from '@/components/LobbyOpenField'
 
 function focusNodeLabel(clockId: number, nodeIndex: number): string {
   const words = DEFAULT_WORDS_BY_CLOCK[clockId]
@@ -436,6 +437,23 @@ export function SymbolicLobby() {
   }
 
   return (
+    <>
+    {/* Open Field — anonymous wheel broadcasts */}
+    {user?.uid && (
+      <Card className="p-4 sm:p-5 mb-4 bg-white/90 dark:bg-white/5 backdrop-blur-sm border border-black/5 dark:border-white/10 shadow-xl shadow-gray-200/40 dark:shadow-none rounded-2xl">
+        <div className="flex items-center gap-2 mb-3">
+          <Radio className="h-4 w-4 text-gray-400 dark:text-gray-500 shrink-0" />
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-widest">
+            Open Field
+          </h2>
+        </div>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 leading-relaxed">
+          People broadcasting from a wheel right now. Join to be present with them — anonymously.
+        </p>
+        <LobbyOpenField currentUid={user.uid} />
+      </Card>
+    )}
+
     <Card className="p-4 sm:p-6 bg-white/90 dark:bg-white/5 backdrop-blur-sm border border-black/5 dark:border-white/10 shadow-xl shadow-gray-200/40 dark:shadow-none rounded-2xl">
       <div className="flex items-start gap-3 mb-4">
         <div className="mt-0.5 rounded-full p-2 bg-violet-500/15 dark:bg-violet-400/10">
@@ -1020,5 +1038,6 @@ export function SymbolicLobby() {
         </>
       )}
     </Card>
+    </>
   )
 }

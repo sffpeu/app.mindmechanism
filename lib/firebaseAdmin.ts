@@ -1,4 +1,5 @@
 import { initializeApp, getApps, cert, type App } from 'firebase-admin/app'
+import { getFirestore, type Firestore } from 'firebase-admin/firestore'
 
 /**
  * Firebase Admin for server routes (Node runtime only).
@@ -56,4 +57,8 @@ export function getFirebaseAdminApp(): App {
   }
 
   return initializeApp()
+}
+
+export function getAdminFirestore(): Firestore {
+  return getFirestore(getFirebaseAdminApp())
 }

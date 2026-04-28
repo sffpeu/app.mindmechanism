@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { GlossaryWord } from '@/types/Glossary'
 import { clockTitles } from '@/lib/clockTitles'
 import { cn } from '@/lib/utils'
@@ -371,6 +372,9 @@ export function GlossaryRadialTree({
   }, [layout.leaves])
 
   const [hoveredWordId, setHoveredWordId] = useState<string | null>(null)
+  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null)
+  const [tooltipMounted, setTooltipMounted] = useState(false)
+  useEffect(() => setTooltipMounted(true), [])
 
   /** Path/root/clock highlights follow selection only — not hover. */
   const selectionPathIds = useMemo(
@@ -518,7 +522,11 @@ export function GlossaryRadialTree({
 
   const isFullscreen = variant === 'fullscreen'
 
+  const hoveredLeaf = hoveredWordId ? leafById.get(hoveredWordId) ?? null : null
+  const tooltipHex = hoveredLeaf ? (CLOCK_HEX[hoveredLeaf.clockId] ?? '#156fde') : '#156fde'
+
   return (
+    <>
     <div
       ref={containerRef}
       className={cn(
@@ -528,6 +536,10 @@ export function GlossaryRadialTree({
           : 'rounded-lg border border-black/5 dark:border-white/10 bg-white dark:bg-black/20',
         className
       )}
+      onMouseMove={(e) => {
+        if (!dragRef.current.active) setMousePos({ x: e.clientX, y: e.clientY })
+      }}
+      onMouseLeave={() => setMousePos(null)}
     >
       {!isFullscreen && (
         <p className="absolute top-2 left-2 z-10 text-xs text-gray-500 dark:text-gray-400 pointer-events-none select-none max-w-[min(100%,260px)]">
@@ -799,5 +811,25 @@ export function GlossaryRadialTree({
         </g>
       </svg>
     </div>
+    {tooltipMounted && hoveredLeaf && mousePos && !dragRef.current.active &&
+      createPortal(
+        <div
+          className="pointer-events-none fixed z-[2000] px-2.5 py-1.5 rounded-md shadow-lg text-sm font-semibold select-none"
+          style={{
+            left: mousePos.x + 16,
+            top: mousePos.y - 36,
+            backgroundColor: `${tooltipHex}18`,
+            border: `1px solid ${tooltipHex}55`,
+            color: tooltipHex,
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+          }}
+        >
+          {hoveredLeaf.word.word}
+        </div>,
+        document.body
+      )
+    }
+    </>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Settings, Sun, Moon, BookOpen, ClipboardList, LogOut, LayoutDashboard, Clock, Home, Volume2, VolumeX, ExternalLink, Users } from 'lucide-react'
+import { X, Settings, Sun, Moon, BookOpen, ClipboardList, LogOut, LayoutDashboard, Clock, Home, Volume2, VolumeX, ExternalLink, Users, FlaskConical, LifeBuoy } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -221,6 +221,22 @@ export function Menu({
                   onClick={() => handleNavigation('/glossary')}
                 >
                   Glossary
+                </MenuItem>
+                <MenuItem
+                  href="/research"
+                  icon={FlaskConical}
+                  isActive={isActive('/research')}
+                  onClick={() => handleNavigation('/research')}
+                >
+                  Research Hub
+                </MenuItem>
+                <MenuItem
+                  href="/support"
+                  icon={LifeBuoy}
+                  isActive={isActive('/support')}
+                  onClick={() => handleNavigation('/support')}
+                >
+                  Support
                 </MenuItem>
               </MenuSection>
 

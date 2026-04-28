@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import type { GlossaryWord, GlossaryDefinition } from '@/types/Glossary'
 import { getWordDefinition } from '@/lib/glossary'
 import { SUPPORTED_LANGUAGES } from '@/types/Glossary'
+import { SpeakButton } from '@/components/glossary/SpeakButton'
 
 export type GlossaryVisualWordPanelProps = {
   word: GlossaryWord
@@ -63,7 +64,10 @@ export function GlossaryVisualWordPanel({ word, clockHexPalette, onClose }: Glos
               </span>
             )}
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-1 break-words">{word.word}</h2>
+          <div className="flex items-center gap-2 mt-1">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white break-words">{word.word}</h2>
+            <SpeakButton word={word.word} language={word.language} audioUrl={word.audio_url} hex={hex} />
+          </div>
           {word.phonetic_spelling && (
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 font-mono">{word.phonetic_spelling}</p>
           )}

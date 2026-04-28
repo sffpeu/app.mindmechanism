@@ -6,8 +6,9 @@ import { useTheme } from '@/app/ThemeContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { ClockBreathingTone } from '@/components/ClockBreathingTone'
 import { useHueSync } from '@/lib/hooks/useHueSync'
+import { useIdleFade } from '@/lib/hooks/useIdleFade'
 import { ClockFocusNodeAppear } from '@/components/ClockFocusNodeAppear'
-import { ClockPageSettingsTrigger, ClockPageMenuContent, ClockPageIconButton } from '@/components/ClockPageSettingsTrigger'
+import { ClockPageSettingsTrigger, ClockPageIconButton } from '@/components/ClockPageSettingsTrigger'
 import { motion, AnimatePresence } from 'framer-motion'
 import { clockSettings } from '@/lib/clockSettings'
 import { formatSatelliteRevolutionPeriod } from '@/lib/satelliteRotation'
@@ -16,11 +17,7 @@ import { List, Info, Satellite, Clock as ClockIcon, Calendar, RotateCw, Timer as
 import { Switch } from '@/components/ui/switch'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Timer from '@/components/Timer'
-import {
-  DropdownMenu,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { DraggableClockPanel, ClockPanelRow } from '@/components/DraggableClockPanel'
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import {
@@ -34,6 +31,7 @@ import Clock, { defaultSatelliteConfigs } from '@/components/Clock'
 import { ClockWheelFaceOverlay } from '@/components/ClockWheelFaceOverlay'
 import { ClockPageSatelliteLayer } from '@/components/ClockPageSatelliteLayer'
 import { SessionTimer } from '@/components/SessionTimer'
+import { SessionPresenceBroadcast } from '@/components/SessionPresenceBroadcast'
 import { useSessionTimer } from '@/lib/useSessionTimer'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useLocation } from '@/lib/hooks/useLocation'
@@ -150,6 +148,7 @@ function NodesPageContent() {
   // Overlay state management
   const router = useRouter()
   useHueSync(CLOCK_INDEX)
+  const { isIdle } = useIdleFade()
   const { user, signOut } = useAuth()
   const { location } = useLocation()
   const [mounted, setMounted] = useState(false)
@@ -458,16 +457,10 @@ function NodesPageContent() {
       <ClockBreathingTone clockIndex={2} />
       <div className="h-full overflow-x-hidden flex flex-col bg-gray-50 dark:bg-black/95 min-h-0">
         {/* Settings Dropdown */}
-        <div className="fixed top-4 right-4 z-[200]">
-          <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-            <DropdownMenuTrigger asChild>
-              <ClockPageSettingsTrigger clockHex={clockHex} />
-            </DropdownMenuTrigger>
-            <ClockPageMenuContent>
-              <DropdownMenuItem
-                className="flex cursor-pointer items-center justify-between gap-1.5 px-2 py-1.5 text-[11px] focus:bg-black/5 dark:focus:bg-white/10"
-                onSelect={(e) => e.preventDefault()}
-              >
+        <div className={cn("fixed top-4 right-4 z-[200] transition-opacity duration-700", isIdle && "opacity-0 pointer-events-none")}>
+          <ClockPageSettingsTrigger clockHex={clockHex} onClick={() => setIsDropdownOpen(o => !o)} />
+          <DraggableClockPanel open={isDropdownOpen} onClose={() => setIsDropdownOpen(false)} clockHex={clockHex} clockIndex={2}>
+              <ClockPanelRow>
                 <div className="flex min-w-0 flex-1 items-center gap-1.5 pr-0.5">
                   <Satellite className="h-3 w-3 shrink-0 text-muted-foreground" />
                   <span className="leading-snug">Satellites</span>
@@ -477,11 +470,8 @@ function NodesPageContent() {
                   checked={showSatellites}
                   onCheckedChange={handleSatellitesChange}
                 />
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="flex cursor-pointer items-center justify-between gap-1.5 px-2 py-1.5 text-[11px] focus:bg-black/5 dark:focus:bg-white/10"
-                onSelect={(e) => e.preventDefault()}
-              >
+              </ClockPanelRow>
+              <ClockPanelRow>
                 <div className="flex min-w-0 flex-1 items-center gap-1.5 pr-0.5">
                   <List className="h-3 w-3 shrink-0 text-muted-foreground" />
                   <span className="leading-snug">Focus Words</span>
@@ -491,13 +481,12 @@ function NodesPageContent() {
                   checked={showWords}
                   onCheckedChange={handleWordsChange}
                 />
-              </DropdownMenuItem>
-            </ClockPageMenuContent>
-          </DropdownMenu>
+              </ClockPanelRow>
+                      </DraggableClockPanel>
         </div>
 
         {/* Timer and Info Component */}
-        <div className="fixed bottom-4 left-4 z-50 flex items-center gap-2">
+        <div className={cn("fixed bottom-4 left-4 z-50 flex items-center gap-2 transition-opacity duration-700", isIdle && "opacity-0 pointer-events-none")}>
           {remainingTime !== null && (
             <Timer
               remainingTime={remainingTime}
@@ -509,7 +498,7 @@ function NodesPageContent() {
             <ClockPageIconButton clockHex={clockHex} aria-label="Clock Information">
               <Info className="h-2.5 w-2.5" style={{ color: 'currentColor' }} />
             </ClockPageIconButton>
-            <div className="absolute bottom-full left-0 mb-2 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 origin-bottom-left">
+            <div className="absolute bottom-full left-0 mb-2 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 origin-bottom-left z-[1001]">
               <Card className="w-[300px] bg-white/90 dark:bg-black/90 backdrop-blur-sm border-black/5 dark:border-white/10">
                 <CardContent className="p-4">
                   <div className="space-y-3">
@@ -646,6 +635,14 @@ function NodesPageContent() {
               </Card>
             </div>
           </div>
+          {user?.uid && (
+            <SessionPresenceBroadcast
+              uid={user.uid}
+              clockIndex={2}
+              clockHex={clockHex}
+              durationMins={duration != null ? Math.round(duration / 60) : null}
+            />
+          )}
         </div>
 
         <div className="flex-grow flex items-center justify-center min-h-0 overflow-visible py-8">
@@ -883,7 +880,7 @@ function NodesPageContent() {
         )}
 
         {/* Dot Navigation */}
-        <div className="fixed inset-0 pointer-events-none z-[999]">
+        <div className={cn("fixed inset-0 pointer-events-none z-[999] transition-opacity duration-700", isIdle && "opacity-0")}>
           {showElements && (
             <DotNavigation
               activeDot={2}
@@ -893,7 +890,7 @@ function NodesPageContent() {
         </div>
 
         {/* Position the timer at the bottom center */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
+        <div className={cn("absolute bottom-4 left-1/2 -translate-x-1/2 z-50 transition-opacity duration-700", isIdle && "opacity-0 pointer-events-none")}>
           <SessionTimer
             duration={duration ?? undefined}
             sessionId={sessionId ?? undefined}

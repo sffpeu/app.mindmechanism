@@ -13,6 +13,8 @@ export interface GlossaryWord {
   clock_id?: number;
   user_id?: string;
   created_at: string;
+  /** Optional pre-recorded pronunciation file. Falls back to Web Speech API when absent. */
+  audio_url?: string;
 }
 
 /**
