@@ -159,7 +159,7 @@ function Placeholder({
   lines,
   contact = false,
 }: {
-  icon: React.ComponentType<{ className?: string }>
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>
   clockHex: string
   title: string
   lines: string[]
