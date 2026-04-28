@@ -202,7 +202,7 @@ export default function SessionsPage() {
         )}
 
         <div className="flex-1 min-h-0 overflow-y-auto">
-          <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="max-w-7xl mx-auto pl-16 pr-4 py-6">
           <div className="space-y-8">
             {/* Create Session Section */}
             {!isClockMode && (
