@@ -33,7 +33,6 @@ import { ClockWheelFaceOverlay } from '@/components/ClockWheelFaceOverlay'
 import { ClockPageSatelliteLayer } from '@/components/ClockPageSatelliteLayer'
 import { SessionTimer } from '@/components/SessionTimer'
 import { SessionPresenceBroadcast } from '@/components/SessionPresenceBroadcast'
-import { AppInfoOverlay } from '@/components/AppInfoOverlay'
 import { useSessionTimer } from '@/lib/useSessionTimer'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useLocation } from '@/lib/hooks/useLocation'
@@ -467,7 +466,7 @@ function NodesPageContent() {
       <ClockBreathingTone clockIndex={2} />
       <div className="h-full overflow-x-hidden flex flex-col bg-gray-50 dark:bg-black/95 min-h-0">
         {/* Settings Dropdown */}
-        <div className={cn("fixed top-4 right-4 z-[200] transition-opacity duration-700", isIdle && "opacity-0 pointer-events-none")}>
+        <div className={cn("fixed top-4 right-14 z-[200] transition-opacity duration-700", isIdle && "opacity-0 pointer-events-none")}>
           <ClockPageSettingsTrigger clockHex={clockHex} onClick={() => setIsDropdownOpen(o => !o)} />
           <DraggableClockPanel open={isDropdownOpen} onClose={() => setIsDropdownOpen(false)} clockHex={clockHex} clockIndex={2}>
               <ClockPanelRow>
@@ -644,41 +643,16 @@ function NodesPageContent() {
             </div>
           </DraggableClockPanel>
         </div>
-
-        {/* Top-left cluster: broadcast pill + info trigger */}
-
-
-        <div className={cn("fixed top-4 left-4 z-50 flex flex-col items-start gap-2 transition-opacity duration-700", isIdle && "opacity-0 pointer-events-none")}>
-
-
-          {user?.uid && (
-
-
+        {user?.uid && (
+          <div className={cn("fixed top-4 left-4 z-50 transition-opacity duration-700", isIdle && "opacity-0 pointer-events-none")}>
             <SessionPresenceBroadcast
-
-
               uid={user.uid}
-
-
               clockIndex={2}
-
-
               clockHex={clockHex}
-
-
               durationMins={duration != null ? Math.round(duration / 60) : null}
-
-
             />
-
-
-          )}
-
-
-          <AppInfoOverlay clockHex={clockHex} />
-
-
-        </div>
+          </div>
+        )}
 
         <div className="flex-grow flex items-center justify-center min-h-0 overflow-visible py-8">
           <div className="relative w-[82vw] h-[82vw] max-w-[615px] max-h-[615px] overflow-visible" onPointerMove={resetNodeNumberTimer} onPointerDown={resetNodeNumberTimer}>

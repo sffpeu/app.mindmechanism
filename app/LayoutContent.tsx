@@ -8,7 +8,8 @@ import { TimeTrackingProvider } from '@/lib/TimeTrackingContext';
 import { ToastProvider } from '@/components/ToastProvider';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { EmailVerificationGate } from '@/components/auth/EmailVerificationGate';
-import { AppDock } from '@/components/AppDock';
+import { AppDock } from '@/components/AppDock'
+import { AppInfoOverlay } from '@/components/AppInfoOverlay';
 
 function isShellPublic(pathname: string): boolean {
   if (pathname === '/' || pathname === '/home' || pathname === '/home/') return true
@@ -40,6 +41,10 @@ function LayoutContentInner({ children }: { children: React.ReactNode }) {
         </div>
       </div>
       <AppDock />
+      {/* Global info trigger — top-right on every page, above all layers */}
+      <div className="fixed top-4 right-4 z-[50000]">
+        <AppInfoOverlay clockHex="#8b5cf6" />
+      </div>
     </>
   );
 }
