@@ -1,34 +1,36 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 
 type Props = {
   clockHex: string
+  /** Hide during active timed sessions — glow serves as a visual timer only when no session is set */
+  sessionActive?: boolean
 }
 
-/**
- * Soft radial glow behind the clock wheel that slowly breathes in and out.
- * Positioned as the first child of the wheel container (absolute inset-0)
- * so it sits under the clock face, satellites, and focus nodes.
- */
-export function ClockBreathingGlow({ clockHex }: Props) {
+export function ClockBreathingGlow({ clockHex, sessionActive }: Props) {
   return (
-    <motion.div
-      className="absolute rounded-full pointer-events-none"
-      style={{
-        inset: '-12%',
-        background: `radial-gradient(circle, ${clockHex}55 0%, ${clockHex}22 45%, transparent 70%)`,
-        zIndex: 0,
-      }}
-      animate={{
-        opacity: [0.5, 1, 0.5],
-        scale: [0.92, 1.04, 0.92],
-      }}
-      transition={{
-        duration: 7,
-        repeat: Infinity,
-        ease: 'easeInOut',
-      }}
-    />
+    <AnimatePresence>
+      {!sessionActive && (
+        <motion.div
+          key="breathing-glow"
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            inset: '-12%',
+            background: `radial-gradient(circle, ${clockHex}66 0%, ${clockHex}33 40%, transparent 70%)`,
+            zIndex: 0,
+          }}
+          initial={{ opacity: 0 }}
+          exit={{ opacity: 0, transition: { duration: 2 } }}
+          animate={{ opacity: [0, 1, 0] }}
+          transition={{
+            duration: 30,
+            repeat: Infinity,
+            ease: 'easeInOut',
+            times: [0, 0.5, 1],
+          }}
+        />
+      )}
+    </AnimatePresence>
   )
 }
