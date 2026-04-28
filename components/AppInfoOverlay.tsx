@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { Info, X, Cpu, User, BookOpen, Scale, Shield, HelpCircle, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import { AboutMechanism } from '@/components/info/AboutMechanism'
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 
@@ -55,6 +56,7 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]['id']
 
+
 // ─── Placeholder content ──────────────────────────────────────────────────────
 
 function TabContent({ id, clockHex }: { id: TabId; clockHex: string }) {
@@ -62,18 +64,7 @@ function TabContent({ id, clockHex }: { id: TabId; clockHex: string }) {
   const Icon = tab.icon
 
   const placeholders: Record<TabId, React.ReactNode> = {
-    mechanism: (
-      <Placeholder
-        icon={Icon}
-        clockHex={clockHex}
-        title="About the Mechanism"
-        lines={[
-          'Mind Mechanism is a contemplative practice tool built around nine rotating mandalas, each corresponding to a distinct energetic centre.',
-          'Content for this section will be developed and added in a future session.',
-          'Topics will cover the philosophy, structure, and intention behind the system.',
-        ]}
-      />
-    ),
+    mechanism: <AboutMechanism clockHex={clockHex} />,
     developer: (
       <Placeholder
         icon={Icon}
