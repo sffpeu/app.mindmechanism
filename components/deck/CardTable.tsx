@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { MANDALA_NODES, WHEEL_COLORS, CARD_W, CARD_H, type MandalaNode } from '@/data/mandalaNodes'
 import { DeckCard, type Annotation } from './DeckCard'
+import { CreateSessionModal } from './CreateSessionModal'
 
 interface CardState {
   nodeId: string
@@ -42,6 +43,7 @@ export function CardTable() {
   )
   const [expandedNode, setExpandedNode] = useState<MandalaNode | null>(null)
   const [toast, setToast] = useState<string | null>(null)
+  const [showCreateSession, setShowCreateSession] = useState(false)
 
   useEffect(() => {
     const el = tableRef.current
@@ -107,6 +109,19 @@ export function CardTable() {
     setRemainingDeck(prev => prev.slice(1))
   }, [remainingDeck])
 
+  const handleSessionStart = useCallback((nodeIds: string[], sessionName: string) => {
+    const el = tableRef.current
+    if (!el) return
+    const { clientWidth: w, clientHeight: h } = el
+    setCards(makeScattered(nodeIds, w, h))
+    setRemainingDeck(MANDALA_NODES.filter(n => !nodeIds.includes(n.id)).map(n => n.id))
+    setAnnotations({})
+    setExpandedNode(null)
+    setShowCreateSession(false)
+    setToast(`Session started · ${sessionName}`)
+    setTimeout(() => setToast(null), 2500)
+  }, [])
+
   const nodeMap = Object.fromEntries(MANDALA_NODES.map(n => [n.id, n]))
 
   const btnStyle: React.CSSProperties = {
@@ -168,6 +183,7 @@ export function CardTable() {
         position: 'absolute', bottom: 28, left: '50%',
         transform: 'translateX(-50%)', display: 'flex', gap: 10, zIndex: 9999,
       }}>
+        <button onClick={() => setShowCreateSession(true)} style={btnStyle}>New Session</button>
         <button onClick={handleScatter} style={btnStyle}>Scatter</button>
         <button
           onClick={handleDraw}
@@ -190,6 +206,14 @@ export function CardTable() {
         }}>
           {toast}
         </div>
+      )}
+
+      {/* Create session modal */}
+      {showCreateSession && (
+        <CreateSessionModal
+          onStart={handleSessionStart}
+          onClose={() => setShowCreateSession(false)}
+        />
       )}
 
       {/* Expanded panel */}
