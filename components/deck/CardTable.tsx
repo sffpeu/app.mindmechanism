@@ -15,11 +15,7 @@ interface CardState {
   isFlipped: boolean
 }
 
-const DEFAULT_DRAW = [
-  'achievement', 'union', 'rampant', 'balancing',
-  'resonating', 'child_like', 'seeking', 'infinity', 'father',
-]
-
+const DEFAULT_DRAW_SIZE = 9
 const MARGIN = 40
 const SESSIONS_KEY = 'mm_deck_sessions'
 
@@ -49,9 +45,7 @@ export function CardTable() {
   const tableRef = useRef<HTMLDivElement>(null)
   const [cards, setCards] = useState<CardState[]>([])
   const [annotations, setAnnotations] = useState<Record<string, Annotation>>({})
-  const [remainingDeck, setRemainingDeck] = useState<string[]>(
-    MANDALA_NODES.filter(n => !DEFAULT_DRAW.includes(n.id)).map(n => n.id)
-  )
+  const [remainingDeck, setRemainingDeck] = useState<string[]>([])
   const [expandedNode, setExpandedNode] = useState<MandalaNode | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [showCreateSession, setShowCreateSession] = useState(false)
@@ -64,7 +58,11 @@ export function CardTable() {
     if (!el) return
     const { clientWidth: w, clientHeight: h } = el
     if (w === 0 || h === 0) return
-    setCards(makeScattered(DEFAULT_DRAW, w, h))
+    const shuffled = [...MANDALA_NODES].sort(() => Math.random() - 0.5)
+    const drawn = shuffled.slice(0, DEFAULT_DRAW_SIZE).map(n => n.id)
+    const remaining = shuffled.slice(DEFAULT_DRAW_SIZE).map(n => n.id)
+    setCards(makeScattered(drawn, w, h))
+    setRemainingDeck(remaining)
   }, [])
 
   const showToast = useCallback((msg: string) => {
