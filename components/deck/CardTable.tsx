@@ -50,6 +50,7 @@ export function CardTable() {
   const [toast, setToast] = useState<string | null>(null)
   const [showCreateSession, setShowCreateSession] = useState(false)
   const [showSessions, setShowSessions] = useState(false)
+  const [showHelp, setShowHelp] = useState(false)
   const [savedSessions, setSavedSessions] = useState<SavedSession[]>(loadSessions)
   const [currentSessionName, setCurrentSessionName] = useState('Default Draw')
 
@@ -227,6 +228,33 @@ export function CardTable() {
         )
       })}
 
+      {/* Heading */}
+      <div style={{
+        position: 'absolute', top: 20, left: 24, zIndex: 9999, pointerEvents: 'none',
+      }}>
+        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.22)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 2 }}>
+          Mind Mechanism
+        </div>
+        <div style={{ fontSize: 22, fontWeight: 800, color: 'rgba(255,255,255,0.82)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+          Focus Deck
+        </div>
+      </div>
+
+      {/* Help button */}
+      <button
+        onClick={() => setShowHelp(true)}
+        style={{
+          position: 'absolute', top: 20, right: 24, zIndex: 9999,
+          width: 34, height: 34, borderRadius: '50%',
+          background: 'rgba(255,255,255,0.07)',
+          border: '1px solid rgba(255,255,255,0.12)',
+          color: 'rgba(255,255,255,0.45)', fontSize: 15, fontWeight: 700,
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}
+      >
+        ?
+      </button>
+
       {/* Session name label */}
       <div style={{
         position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)',
@@ -284,6 +312,9 @@ export function CardTable() {
         />
       )}
 
+      {/* Help panel */}
+      {showHelp && <HelpPanel onClose={() => setShowHelp(false)} />}
+
       {/* Sessions panel */}
       {showSessions && (
         <SessionsPanel
@@ -303,6 +334,104 @@ export function CardTable() {
           onClose={() => setExpandedNode(null)}
         />
       )}
+    </div>
+  )
+}
+
+function HelpPanel({ onClose }: { onClose: () => void }) {
+  const sections: Array<{ title: string; items: Array<{ label: string; desc: string }> }> = [
+    {
+      title: 'Working with cards',
+      items: [
+        { label: 'Flip', desc: 'Click any card to flip it between the front face and your personal side.' },
+        { label: 'Drag', desc: 'Hold and drag to reposition a card anywhere on the table.' },
+        { label: 'Expand ↗', desc: 'On the card back, tap the ↗ button for a full-screen view of the node.' },
+        { label: 'Speak 🔊', desc: 'Tap the speaker icon to hear the term spoken aloud in British English.' },
+        { label: 'Text mode A', desc: 'When a card has a background image, tap the A circle to toggle between dark and light text.' },
+      ],
+    },
+    {
+      title: 'Personalising cards',
+      items: [
+        { label: 'Your definition', desc: 'On the card back, write or speak your own definition. It appears on the front face beneath the original.' },
+        { label: 'Voice input 🎙', desc: 'Tap Speak on the card back to dictate your definition hands-free.' },
+        { label: 'Card image 🖼', desc: 'Set a personal photograph or image as the card background using the 🖼 button on either face.' },
+        { label: 'Notes', desc: 'Add private notes to any card — visible only on the back and in the expanded view.' },
+        { label: '→ Glossary', desc: 'Send a node to your Glossary for long-term reference.' },
+      ],
+    },
+    {
+      title: 'Sessions',
+      items: [
+        { label: 'New Session', desc: 'Open the session builder: choose how many cards to draw (3–16) and a session name. Only wheels with enough nodes are eligible.' },
+        { label: 'Scatter', desc: 'Randomise the positions of all cards currently on the table.' },
+        { label: 'Draw', desc: 'Deal one additional card from the remaining deck onto the table.' },
+        { label: 'Save', desc: 'Snapshot the current table — card positions, flip states, annotations, and images — to local storage.' },
+        { label: 'Sessions', desc: 'Open the sessions panel to load or delete a previously saved layout. Up to 20 sessions are stored.' },
+      ],
+    },
+  ]
+
+  return (
+    <div
+      style={{
+        position: 'absolute', inset: 0, zIndex: 20000,
+        background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)',
+        display: 'flex', justifyContent: 'flex-end',
+      }}
+      onClick={onClose}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          width: 380, height: '100%', overflowY: 'auto',
+          background: '#1a1a1c', borderLeft: '1px solid #2a2a2e',
+          boxShadow: '-24px 0 64px rgba(0,0,0,0.6)',
+          display: 'flex', flexDirection: 'column',
+        }}
+      >
+        {/* Header */}
+        <div style={{
+          padding: '24px 24px 18px', borderBottom: '1px solid #252527',
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+          flexShrink: 0,
+        }}>
+          <div>
+            <div style={{ fontSize: 10, color: '#444', textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: 5 }}>
+              Focus Deck
+            </div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: '#eee' }}>How to use</div>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#444', fontSize: 18, cursor: 'pointer', padding: '2px 4px' }}>
+            ✕
+          </button>
+        </div>
+
+        {/* Content */}
+        <div style={{ padding: '8px 0 32px', flex: 1 }}>
+          {sections.map(section => (
+            <div key={section.title} style={{ padding: '20px 24px 4px' }}>
+              <div style={{
+                fontSize: 10, color: '#555', textTransform: 'uppercase',
+                letterSpacing: '0.14em', fontWeight: 600, marginBottom: 14,
+                paddingBottom: 8, borderBottom: '1px solid #222224',
+              }}>
+                {section.title}
+              </div>
+              {section.items.map(item => (
+                <div key={item.label} style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#ccc', marginBottom: 3 }}>
+                    {item.label}
+                  </div>
+                  <div style={{ fontSize: 12, color: '#555', lineHeight: 1.65 }}>
+                    {item.desc}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
