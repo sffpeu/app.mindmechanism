@@ -5,6 +5,7 @@ export interface SavedSession {
   name: string
   savedAt: number
   cardCount: number
+  tableBackground: string | null
   cards: Array<{
     nodeId: string
     x: number
@@ -93,11 +94,24 @@ export function SessionsPanel({ sessions, onLoad, onDelete, onClose }: Props) {
               <div
                 key={session.id}
                 style={{
-                  padding: '14px 22px',
+                  padding: '12px 22px',
                   borderBottom: '1px solid #1e1e20',
                   display: 'flex', alignItems: 'center', gap: 12,
                 }}
               >
+                {/* Background thumbnail */}
+                <div style={{
+                  width: 48, height: 34, borderRadius: 5, flexShrink: 0,
+                  background: session.tableBackground ? '#000' : '#1e1e20',
+                  backgroundImage: session.tableBackground ? `url(${session.tableBackground})` : 'none',
+                  backgroundSize: 'cover', backgroundPosition: 'center',
+                  border: '1px solid #2a2a2e',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {!session.tableBackground && (
+                    <span style={{ fontSize: 16, opacity: 0.25 }}>🃏</span>
+                  )}
+                </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{
                     fontSize: 14, fontWeight: 700, color: '#ddd',
