@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { MANDALA_NODES, WHEEL_COLORS, CARD_W, CARD_H, type MandalaNode } from '@/data/mandalaNodes'
-import { DeckCard } from './DeckCard'
+import { DeckCard, type Annotation } from './DeckCard'
 
 interface CardState {
   nodeId: string
@@ -11,11 +11,6 @@ interface CardState {
   rotation: number
   zIndex: number
   isFlipped: boolean
-}
-
-interface Annotation {
-  userDef: string
-  notes: string
 }
 
 const DEFAULT_DRAW = [
@@ -36,20 +31,17 @@ function makeScattered(nodeIds: string[], w: number, h: number): CardState[] {
   }))
 }
 
+const EMPTY_ANNOTATION: Annotation = { userDef: '', notes: '', imageUrl: null }
+
 export function CardTable() {
   const tableRef = useRef<HTMLDivElement>(null)
   const [cards, setCards] = useState<CardState[]>([])
   const [annotations, setAnnotations] = useState<Record<string, Annotation>>({})
-  const [deckIds] = useState<string[]>(
+  const [remainingDeck, setRemainingDeck] = useState<string[]>(
     MANDALA_NODES.filter(n => !DEFAULT_DRAW.includes(n.id)).map(n => n.id)
   )
-  const [remainingDeck, setRemainingDeck] = useState<string[]>([])
   const [expandedNode, setExpandedNode] = useState<MandalaNode | null>(null)
   const [toast, setToast] = useState<string | null>(null)
-
-  useEffect(() => {
-    setRemainingDeck(deckIds)
-  }, [deckIds])
 
   useEffect(() => {
     const el = tableRef.current
@@ -74,10 +66,10 @@ export function CardTable() {
     setCards(prev => prev.map(c => c.nodeId === nodeId ? { ...c, x, y } : c))
   }, [])
 
-  const handleAnnotationChange = useCallback((nodeId: string, field: keyof Annotation, value: string) => {
+  const handleAnnotationChange = useCallback((nodeId: string, field: keyof Annotation, value: string | null) => {
     setAnnotations(prev => ({
       ...prev,
-      [nodeId]: { ...prev[nodeId] ?? { userDef: '', notes: '' }, [field]: value },
+      [nodeId]: { ...prev[nodeId] ?? EMPTY_ANNOTATION, [field]: value },
     }))
   }, [])
 
@@ -121,8 +113,8 @@ export function CardTable() {
     padding: '10px 22px',
     background: 'rgba(255,255,255,0.08)',
     backdropFilter: 'blur(8px)',
-    color: '#d0d0d0',
-    border: '1px solid rgba(255,255,255,0.12)',
+    color: '#ccc',
+    border: '1px solid rgba(255,255,255,0.11)',
     borderRadius: 24,
     fontSize: 13,
     fontWeight: 600,
@@ -143,7 +135,7 @@ export function CardTable() {
     >
       {/* Subtle grid texture */}
       <div style={{
-        position: 'absolute', inset: 0, opacity: 0.025, pointerEvents: 'none',
+        position: 'absolute', inset: 0, opacity: 0.022, pointerEvents: 'none',
         backgroundImage: 'linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)',
         backgroundSize: '40px 40px',
       }} />
@@ -160,7 +152,7 @@ export function CardTable() {
             rotation={card.rotation}
             zIndex={card.zIndex}
             isFlipped={card.isFlipped}
-            annotation={annotations[card.nodeId] ?? { userDef: '', notes: '' }}
+            annotation={annotations[card.nodeId] ?? EMPTY_ANNOTATION}
             onFlip={() => handleFlip(card.nodeId)}
             onBringToFront={() => bringToFront(card.nodeId)}
             onPositionChange={(x, y) => handlePositionChange(card.nodeId, x, y)}
@@ -194,17 +186,17 @@ export function CardTable() {
           background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)',
           color: '#fff', padding: '8px 20px', borderRadius: 20,
           fontSize: 13, fontWeight: 500, zIndex: 10000, whiteSpace: 'nowrap',
-          border: '1px solid rgba(255,255,255,0.15)',
+          border: '1px solid rgba(255,255,255,0.14)',
         }}>
           {toast}
         </div>
       )}
 
-      {/* Expanded view */}
+      {/* Expanded panel */}
       {expandedNode && (
         <ExpandedView
           node={expandedNode}
-          annotation={annotations[expandedNode.id] ?? { userDef: '', notes: '' }}
+          annotation={annotations[expandedNode.id] ?? EMPTY_ANNOTATION}
           onAnnotationChange={(field, value) => handleAnnotationChange(expandedNode.id, field, value)}
           onClose={() => setExpandedNode(null)}
         />
@@ -217,11 +209,32 @@ function ExpandedView({
   node, annotation, onAnnotationChange, onClose,
 }: {
   node: MandalaNode
-  annotation: { userDef: string; notes: string }
-  onAnnotationChange: (field: 'userDef' | 'notes', value: string) => void
+  annotation: Annotation
+  onAnnotationChange: (field: keyof Annotation, value: string | null) => void
   onClose: () => void
 }) {
   const wheelColor = WHEEL_COLORS[node.wheel]
+  const hasImage = !!annotation.imageUrl
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => onAnnotationChange('imageUrl', ev.target?.result as string)
+    reader.readAsDataURL(file)
+    e.target.value = ''
+  }
+
+  const handleSpeak = () => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return
+    window.speechSynthesis.cancel()
+    const utterance = new SpeechSynthesisUtterance(node.term)
+    utterance.lang = 'en-GB'
+    utterance.rate = 0.85
+    window.speechSynthesis.speak(utterance)
+  }
+
   const taStyle: React.CSSProperties = {
     width: '100%', background: '#252527',
     border: '1px solid #363638', borderRadius: 8,
@@ -242,29 +255,81 @@ function ExpandedView({
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          width: 500, maxHeight: '82vh',
+          width: 520, maxHeight: '86vh',
           background: '#1c1c1e', borderRadius: 16,
           overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.7)',
           display: 'flex', flexDirection: 'column',
           border: '1px solid #2a2a2e',
         }}
       >
-        <div style={{ height: 8, background: wheelColor }} />
-        <div style={{ padding: '24px 28px', borderBottom: '1px solid #252527' }}>
-          <div style={{ fontSize: 10, color: '#555', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 10 }}>
-            Wheel {node.wheel} · {node.wheelName} · Grade {node.grade} · {node.rate}
+        {/* Image header area */}
+        <div style={{
+          height: hasImage ? 180 : 'auto',
+          position: 'relative',
+          background: hasImage ? '#000' : wheelColor,
+          flexShrink: 0,
+        }}>
+          {hasImage && (
+            <div style={{
+              position: 'absolute', inset: 0,
+              backgroundImage: `url(${annotation.imageUrl})`,
+              backgroundSize: 'cover', backgroundPosition: 'center',
+            }} />
+          )}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: hasImage
+              ? 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.7) 100%)'
+              : 'none',
+          }} />
+          <div style={{ position: 'relative', padding: hasImage ? '16px 24px' : '20px 24px', display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'flex-end' }}>
+            <div style={{ fontSize: 10, color: hasImage ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.75)', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 6 }}>
+              Wheel {node.wheel} · {node.wheelName} · Grade {node.grade} · {node.rate}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ fontSize: 28, fontWeight: 800, color: '#fff', textTransform: 'uppercase' }}>
+                {node.term}
+              </div>
+              <button
+                onClick={handleSpeak}
+                style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 6, padding: '4px 9px', cursor: 'pointer', color: '#fff', fontSize: 14 }}
+              >
+                🔊
+              </button>
+            </div>
+            <div style={{ fontSize: 13, fontStyle: 'italic', color: hasImage ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.75)', fontFamily: 'Georgia, serif', marginTop: 4 }}>
+              {node.phonetic}
+            </div>
           </div>
-          <div style={{ fontSize: 30, fontWeight: 800, color: '#f0f0f0', textTransform: 'uppercase', marginBottom: 8 }}>
-            {node.term}
+          {/* Image controls */}
+          <div style={{ position: 'absolute', top: 12, right: 12, display: 'flex', gap: 6 }}>
+            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              style={{ background: 'rgba(0,0,0,0.45)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', color: 'rgba(255,255,255,0.75)', fontSize: 11 }}
+            >
+              {hasImage ? '🖼 Change' : '🖼 Set image'}
+            </button>
+            {hasImage && (
+              <button
+                onClick={() => onAnnotationChange('imageUrl', null)}
+                style={{ background: 'rgba(0,0,0,0.45)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', fontSize: 11 }}
+              >
+                ✕
+              </button>
+            )}
           </div>
-          <div style={{ fontSize: 14, fontStyle: 'italic', color: '#666', fontFamily: 'Georgia, serif', marginBottom: 16 }}>
-            {node.phonetic}
-          </div>
-          <div style={{ fontSize: 16, color: '#bbb', lineHeight: 1.65 }}>
+        </div>
+
+        {/* Definition text */}
+        <div style={{ padding: '18px 24px 0', borderBottom: '1px solid #252527' }}>
+          <div style={{ fontSize: 15, color: '#bbb', lineHeight: 1.65, paddingBottom: 18 }}>
             {node.definition}
           </div>
         </div>
-        <div style={{ padding: '20px 28px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+        {/* Edit fields */}
+        <div style={{ padding: '18px 24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
             <label style={{ fontSize: 10, color: '#555', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: 8 }}>
               Your definition
@@ -288,14 +353,11 @@ function ExpandedView({
             />
           </div>
         </div>
-        <div style={{ padding: '16px 28px', borderTop: '1px solid #252527', display: 'flex', justifyContent: 'flex-end' }}>
+
+        <div style={{ padding: '14px 24px', borderTop: '1px solid #252527', display: 'flex', justifyContent: 'flex-end' }}>
           <button
             onClick={onClose}
-            style={{
-              padding: '8px 20px', background: '#252527',
-              color: '#888', border: '1px solid #363638', borderRadius: 8,
-              fontSize: 13, cursor: 'pointer',
-            }}
+            style={{ padding: '8px 20px', background: '#252527', color: '#888', border: '1px solid #363638', borderRadius: 8, fontSize: 13, cursor: 'pointer' }}
           >
             Close
           </button>
