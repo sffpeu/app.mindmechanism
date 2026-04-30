@@ -6,6 +6,11 @@ import { Info, X, Cpu, User, BookOpen, Scale, Shield, HelpCircle, Sparkles } fro
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { AboutMechanism } from '@/components/info/AboutMechanism'
+import { AboutDeveloper } from '@/components/info/AboutDeveloper'
+import { AboutESL } from '@/components/info/AboutESL'
+import { GettingStarted } from '@/components/info/GettingStarted'
+import { PrivacyData } from '@/components/info/PrivacyData'
+import { LegalContact } from '@/components/info/LegalContact'
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 
@@ -57,50 +62,17 @@ const TABS = [
 type TabId = (typeof TABS)[number]['id']
 
 
-// ─── Placeholder content ──────────────────────────────────────────────────────
+// ─── Tab content ──────────────────────────────────────────────────────────────
 
 function TabContent({ id, clockHex }: { id: TabId; clockHex: string }) {
   const tab = TABS.find((t) => t.id === id)!
   const Icon = tab.icon
 
-  const placeholders: Record<TabId, React.ReactNode> = {
+  const content: Record<TabId, React.ReactNode> = {
     mechanism: <AboutMechanism clockHex={clockHex} />,
-    developer: (
-      <Placeholder
-        icon={Icon}
-        clockHex={clockHex}
-        title="About the Developer"
-        lines={[
-          'Sean Fortune — writer, artist, and architect of the Mind Mechanism.',
-          'Content for this section will be developed and added in a future session.',
-          'Topics will include background, practice lineage, and creative vision.',
-        ]}
-      />
-    ),
-    esl: (
-      <Placeholder
-        icon={Icon}
-        clockHex={clockHex}
-        title="About ESL — Emotional Spectrum Language"
-        lines={[
-          'ESL is the 482-node vocabulary taxonomy at the heart of Mind Mechanism — a map of interior experience.',
-          'Content for this section will be developed and added in a future session.',
-          'Topics will cover the origin of the taxonomy, how nodes are assigned, and how to work with language in practice.',
-        ]}
-      />
-    ),
-    guide: (
-      <Placeholder
-        icon={Icon}
-        clockHex={clockHex}
-        title="Getting Started"
-        lines={[
-          'A step-by-step introduction to using Mind Mechanism for the first time.',
-          'Content for this section will be developed and added in a future session.',
-          'Topics will cover choosing a wheel, setting a session duration, using the broadcast feature, and recording notes.',
-        ]}
-      />
-    ),
+    developer: <AboutDeveloper clockHex={clockHex} />,
+    esl:       <AboutESL clockHex={clockHex} />,
+    guide:     <GettingStarted clockHex={clockHex} />,
     faq: (
       <Placeholder
         icon={Icon}
@@ -113,34 +85,11 @@ function TabContent({ id, clockHex }: { id: TabId; clockHex: string }) {
         ]}
       />
     ),
-    privacy: (
-      <Placeholder
-        icon={Icon}
-        clockHex={clockHex}
-        title="Privacy & Data"
-        lines={[
-          'Your practice data belongs to you. Mind Mechanism is designed on a local-first, minimal-collection principle.',
-          'Content for this section will be developed and added in a future session.',
-          'Topics will cover what is stored, where it is stored, third-party services used, and your right to deletion.',
-        ]}
-      />
-    ),
-    legal: (
-      <Placeholder
-        icon={Icon}
-        clockHex={clockHex}
-        title="Legal Notice & Contact"
-        lines={[
-          'Mind Mechanism is provided as a contemplative tool and does not constitute medical, psychological, or therapeutic advice.',
-          'Content for this section will be developed and added in a future session.',
-          'Topics will cover terms of use, disclaimer of liability, intellectual property, and contact information.',
-        ]}
-        contact
-      />
-    ),
+    privacy: <PrivacyData clockHex={clockHex} />,
+    legal:   <LegalContact clockHex={clockHex} />,
   }
 
-  return <>{placeholders[id]}</>
+  return <>{content[id]}</>
 }
 
 function Placeholder({
