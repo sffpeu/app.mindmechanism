@@ -54,7 +54,7 @@ export function DeckCard({
   const [isRecording, setIsRecording] = useState(false)
   const [srSupported] = useState(() => {
     if (typeof window === 'undefined') return false
-    const w = window as Record<string, unknown>
+    const w = window as unknown as Record<string, unknown>
     return !!(w.SpeechRecognition || w.webkitSpeechRecognition)
   })
 
@@ -96,7 +96,7 @@ export function DeckCard({
       return
     }
     type SRConstructor = new () => { lang: string; continuous: boolean; interimResults: boolean; onresult: ((ev: Event & { results: { [i: number]: { [i: number]: { transcript: string } } } }) => void) | null; onerror: (() => void) | null; onend: (() => void) | null; start: () => void; stop: () => void }
-    const w = window as Record<string, unknown>
+    const w = window as unknown as Record<string, unknown>
     const SR = (w.SpeechRecognition || w.webkitSpeechRecognition) as SRConstructor | undefined
     if (!SR) return
     const rec = new SR()
