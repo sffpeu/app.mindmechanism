@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { MANDALA_NODES, WHEEL_COLORS, CARD_W, CARD_H, type MandalaNode } from '@/data/mandalaNodes'
 import { DeckCard, type Annotation } from './DeckCard'
 import { CreateSessionModal } from './CreateSessionModal'
+import { SessionsPanel, type SavedSession } from './SessionsPanel'
 
 interface CardState {
   nodeId: string
@@ -20,6 +21,7 @@ const DEFAULT_DRAW = [
 ]
 
 const MARGIN = 40
+const SESSIONS_KEY = 'mm_deck_sessions'
 
 function makeScattered(nodeIds: string[], w: number, h: number): CardState[] {
   return nodeIds.map((nodeId, i) => ({
@@ -30,6 +32,15 @@ function makeScattered(nodeIds: string[], w: number, h: number): CardState[] {
     zIndex: i + 1,
     isFlipped: false,
   }))
+}
+
+function loadSessions(): SavedSession[] {
+  if (typeof window === 'undefined') return []
+  try { return JSON.parse(localStorage.getItem(SESSIONS_KEY) ?? '[]') } catch { return [] }
+}
+
+function persistSessions(sessions: SavedSession[]) {
+  localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions))
 }
 
 const EMPTY_ANNOTATION: Annotation = { userDef: '', notes: '', imageUrl: null }
@@ -44,6 +55,9 @@ export function CardTable() {
   const [expandedNode, setExpandedNode] = useState<MandalaNode | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [showCreateSession, setShowCreateSession] = useState(false)
+  const [showSessions, setShowSessions] = useState(false)
+  const [savedSessions, setSavedSessions] = useState<SavedSession[]>(loadSessions)
+  const [currentSessionName, setCurrentSessionName] = useState('Default Draw')
 
   useEffect(() => {
     const el = tableRef.current
@@ -51,6 +65,11 @@ export function CardTable() {
     const { clientWidth: w, clientHeight: h } = el
     if (w === 0 || h === 0) return
     setCards(makeScattered(DEFAULT_DRAW, w, h))
+  }, [])
+
+  const showToast = useCallback((msg: string) => {
+    setToast(msg)
+    setTimeout(() => setToast(null), 2500)
   }, [])
 
   const bringToFront = useCallback((nodeId: string) => {
@@ -78,9 +97,8 @@ export function CardTable() {
   const handleSendToGlossary = useCallback((nodeId: string) => {
     const node = MANDALA_NODES.find(n => n.id === nodeId)
     if (!node) return
-    setToast(`"${node.term}" sent to Glossary`)
-    setTimeout(() => setToast(null), 2500)
-  }, [])
+    showToast(`"${node.term}" sent to Glossary`)
+  }, [showToast])
 
   const handleScatter = useCallback(() => {
     const el = tableRef.current
@@ -117,10 +135,43 @@ export function CardTable() {
     setRemainingDeck(MANDALA_NODES.filter(n => !nodeIds.includes(n.id)).map(n => n.id))
     setAnnotations({})
     setExpandedNode(null)
+    setCurrentSessionName(sessionName)
     setShowCreateSession(false)
-    setToast(`Session started · ${sessionName}`)
-    setTimeout(() => setToast(null), 2500)
-  }, [])
+    showToast(`Session started · ${sessionName}`)
+  }, [showToast])
+
+  const handleSave = useCallback(() => {
+    const session: SavedSession = {
+      id: Date.now().toString(),
+      name: currentSessionName,
+      savedAt: Date.now(),
+      cardCount: cards.length,
+      cards,
+      annotations,
+    }
+    const updated = [session, ...savedSessions].slice(0, 20)
+    setSavedSessions(updated)
+    persistSessions(updated)
+    showToast(`"${currentSessionName}" saved`)
+  }, [cards, annotations, currentSessionName, savedSessions, showToast])
+
+  const handleLoadSession = useCallback((session: SavedSession) => {
+    setCards(session.cards)
+    setAnnotations(session.annotations)
+    setCurrentSessionName(session.name)
+    setRemainingDeck(
+      MANDALA_NODES.filter(n => !session.cards.find(c => c.nodeId === n.id)).map(n => n.id)
+    )
+    setExpandedNode(null)
+    setShowSessions(false)
+    showToast(`"${session.name}" loaded`)
+  }, [showToast])
+
+  const handleDeleteSession = useCallback((id: string) => {
+    const updated = savedSessions.filter(s => s.id !== id)
+    setSavedSessions(updated)
+    persistSessions(updated)
+  }, [savedSessions])
 
   const nodeMap = Object.fromEntries(MANDALA_NODES.map(n => [n.id, n]))
 
@@ -178,6 +229,15 @@ export function CardTable() {
         )
       })}
 
+      {/* Session name label */}
+      <div style={{
+        position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)',
+        fontSize: 11, color: 'rgba(255,255,255,0.18)', letterSpacing: '0.1em',
+        textTransform: 'uppercase', pointerEvents: 'none', zIndex: 9999,
+      }}>
+        {currentSessionName}
+      </div>
+
       {/* Controls */}
       <div style={{
         position: 'absolute', bottom: 28, left: '50%',
@@ -191,6 +251,16 @@ export function CardTable() {
           style={{ ...btnStyle, opacity: remainingDeck.length === 0 ? 0.35 : 1 }}
         >
           Draw {remainingDeck.length > 0 ? `(${remainingDeck.length})` : '—'}
+        </button>
+        <button onClick={handleSave} style={btnStyle}>Save</button>
+        <button
+          onClick={() => setShowSessions(true)}
+          style={{
+            ...btnStyle,
+            ...(savedSessions.length > 0 ? { color: '#fff', borderColor: 'rgba(255,255,255,0.22)' } : { opacity: 0.4 }),
+          }}
+        >
+          Sessions {savedSessions.length > 0 ? `(${savedSessions.length})` : ''}
         </button>
       </div>
 
@@ -213,6 +283,16 @@ export function CardTable() {
         <CreateSessionModal
           onStart={handleSessionStart}
           onClose={() => setShowCreateSession(false)}
+        />
+      )}
+
+      {/* Sessions panel */}
+      {showSessions && (
+        <SessionsPanel
+          sessions={savedSessions}
+          onLoad={handleLoadSession}
+          onDelete={handleDeleteSession}
+          onClose={() => setShowSessions(false)}
         />
       )}
 
@@ -286,7 +366,6 @@ function ExpandedView({
           border: '1px solid #2a2a2e',
         }}
       >
-        {/* Image header area */}
         <div style={{
           height: hasImage ? 180 : 'auto',
           position: 'relative',
@@ -325,7 +404,6 @@ function ExpandedView({
               {node.phonetic}
             </div>
           </div>
-          {/* Image controls */}
           <div style={{ position: 'absolute', top: 12, right: 12, display: 'flex', gap: 6 }}>
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
             <button
@@ -345,14 +423,12 @@ function ExpandedView({
           </div>
         </div>
 
-        {/* Definition text */}
         <div style={{ padding: '18px 24px 0', borderBottom: '1px solid #252527' }}>
           <div style={{ fontSize: 15, color: '#bbb', lineHeight: 1.65, paddingBottom: 18 }}>
             {node.definition}
           </div>
         </div>
 
-        {/* Edit fields */}
         <div style={{ padding: '18px 24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
             <label style={{ fontSize: 10, color: '#555', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: 8 }}>
