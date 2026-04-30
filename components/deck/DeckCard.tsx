@@ -176,7 +176,7 @@ export function DeckCard({
           {/* Image background at 10% opacity */}
           {hasImage && (
             <div style={{
-              position: 'absolute', inset: 0, opacity: 0.2,
+              position: 'absolute', inset: 0, opacity: 0.6,
               backgroundImage: `url(${annotation.imageUrl})`,
               backgroundSize: 'cover', backgroundPosition: 'center',
             }} />
