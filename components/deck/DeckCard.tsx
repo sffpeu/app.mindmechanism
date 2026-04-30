@@ -50,7 +50,7 @@ export function DeckCard({
   const rateColor = RATE_COLOR[node.rate] ?? '#a3a3a3'
   const dragRef = useRef<{ startX: number; startY: number; cardX: number; cardY: number; moved: boolean } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const recognitionRef = useRef<{ stop: () => void } | null>(null)
   const [isRecording, setIsRecording] = useState(false)
   const [srSupported] = useState(() =>
     typeof window !== 'undefined' && !!(window.SpeechRecognition || (window as Record<string, unknown>).webkitSpeechRecognition)
@@ -93,13 +93,14 @@ export function DeckCard({
       setIsRecording(false)
       return
     }
-    const SR = (window.SpeechRecognition || (window as Record<string, unknown>).webkitSpeechRecognition) as typeof SpeechRecognition
+    type SRConstructor = new () => { lang: string; continuous: boolean; interimResults: boolean; onresult: ((ev: Event & { results: { [i: number]: { [i: number]: { transcript: string } } } }) => void) | null; onerror: (() => void) | null; onend: (() => void) | null; start: () => void; stop: () => void }
+    const SR = (window.SpeechRecognition || (window as Record<string, unknown>).webkitSpeechRecognition) as SRConstructor | undefined
     if (!SR) return
     const rec = new SR()
     rec.lang = 'en-GB'
     rec.continuous = false
     rec.interimResults = false
-    rec.onresult = (ev: SpeechRecognitionEvent) => {
+    rec.onresult = (ev) => {
       const transcript = ev.results[0][0].transcript
       const current = annotation.userDef
       onAnnotationChange('userDef', current ? `${current} ${transcript}` : transcript)
