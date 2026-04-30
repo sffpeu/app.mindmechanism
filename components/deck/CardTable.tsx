@@ -53,6 +53,7 @@ export function CardTable() {
   const [showCreateSession, setShowCreateSession] = useState(false)
   const [showSessions, setShowSessions] = useState(false)
   const [showHelp, setShowHelp] = useState(false)
+  const [showControls, setShowControls] = useState(false)
   const [savedSessions, setSavedSessions] = useState<SavedSession[]>(loadSessions)
   const [currentSessionName, setCurrentSessionName] = useState('Default Draw')
 
@@ -187,17 +188,17 @@ export function CardTable() {
 
   const nodeMap = Object.fromEntries(MANDALA_NODES.map(n => [n.id, n]))
 
-  const btnStyle: React.CSSProperties = {
-    padding: '10px 22px',
-    background: 'rgba(255,255,255,0.08)',
-    backdropFilter: 'blur(8px)',
-    color: '#ccc',
-    border: '1px solid rgba(255,255,255,0.11)',
-    borderRadius: 24,
-    fontSize: 13,
+  const ctrlBtn: React.CSSProperties = {
+    padding: '7px 14px',
+    background: 'transparent',
+    color: '#aaa',
+    border: 'none',
+    borderRadius: 20,
+    fontSize: 12,
     fontWeight: 600,
     cursor: 'pointer',
     letterSpacing: '0.04em',
+    whiteSpace: 'nowrap',
   }
 
   return (
@@ -255,85 +256,110 @@ export function CardTable() {
         )
       })}
 
-      {/* Heading + background control — bottom-left, clear of the dock */}
-      <div style={{ position: 'absolute', bottom: 86, left: 76, zIndex: 9999 }}>
-        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.22)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 2, pointerEvents: 'none' }}>
+      {/* Heading — bottom-left, clear of dock */}
+      <div style={{
+        position: 'absolute', bottom: 28, left: 76, zIndex: 9999, pointerEvents: 'none',
+      }}>
+        <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 2 }}>
           Mind Mechanism
         </div>
-        <div style={{ fontSize: 20, fontWeight: 800, color: 'rgba(255,255,255,0.78)', letterSpacing: '0.04em', textTransform: 'uppercase', pointerEvents: 'none', marginBottom: 8 }}>
+        <div style={{ fontSize: 18, fontWeight: 800, color: 'rgba(255,255,255,0.7)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
           Focus Deck
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <input ref={bgInputRef} type="file" accept="image/*" onChange={handleBgUpload} style={{ display: 'none' }} />
-          <button
-            onClick={() => bgInputRef.current?.click()}
-            style={{
-              fontSize: 10, color: tableBackground ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.3)',
-              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: 6, padding: '4px 9px', cursor: 'pointer',
-              letterSpacing: '0.06em', textTransform: 'uppercase',
-            }}
-          >
-            {tableBackground ? '🖼 Change background' : '🖼 Set background'}
-          </button>
-          {tableBackground && (
-            <button
-              onClick={() => setTableBackground(null)}
-              style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.25)', fontSize: 13, cursor: 'pointer', padding: '2px 4px' }}
-            >
-              ✕
-            </button>
-          )}
         </div>
       </div>
 
-      {/* Help button */}
+      {/* Help button — top right */}
       <button
         onClick={() => setShowHelp(true)}
         style={{
           position: 'absolute', top: 20, right: 24, zIndex: 9999,
-          width: 34, height: 34, borderRadius: '50%',
-          background: 'rgba(255,255,255,0.07)',
-          border: '1px solid rgba(255,255,255,0.12)',
-          color: 'rgba(255,255,255,0.45)', fontSize: 15, fontWeight: 700,
+          width: 32, height: 32, borderRadius: '50%',
+          background: 'rgba(255,255,255,0.06)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          color: 'rgba(255,255,255,0.35)', fontSize: 14, fontWeight: 700,
           cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}
       >
         ?
       </button>
 
-      {/* Session name label */}
+      {/* Session name — top centre */}
       <div style={{
         position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)',
-        fontSize: 11, color: 'rgba(255,255,255,0.18)', letterSpacing: '0.1em',
+        fontSize: 10, color: 'rgba(255,255,255,0.15)', letterSpacing: '0.12em',
         textTransform: 'uppercase', pointerEvents: 'none', zIndex: 9999,
       }}>
         {currentSessionName}
       </div>
 
-      {/* Controls */}
+      {/* Controls toggle + expandable strip — bottom centre */}
+      <input ref={bgInputRef} type="file" accept="image/*" onChange={handleBgUpload} style={{ display: 'none' }} />
       <div style={{
-        position: 'absolute', bottom: 28, left: '50%',
-        transform: 'translateX(-50%)', display: 'flex', gap: 10, zIndex: 9999,
+        position: 'absolute', bottom: 24, left: '50%',
+        transform: 'translateX(-50%)',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+        zIndex: 9999,
       }}>
-        <button onClick={() => setShowCreateSession(true)} style={btnStyle}>New Session</button>
-        <button onClick={handleScatter} style={btnStyle}>Scatter</button>
+        {/* Expanded strip */}
+        {showControls && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 2,
+            background: 'rgba(14,14,16,0.88)', backdropFilter: 'blur(18px)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: 32, padding: '4px 6px',
+          }}>
+            <button onClick={() => { setShowCreateSession(true); setShowControls(false) }} style={ctrlBtn}>New Session</button>
+            <Divider />
+            <button onClick={handleScatter} style={ctrlBtn}>Scatter</button>
+            <button
+              onClick={handleDraw}
+              disabled={remainingDeck.length === 0}
+              style={{ ...ctrlBtn, opacity: remainingDeck.length === 0 ? 0.3 : 1 }}
+            >
+              Draw{remainingDeck.length > 0 ? ` (${remainingDeck.length})` : ''}
+            </button>
+            <Divider />
+            <button onClick={handleSave} style={ctrlBtn}>Save</button>
+            <button
+              onClick={() => { setShowSessions(true); setShowControls(false) }}
+              style={{ ...ctrlBtn, color: savedSessions.length > 0 ? '#ccc' : '#555' }}
+            >
+              Sessions{savedSessions.length > 0 ? ` (${savedSessions.length})` : ''}
+            </button>
+            <Divider />
+            <button
+              onClick={() => bgInputRef.current?.click()}
+              style={ctrlBtn}
+              title={tableBackground ? 'Change background' : 'Set background'}
+            >
+              {tableBackground ? '🖼 ✓' : '🖼'}
+            </button>
+            {tableBackground && (
+              <button
+                onClick={() => setTableBackground(null)}
+                style={{ ...ctrlBtn, color: 'rgba(255,255,255,0.25)', fontSize: 11 }}
+                title="Remove background"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Toggle button */}
         <button
-          onClick={handleDraw}
-          disabled={remainingDeck.length === 0}
-          style={{ ...btnStyle, opacity: remainingDeck.length === 0 ? 0.35 : 1 }}
-        >
-          Draw {remainingDeck.length > 0 ? `(${remainingDeck.length})` : '—'}
-        </button>
-        <button onClick={handleSave} style={btnStyle}>Save</button>
-        <button
-          onClick={() => setShowSessions(true)}
+          onClick={() => setShowControls(v => !v)}
           style={{
-            ...btnStyle,
-            ...(savedSessions.length > 0 ? { color: '#fff', borderColor: 'rgba(255,255,255,0.22)' } : { opacity: 0.4 }),
+            width: 36, height: 36, borderRadius: '50%',
+            background: showControls ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.06)',
+            border: `1px solid ${showControls ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.09)'}`,
+            color: showControls ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.3)',
+            fontSize: showControls ? 18 : 16, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'all 0.18s',
           }}
         >
-          Sessions {savedSessions.length > 0 ? `(${savedSessions.length})` : ''}
+          {showControls ? '×' : '⋯'}
         </button>
       </div>
 
@@ -383,6 +409,10 @@ export function CardTable() {
       )}
     </div>
   )
+}
+
+function Divider() {
+  return <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.08)', margin: '0 4px', flexShrink: 0 }} />
 }
 
 function HelpPanel({ onClose }: { onClose: () => void }) {
