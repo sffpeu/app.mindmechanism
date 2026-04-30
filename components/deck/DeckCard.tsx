@@ -170,68 +170,41 @@ export function DeckCard({
           backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' as never,
           borderRadius: 12, overflow: 'hidden',
           boxShadow: '0 6px 28px rgba(0,0,0,0.55), 0 1px 4px rgba(0,0,0,0.3)',
-          background: hasImage ? '#000' : '#fafaf9',
+          background: '#fafaf9',
           display: 'flex', flexDirection: 'column',
         }}>
-          {/* Image background */}
+          {/* Image background at 10% opacity */}
           {hasImage && (
             <div style={{
-              position: 'absolute', inset: 0,
+              position: 'absolute', inset: 0, opacity: 0.1,
               backgroundImage: `url(${annotation.imageUrl})`,
               backgroundSize: 'cover', backgroundPosition: 'center',
             }} />
           )}
-          {/* Gradient overlay */}
-          {hasImage && (
-            <div style={{
-              position: 'absolute', inset: 0,
-              background: 'linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.0) 35%, rgba(0,0,0,0.85) 100%)',
-            }} />
-          )}
 
-          {!hasImage && <div style={{ height: 6, background: wheelColor, flexShrink: 0 }} />}
+          <div style={{ height: 6, background: wheelColor, flexShrink: 0 }} />
 
           <div style={{
             position: 'relative', flex: 1,
-            padding: hasImage ? '10px 14px 12px' : '12px 15px 12px',
+            padding: '12px 15px 12px',
             display: 'flex', flexDirection: 'column',
-            justifyContent: hasImage ? 'flex-end' : 'space-between',
           }}>
-            {/* Top row: wheel label + speaker (no-image layout) */}
-            {!hasImage && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                <div style={{ fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: wheelColor, fontWeight: 600 }}>
-                  Wheel {node.wheel} · {node.wheelName}
-                </div>
-                <button onClick={handleSpeak} onPointerDown={stopProp} title="Speak term"
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#bbb', fontSize: 13, padding: '2px 3px' }}>
-                  🔊
-                </button>
-              </div>
-            )}
-
-            {/* Image layout: speaker top-right absolute */}
-            {hasImage && (
-              <div style={{ position: 'absolute', top: 10, right: 12, zIndex: 1 }}>
-                <button onClick={handleSpeak} onPointerDown={stopProp} title="Speak term"
-                  style={{ background: 'rgba(0,0,0,0.35)', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.8)', fontSize: 13, borderRadius: 4, padding: '3px 6px' }}>
-                  🔊
-                </button>
-              </div>
-            )}
-
-            {/* Wheel label for image mode */}
-            {hasImage && (
-              <div style={{ fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', fontWeight: 600, marginBottom: 4 }}>
+            {/* Top row: wheel label + speaker */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <div style={{ fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: wheelColor, fontWeight: 600 }}>
                 Wheel {node.wheel} · {node.wheelName}
               </div>
-            )}
+              <button onClick={handleSpeak} onPointerDown={stopProp} title="Speak term"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#bbb', fontSize: 13, padding: '2px 3px' }}>
+                🔊
+              </button>
+            </div>
 
             {/* Term */}
             <div style={{
               fontSize: 20, fontWeight: 800, letterSpacing: '0.02em',
               textTransform: 'uppercase', lineHeight: 1.1,
-              color: hasImage ? '#fff' : '#111', marginBottom: 4,
+              color: '#111', marginBottom: 4,
             }}>
               {node.term}
             </div>
@@ -239,20 +212,18 @@ export function DeckCard({
             {/* Phonetic */}
             <div style={{
               fontSize: 10, fontStyle: 'italic',
-              color: hasImage ? 'rgba(255,255,255,0.62)' : '#888',
-              fontFamily: 'Georgia, serif', marginBottom: hasImage ? 6 : 4,
+              color: '#888', fontFamily: 'Georgia, serif', marginBottom: 4,
             }}>
               {node.phonetic}
             </div>
 
-            {!hasImage && <div style={{ height: 1, background: '#e8e8e8', marginBottom: 6 }} />}
+            <div style={{ height: 1, background: '#e8e8e8', marginBottom: 6 }} />
 
             {/* Definition */}
             <div style={{
               fontSize: 11, lineHeight: 1.55,
-              flex: annotation.userDef ? 0 : hasImage ? 0 : 1,
-              color: hasImage ? 'rgba(255,255,255,0.85)' : '#444',
-              marginBottom: 6,
+              flex: annotation.userDef ? 0 : 1,
+              color: '#444', marginBottom: 6,
             }}>
               {node.definition}
             </div>
@@ -260,37 +231,29 @@ export function DeckCard({
             {/* User definition */}
             {annotation.userDef ? (
               <div style={{
-                fontSize: 11, lineHeight: 1.5,
-                flex: hasImage ? 0 : 1,
-                color: hasImage ? 'rgba(255,255,255,0.7)' : '#777',
-                borderTop: hasImage ? '1px solid rgba(255,255,255,0.15)' : '1px solid #ebebeb',
-                paddingTop: 5,
-                marginBottom: hasImage ? 8 : 0,
-                fontStyle: 'italic',
+                fontSize: 11, lineHeight: 1.5, flex: 1,
+                color: '#777', borderTop: '1px solid #ebebeb',
+                paddingTop: 5, fontStyle: 'italic',
               }}>
                 {annotation.userDef}
               </div>
-            ) : (
-              <div style={{ flex: hasImage ? 0 : 1, marginBottom: hasImage ? 8 : 0 }} />
-            )}
+            ) : null}
 
             {/* Footer: grade + camera + rate */}
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              marginTop: 'auto',
-              paddingTop: hasImage ? 0 : 6,
-              borderTop: hasImage ? 'none' : '1px solid #f0f0f0',
+              marginTop: 'auto', paddingTop: 6, borderTop: '1px solid #f0f0f0',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ fontSize: 9, color: hasImage ? 'rgba(255,255,255,0.45)' : '#ccc', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Grade</span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: hasImage ? 'rgba(255,255,255,0.75)' : '#666' }}>{node.grade}</span>
+                <span style={{ fontSize: 9, color: '#ccc', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Grade</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#666' }}>{node.grade}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <button
                   onPointerDown={handleImageClick}
                   title="Set card image"
                   style={{
-                    background: hasImage ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.05)',
+                    background: 'rgba(0,0,0,0.05)',
                     border: 'none', cursor: 'pointer', padding: '2px 5px',
                     borderRadius: 4, fontSize: 11, lineHeight: 1,
                   }}
