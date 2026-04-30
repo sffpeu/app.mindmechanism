@@ -52,9 +52,11 @@ export function DeckCard({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const recognitionRef = useRef<{ stop: () => void } | null>(null)
   const [isRecording, setIsRecording] = useState(false)
-  const [srSupported] = useState(() =>
-    typeof window !== 'undefined' && !!(window.SpeechRecognition || (window as Record<string, unknown>).webkitSpeechRecognition)
-  )
+  const [srSupported] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const w = window as Record<string, unknown>
+    return !!(w.SpeechRecognition || w.webkitSpeechRecognition)
+  })
 
   const hasImage = !!annotation.imageUrl
 
@@ -94,7 +96,8 @@ export function DeckCard({
       return
     }
     type SRConstructor = new () => { lang: string; continuous: boolean; interimResults: boolean; onresult: ((ev: Event & { results: { [i: number]: { [i: number]: { transcript: string } } } }) => void) | null; onerror: (() => void) | null; onend: (() => void) | null; start: () => void; stop: () => void }
-    const SR = (window.SpeechRecognition || (window as Record<string, unknown>).webkitSpeechRecognition) as SRConstructor | undefined
+    const w = window as Record<string, unknown>
+    const SR = (w.SpeechRecognition || w.webkitSpeechRecognition) as SRConstructor | undefined
     if (!SR) return
     const rec = new SR()
     rec.lang = 'en-GB'
