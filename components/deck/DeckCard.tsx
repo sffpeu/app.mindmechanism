@@ -250,12 +250,29 @@ export function DeckCard({
             {/* Definition */}
             <div style={{
               fontSize: 11, lineHeight: 1.55,
-              flex: hasImage ? 0 : 1,
+              flex: annotation.userDef ? 0 : hasImage ? 0 : 1,
               color: hasImage ? 'rgba(255,255,255,0.85)' : '#444',
-              marginBottom: hasImage ? 8 : 0,
+              marginBottom: 6,
             }}>
               {node.definition}
             </div>
+
+            {/* User definition */}
+            {annotation.userDef ? (
+              <div style={{
+                fontSize: 11, lineHeight: 1.5,
+                flex: hasImage ? 0 : 1,
+                color: hasImage ? 'rgba(255,255,255,0.7)' : '#777',
+                borderTop: hasImage ? '1px solid rgba(255,255,255,0.15)' : '1px solid #ebebeb',
+                paddingTop: 5,
+                marginBottom: hasImage ? 8 : 0,
+                fontStyle: 'italic',
+              }}>
+                {annotation.userDef}
+              </div>
+            ) : (
+              <div style={{ flex: hasImage ? 0 : 1, marginBottom: hasImage ? 8 : 0 }} />
+            )}
 
             {/* Footer: grade + camera + rate */}
             <div style={{
