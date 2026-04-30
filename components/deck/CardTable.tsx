@@ -43,9 +43,11 @@ const EMPTY_ANNOTATION: Annotation = { userDef: '', notes: '', imageUrl: null }
 
 export function CardTable() {
   const tableRef = useRef<HTMLDivElement>(null)
+  const bgInputRef = useRef<HTMLInputElement>(null)
   const [cards, setCards] = useState<CardState[]>([])
   const [annotations, setAnnotations] = useState<Record<string, Annotation>>({})
   const [remainingDeck, setRemainingDeck] = useState<string[]>([])
+  const [tableBackground, setTableBackground] = useState<string | null>(null)
   const [expandedNode, setExpandedNode] = useState<MandalaNode | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [showCreateSession, setShowCreateSession] = useState(false)
@@ -126,6 +128,15 @@ export function CardTable() {
     setRemainingDeck(prev => prev.slice(1))
   }, [remainingDeck])
 
+  const handleBgUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => setTableBackground(ev.target?.result as string)
+    reader.readAsDataURL(file)
+    e.target.value = ''
+  }, [])
+
   const handleSessionStart = useCallback((nodeIds: string[], sessionName: string) => {
     const el = tableRef.current
     if (!el) return
@@ -147,6 +158,7 @@ export function CardTable() {
       cardCount: cards.length,
       cards,
       annotations,
+      tableBackground,
     }
     const updated = [session, ...savedSessions].slice(0, 20)
     setSavedSessions(updated)
@@ -157,6 +169,7 @@ export function CardTable() {
   const handleLoadSession = useCallback((session: SavedSession) => {
     setCards(session.cards)
     setAnnotations(session.annotations)
+    setTableBackground(session.tableBackground ?? null)
     setCurrentSessionName(session.name)
     setRemainingDeck(
       MANDALA_NODES.filter(n => !session.cards.find(c => c.nodeId === n.id)).map(n => n.id)
@@ -194,13 +207,27 @@ export function CardTable() {
         position: 'relative',
         width: '100%',
         height: '100%',
-        background: 'radial-gradient(ellipse at 40% 40%, #1e1e20 0%, #0d0d0f 100%)',
+        background: tableBackground ? '#000' : 'radial-gradient(ellipse at 40% 40%, #1e1e20 0%, #0d0d0f 100%)',
         overflow: 'hidden',
       }}
     >
+      {/* Table background image */}
+      {tableBackground && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 0,
+          backgroundImage: `url(${tableBackground})`,
+          backgroundSize: 'cover', backgroundPosition: 'center',
+        }} />
+      )}
+      {/* Dark overlay for readability */}
+      <div style={{
+        position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
+        background: tableBackground ? 'rgba(0,0,0,0.58)' : 'none',
+      }} />
+
       {/* Subtle grid texture */}
       <div style={{
-        position: 'absolute', inset: 0, opacity: 0.022, pointerEvents: 'none',
+        position: 'absolute', inset: 0, opacity: 0.022, pointerEvents: 'none', zIndex: 0,
         backgroundImage: 'linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)',
         backgroundSize: '40px 40px',
       }} />
@@ -228,15 +255,35 @@ export function CardTable() {
         )
       })}
 
-      {/* Heading */}
-      <div style={{
-        position: 'absolute', top: 20, left: 24, zIndex: 9999, pointerEvents: 'none',
-      }}>
-        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.22)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 2 }}>
+      {/* Heading + background control — bottom-left, clear of the dock */}
+      <div style={{ position: 'absolute', bottom: 86, left: 76, zIndex: 9999 }}>
+        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.22)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 2, pointerEvents: 'none' }}>
           Mind Mechanism
         </div>
-        <div style={{ fontSize: 22, fontWeight: 800, color: 'rgba(255,255,255,0.82)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+        <div style={{ fontSize: 20, fontWeight: 800, color: 'rgba(255,255,255,0.78)', letterSpacing: '0.04em', textTransform: 'uppercase', pointerEvents: 'none', marginBottom: 8 }}>
           Focus Deck
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <input ref={bgInputRef} type="file" accept="image/*" onChange={handleBgUpload} style={{ display: 'none' }} />
+          <button
+            onClick={() => bgInputRef.current?.click()}
+            style={{
+              fontSize: 10, color: tableBackground ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.3)',
+              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: 6, padding: '4px 9px', cursor: 'pointer',
+              letterSpacing: '0.06em', textTransform: 'uppercase',
+            }}
+          >
+            {tableBackground ? '🖼 Change background' : '🖼 Set background'}
+          </button>
+          {tableBackground && (
+            <button
+              onClick={() => setTableBackground(null)}
+              style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.25)', fontSize: 13, cursor: 'pointer', padding: '2px 4px' }}
+            >
+              ✕
+            </button>
+          )}
         </div>
       </div>
 
