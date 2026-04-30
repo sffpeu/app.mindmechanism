@@ -198,18 +198,19 @@ export function DeckCard({
               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 {hasImage && (
                   <button
-                    onClick={e => { e.stopPropagation(); setTextLight(v => !v) }}
-                    onPointerDown={stopProp}
+                    onPointerDown={e => { e.stopPropagation(); setTextLight(v => !v) }}
                     title={textLight ? 'Switch to dark text' : 'Switch to light text'}
                     style={{
-                      background: textLight ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
-                      border: 'none', borderRadius: 4, padding: '2px 5px',
-                      cursor: 'pointer', fontSize: 10, fontWeight: 700,
-                      color: tx('#888', 'rgba(255,255,255,0.75)'),
-                      letterSpacing: '0.02em',
+                      width: 22, height: 22, borderRadius: '50%',
+                      background: textLight ? '#fff' : '#111',
+                      border: `2px solid ${textLight ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.3)'}`,
+                      cursor: 'pointer', fontSize: 11, fontWeight: 900,
+                      color: textLight ? '#111' : '#fff',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      lineHeight: 1, padding: 0,
                     }}
                   >
-                    {textLight ? 'A' : 'A'}
+                    A
                   </button>
                 )}
                 <button onClick={handleSpeak} onPointerDown={stopProp} title="Speak term"
