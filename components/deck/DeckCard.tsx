@@ -52,6 +52,7 @@ export function DeckCard({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const recognitionRef = useRef<{ stop: () => void } | null>(null)
   const [isRecording, setIsRecording] = useState(false)
+  const [textLight, setTextLight] = useState(false)
   const [srSupported] = useState(() => {
     if (typeof window === 'undefined') return false
     const w = window as unknown as Record<string, unknown>
@@ -59,6 +60,7 @@ export function DeckCard({
   })
 
   const hasImage = !!annotation.imageUrl
+  const tx = (dark: string, light: string) => (hasImage && textLight) ? light : dark
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (e.button !== 0) return
@@ -173,38 +175,55 @@ export function DeckCard({
           background: '#fafaf9',
           display: 'flex', flexDirection: 'column',
         }}>
-          {/* Image background at 10% opacity */}
           {hasImage && (
             <div style={{
-              position: 'absolute', inset: 0, opacity: 0.6,
+              position: 'absolute', inset: 0,
               backgroundImage: `url(${annotation.imageUrl})`,
               backgroundSize: 'cover', backgroundPosition: 'center',
             }} />
           )}
 
-          <div style={{ height: 6, background: wheelColor, flexShrink: 0 }} />
+          <div style={{ height: 6, background: wheelColor, flexShrink: 0, position: 'relative' }} />
 
           <div style={{
             position: 'relative', flex: 1,
             padding: '12px 15px 12px',
             display: 'flex', flexDirection: 'column',
           }}>
-            {/* Top row: wheel label + speaker */}
+            {/* Top row: wheel label + controls */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-              <div style={{ fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: wheelColor, fontWeight: 600 }}>
+              <div style={{ fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: tx(wheelColor, 'rgba(255,255,255,0.85)'), fontWeight: 600 }}>
                 Wheel {node.wheel} · {node.wheelName}
               </div>
-              <button onClick={handleSpeak} onPointerDown={stopProp} title="Speak term"
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#bbb', fontSize: 13, padding: '2px 3px' }}>
-                🔊
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                {hasImage && (
+                  <button
+                    onClick={e => { e.stopPropagation(); setTextLight(v => !v) }}
+                    onPointerDown={stopProp}
+                    title={textLight ? 'Switch to dark text' : 'Switch to light text'}
+                    style={{
+                      background: textLight ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
+                      border: 'none', borderRadius: 4, padding: '2px 5px',
+                      cursor: 'pointer', fontSize: 10, fontWeight: 700,
+                      color: tx('#888', 'rgba(255,255,255,0.75)'),
+                      letterSpacing: '0.02em',
+                    }}
+                  >
+                    {textLight ? 'A' : 'A'}
+                  </button>
+                )}
+                <button onClick={handleSpeak} onPointerDown={stopProp} title="Speak term"
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: tx('#bbb', 'rgba(255,255,255,0.7)'), fontSize: 13, padding: '2px 3px' }}>
+                  🔊
+                </button>
+              </div>
             </div>
 
             {/* Term */}
             <div style={{
               fontSize: 20, fontWeight: 800, letterSpacing: '0.02em',
               textTransform: 'uppercase', lineHeight: 1.1,
-              color: '#111', marginBottom: 4,
+              color: tx('#111', '#fff'), marginBottom: 4,
             }}>
               {node.term}
             </div>
@@ -212,18 +231,19 @@ export function DeckCard({
             {/* Phonetic */}
             <div style={{
               fontSize: 10, fontStyle: 'italic',
-              color: '#888', fontFamily: 'Georgia, serif', marginBottom: 4,
+              color: tx('#888', 'rgba(255,255,255,0.65)'),
+              fontFamily: 'Georgia, serif', marginBottom: 4,
             }}>
               {node.phonetic}
             </div>
 
-            <div style={{ height: 1, background: '#e8e8e8', marginBottom: 6 }} />
+            <div style={{ height: 1, background: tx('#e8e8e8', 'rgba(255,255,255,0.2)'), marginBottom: 6 }} />
 
             {/* Definition */}
             <div style={{
               fontSize: 11, lineHeight: 1.55,
               flex: annotation.userDef ? 0 : 1,
-              color: '#444', marginBottom: 6,
+              color: tx('#444', 'rgba(255,255,255,0.88)'), marginBottom: 6,
             }}>
               {node.definition}
             </div>
@@ -232,7 +252,8 @@ export function DeckCard({
             {annotation.userDef ? (
               <div style={{
                 fontSize: 11, lineHeight: 1.5, flex: 1,
-                color: '#777', borderTop: '1px solid #ebebeb',
+                color: tx('#777', 'rgba(255,255,255,0.62)'),
+                borderTop: `1px solid ${tx('#ebebeb', 'rgba(255,255,255,0.18)')}`,
                 paddingTop: 5, fontStyle: 'italic',
               }}>
                 {annotation.userDef}
@@ -242,18 +263,19 @@ export function DeckCard({
             {/* Footer: grade + camera + rate */}
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              marginTop: 'auto', paddingTop: 6, borderTop: '1px solid #f0f0f0',
+              marginTop: 'auto', paddingTop: 6,
+              borderTop: `1px solid ${tx('#f0f0f0', 'rgba(255,255,255,0.15)')}`,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ fontSize: 9, color: '#ccc', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Grade</span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: '#666' }}>{node.grade}</span>
+                <span style={{ fontSize: 9, color: tx('#ccc', 'rgba(255,255,255,0.4)'), textTransform: 'uppercase', letterSpacing: '0.08em' }}>Grade</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: tx('#666', 'rgba(255,255,255,0.8)') }}>{node.grade}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <button
                   onPointerDown={handleImageClick}
                   title="Set card image"
                   style={{
-                    background: 'rgba(0,0,0,0.05)',
+                    background: tx('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.15)'),
                     border: 'none', cursor: 'pointer', padding: '2px 5px',
                     borderRadius: 4, fontSize: 11, lineHeight: 1,
                   }}
