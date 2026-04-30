@@ -9,6 +9,7 @@ import { AboutMechanism } from '@/components/info/AboutMechanism'
 import { AboutDeveloper } from '@/components/info/AboutDeveloper'
 import { AboutESL } from '@/components/info/AboutESL'
 import { GettingStarted } from '@/components/info/GettingStarted'
+import { FAQ } from '@/components/info/FAQ'
 import { PrivacyData } from '@/components/info/PrivacyData'
 import { LegalContact } from '@/components/info/LegalContact'
 
@@ -65,108 +66,19 @@ type TabId = (typeof TABS)[number]['id']
 // ─── Tab content ──────────────────────────────────────────────────────────────
 
 function TabContent({ id, clockHex }: { id: TabId; clockHex: string }) {
-  const tab = TABS.find((t) => t.id === id)!
-  const Icon = tab.icon
-
   const content: Record<TabId, React.ReactNode> = {
     mechanism: <AboutMechanism clockHex={clockHex} />,
     developer: <AboutDeveloper clockHex={clockHex} />,
     esl:       <AboutESL clockHex={clockHex} />,
     guide:     <GettingStarted clockHex={clockHex} />,
-    faq: (
-      <Placeholder
-        icon={Icon}
-        clockHex={clockHex}
-        title="Frequently Asked Questions"
-        lines={[
-          'Answers to the most common questions about the practice and the application.',
-          'Content for this section will be developed and added in a future session.',
-          'Topics will cover technical questions, practice guidance, and account management.',
-        ]}
-      />
-    ),
-    privacy: <PrivacyData clockHex={clockHex} />,
-    legal:   <LegalContact clockHex={clockHex} />,
+    faq:       <FAQ clockHex={clockHex} />,
+    privacy:   <PrivacyData clockHex={clockHex} />,
+    legal:     <LegalContact clockHex={clockHex} />,
   }
 
   return <>{content[id]}</>
 }
 
-function Placeholder({
-  icon: Icon,
-  clockHex,
-  title,
-  lines,
-  contact = false,
-}: {
-  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>
-  clockHex: string
-  title: string
-  lines: string[]
-  contact?: boolean
-}) {
-  return (
-    <div className="max-w-2xl mx-auto py-12 px-4">
-      {/* Icon badge */}
-      <div
-        className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-8"
-        style={{ backgroundColor: `${clockHex}18`, border: `1px solid ${clockHex}30` }}
-      >
-        <Icon className="w-7 h-7" style={{ color: clockHex }} />
-      </div>
-
-      <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 tracking-tight">
-        {title}
-      </h2>
-
-      <div className="space-y-4">
-        {lines.map((line, i) => (
-          <p
-            key={i}
-            className={cn(
-              'text-sm leading-relaxed',
-              i === 0
-                ? 'text-gray-700 dark:text-gray-300'
-                : 'text-gray-400 dark:text-gray-600 italic'
-            )}
-          >
-            {line}
-          </p>
-        ))}
-      </div>
-
-      {/* Placeholder rule */}
-      <div
-        className="mt-10 pt-8 border-t"
-        style={{ borderColor: `${clockHex}20` }}
-      >
-        <p
-          className="text-xs font-medium tracking-widest uppercase"
-          style={{ color: `${clockHex}80` }}
-        >
-          Content pending — to be populated in a future session
-        </p>
-      </div>
-
-      {/* Contact stub */}
-      {contact && (
-        <div className="mt-8 p-4 rounded-xl border border-black/5 dark:border-white/10 bg-gray-50 dark:bg-white/5">
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Contact</p>
-          <a
-            href="mailto:future@theoneleggedpoet.com"
-            className="text-sm font-medium hover:underline"
-            style={{ color: clockHex }}
-          >
-            future@theoneleggedpoet.com
-          </a>
-          <p className="text-xs text-gray-400 dark:text-gray-600 mt-1">
-            theoneleggedpoet.com
-          </p>
-        </div>
-      )}
-    </div>
-  )
-}
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
