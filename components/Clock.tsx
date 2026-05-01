@@ -17,6 +17,7 @@ import { Timestamp } from 'firebase/firestore';
 import { useSoundEffects } from '@/lib/sounds';
 import { SatelliteNameLabel } from '@/components/SatelliteNameLabel';
 import { CurvedCircleWordLabel } from '@/components/CurvedCircleWordLabel';
+import { MandalaCeremony } from '@/components/MandalaCeremony';
 
 export { clockSatellites, defaultSatelliteConfigs };
 
@@ -450,10 +451,14 @@ export default function Clock({
 
   // Add new state for auto-save
   const [lastAutoSave, setLastAutoSave] = useState<number>(Date.now());
+  const [showCeremony, setShowCeremony] = useState(false);
 
   const { playClick } = useSoundEffects();
 
   const handleSessionComplete = async () => {
+    // Fire the completion ceremony regardless of whether a session is logged
+    setShowCeremony(true);
+
     if (!sessionId || !user?.uid) return;
     try {
       const lobby = await getSessionLobbySnapshot(user.uid);
@@ -1132,6 +1137,14 @@ export default function Clock({
               style={{ zIndex: 150 }}
             />
           ) : null}
+
+          {/* Completion ceremony — fires when session timer reaches zero */}
+          {showCeremony && (
+            <MandalaCeremony
+              clockHex={dotColors[id % dotColors.length].replace('bg-[', '').replace(']', '')}
+              onComplete={() => setShowCeremony(false)}
+            />
+          )}
         </div>
 
         {/* Focus nodes layer — above other layers so every node is clickable */}
