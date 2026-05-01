@@ -35,8 +35,40 @@ function loadSessions(): SavedSession[] {
   try { return JSON.parse(localStorage.getItem(SESSIONS_KEY) ?? '[]') } catch { return [] }
 }
 
-function persistSessions(sessions: SavedSession[]) {
-  localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions))
+function persistSessions(sessions: SavedSession[]): boolean {
+  try {
+    localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions))
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Compress a base64 data URL to JPEG at max 900×900px and 72% quality.
+ * Keeps localStorage well within its ~5 MB quota even for large photos.
+ */
+async function compressImage(dataUrl: string): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => {
+      const MAX = 900
+      let { width, height } = img
+      if (width > MAX || height > MAX) {
+        if (width > height) { height = Math.round((height * MAX) / width); width = MAX }
+        else { width = Math.round((width * MAX) / height); height = MAX }
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')
+      if (!ctx) { resolve(dataUrl); return }
+      ctx.drawImage(img, 0, 0, width, height)
+      resolve(canvas.toDataURL('image/jpeg', 0.72))
+    }
+    img.onerror = () => resolve(dataUrl)
+    img.src = dataUrl
+  })
 }
 
 const EMPTY_ANNOTATION: Annotation = { userDef: '', notes: '', imageUrl: null }
@@ -54,6 +86,7 @@ export function CardTable() {
   const [showSessions, setShowSessions] = useState(false)
   const [showHelp, setShowHelp] = useState(false)
   const [showControls, setShowControls] = useState(false)
+  const [showSaveModal, setShowSaveModal] = useState(false)
   const [savedSessions, setSavedSessions] = useState<SavedSession[]>(loadSessions)
   const [currentSessionName, setCurrentSessionName] = useState('Default Draw')
 
@@ -151,21 +184,41 @@ export function CardTable() {
     showToast(`Session started · ${sessionName}`)
   }, [showToast])
 
-  const handleSave = useCallback(() => {
+  const handleConfirmSave = useCallback(async (name: string) => {
+    setShowSaveModal(false)
+    setCurrentSessionName(name)
+
+    // Compress all card images before persisting to avoid hitting the
+    // ~5 MB localStorage quota (raw base64 photos can be several MB each).
+    const compressedAnnotations: Record<string, Annotation> = {}
+    for (const [nodeId, ann] of Object.entries(annotations)) {
+      if (ann.imageUrl && ann.imageUrl.startsWith('data:')) {
+        compressedAnnotations[nodeId] = { ...ann, imageUrl: await compressImage(ann.imageUrl) }
+      } else {
+        compressedAnnotations[nodeId] = ann
+      }
+    }
+
+    // Compress the table background too
+    let compressedBg = tableBackground
+    if (compressedBg && compressedBg.startsWith('data:')) {
+      compressedBg = await compressImage(compressedBg)
+    }
+
     const session: SavedSession = {
       id: Date.now().toString(),
-      name: currentSessionName,
+      name,
       savedAt: Date.now(),
       cardCount: cards.length,
       cards,
-      annotations,
-      tableBackground,
+      annotations: compressedAnnotations,
+      tableBackground: compressedBg,
     }
     const updated = [session, ...savedSessions].slice(0, 20)
     setSavedSessions(updated)
-    persistSessions(updated)
-    showToast(`"${currentSessionName}" saved`)
-  }, [cards, annotations, currentSessionName, savedSessions, showToast])
+    const ok = persistSessions(updated)
+    showToast(ok ? `"${name}" saved` : 'Save failed — storage full. Remove old sessions and try again.')
+  }, [cards, annotations, tableBackground, savedSessions, showToast])
 
   const handleLoadSession = useCallback((session: SavedSession) => {
     setCards(session.cards)
@@ -260,10 +313,10 @@ export function CardTable() {
       <div style={{
         position: 'absolute', bottom: 28, left: 76, zIndex: 9999, pointerEvents: 'none',
       }}>
-        <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 2 }}>
+        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 3, fontWeight: 600 }}>
           Mind Mechanism
         </div>
-        <div style={{ fontSize: 18, fontWeight: 800, color: 'rgba(255,255,255,0.7)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+        <div style={{ fontSize: 28, fontWeight: 800, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
           Focus Deck
         </div>
       </div>
@@ -319,7 +372,7 @@ export function CardTable() {
               Draw{remainingDeck.length > 0 ? ` (${remainingDeck.length})` : ''}
             </button>
             <Divider />
-            <button onClick={handleSave} style={ctrlBtn}>Save</button>
+            <button onClick={() => { setShowSaveModal(true); setShowControls(false) }} style={ctrlBtn}>Save</button>
             <button
               onClick={() => { setShowSessions(true); setShowControls(false) }}
               style={{ ...ctrlBtn, color: savedSessions.length > 0 ? '#ccc' : '#555' }}
@@ -385,6 +438,15 @@ export function CardTable() {
         />
       )}
 
+      {/* Save modal — name the session before committing */}
+      {showSaveModal && (
+        <SaveModal
+          defaultName={currentSessionName}
+          onSave={handleConfirmSave}
+          onClose={() => setShowSaveModal(false)}
+        />
+      )}
+
       {/* Help panel */}
       {showHelp && <HelpPanel onClose={() => setShowHelp(false)} />}
 
@@ -413,6 +475,98 @@ export function CardTable() {
 
 function Divider() {
   return <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.08)', margin: '0 4px', flexShrink: 0 }} />
+}
+
+function SaveModal({ defaultName, onSave, onClose }: {
+  defaultName: string
+  onSave: (name: string) => void
+  onClose: () => void
+}) {
+  const [name, setName] = useState(defaultName)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    inputRef.current?.focus()
+    inputRef.current?.select()
+  }, [])
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const trimmed = name.trim()
+    if (!trimmed) return
+    onSave(trimmed)
+  }
+
+  return (
+    <div
+      style={{
+        position: 'absolute', inset: 0, zIndex: 20000,
+        background: 'rgba(0,0,0,0.68)', backdropFilter: 'blur(6px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}
+      onClick={onClose}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          width: 360, background: '#1c1c1e',
+          borderRadius: 16, border: '1px solid #2a2a2e',
+          boxShadow: '0 24px 64px rgba(0,0,0,0.7)',
+          overflow: 'hidden',
+        }}
+      >
+        <div style={{ padding: '22px 24px 16px', borderBottom: '1px solid #252527' }}>
+          <div style={{ fontSize: 10, color: '#555', textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: 5 }}>
+            Focus Deck
+          </div>
+          <div style={{ fontSize: 17, fontWeight: 800, color: '#eee' }}>Name this session</div>
+        </div>
+        <form onSubmit={handleSubmit} style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <input
+            ref={inputRef}
+            type="text"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="Session name"
+            maxLength={60}
+            style={{
+              width: '100%', background: '#252528',
+              border: '1px solid #363638', borderRadius: 8,
+              color: '#eee', fontSize: 15, padding: '10px 14px',
+              outline: 'none', fontFamily: 'inherit',
+              boxSizing: 'border-box',
+            }}
+          />
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{
+                padding: '9px 20px', background: 'transparent',
+                border: '1px solid #363638', borderRadius: 8,
+                color: '#666', fontSize: 13, cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={!name.trim()}
+              style={{
+                padding: '9px 24px', background: name.trim() ? '#fff' : '#333',
+                border: 'none', borderRadius: 8,
+                color: name.trim() ? '#111' : '#555',
+                fontSize: 13, fontWeight: 700, cursor: name.trim() ? 'pointer' : 'not-allowed',
+                transition: 'all 0.15s',
+              }}
+            >
+              Save
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
 }
 
 function HelpPanel({ onClose }: { onClose: () => void }) {
