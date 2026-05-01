@@ -55,6 +55,7 @@ export function GettingStarted({ clockHex }: { clockHex: string }) {
 
       <Section title="Settings" clockHex={clockHex}>
         <P>Customise your banner, set your personal ID image, and place your own imagery onto individual wheels. The mechanism is designed to reflect you. Don&apos;t leave it on the defaults.</P>
+        <P>Each wheel face also accepts an MP4 video file. The video fills the circular face and remains static while the mandala rotates beneath it. A control strip appears at the bottom of the screen when a video is active — giving you play, pause, stop, loop, and seek controls, plus an independent mute toggle that operates separately from the wheel tone. The video starts muted to allow automatic playback; tap the sound icon in the control strip to bring in the audio.</P>
       </Section>
 
       <HR />

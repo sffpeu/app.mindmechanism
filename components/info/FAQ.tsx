@@ -72,6 +72,10 @@ export function FAQ({ clockHex }: { clockHex: string }) {
           q="What is the Broadcast feature?"
           a="Broadcast allows you to indicate your live practice presence to others on the same Wheel. It is a light signal — not a chat, not a video call — that creates a sense of shared space. Some practitioners find that knowing others are working the same domain at the same time changes the quality of their own session. It is optional and entirely private in its mechanics."
         />
+        <QA
+          q="Can I place a video on a wheel face?"
+          a="Yes. Each of the nine wheel faces accepts an MP4 file in addition to a static image. Upload it through Settings — the video fills the circular frame edge to edge and remains fixed while the mandala rotates underneath it. When a video is active, a control strip appears at the bottom of the screen with play, pause, stop, restart, ten-second skip, loop toggle, and a dedicated mute button. The video starts muted so it plays automatically without interrupting the wheel tone; tap the sound icon in the strip whenever you want to bring the audio in. The two sound systems — wheel tone and video audio — operate independently of each other."
+        />
       </Section>
 
       <HR clockHex={clockHex} />
