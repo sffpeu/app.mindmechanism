@@ -123,6 +123,7 @@ function NodesPageContent() {
   const [remainingTime, setRemainingTime] = useState<number | null>(null)
   const [isPaused, setIsPaused] = useState(false)
   const [showCeremony, setShowCeremony] = useState(false)
+  const [colourMode, setColourMode] = useState<'colour' | 'mono'>('mono')
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [currentTime, setCurrentTime] = useState(new Date())
   const [clockInfo, setClockInfo] = useState({
@@ -729,11 +730,12 @@ function NodesPageContent() {
                   }}
                 >
                   <Image 
-                    src={clock2.imageUrl}
+                    src={colourMode === 'colour' ? '/clock_3_colour.svg' : clock2.imageUrl}
                     alt="Clock Face 2"
                     layout="fill"
                     objectFit="cover"
-                    className="rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none [&_*]:stroke-[0.5]"
+                    className={colourMode === 'colour' ? "rounded-full" : "rounded-full dark:invert [&_*]:fill-current [&_*]:stroke-none [&_*]:stroke-[0.5]"}
+                    style={colourMode === 'colour' ? { mixBlendMode: 'screen' } : undefined}
                     priority
                     loading="eager"
                   />
@@ -924,6 +926,20 @@ function NodesPageContent() {
         </div>
 
       </div>
+    
+      {/* COLOUR / MONO toggle */}
+      <button
+        onClick={() => setColourMode(m => m === 'colour' ? 'mono' : 'colour')}
+        className="fixed bottom-4 left-4 z-[999] flex items-center gap-0 rounded-full border border-white/20 bg-black/60 backdrop-blur-sm text-[10px] font-medium tracking-widest text-white/70 overflow-hidden select-none"
+        aria-label="Toggle colour mode"
+      >
+        <span className={`px-3 py-1.5 transition-colors ${
+          colourMode === 'colour' ? 'bg-white/20 text-white' : 'text-white/40'
+        }`}>COLOUR</span>
+        <span className={`px-3 py-1.5 transition-colors ${
+          colourMode === 'mono' ? 'bg-white/20 text-white' : 'text-white/40'
+        }`}>MONO</span>
+      </button>
     </ProtectedRoute>
   )
 }
