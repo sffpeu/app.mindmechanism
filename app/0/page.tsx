@@ -46,6 +46,7 @@ import { cn } from '@/lib/utils'
 import { CurvedCircleWordLabel } from '@/components/CurvedCircleWordLabel'
 import { wordProgressAlongProgressRing } from '@/lib/sessionWordRingFill'
 import { getSession } from '@/lib/sessions'
+import { MandalaCeremony } from '@/components/MandalaCeremony'
 
 // Weather and Moon data interfaces
 interface WeatherResponse {
@@ -127,6 +128,7 @@ function NodesPageContent() {
   const { isDarkMode, setIsDarkMode } = useTheme()
   const [remainingTime, setRemainingTime] = useState<number | null>(null)
   const [isPaused, setIsPaused] = useState(false)
+  const [showCeremony, setShowCeremony] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [currentTime, setCurrentTime] = useState(new Date())
   const [clockInfo, setClockInfo] = useState({
@@ -294,6 +296,7 @@ function NodesPageContent() {
   }, [mounted, location?.coords, customLocation])
 
   const handleSessionComplete = () => {
+    setShowCeremony(true)
     localStorage.removeItem('pendingSession')
     triggerCompleteSpin()
   }
@@ -800,6 +803,12 @@ function NodesPageContent() {
                 </div>
               </motion.div>
               <ClockVideoOverlay clockId={0} />
+              {showCeremony && (
+                <MandalaCeremony
+                  clockHex={clockHex}
+                  onComplete={() => setShowCeremony(false)}
+                />
+              )}
             </div>
 
             {/* Focus nodes layer — above satellites so every node is clickable */}
