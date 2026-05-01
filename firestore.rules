@@ -32,6 +32,11 @@ service cloud.firestore {
       allow write: if isUserAuthenticated(userId);
     }
 
+    // Focus Deck sessions — per-user, full CRUD, private
+    match /users/{userId}/deckSessions/{sessionId} {
+      allow read, write: if isUserAuthenticated(userId);
+    }
+
     // Time tracking
     match /timeTracking/{entryId} {
       allow write: if isAuthenticated();

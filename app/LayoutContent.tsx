@@ -22,7 +22,8 @@ function LayoutContentInner({ children }: { children: React.ReactNode }) {
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/sessions') ||
     pathname.startsWith('/lobby') ||
-    pathname.startsWith('/settings');
+    pathname.startsWith('/settings') ||
+    pathname.startsWith('/deck');
 
   const routed = isProtectedRoute ? (
     <ProtectedRoute>{children}</ProtectedRoute>

@@ -5,6 +5,10 @@ import { MANDALA_NODES, WHEEL_COLORS, CARD_W, CARD_H, type MandalaNode } from '@
 import { DeckCard, type Annotation } from './DeckCard'
 import { CreateSessionModal } from './CreateSessionModal'
 import { SessionsPanel, type SavedSession } from './SessionsPanel'
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { collection, doc, getDocs, setDoc, deleteDoc, query, orderBy, type Firestore } from 'firebase/firestore'
+import { getFirebaseStorage, db } from '@/lib/firebase'
+import { useAuth } from '@/lib/FirebaseAuthContext'
 
 interface CardState {
   nodeId: string
@@ -17,7 +21,6 @@ interface CardState {
 
 const DEFAULT_DRAW_SIZE = 9
 const MARGIN = 40
-const SESSIONS_KEY = 'mm_deck_sessions'
 
 function makeScattered(nodeIds: string[], w: number, h: number): CardState[] {
   return nodeIds.map((nodeId, i) => ({
@@ -30,23 +33,9 @@ function makeScattered(nodeIds: string[], w: number, h: number): CardState[] {
   }))
 }
 
-function loadSessions(): SavedSession[] {
-  if (typeof window === 'undefined') return []
-  try { return JSON.parse(localStorage.getItem(SESSIONS_KEY) ?? '[]') } catch { return [] }
-}
-
-function persistSessions(sessions: SavedSession[]): boolean {
-  try {
-    localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions))
-    return true
-  } catch {
-    return false
-  }
-}
-
 /**
  * Compress a base64 data URL to JPEG at max 900×900px and 72% quality.
- * Keeps localStorage well within its ~5 MB quota even for large photos.
+ * Used before uploading to Firebase Storage to keep bandwidth and costs low.
  */
 async function compressImage(dataUrl: string): Promise<string> {
   return new Promise((resolve) => {
@@ -71,9 +60,26 @@ async function compressImage(dataUrl: string): Promise<string> {
   })
 }
 
+/**
+ * Compress a data URL then upload it to Firebase Storage.
+ * Returns the permanent download URL so the annotation can reference it directly.
+ * Path format: deck-images/{uid}/{label}-{timestamp}.jpg
+ */
+async function uploadToStorage(dataUrl: string, uid: string, label: string): Promise<string> {
+  const compressed = await compressImage(dataUrl)
+  const response = await fetch(compressed)
+  const blob = await response.blob()
+  const storage = getFirebaseStorage()
+  const path = `deck-images/${uid}/${label}-${Date.now()}.jpg`
+  const fileRef = storageRef(storage, path)
+  await uploadBytes(fileRef, blob, { contentType: 'image/jpeg' })
+  return getDownloadURL(fileRef)
+}
+
 const EMPTY_ANNOTATION: Annotation = { userDef: '', notes: '', imageUrl: null }
 
 export function CardTable() {
+  const { user } = useAuth()
   const tableRef = useRef<HTMLDivElement>(null)
   const bgInputRef = useRef<HTMLInputElement>(null)
   const [cards, setCards] = useState<CardState[]>([])
@@ -87,8 +93,31 @@ export function CardTable() {
   const [showHelp, setShowHelp] = useState(false)
   const [showControls, setShowControls] = useState(false)
   const [showSaveModal, setShowSaveModal] = useState(false)
-  const [savedSessions, setSavedSessions] = useState<SavedSession[]>(loadSessions)
+  const [savedSessions, setSavedSessions] = useState<SavedSession[]>([])
   const [currentSessionName, setCurrentSessionName] = useState('Default Draw')
+
+  // Load deck sessions from Firestore whenever the authenticated user is known
+  useEffect(() => {
+    if (!user) return
+    let mounted = true
+    ;(async () => {
+      // db initialises slightly after auth — wait up to 2 s
+      let attempts = 0
+      while (!db && attempts < 20) {
+        await new Promise(r => setTimeout(r, 100))
+        attempts++
+      }
+      if (!db || !mounted) return
+      try {
+        const sessionsCol = collection(db as Firestore, 'users', user.uid, 'deckSessions')
+        const snap = await getDocs(query(sessionsCol, orderBy('savedAt', 'desc')))
+        if (mounted) setSavedSessions(snap.docs.map(d => d.data() as SavedSession))
+      } catch (err) {
+        console.error('Failed to load deck sessions:', err)
+      }
+    })()
+    return () => { mounted = false }
+  }, [user])
 
   useEffect(() => {
     const el = tableRef.current
@@ -123,11 +152,30 @@ export function CardTable() {
   }, [])
 
   const handleAnnotationChange = useCallback((nodeId: string, field: keyof Annotation, value: string | null) => {
+    // Update state immediately so the card renders the image without delay
     setAnnotations(prev => ({
       ...prev,
       [nodeId]: { ...prev[nodeId] ?? EMPTY_ANNOTATION, [field]: value },
     }))
-  }, [])
+
+    // When a new image is set as a raw data URL, upload it to Firebase Storage
+    // in the background and silently swap the data URL for the permanent CDN URL.
+    if (field === 'imageUrl' && value && value.startsWith('data:') && user) {
+      const uid = user.uid
+      ;(async () => {
+        try {
+          const downloadUrl = await uploadToStorage(value, uid, `card-${nodeId}`)
+          setAnnotations(prev => ({
+            ...prev,
+            [nodeId]: { ...prev[nodeId] ?? EMPTY_ANNOTATION, imageUrl: downloadUrl },
+          }))
+        } catch (err) {
+          console.error('Card image upload failed:', err)
+          // Keep the data URL in state — image still displays, just won't survive session save cleanly
+        }
+      })()
+    }
+  }, [user])
 
   const handleSendToGlossary = useCallback((nodeId: string) => {
     const node = MANDALA_NODES.find(n => n.id === nodeId)
@@ -166,10 +214,24 @@ export function CardTable() {
     const file = e.target.files?.[0]
     if (!file) return
     const reader = new FileReader()
-    reader.onload = (ev) => setTableBackground(ev.target?.result as string)
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string
+      setTableBackground(dataUrl) // immediate preview
+      if (user) {
+        ;(async () => {
+          try {
+            const downloadUrl = await uploadToStorage(dataUrl, user.uid, 'bg')
+            setTableBackground(downloadUrl)
+          } catch (err) {
+            console.error('Background image upload failed:', err)
+            // Keep the data URL as fallback
+          }
+        })()
+      }
+    }
     reader.readAsDataURL(file)
     e.target.value = ''
-  }, [])
+  }, [user])
 
   const handleSessionStart = useCallback((nodeIds: string[], sessionName: string) => {
     const el = tableRef.current
@@ -188,21 +250,31 @@ export function CardTable() {
     setShowSaveModal(false)
     setCurrentSessionName(name)
 
-    // Compress all card images before persisting to avoid hitting the
-    // ~5 MB localStorage quota (raw base64 photos can be several MB each).
-    const compressedAnnotations: Record<string, Annotation> = {}
+    // If any images are still data URLs (background upload in-flight or auth
+    // unavailable), upload them now. Firestore has a 1 MB document limit so we
+    // must never write raw base64 into it.
+    const finalAnnotations: Record<string, Annotation> = {}
     for (const [nodeId, ann] of Object.entries(annotations)) {
-      if (ann.imageUrl && ann.imageUrl.startsWith('data:')) {
-        compressedAnnotations[nodeId] = { ...ann, imageUrl: await compressImage(ann.imageUrl) }
+      if (ann.imageUrl && ann.imageUrl.startsWith('data:') && user) {
+        try {
+          const downloadUrl = await uploadToStorage(ann.imageUrl, user.uid, `card-${nodeId}`)
+          finalAnnotations[nodeId] = { ...ann, imageUrl: downloadUrl }
+        } catch {
+          finalAnnotations[nodeId] = { ...ann, imageUrl: null }
+        }
       } else {
-        compressedAnnotations[nodeId] = ann
+        finalAnnotations[nodeId] = ann
       }
     }
 
-    // Compress the table background too
-    let compressedBg = tableBackground
-    if (compressedBg && compressedBg.startsWith('data:')) {
-      compressedBg = await compressImage(compressedBg)
+    let finalBg = tableBackground
+    if (finalBg && finalBg.startsWith('data:') && user) {
+      try {
+        finalBg = await uploadToStorage(finalBg, user.uid, 'bg')
+        setTableBackground(finalBg)
+      } catch {
+        finalBg = null
+      }
     }
 
     const session: SavedSession = {
@@ -211,14 +283,28 @@ export function CardTable() {
       savedAt: Date.now(),
       cardCount: cards.length,
       cards,
-      annotations: compressedAnnotations,
-      tableBackground: compressedBg,
+      annotations: finalAnnotations,
+      tableBackground: finalBg,
     }
+
     const updated = [session, ...savedSessions].slice(0, 20)
     setSavedSessions(updated)
-    const ok = persistSessions(updated)
-    showToast(ok ? `"${name}" saved` : 'Save failed — storage full. Remove old sessions and try again.')
-  }, [cards, annotations, tableBackground, savedSessions, showToast])
+
+    if (user && db) {
+      try {
+        await setDoc(
+          doc(db as Firestore, 'users', user.uid, 'deckSessions', session.id),
+          session
+        )
+        showToast(`"${name}" saved`)
+      } catch (err) {
+        console.error('Firestore session save failed:', err)
+        showToast('Save failed — please try again')
+      }
+    } else {
+      showToast('Sign in to save sessions to your account')
+    }
+  }, [cards, annotations, tableBackground, savedSessions, user, showToast])
 
   const handleLoadSession = useCallback((session: SavedSession) => {
     setCards(session.cards)
@@ -233,11 +319,17 @@ export function CardTable() {
     showToast(`"${session.name}" loaded`)
   }, [showToast])
 
-  const handleDeleteSession = useCallback((id: string) => {
+  const handleDeleteSession = useCallback(async (id: string) => {
     const updated = savedSessions.filter(s => s.id !== id)
     setSavedSessions(updated)
-    persistSessions(updated)
-  }, [savedSessions])
+    if (user && db) {
+      try {
+        await deleteDoc(doc(db as Firestore, 'users', user.uid, 'deckSessions', id))
+      } catch (err) {
+        console.error('Firestore session delete failed:', err)
+      }
+    }
+  }, [savedSessions, user])
 
   const nodeMap = Object.fromEntries(MANDALA_NODES.map(n => [n.id, n]))
 
@@ -597,8 +689,8 @@ function HelpPanel({ onClose }: { onClose: () => void }) {
         { label: 'New Session', desc: 'Open the session builder: choose how many cards to draw (3–16) and a session name. Only wheels with enough nodes are eligible.' },
         { label: 'Scatter', desc: 'Randomise the positions of all cards currently on the table.' },
         { label: 'Draw', desc: 'Deal one additional card from the remaining deck onto the table.' },
-        { label: 'Save', desc: 'Snapshot the current table — card positions, flip states, annotations, and images — to local storage.' },
-        { label: 'Sessions', desc: 'Open the sessions panel to load or delete a previously saved layout. Up to 20 sessions are stored.' },
+        { label: 'Save', desc: 'Snapshot the current table — card positions, flip states, annotations, and images — to your cloud account. Images are stored in Firebase Storage; session metadata in Firestore.' },
+        { label: 'Sessions', desc: 'Open the sessions panel to load or delete a previously saved layout. Up to 20 sessions are stored in your account.' },
       ],
     },
   ]
