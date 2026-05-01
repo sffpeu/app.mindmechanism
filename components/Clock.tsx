@@ -1029,10 +1029,15 @@ export default function Clock({
 
   // Update renderSingleClock to make background transparent
   const renderSingleClock = () => {
-    const wheelOverlayUrl =
-      !isMultiView && !isMultiView2 && profile?.wheelFaceOverlays?.[id]?.trim()
-        ? profile.wheelFaceOverlays[id].trim()
-        : undefined
+    const wheelOverlayMedia = !isMultiView && !isMultiView2
+      ? profile?.wheelFaceOverlays?.[id]
+      : undefined
+    const wheelOverlayUrl = wheelOverlayMedia?.type === 'image' && wheelOverlayMedia.url?.trim()
+      ? wheelOverlayMedia.url.trim()
+      : undefined
+    const wheelVideoUrl = wheelOverlayMedia?.type === 'video' && wheelOverlayMedia.url?.trim()
+      ? wheelOverlayMedia.url.trim()
+      : undefined
     const transitionConfig = getTransitionConfig();
     const clockColor = id === 9 ? null : hexToRgb(dotColors[id].replace('bg-[', '').replace(']', ''));
     const shadowStyle = clockColor ? {
@@ -1115,6 +1120,18 @@ export default function Clock({
               ) : null}
             </div>
           </motion.div>
+          {/* Static video overlay — outside rotation so content does not spin */}
+          {wheelVideoUrl ? (
+            <video
+              src={wheelVideoUrl}
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="absolute inset-0 h-full w-full object-cover pointer-events-none"
+              style={{ zIndex: 150 }}
+            />
+          ) : null}
         </div>
 
         {/* Focus nodes layer — above other layers so every node is clickable */}

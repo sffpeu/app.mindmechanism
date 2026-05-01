@@ -16,7 +16,7 @@ import { deleteCookie } from 'cookies-next';
 import { useRouter } from 'next/navigation';
 import { syncFirebaseAuthCookie } from '@/lib/syncFirebaseAuthCookie';
 import { doc, getDoc, setDoc, Firestore } from 'firebase/firestore';
-import { normalizeWheelFaceOverlays, emptyWheelFaceOverlays } from '@/lib/wheelFaceOverlays';
+import { normalizeWheelFaceOverlays, emptyWheelFaceOverlays, type WheelFaceMedia } from '@/lib/wheelFaceOverlays';
 
 /** Prefer non-empty `users/{uid}.bannerUrl`; if missing or empty, use `user_profiles` (avoids empty string masking a valid profile URL). */
 function mergeBannerUrl(
@@ -39,8 +39,8 @@ export interface UserProfile {
   avatarUrl: string;
   /** Custom wide image for the dashboard profile card. URL in Storage; Firestore field on `users/{uid}` (rules allow owner writes). */
   bannerUrl: string;
-  /** Optional image URLs layered on single-clock faces (index 0 = clock 1 … index 8 = clock 9). `users/{uid}`. */
-  wheelFaceOverlays: string[];
+  /** Optional media (image or video) layered on single-clock faces (index 0 = clock 1 … index 8 = clock 9). `users/{uid}`. */
+  wheelFaceOverlays: WheelFaceMedia[];
   /**
    * Membership tier. Populated via Firebase custom auth token claim (`request.auth.token.tier`)
    * or directly from the user's Firestore profile document.
@@ -113,7 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const profileSnap = await getDoc(profileRef)
 
       let usersDocData: Record<string, unknown> | undefined
-      let usersWheelOverlays: string[] | undefined
+      let usersWheelOverlays: WheelFaceMedia[] | undefined
       try {
         const userSettingsSnap = await getDoc(userSettingsRef)
         if (userSettingsSnap.exists()) {

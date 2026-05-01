@@ -30,6 +30,7 @@ import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords } from '@/lib/glossary'
 import Clock, { defaultSatelliteConfigs } from '@/components/Clock'
 import { ClockWheelFaceOverlay } from '@/components/ClockWheelFaceOverlay'
+import { ClockVideoOverlay } from '@/components/ClockVideoOverlay'
 import { ClockPageSatelliteLayer } from '@/components/ClockPageSatelliteLayer'
 import { SessionTimer } from '@/components/SessionTimer'
 import { SessionPresenceBroadcast } from '@/components/SessionPresenceBroadcast'
@@ -756,6 +757,7 @@ function NodesPageContent() {
                   <ClockWheelFaceOverlay clockId={1} />
                 </div>
               </motion.div>
+              <ClockVideoOverlay clockId={1} />
             </div>
 
             {/* Focus nodes layer — above satellites so every node is clickable */}

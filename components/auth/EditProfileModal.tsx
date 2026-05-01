@@ -15,7 +15,7 @@ import { User, Bell, Globe, Shield, Clock, Mail, Link, MapPin, Calendar, Image a
 import { Textarea } from '@/components/ui/textarea'
 import Image from 'next/image'
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { emptyWheelFaceOverlays } from '@/lib/wheelFaceOverlays'
+import { emptyWheelFaceOverlays, type WheelFaceMedia } from '@/lib/wheelFaceOverlays'
 
 interface UserProfile {
   username: string;
@@ -23,7 +23,7 @@ interface UserProfile {
   birthdate: string;
   avatarUrl: string;
   bannerUrl: string;
-  wheelFaceOverlays: string[];
+  wheelFaceOverlays: WheelFaceMedia[];
   preferences: {
     emailNotifications: boolean;
     allowLocationData: boolean;
