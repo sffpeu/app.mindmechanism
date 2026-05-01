@@ -76,6 +76,23 @@ export function FAQ({ clockHex }: { clockHex: string }) {
 
       <HR clockHex={clockHex} />
 
+      <Section title="The Focus Deck" clockHex={clockHex}>
+        <QA
+          q="What is the Focus Deck?"
+          a="The Focus Deck is a card-based practice layer within the Mind Mechanism. A draw of nodes from any Wheel is laid out as physical-style cards on a table. You flip them, reposition them, annotate them with your own definitions and notes, attach images, and save the configuration as a named session. It is designed for intensive single-node work — slowing down long enough to actually inhabit a term."
+        />
+        <QA
+          q="Can I add images to cards? Are there size or format restrictions?"
+          a="Yes — any card and the table background accept an image. There are no restrictions on the file you choose; the system handles the rest automatically. Before upload, every image is compressed to a maximum of 900 × 900 pixels at JPEG 72% quality. In practice, a 4K phone photograph compresses to roughly 80–200 KB; a screenshot to 50–120 KB. The card face itself displays at 240 × 339 pixels, so portrait images fill the frame cleanest. Landscape images are cropped top and bottom. The original file is never stored — only the compressed version reaches Firebase Storage."
+        />
+        <QA
+          q="How many sessions can I save, and are they available across devices?"
+          a="Up to 20 named sessions per account. Each session captures the full table state: card positions, flip states, your definitions, notes, and all image references. Sessions are stored in your cloud account — they are not local to a device or browser — so they are available wherever you sign in. The 20-session limit is a deliberate constraint, not a technical one: it encourages curation rather than accumulation."
+        />
+      </Section>
+
+      <HR clockHex={clockHex} />
+
       <Section title="Outcomes and Expectations" clockHex={clockHex}>
         <QA
           q="What is Linguistic Sovereignty?"
