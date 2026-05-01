@@ -8,6 +8,7 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { clockSatellites, defaultSatelliteConfigs } from '@/lib/satelliteDefaults'
 import { SatelliteNameLabel } from '@/components/SatelliteNameLabel'
+import { MandalaCeremony } from '@/components/MandalaCeremony'
 
 export interface MultiViewContentProps {
   type: number
@@ -383,6 +384,11 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                         />
                       )}
                     </motion.div>
+
+                    {/* Hover animation overlay — ceremony pulse, clipped to circle */}
+                    <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
+                      <MandalaCeremony clockHex={hex} onComplete={() => {}} loop={true} />
+                    </div>
                   </div>
                 </motion.div>
               )
