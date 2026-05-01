@@ -41,7 +41,7 @@ const DURATION_OPTIONS = [
 ]
 
 function thumbPath(id: number) {
-  return id < 8 ? `/small/${id + 1}_small.svg` : `/clock_9.svg`
+  return `/clock_${id + 1}_colour.svg`
 }
 
 type Phase = 'select' | 'duration' | 'session'
@@ -150,7 +150,7 @@ function PairedFace({
         className="absolute inset-0 rounded-full overflow-hidden"
         style={{ boxShadow: `0 0 80px 20px ${hexA}15, 0 0 80px 20px ${hexB}15` }}
       >
-        {/* Wheel A */}
+        {/* Wheel A — colour SVG, screen blend */}
         <motion.div
           className="absolute inset-0"
           style={{ transformOrigin: 'center' }}
@@ -162,19 +162,19 @@ function PairedFace({
             style={{
               transform: `translate(${cA.imageX}%, ${cA.imageY}%) rotate(${cA.imageOrientation}deg) scale(${cA.imageScale})`,
               transformOrigin: 'center',
+              mixBlendMode: 'screen',
             }}
           >
-            <Image src={cA.imageUrl} alt="" fill
-                   className="object-cover rounded-full dark:invert"
-                   style={{ opacity: 0.85, mixBlendMode: 'screen' }}
-                   priority />
-            {/* Hex colour tint — white lines become Wheel A's colour */}
-            <div className="absolute inset-0 rounded-full"
-                 style={{ backgroundColor: hexA, opacity: 0.32, mixBlendMode: 'multiply' }} />
+            <Image
+              src={`/clock_${idA + 1}_colour.svg`}
+              alt="" fill
+              className="object-cover rounded-full"
+              priority
+            />
           </div>
         </motion.div>
 
-        {/* Wheel B */}
+        {/* Wheel B — colour SVG, screen blend */}
         <motion.div
           className="absolute inset-0"
           style={{ transformOrigin: 'center' }}
@@ -186,15 +186,15 @@ function PairedFace({
             style={{
               transform: `translate(${cB.imageX}%, ${cB.imageY}%) rotate(${cB.imageOrientation}deg) scale(${cB.imageScale})`,
               transformOrigin: 'center',
+              mixBlendMode: 'screen',
             }}
           >
-            <Image src={cB.imageUrl} alt="" fill
-                   className="object-cover rounded-full dark:invert"
-                   style={{ opacity: 0.85, mixBlendMode: 'screen' }}
-                   priority />
-            {/* Hex colour tint — white lines become Wheel B's colour */}
-            <div className="absolute inset-0 rounded-full"
-                 style={{ backgroundColor: hexB, opacity: 0.32, mixBlendMode: 'multiply' }} />
+            <Image
+              src={`/clock_${idB + 1}_colour.svg`}
+              alt="" fill
+              className="object-cover rounded-full"
+              priority
+            />
           </div>
         </motion.div>
 
@@ -338,7 +338,7 @@ function WheelThumb({
           src={thumbPath(id)}
           alt={clockTitles[id]}
           fill
-          className="object-cover rounded-full dark:invert"
+          className="object-cover rounded-full"
         />
         {/* A / B badge */}
         {label && (
@@ -393,7 +393,7 @@ function PairPreview({ idA, idB }: { idA: number | null; idB: number | null }) {
           src={thumbPath(id)}
           alt=""
           fill
-          className="object-cover rounded-full dark:invert"
+          className="object-cover rounded-full"
           style={{
             transform: `rotate(${clock.imageOrientation}deg)`,
             mixBlendMode: 'screen',
