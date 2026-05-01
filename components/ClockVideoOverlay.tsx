@@ -21,6 +21,7 @@ export function ClockVideoOverlay({ clockId }: { clockId: number }) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isPlaying, setIsPlaying] = useState(true)
   const [isLooping, setIsLooping] = useState(true)
+  const [isMuted, setIsMuted] = useState(true)   // starts muted so autoplay works
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => { setMounted(true) }, [])
@@ -64,6 +65,13 @@ export function ClockVideoOverlay({ clockId }: { clockId: number }) {
     if (!v) return
     v.loop = !v.loop
     setIsLooping(v.loop)
+  }, [])
+
+  const handleMuteToggle = useCallback(() => {
+    const v = videoRef.current
+    if (!v) return
+    v.muted = !v.muted
+    setIsMuted(v.muted)
   }, [])
 
   if (!media?.url?.trim() || media.type !== 'video') return null
@@ -142,17 +150,27 @@ export function ClockVideoOverlay({ clockId }: { clockId: number }) {
       >
         🔁
       </button>
+      {divider}
+      {/* Mute / Unmute — video starts muted for autoplay; tap to hear */}
+      <button
+        style={{ ...btnBase, color: isMuted ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.9)' }}
+        onClick={handleMuteToggle}
+        title={isMuted ? 'Unmute video' : 'Mute video'}
+      >
+        {isMuted ? '🔇' : '🔊'}
+      </button>
     </div>,
     document.body
   ) : null
 
   return (
     <>
+      {/* muted starts true so autoPlay works; user unmutes via control strip */}
       <video
         ref={videoRef}
         src={media.url}
         autoPlay
-        muted
+        muted={isMuted}
         loop={isLooping}
         playsInline
         onPlay={() => setIsPlaying(true)}
