@@ -47,15 +47,72 @@ function thumbPath(id: number) {
 type Phase = 'select' | 'duration' | 'session'
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Circular progress ring — sits outside the clipped face container
+// ─────────────────────────────────────────────────────────────────────────────
+function CircularProgressRing({
+  remainingTime, initialDuration, isPaused, hexA, hexB,
+}: {
+  remainingTime: number | null
+  initialDuration: number | null
+  isPaused: boolean
+  hexA: string
+  hexB: string
+}) {
+  const progress =
+    remainingTime != null && initialDuration != null && initialDuration > 0
+      ? Math.min(1, (initialDuration - remainingTime) / initialDuration)
+      : 0
+
+  const r = 47
+  const circ = 2 * Math.PI * r
+
+  return (
+    <svg
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      viewBox="0 0 100 100"
+      aria-hidden
+    >
+      <defs>
+        <linearGradient id="pairRingGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%"   stopColor={hexA} />
+          <stop offset="100%" stopColor={hexB} />
+        </linearGradient>
+      </defs>
+      {/* Track */}
+      <circle cx="50" cy="50" r={r} fill="none"
+              stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
+      {/* Progress arc */}
+      <circle
+        cx="50" cy="50" r={r} fill="none"
+        stroke="url(#pairRingGrad)"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeDasharray={circ}
+        strokeDashoffset={circ * (1 - progress)}
+        transform="rotate(-90 50 50)"
+        style={{
+          opacity: isPaused ? 0.5 : 0.85,
+          transition: 'stroke-dashoffset 0.25s linear',
+        }}
+      />
+    </svg>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Paired clock face — two SVGs overlaid, each on its own rotation
 // ─────────────────────────────────────────────────────────────────────────────
 function PairedFace({
   idA, idB, showCeremony, onCeremonyEnd,
+  remainingTime, initialDuration, isPaused,
 }: {
   idA: number
   idB: number
   showCeremony: boolean
   onCeremonyEnd: () => void
+  remainingTime: number | null
+  initialDuration: number | null
+  isPaused: boolean
 }) {
   const rotA = useClockRotation(idA)
   const rotB = useClockRotation(idB)
@@ -63,6 +120,7 @@ function PairedFace({
   const cB = clockSettings[idB]
   const hexA = CLOCK_HEX[idA]
   const hexB = CLOCK_HEX[idB]
+  const size = 'min(70vw, 70vh)'
 
   // Dismiss both ceremonies after 30 s
   useEffect(() => {
@@ -73,60 +131,81 @@ function PairedFace({
 
   return (
     <div
-      className="relative rounded-full overflow-hidden select-none"
-      style={{
-        width:  'min(70vw, 70vh)',
-        height: 'min(70vw, 70vh)',
-        boxShadow: `0 0 80px 20px ${hexA}18, 0 0 80px 20px ${hexB}18`,
-      }}
+      className="relative select-none"
+      style={{ width: size, height: size }}
     >
-      {/* Wheel A */}
-      <motion.div
-        className="absolute inset-0"
-        style={{ transformOrigin: 'center' }}
-        animate={{ rotate: rotA }}
-        transition={{ type: 'tween', duration: 0.016, ease: 'linear' }}
-      >
-        <div
-          className="absolute inset-0"
-          style={{
-            transform: `translate(${cA.imageX}%, ${cA.imageY}%) rotate(${cA.imageOrientation}deg) scale(${cA.imageScale})`,
-            transformOrigin: 'center',
-            opacity: 0.75,
-            mixBlendMode: 'screen',
-          }}
-        >
-          <Image src={cA.imageUrl} alt="" fill className="object-cover rounded-full dark:invert" priority />
-        </div>
-      </motion.div>
+      {/* Progress ring — outside the clip so it's not cut off */}
+      <div className="absolute pointer-events-none" style={{ inset: '-3px' }}>
+        <CircularProgressRing
+          remainingTime={remainingTime}
+          initialDuration={initialDuration}
+          isPaused={isPaused}
+          hexA={hexA}
+          hexB={hexB}
+        />
+      </div>
 
-      {/* Wheel B */}
-      <motion.div
-        className="absolute inset-0"
-        style={{ transformOrigin: 'center' }}
-        animate={{ rotate: rotB }}
-        transition={{ type: 'tween', duration: 0.016, ease: 'linear' }}
+      {/* Face — clipped to circle */}
+      <div
+        className="absolute inset-0 rounded-full overflow-hidden"
+        style={{ boxShadow: `0 0 80px 20px ${hexA}15, 0 0 80px 20px ${hexB}15` }}
       >
-        <div
+        {/* Wheel A */}
+        <motion.div
           className="absolute inset-0"
-          style={{
-            transform: `translate(${cB.imageX}%, ${cB.imageY}%) rotate(${cB.imageOrientation}deg) scale(${cB.imageScale})`,
-            transformOrigin: 'center',
-            opacity: 0.75,
-            mixBlendMode: 'screen',
-          }}
+          style={{ transformOrigin: 'center' }}
+          animate={{ rotate: rotA }}
+          transition={{ type: 'tween', duration: 0.016, ease: 'linear' }}
         >
-          <Image src={cB.imageUrl} alt="" fill className="object-cover rounded-full dark:invert" priority />
-        </div>
-      </motion.div>
+          <div
+            className="absolute inset-0"
+            style={{
+              transform: `translate(${cA.imageX}%, ${cA.imageY}%) rotate(${cA.imageOrientation}deg) scale(${cA.imageScale})`,
+              transformOrigin: 'center',
+            }}
+          >
+            <Image src={cA.imageUrl} alt="" fill
+                   className="object-cover rounded-full dark:invert"
+                   style={{ opacity: 0.85, mixBlendMode: 'screen' }}
+                   priority />
+            {/* Hex colour tint — white lines become Wheel A's colour */}
+            <div className="absolute inset-0 rounded-full"
+                 style={{ backgroundColor: hexA, opacity: 0.32, mixBlendMode: 'multiply' }} />
+          </div>
+        </motion.div>
 
-      {/* Dual completion ceremony */}
-      {showCeremony && (
-        <>
-          <MandalaCeremony clockHex={hexA} onComplete={() => {}} />
-          <MandalaCeremony clockHex={hexB} onComplete={() => {}} />
-        </>
-      )}
+        {/* Wheel B */}
+        <motion.div
+          className="absolute inset-0"
+          style={{ transformOrigin: 'center' }}
+          animate={{ rotate: rotB }}
+          transition={{ type: 'tween', duration: 0.016, ease: 'linear' }}
+        >
+          <div
+            className="absolute inset-0"
+            style={{
+              transform: `translate(${cB.imageX}%, ${cB.imageY}%) rotate(${cB.imageOrientation}deg) scale(${cB.imageScale})`,
+              transformOrigin: 'center',
+            }}
+          >
+            <Image src={cB.imageUrl} alt="" fill
+                   className="object-cover rounded-full dark:invert"
+                   style={{ opacity: 0.85, mixBlendMode: 'screen' }}
+                   priority />
+            {/* Hex colour tint — white lines become Wheel B's colour */}
+            <div className="absolute inset-0 rounded-full"
+                 style={{ backgroundColor: hexB, opacity: 0.32, mixBlendMode: 'multiply' }} />
+          </div>
+        </motion.div>
+
+        {/* Dual completion ceremony */}
+        {showCeremony && (
+          <>
+            <MandalaCeremony clockHex={hexA} onComplete={() => {}} />
+            <MandalaCeremony clockHex={hexB} onComplete={() => {}} />
+          </>
+        )}
+      </div>
     </div>
   )
 }
@@ -151,7 +230,7 @@ function SessionPhase({
     setShowCeremony(true)
   }, [])
 
-  const { remainingTime, isPaused, onPauseResume } = useSessionTimer(
+  const { remainingTime, isPaused, initialDuration, onPauseResume } = useSessionTimer(
     duration,
     null,
     handleComplete,
@@ -169,6 +248,9 @@ function SessionPhase({
         idB={idB}
         showCeremony={showCeremony}
         onCeremonyEnd={onEnd}
+        remainingTime={remainingTime}
+        initialDuration={initialDuration}
+        isPaused={isPaused}
       />
 
       {/* Wheel names */}
