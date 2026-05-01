@@ -10,6 +10,36 @@ import { clockSatellites, defaultSatelliteConfigs } from '@/lib/satelliteDefault
 import { SatelliteNameLabel } from '@/components/SatelliteNameLabel'
 import { MandalaCeremony } from '@/components/MandalaCeremony'
 
+type ColourMode = 'colour' | 'mono'
+
+function multiImgSrc(clockIndex: number, mode: ColourMode) {
+  return mode === 'colour'
+    ? `/clock_${clockIndex + 1}_colour.svg`
+    : `/${clockIndex + 1}.svg`
+}
+
+function MultiColourToggle({ mode, onChange }: { mode: ColourMode; onChange: (m: ColourMode) => void }) {
+  return (
+    <div className="flex rounded-full border border-white/10 dark:border-white/10 border-black/10 overflow-hidden"
+         style={{ fontSize: 9 }}>
+      {(['colour', 'mono'] as ColourMode[]).map(m => (
+        <button
+          key={m}
+          type="button"
+          onClick={() => onChange(m)}
+          className="px-3 py-1 tracking-widest uppercase transition-colors pointer-events-auto"
+          style={{
+            background: mode === m ? 'rgba(255,255,255,0.12)' : 'transparent',
+            color:      mode === m ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.3)',
+          }}
+        >
+          {m}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 export interface MultiViewContentProps {
   type: number
 }
@@ -22,6 +52,7 @@ const CLOCK_HEX = ['#fd290a','#fba63b','#f7da5f','#6dc037','#156fde','#941952','
 
 export function MultiViewContent({ type }: MultiViewContentProps) {
   const [showElements, setShowElements] = useState(true)
+  const [colourMode, setColourMode] = useState<ColourMode>('mono')
   const { isDarkMode } = useTheme()
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
   const isMultiView2 = type === 2
@@ -139,6 +170,10 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
             isSmallMultiView={type === 2}
           />
         )}
+        {/* Colour / Mono toggle — bottom left */}
+        <div className="absolute bottom-4 left-4">
+          <MultiColourToggle mode={colourMode} onChange={setColourMode} />
+        </div>
       </div>
 
       {/* Content Layer */}
@@ -177,10 +212,10 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                           }}
                         >
                           <Image
-                            src={`/${index + 1}.svg`}
+                            src={multiImgSrc(index, colourMode)}
                             alt={`Clock ${index + 1}`}
                             fill
-                            className="pointer-events-none object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
+                            className={`pointer-events-none object-cover rounded-full ${colourMode === 'mono' ? 'dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none' : ''}`}
                             priority
                             loading="eager"
                           />
@@ -361,10 +396,10 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                         }}
                       >
                         <Image
-                          src={clock.imageUrl}
+                          src={multiImgSrc(index, colourMode)}
                           alt=""
                           fill
-                          className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
+                          className={`object-cover rounded-full ${colourMode === 'mono' ? 'dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none' : ''}`}
                           priority
                           loading="eager"
                         />
@@ -428,10 +463,10 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                           }}
                         >
                           <Image
-                            src={`/${index + 1}.svg`}
+                            src={multiImgSrc(index, colourMode)}
                             alt={`Clock ${index + 1}`}
                             fill
-                            className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
+                            className={`object-cover rounded-full ${colourMode === 'mono' ? 'dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none' : ''}`}
                             priority
                             loading="eager"
                           />
@@ -530,10 +565,10 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                           }}
                         >
                           <Image 
-                            src={clock.imageUrl}
+                            src={multiImgSrc(index, colourMode)}
                             alt={`Clock ${index + 1}`}
                             fill
-                            className="object-cover rounded-full dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none"
+                            className={`object-cover rounded-full ${colourMode === 'mono' ? 'dark:invert dark:brightness-100 [&_*]:fill-current [&_*]:stroke-none' : ''}`}
                             priority
                             loading="eager"
                           />

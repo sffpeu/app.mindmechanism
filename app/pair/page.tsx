@@ -14,7 +14,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Volume2, VolumeX, ArrowLeft } from 'lucide-react'
-import { useTheme } from '@/app/ThemeContext'
 import { useSessionTimer } from '@/lib/useSessionTimer'
 import { clockSettings } from '@/lib/clockSettings'
 import { clockTitles } from '@/lib/clockTitles'
@@ -40,11 +39,49 @@ const DURATION_OPTIONS = [
   { label: '60 min', ms: 60 * 60_000 },
 ]
 
-function thumbPath(id: number) {
-  return `/clock_${id + 1}_colour.svg`
+type Phase = 'select' | 'duration' | 'session'
+type ColourMode = 'colour' | 'mono'
+
+function imgSrc(id: number, mode: ColourMode) {
+  return mode === 'colour'
+    ? `/clock_${id + 1}_colour.svg`
+    : clockSettings[id].imageUrl
 }
 
-type Phase = 'select' | 'duration' | 'session'
+/** Mono SVGs are black-on-white — invert to white-on-black on the dark background */
+function imgStyle(mode: ColourMode): React.CSSProperties {
+  return mode === 'mono' ? { filter: 'invert(1)' } : {}
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Colour / Mono toggle pill
+// ─────────────────────────────────────────────────────────────────────────────
+function ColourToggle({
+  mode, onChange,
+}: {
+  mode: ColourMode
+  onChange: (m: ColourMode) => void
+}) {
+  return (
+    <div className="flex rounded-full border border-white/10 overflow-hidden"
+         style={{ fontSize: 9 }}>
+      {(['colour', 'mono'] as ColourMode[]).map(m => (
+        <button
+          key={m}
+          type="button"
+          onClick={() => onChange(m)}
+          className="px-3 py-1 tracking-widest uppercase transition-colors"
+          style={{
+            background: mode === m ? 'rgba(255,255,255,0.12)' : 'transparent',
+            color:      mode === m ? 'rgba(255,255,255,0.8)'  : 'rgba(255,255,255,0.3)',
+          }}
+        >
+          {m}
+        </button>
+      ))}
+    </div>
+  )
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Circular progress ring — sits outside the clipped face container
@@ -104,7 +141,7 @@ function CircularProgressRing({
 // ─────────────────────────────────────────────────────────────────────────────
 function PairedFace({
   idA, idB, showCeremony, onCeremonyEnd,
-  remainingTime, initialDuration, isPaused,
+  remainingTime, initialDuration, isPaused, colourMode,
 }: {
   idA: number
   idB: number
@@ -113,6 +150,7 @@ function PairedFace({
   remainingTime: number | null
   initialDuration: number | null
   isPaused: boolean
+  colourMode: ColourMode
 }) {
   const rotA = useClockRotation(idA)
   const rotB = useClockRotation(idB)
@@ -150,7 +188,7 @@ function PairedFace({
         className="absolute inset-0 rounded-full overflow-hidden"
         style={{ boxShadow: `0 0 80px 20px ${hexA}15, 0 0 80px 20px ${hexB}15` }}
       >
-        {/* Wheel A — colour SVG, screen blend */}
+        {/* Wheel A */}
         <motion.div
           className="absolute inset-0"
           style={{ transformOrigin: 'center' }}
@@ -166,15 +204,16 @@ function PairedFace({
             }}
           >
             <Image
-              src={`/clock_${idA + 1}_colour.svg`}
+              src={imgSrc(idA, colourMode)}
               alt="" fill
               className="object-cover rounded-full"
+              style={imgStyle(colourMode)}
               priority
             />
           </div>
         </motion.div>
 
-        {/* Wheel B — colour SVG, screen blend */}
+        {/* Wheel B */}
         <motion.div
           className="absolute inset-0"
           style={{ transformOrigin: 'center' }}
@@ -190,9 +229,10 @@ function PairedFace({
             }}
           >
             <Image
-              src={`/clock_${idB + 1}_colour.svg`}
+              src={imgSrc(idB, colourMode)}
               alt="" fill
               className="object-cover rounded-full"
+              style={imgStyle(colourMode)}
               priority
             />
           </div>
@@ -214,11 +254,13 @@ function PairedFace({
 // Session phase — tones active, face rotating, timer running
 // ─────────────────────────────────────────────────────────────────────────────
 function SessionPhase({
-  idA, idB, duration, onEnd,
+  idA, idB, duration, colourMode, onColourModeChange, onEnd,
 }: {
   idA: number
   idB: number
   duration: number
+  colourMode: ColourMode
+  onColourModeChange: (m: ColourMode) => void
   onEnd: () => void
 }) {
   const [muted, setMuted] = useState(false)
@@ -251,6 +293,7 @@ function SessionPhase({
         remainingTime={remainingTime}
         initialDuration={initialDuration}
         isPaused={isPaused}
+        colourMode={colourMode}
       />
 
       {/* Wheel names */}
@@ -269,7 +312,12 @@ function SessionPhase({
         />
       )}
 
-      {/* Mute button */}
+      {/* Colour toggle — bottom left */}
+      <div className="fixed bottom-4 left-4 z-50">
+        <ColourToggle mode={colourMode} onChange={onColourModeChange} />
+      </div>
+
+      {/* Mute button — bottom right */}
       <button
         type="button"
         onClick={() => setMuted(m => !m)}
@@ -292,13 +340,14 @@ function SessionPhase({
 // Wheel thumbnail — used in the selection grid
 // ─────────────────────────────────────────────────────────────────────────────
 function WheelThumb({
-  id, selectedAs, dragSource, dragOver,
+  id, selectedAs, dragSource, dragOver, colourMode,
   onSelect, onDragStart, onDragOver, onDragLeave, onDrop,
 }: {
   id: number
   selectedAs: 'A' | 'B' | null
   dragSource: number | null
   dragOver: number | null
+  colourMode: ColourMode
   onSelect: (id: number) => void
   onDragStart: (id: number) => void
   onDragOver: (id: number) => void
@@ -335,10 +384,11 @@ function WheelThumb({
         }}
       >
         <Image
-          src={thumbPath(id)}
+          src={imgSrc(id, colourMode)}
           alt={clockTitles[id]}
           fill
           className="object-cover rounded-full"
+          style={imgStyle(colourMode)}
         />
         {/* A / B badge */}
         {label && (
@@ -363,7 +413,7 @@ function WheelThumb({
 // ─────────────────────────────────────────────────────────────────────────────
 // Pair preview — shows the two chosen mandalas overlapping
 // ─────────────────────────────────────────────────────────────────────────────
-function PairPreview({ idA, idB }: { idA: number | null; idB: number | null }) {
+function PairPreview({ idA, idB, colourMode }: { idA: number | null; idB: number | null; colourMode: ColourMode }) {
   const hexA = idA !== null ? CLOCK_HEX[idA] : null
   const hexB = idB !== null ? CLOCK_HEX[idB] : null
   const cA = idA !== null ? clockSettings[idA] : null
@@ -390,13 +440,14 @@ function PairPreview({ idA, idB }: { idA: number | null; idB: number | null }) {
     >
       {id !== null && clock && (
         <Image
-          src={thumbPath(id)}
+          src={imgSrc(id, colourMode)}
           alt=""
           fill
           className="object-cover rounded-full"
           style={{
             transform: `rotate(${clock.imageOrientation}deg)`,
             mixBlendMode: 'screen',
+            ...imgStyle(colourMode),
           }}
         />
       )}
@@ -427,6 +478,7 @@ function PairPageContent() {
   const [duration, setDuration] = useState<number | null>(null)
   const [dragSource, setDragSource] = useState<number | null>(null)
   const [dragOver, setDragOver] = useState<number | null>(null)
+  const [colourMode, setColourMode] = useState<ColourMode>('colour')
 
   const handleSelect = (id: number) => {
     if (wheelA === id) { setWheelA(null); return }
@@ -461,6 +513,8 @@ function PairPageContent() {
         idA={wheelA}
         idB={wheelB}
         duration={duration}
+        colourMode={colourMode}
+        onColourModeChange={setColourMode}
         onEnd={handleSessionEnd}
       />
     )
@@ -478,10 +532,11 @@ function PairPageContent() {
         >
           <ArrowLeft className="w-4 h-4" />
         </Link>
-        <div>
+        <div className="flex-1">
           <p className="text-[9px] tracking-widest uppercase text-white/25">Mind Mechanism</p>
           <h1 className="text-sm font-semibold tracking-wide text-white/80">Paired Session</h1>
         </div>
+        <ColourToggle mode={colourMode} onChange={setColourMode} />
       </div>
 
       <AnimatePresence mode="wait">
@@ -498,7 +553,7 @@ function PairPageContent() {
           >
             {/* Pair preview */}
             <div className="flex flex-col items-center gap-3">
-              <PairPreview idA={wheelA} idB={wheelB} />
+              <PairPreview idA={wheelA} idB={wheelB} colourMode={colourMode} />
               <p className="text-[10px] tracking-widest uppercase text-white/25">
                 {!wheelA && !wheelB
                   ? 'drag or tap two wheels'
@@ -517,6 +572,7 @@ function PairPageContent() {
                   selectedAs={wheelA === i ? 'A' : wheelB === i ? 'B' : null}
                   dragSource={dragSource}
                   dragOver={dragOver}
+                  colourMode={colourMode}
                   onSelect={handleSelect}
                   onDragStart={(id) => setDragSource(id)}
                   onDragOver={(id) => setDragOver(id)}
@@ -556,7 +612,7 @@ function PairPageContent() {
           >
             {/* Pair preview (smaller) */}
             <div className="flex flex-col items-center gap-2">
-              <PairPreview idA={wheelA} idB={wheelB} />
+              <PairPreview idA={wheelA} idB={wheelB} colourMode={colourMode} />
               <p className="text-[10px] tracking-widest uppercase"
                  style={{ color: 'rgba(255,255,255,0.3)' }}>
                 {clockTitles[wheelA]}
