@@ -73,6 +73,10 @@ export function FAQ({ clockHex }: { clockHex: string }) {
           a="Broadcast allows you to indicate your live practice presence to others on the same Wheel. It is a light signal — not a chat, not a video call — that creates a sense of shared space. Some practitioners find that knowing others are working the same domain at the same time changes the quality of their own session. It is optional and entirely private in its mechanics."
         />
         <QA
+          q="What is a Shadow Pair session?"
+          a="A Shadow Pair runs two wheels simultaneously in a single session. You select two wheels, set a duration, and both mandalas rotate at their own speeds for the full session — creating a combined visual field for your practice. Shadow Pairs extend the range of patterns available to meditate with, and are suited to group work or any session where two domains are in active relationship. No focus nodes are required; the session is carried by duration and intention alone. Find it under Sessions → Paired Session."
+        />
+        <QA
           q="Can I place a video on a wheel face?"
           a="Yes. Each of the nine wheel faces accepts an MP4 file in addition to a static image. Upload it through Settings — the video fills the circular frame edge to edge and remains fixed while the mandala rotates underneath it. When a video is active, a control strip appears at the bottom of the screen with play, pause, stop, restart, ten-second skip, loop toggle, and a dedicated mute button. The video starts muted so it plays automatically without interrupting the wheel tone; tap the sound icon in the strip whenever you want to bring the audio in. The two sound systems — wheel tone and video audio — operate independently of each other."
         />

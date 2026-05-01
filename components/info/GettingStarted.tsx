@@ -66,6 +66,12 @@ export function GettingStarted({ clockHex }: { clockHex: string }) {
 
       <HR />
 
+      <Section title="Shadow Pairs" clockHex={clockHex}>
+        <P>A Shadow Pair runs two wheels simultaneously in a single session. Select any two wheels, set a duration, and both mandalas rotate at their own speeds for the full session — extending the visual field you work with. No focus nodes are required; the session is carried by duration and intention alone. Find it under Sessions → Paired Session.</P>
+      </Section>
+
+      <HR />
+
       <Section title="Begin" clockHex={clockHex}>
         <P>Go to the home screen. Choose a wheel. Attach an intention. Start the timer.</P>
       </Section>
