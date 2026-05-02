@@ -1,14 +1,13 @@
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import { getStorage, type FirebaseStorage } from 'firebase/storage';
 import { getAuth, type Auth } from 'firebase/auth';
-import { 
-  getFirestore, 
+import {
+  getFirestore,
   persistentLocalCache,
-  persistentMultipleTabManager,
+  persistentSingleTabManager,
   connectFirestoreEmulator,
   initializeFirestore,
   type FirestoreSettings,
-  enableIndexedDbPersistence,
   type Firestore
 } from 'firebase/firestore';
 
@@ -106,7 +105,7 @@ async function initializeFirestoreWithRetry(app: FirebaseApp, retryCount = 0): P
   try {
     const firestoreSettings: FirestoreSettings = {
       localCache: persistentLocalCache({
-        tabManager: persistentMultipleTabManager()
+        tabManager: persistentSingleTabManager({ forceOwnership: true })
       })
     };
 
