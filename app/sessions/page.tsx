@@ -235,7 +235,7 @@ export default function SessionsPage() {
                 {/* Paired Session entry */}
                 <Link
                   href="/pair"
-                  className="flex items-center gap-5 p-5 mb-6 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all group"
+                  className="flex items-center gap-5 p-5 mb-3 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all group"
                 >
                   {/* Two overlapping circle icons */}
                   <div className="relative shrink-0" style={{ width: 56, height: 40 }}>
@@ -252,6 +252,36 @@ export default function SessionsPage() {
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                       Two wheels. Two tones. One meditation.
+                    </p>
+                  </div>
+                  <div className="text-gray-300 dark:text-white/20 group-hover:text-gray-400 dark:group-hover:text-white/40 transition-colors text-xs tracking-widest">
+                    →
+                  </div>
+                </Link>
+
+                {/* Trio Session entry */}
+                <Link
+                  href="/trio"
+                  className="flex items-center gap-5 p-5 mb-6 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all group"
+                >
+                  {/* Three overlapping circle icons */}
+                  <div className="relative shrink-0" style={{ width: 70, height: 40 }}>
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full border-2 border-[#fd290a]/60 overflow-hidden bg-black/20">
+                      <img src="/small/1_small.svg" alt="" className="w-full h-full object-cover dark:invert opacity-70" />
+                    </div>
+                    <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full border-2 border-[#156fde]/60 overflow-hidden bg-black/20">
+                      <img src="/small/5_small.svg" alt="" className="w-full h-full object-cover dark:invert opacity-70" />
+                    </div>
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full border-2 border-[#6dc037]/60 overflow-hidden bg-black/20">
+                      <img src="/small/4_small.svg" alt="" className="w-full h-full object-cover dark:invert opacity-70" />
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-gray-700 dark:group-hover:text-white/90 transition-colors">
+                      Trio Session
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                      Three wheels. Three tones. One meditation.
                     </p>
                   </div>
                   <div className="text-gray-300 dark:text-white/20 group-hover:text-gray-400 dark:group-hover:text-white/40 transition-colors text-xs tracking-widest">

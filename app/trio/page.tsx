@@ -1,10 +1,10 @@
 'use client'
 
 /**
- * /pair — Paired Session
+ * /trio — Trio Session
  *
- * Three phases: select two wheels → set duration → session runs.
- * No focus nodes. Both tones play together. Both mandalas rotate
+ * Three phases: select three wheels → set duration → session runs.
+ * No focus nodes. All three tones play together. All three mandalas rotate
  * independently at their own Cousto-derived speeds.
  */
 
@@ -18,7 +18,7 @@ import { useSessionTimer } from '@/lib/useSessionTimer'
 import { clockSettings } from '@/lib/clockSettings'
 import { clockTitles } from '@/lib/clockTitles'
 import { useClockRotation } from '@/lib/hooks/useClockRotation'
-import { usePairedBreathingTone } from '@/lib/hooks/usePairedBreathingTone'
+import { useTripleBreathingTone } from '@/lib/hooks/useTripleBreathingTone'
 import { MandalaCeremony } from '@/components/MandalaCeremony'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { cn } from '@/lib/utils'
@@ -48,7 +48,6 @@ function imgSrc(id: number, mode: ColourMode) {
     : clockSettings[id].imageUrl
 }
 
-/** Mono SVGs are black-on-white — invert to white-on-black on the dark background */
 function imgStyle(mode: ColourMode): React.CSSProperties {
   return mode === 'mono' ? { filter: 'invert(1)' } : {}
 }
@@ -84,16 +83,17 @@ function ColourToggle({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Circular progress ring — sits outside the clipped face container
+// Circular progress ring with three-stop gradient
 // ─────────────────────────────────────────────────────────────────────────────
 function CircularProgressRing({
-  remainingTime, initialDuration, isPaused, hexA, hexB,
+  remainingTime, initialDuration, isPaused, hexA, hexB, hexC,
 }: {
   remainingTime: number | null
   initialDuration: number | null
   isPaused: boolean
   hexA: string
   hexB: string
+  hexC: string
 }) {
   const progress =
     remainingTime != null && initialDuration != null && initialDuration > 0
@@ -110,18 +110,17 @@ function CircularProgressRing({
       aria-hidden
     >
       <defs>
-        <linearGradient id="pairRingGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <linearGradient id="trioRingGrad" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%"   stopColor={hexA} />
-          <stop offset="100%" stopColor={hexB} />
+          <stop offset="50%"  stopColor={hexB} />
+          <stop offset="100%" stopColor={hexC} />
         </linearGradient>
       </defs>
-      {/* Track */}
       <circle cx="50" cy="50" r={r} fill="none"
               stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
-      {/* Progress arc */}
       <circle
         cx="50" cy="50" r={r} fill="none"
-        stroke="url(#pairRingGrad)"
+        stroke="url(#trioRingGrad)"
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeDasharray={circ}
@@ -137,14 +136,15 @@ function CircularProgressRing({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Paired clock face — two SVGs overlaid, each on its own rotation
+// Trio clock face — three SVGs overlaid, each on its own rotation
 // ─────────────────────────────────────────────────────────────────────────────
-function PairedFace({
-  idA, idB, showCeremony, onCeremonyEnd,
+function TrioFace({
+  idA, idB, idC, showCeremony, onCeremonyEnd,
   remainingTime, initialDuration, isPaused, colourMode,
 }: {
   idA: number
   idB: number
+  idC: number
   showCeremony: boolean
   onCeremonyEnd: () => void
   remainingTime: number | null
@@ -154,13 +154,15 @@ function PairedFace({
 }) {
   const rotA = useClockRotation(idA)
   const rotB = useClockRotation(idB)
+  const rotC = useClockRotation(idC)
   const cA = clockSettings[idA]
   const cB = clockSettings[idB]
+  const cC = clockSettings[idC]
   const hexA = CLOCK_HEX[idA]
   const hexB = CLOCK_HEX[idB]
+  const hexC = CLOCK_HEX[idC]
   const size = 'min(70vw, 70vh)'
 
-  // Dismiss both ceremonies after 30 s
   useEffect(() => {
     if (!showCeremony) return
     const t = setTimeout(onCeremonyEnd, 31_000)
@@ -172,7 +174,6 @@ function PairedFace({
       className="relative select-none"
       style={{ width: size, height: size }}
     >
-      {/* Progress ring — outside the clip so it's not cut off */}
       <div className="absolute pointer-events-none" style={{ inset: '-3px' }}>
         <CircularProgressRing
           remainingTime={remainingTime}
@@ -180,13 +181,15 @@ function PairedFace({
           isPaused={isPaused}
           hexA={hexA}
           hexB={hexB}
+          hexC={hexC}
         />
       </div>
 
-      {/* Face — clipped to circle */}
       <div
         className="absolute inset-0 rounded-full overflow-hidden"
-        style={{ boxShadow: `0 0 80px 20px ${hexA}15, 0 0 80px 20px ${hexB}15` }}
+        style={{
+          boxShadow: `0 0 80px 20px ${hexA}12, 0 0 80px 20px ${hexB}12, 0 0 80px 20px ${hexC}12`,
+        }}
       >
         {/* Wheel A */}
         <motion.div
@@ -238,11 +241,37 @@ function PairedFace({
           </div>
         </motion.div>
 
-        {/* Dual completion ceremony */}
+        {/* Wheel C */}
+        <motion.div
+          className="absolute inset-0"
+          style={{ transformOrigin: 'center' }}
+          animate={{ rotate: rotC }}
+          transition={{ type: 'tween', duration: 0.016, ease: 'linear' }}
+        >
+          <div
+            className="absolute inset-0"
+            style={{
+              transform: `translate(${cC.imageX}%, ${cC.imageY}%) rotate(${cC.imageOrientation}deg) scale(${cC.imageScale})`,
+              transformOrigin: 'center',
+              mixBlendMode: 'screen',
+            }}
+          >
+            <Image
+              src={imgSrc(idC, colourMode)}
+              alt="" fill
+              className="object-cover rounded-full"
+              style={imgStyle(colourMode)}
+              priority
+            />
+          </div>
+        </motion.div>
+
+        {/* Triple completion ceremony */}
         {showCeremony && (
           <>
             <MandalaCeremony clockHex={hexA} onComplete={() => {}} />
             <MandalaCeremony clockHex={hexB} onComplete={() => {}} />
+            <MandalaCeremony clockHex={hexC} onComplete={() => {}} />
           </>
         )}
       </div>
@@ -251,13 +280,14 @@ function PairedFace({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Session phase — tones active, face rotating, timer running
+// Session phase
 // ─────────────────────────────────────────────────────────────────────────────
 function SessionPhase({
-  idA, idB, duration, colourMode, onColourModeChange, onEnd,
+  idA, idB, idC, duration, colourMode, onColourModeChange, onEnd,
 }: {
   idA: number
   idB: number
+  idC: number
   duration: number
   colourMode: ColourMode
   onColourModeChange: (m: ColourMode) => void
@@ -267,6 +297,7 @@ function SessionPhase({
   const [showCeremony, setShowCeremony] = useState(false)
   const hexA = CLOCK_HEX[idA]
   const hexB = CLOCK_HEX[idB]
+  const hexC = CLOCK_HEX[idC]
 
   const handleComplete = useCallback(() => {
     setShowCeremony(true)
@@ -278,16 +309,16 @@ function SessionPhase({
     handleComplete,
   )
 
-  usePairedBreathingTone(idA, idB, muted)
+  useTripleBreathingTone(idA, idB, idC, muted)
 
   return (
     <div className="fixed inset-0 flex flex-col items-center justify-center gap-8"
          style={{ background: '#09090b' }}>
 
-      {/* Paired face */}
-      <PairedFace
+      <TrioFace
         idA={idA}
         idB={idB}
+        idC={idC}
         showCeremony={showCeremony}
         onCeremonyEnd={onEnd}
         remainingTime={remainingTime}
@@ -301,9 +332,10 @@ function SessionPhase({
         <span style={{ color: hexA }}>{clockTitles[idA]}</span>
         <span className="text-white/20">×</span>
         <span style={{ color: hexB }}>{clockTitles[idB]}</span>
+        <span className="text-white/20">×</span>
+        <span style={{ color: hexC }}>{clockTitles[idC]}</span>
       </div>
 
-      {/* Timer */}
       {remainingTime != null && (
         <Timer
           remainingTime={remainingTime}
@@ -312,12 +344,10 @@ function SessionPhase({
         />
       )}
 
-      {/* Colour toggle — bottom left */}
       <div className="fixed bottom-4 left-4 z-50">
         <ColourToggle mode={colourMode} onChange={onColourModeChange} />
       </div>
 
-      {/* Mute button — bottom right */}
       <button
         type="button"
         onClick={() => setMuted(m => !m)}
@@ -337,14 +367,14 @@ function SessionPhase({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Wheel thumbnail — used in the selection grid
+// Wheel thumbnail
 // ─────────────────────────────────────────────────────────────────────────────
 function WheelThumb({
   id, selectedAs, dragSource, dragOver, colourMode,
   onSelect, onDragStart, onDragOver, onDragLeave, onDrop,
 }: {
   id: number
-  selectedAs: 'A' | 'B' | null
+  selectedAs: 'A' | 'B' | 'C' | null
   dragSource: number | null
   dragOver: number | null
   colourMode: ColourMode
@@ -357,7 +387,6 @@ function WheelThumb({
   const hex = CLOCK_HEX[id]
   const isDropTarget = dragSource !== null && dragSource !== id && dragOver === id
   const isSelected = selectedAs !== null
-  const label = selectedAs ?? null
 
   return (
     <div
@@ -390,14 +419,13 @@ function WheelThumb({
           className="object-cover rounded-full"
           style={imgStyle(colourMode)}
         />
-        {/* A / B badge */}
-        {label && (
+        {selectedAs && (
           <div
             className="absolute inset-0 flex items-center justify-center rounded-full"
             style={{ background: `${hex}55` }}
           >
             <span className="text-white text-base font-bold" style={{ textShadow: `0 0 8px ${hex}` }}>
-              {label}
+              {selectedAs}
             </span>
           </div>
         )}
@@ -411,31 +439,42 @@ function WheelThumb({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Pair preview — shows the two chosen mandalas overlapping
+// Trio preview — three chosen mandalas overlapping
 // ─────────────────────────────────────────────────────────────────────────────
-function PairPreview({ idA, idB, colourMode }: { idA: number | null; idB: number | null; colourMode: ColourMode }) {
+function TrioPreview({
+  idA, idB, idC, colourMode,
+}: {
+  idA: number | null
+  idB: number | null
+  idC: number | null
+  colourMode: ColourMode
+}) {
   const hexA = idA !== null ? CLOCK_HEX[idA] : null
   const hexB = idB !== null ? CLOCK_HEX[idB] : null
+  const hexC = idC !== null ? CLOCK_HEX[idC] : null
   const cA = idA !== null ? clockSettings[idA] : null
   const cB = idB !== null ? clockSettings[idB] : null
+  const cC = idC !== null ? clockSettings[idC] : null
 
   const Circle = ({
-    id, hex, clock, style,
+    id, hex, clock, left,
   }: {
     id: number | null
     hex: string | null
     clock: typeof clockSettings[0] | null
-    style?: React.CSSProperties
+    left: number
   }) => (
     <div
       className="absolute rounded-full overflow-hidden transition-all duration-300"
       style={{
-        width: 96,
-        height: 96,
+        width: 80,
+        height: 80,
+        top: '50%',
+        transform: 'translateY(-50%)',
+        left,
         border: `1.5px solid ${hex ?? 'rgba(255,255,255,0.1)'}`,
         boxShadow: hex ? `0 0 20px 4px ${hex}30` : 'none',
         background: '#1a1a1f',
-        ...style,
       }}
     >
       {id !== null && clock && (
@@ -460,9 +499,10 @@ function PairPreview({ idA, idB, colourMode }: { idA: number | null; idB: number
   )
 
   return (
-    <div className="relative flex items-center justify-center" style={{ width: 160, height: 100 }}>
-      <Circle id={idA} hex={hexA} clock={cA} style={{ left: 0 }} />
-      <Circle id={idB} hex={hexB} clock={cB} style={{ right: 0 }} />
+    <div className="relative" style={{ width: 200, height: 80 }}>
+      <Circle id={idA} hex={hexA} clock={cA} left={0} />
+      <Circle id={idB} hex={hexB} clock={cB} left={60} />
+      <Circle id={idC} hex={hexC} clock={cC} left={120} />
     </div>
   )
 }
@@ -470,11 +510,12 @@ function PairPreview({ idA, idB, colourMode }: { idA: number | null; idB: number
 // ─────────────────────────────────────────────────────────────────────────────
 // Main page
 // ─────────────────────────────────────────────────────────────────────────────
-function PairPageContent() {
+function TrioPageContent() {
   const router = useRouter()
   const [phase, setPhase] = useState<Phase>('select')
   const [wheelA, setWheelA] = useState<number | null>(null)
   const [wheelB, setWheelB] = useState<number | null>(null)
+  const [wheelC, setWheelC] = useState<number | null>(null)
   const [duration, setDuration] = useState<number | null>(null)
   const [customMinutes, setCustomMinutes] = useState('')
   const [dragSource, setDragSource] = useState<number | null>(null)
@@ -484,16 +525,24 @@ function PairPageContent() {
   const handleSelect = (id: number) => {
     if (wheelA === id) { setWheelA(null); return }
     if (wheelB === id) { setWheelB(null); return }
+    if (wheelC === id) { setWheelC(null); return }
     if (wheelA === null) { setWheelA(id); return }
     if (wheelB === null && id !== wheelA) { setWheelB(id); return }
-    // Both set — replace A, keep B
+    if (wheelC === null && id !== wheelA && id !== wheelB) { setWheelC(id); return }
+    // All three set — replace A
     setWheelA(id)
   }
 
   const handleDrop = (target: number) => {
     if (dragSource !== null && dragSource !== target) {
-      setWheelA(dragSource)
-      setWheelB(target)
+      if (wheelA === dragSource) setWheelA(target)
+      else if (wheelB === dragSource) setWheelB(target)
+      else if (wheelC === dragSource) setWheelC(target)
+      else setWheelA(dragSource)
+
+      if (wheelA === target) setWheelA(dragSource ?? target)
+      else if (wheelB === target) setWheelB(dragSource ?? target)
+      else if (wheelC === target) setWheelC(dragSource ?? target)
     }
     setDragSource(null)
     setDragOver(null)
@@ -503,6 +552,11 @@ function PairPageContent() {
     router.push('/sessions')
   }, [router])
 
+  const allSelected = wheelA !== null && wheelB !== null && wheelC !== null
+  const hexA = wheelA !== null ? CLOCK_HEX[wheelA] : null
+  const hexB = wheelB !== null ? CLOCK_HEX[wheelB] : null
+  const hexC = wheelC !== null ? CLOCK_HEX[wheelC] : null
+
   const handleCustomMinutes = (val: string) => {
     setCustomMinutes(val)
     const mins = parseInt(val)
@@ -511,16 +565,13 @@ function PairPageContent() {
     }
   }
 
-  const bothSelected = wheelA !== null && wheelB !== null
-  const hexA = wheelA !== null ? CLOCK_HEX[wheelA] : null
-  const hexB = wheelB !== null ? CLOCK_HEX[wheelB] : null
-
   // ── Session phase ─────────────────────────────────────────────────────────
-  if (phase === 'session' && wheelA !== null && wheelB !== null && duration !== null) {
+  if (phase === 'session' && wheelA !== null && wheelB !== null && wheelC !== null && duration !== null) {
     return (
       <SessionPhase
         idA={wheelA}
         idB={wheelB}
+        idC={wheelC}
         duration={duration}
         colourMode={colourMode}
         onColourModeChange={setColourMode}
@@ -529,7 +580,7 @@ function PairPageContent() {
     )
   }
 
-  // ── Select + Duration phases (shared dark container) ──────────────────────
+  // ── Select + Duration phases ───────────────────────────────────────────────
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#09090b', color: '#e4e4e7' }}>
 
@@ -543,7 +594,7 @@ function PairPageContent() {
         </Link>
         <div className="flex-1">
           <p className="text-[9px] tracking-widest uppercase text-white/25">Mind Mechanism</p>
-          <h1 className="text-sm font-semibold tracking-wide text-white/80">Paired Session</h1>
+          <h1 className="text-sm font-semibold tracking-wide text-white/80">Trio Session</h1>
         </div>
         <ColourToggle mode={colourMode} onChange={setColourMode} />
       </div>
@@ -560,15 +611,14 @@ function PairPageContent() {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.3 }}
           >
-            {/* Pair preview */}
             <div className="flex flex-col items-center gap-3">
-              <PairPreview idA={wheelA} idB={wheelB} colourMode={colourMode} />
+              <TrioPreview idA={wheelA} idB={wheelB} idC={wheelC} colourMode={colourMode} />
               <p className="text-[10px] tracking-widest uppercase text-white/25">
-                {!wheelA && !wheelB
-                  ? 'drag or tap two wheels'
-                  : !wheelA || !wheelB
-                    ? 'select one more'
-                    : `${clockTitles[wheelA]} × ${clockTitles[wheelB]}`}
+                {!wheelA && !wheelB && !wheelC
+                  ? 'tap three wheels'
+                  : wheelA !== null && wheelB !== null && wheelC !== null
+                    ? `${clockTitles[wheelA]} × ${clockTitles[wheelB]} × ${clockTitles[wheelC]}`
+                    : `${[wheelA, wheelB, wheelC].filter(w => w !== null).length} of 3 selected`}
               </p>
             </div>
 
@@ -578,7 +628,7 @@ function PairPageContent() {
                 <WheelThumb
                   key={i}
                   id={i}
-                  selectedAs={wheelA === i ? 'A' : wheelB === i ? 'B' : null}
+                  selectedAs={wheelA === i ? 'A' : wheelB === i ? 'B' : wheelC === i ? 'C' : null}
                   dragSource={dragSource}
                   dragOver={dragOver}
                   colourMode={colourMode}
@@ -591,17 +641,16 @@ function PairPageContent() {
               ))}
             </div>
 
-            {/* Continue */}
             <button
-              onClick={() => bothSelected && setPhase('duration')}
-              disabled={!bothSelected}
+              onClick={() => allSelected && setPhase('duration')}
+              disabled={!allSelected}
               className="px-8 py-3 rounded-full text-sm font-medium tracking-wide transition-all disabled:opacity-20 disabled:cursor-not-allowed"
               style={{
-                background: bothSelected
-                  ? `linear-gradient(135deg, ${hexA}33 0%, ${hexB}33 100%)`
+                background: allSelected
+                  ? `linear-gradient(135deg, ${hexA}33 0%, ${hexB}33 50%, ${hexC}33 100%)`
                   : 'rgba(255,255,255,0.05)',
-                border: `1px solid ${bothSelected ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.07)'}`,
-                color: bothSelected ? '#fff' : 'rgba(255,255,255,0.3)',
+                border: `1px solid ${allSelected ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.07)'}`,
+                color: allSelected ? '#fff' : 'rgba(255,255,255,0.3)',
               }}
             >
               Continue
@@ -610,7 +659,7 @@ function PairPageContent() {
         )}
 
         {/* ── DURATION phase ────────────────────────────────────────────── */}
-        {phase === 'duration' && wheelA !== null && wheelB !== null && (
+        {phase === 'duration' && wheelA !== null && wheelB !== null && wheelC !== null && (
           <motion.div
             key="duration"
             className="flex flex-col items-center gap-8 px-6 py-6 flex-1"
@@ -619,18 +668,17 @@ function PairPageContent() {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.3 }}
           >
-            {/* Pair preview (smaller) */}
             <div className="flex flex-col items-center gap-2">
-              <PairPreview idA={wheelA} idB={wheelB} colourMode={colourMode} />
-              <p className="text-[10px] tracking-widest uppercase"
-                 style={{ color: 'rgba(255,255,255,0.3)' }}>
+              <TrioPreview idA={wheelA} idB={wheelB} idC={wheelC} colourMode={colourMode} />
+              <p className="text-[10px] tracking-widest uppercase" style={{ color: 'rgba(255,255,255,0.3)' }}>
                 {clockTitles[wheelA]}
                 <span className="mx-2 text-white/15">×</span>
                 {clockTitles[wheelB]}
+                <span className="mx-2 text-white/15">×</span>
+                {clockTitles[wheelC]}
               </p>
             </div>
 
-            {/* Duration options */}
             <div className="w-full max-w-xs">
               <p className="text-[9px] tracking-widest uppercase text-white/25 mb-4 text-center">
                 Set Duration
@@ -643,7 +691,7 @@ function PairPageContent() {
                     className="py-3 rounded-xl text-sm font-medium transition-all"
                     style={{
                       background: duration === ms
-                        ? `linear-gradient(135deg, ${CLOCK_HEX[wheelA]}22 0%, ${CLOCK_HEX[wheelB]}22 100%)`
+                        ? `linear-gradient(135deg, ${CLOCK_HEX[wheelA]}22 0%, ${CLOCK_HEX[wheelB]}22 50%, ${CLOCK_HEX[wheelC]}22 100%)`
                         : 'rgba(255,255,255,0.04)',
                       border: `1px solid ${duration === ms ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.07)'}`,
                       color: duration === ms ? '#fff' : 'rgba(255,255,255,0.4)',
@@ -677,7 +725,6 @@ function PairPageContent() {
               </div>
             </div>
 
-            {/* Back + Begin */}
             <div className="flex gap-3">
               <button
                 onClick={() => setPhase('select')}
@@ -691,7 +738,7 @@ function PairPageContent() {
                 className="px-8 py-2.5 rounded-full text-sm font-medium transition-all disabled:opacity-20 disabled:cursor-not-allowed"
                 style={{
                   background: duration
-                    ? `linear-gradient(135deg, ${CLOCK_HEX[wheelA]}44 0%, ${CLOCK_HEX[wheelB]}44 100%)`
+                    ? `linear-gradient(135deg, ${CLOCK_HEX[wheelA]}44 0%, ${CLOCK_HEX[wheelB]}44 50%, ${CLOCK_HEX[wheelC]}44 100%)`
                     : 'rgba(255,255,255,0.05)',
                   border: `1px solid ${duration ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.07)'}`,
                   color: duration ? '#fff' : 'rgba(255,255,255,0.3)',
@@ -708,11 +755,11 @@ function PairPageContent() {
   )
 }
 
-export default function PairPage() {
+export default function TrioPage() {
   return (
     <ProtectedRoute>
       <Suspense fallback={null}>
-        <PairPageContent />
+        <TrioPageContent />
       </Suspense>
     </ProtectedRoute>
   )
