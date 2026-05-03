@@ -240,14 +240,15 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                             return (
                               <motion.div
                                 key={nodeIndex}
-                                className={`pointer-events-none absolute w-2 h-2 rounded-full ${focusNodeColors[index]} dark:brightness-150`}
+                                className="pointer-events-none absolute w-2 h-2 rounded-full"
                                 style={{
+                                  backgroundColor: CLOCK_HEX[index],
                                   left: `${x}%`,
                                   top: `${y}%`,
                                   transform: 'translate(-50%, -50%)',
                                   mixBlendMode: isDarkMode ? 'screen' : 'multiply',
-                                  boxShadow: isDarkMode 
-                                    ? '0 0 4px rgba(255, 255, 255, 0.3)' 
+                                  boxShadow: isDarkMode
+                                    ? '0 0 4px rgba(255, 255, 255, 0.3)'
                                     : '0 0 4px rgba(0, 0, 0, 0.2)'
                                 }}
                                 initial={{ opacity: 0, scale: 0 }}
@@ -592,9 +593,10 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
                               <div
                                 key={nodeIndex}
                                 className={`absolute w-2 h-2 rounded-full transition-all duration-200 ${
-                                  showColor ? `${focusNodeColors[index]} dark:brightness-150` : 'bg-gray-400 dark:bg-gray-500 opacity-60'
+                                  showColor ? '' : 'bg-gray-400 dark:bg-gray-500 opacity-60'
                                 }`}
                                 style={{
+                                  backgroundColor: showColor ? CLOCK_HEX[index] : undefined,
                                   left: `${x}%`,
                                   top: `${y}%`,
                                   transform: 'translate(-50%, -50%)',
