@@ -75,6 +75,16 @@ export default function SessionsPage() {
   const [selectedClockColor, setSelectedClockColor] = useState<string>('')
   const [isDurationDialogOpen, setIsDurationDialogOpen] = useState(false)
   const [hoveredCardIndex, setHoveredCardIndex] = useState<number | null>(null)
+  const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set())
+
+  const toggleCard = (i: number) => {
+    setExpandedCards(prev => {
+      const next = new Set(prev)
+      if (next.has(i)) next.delete(i)
+      else next.add(i)
+      return next
+    })
+  }
   const router = useRouter()
   const searchParams = useSearchParams()
   const mode = searchParams.get('mode')
@@ -369,65 +379,80 @@ export default function SessionsPage() {
                           )}
                         </div>
 
-                        <div className={`${isCreateListView ? "grid grid-cols-3 gap-4 mb-4" : "grid grid-cols-3 gap-1.5 my-4"}`}>
-                          <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
-                            <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                              <Clock className="h-3 w-3 text-gray-400 dark:text-gray-500" />
-                              Elapsed
-                            </span>
-                            <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                              {clock.timeElapsed}
-                            </span>
+                        {/* Collapsible stats toggle */}
+                        <button
+                          type="button"
+                          onClick={() => toggleCard(i)}
+                          className="flex items-center justify-center gap-1 mx-auto mt-3 px-3 py-1 rounded-full text-[10px] tracking-widest uppercase transition-colors text-gray-400 dark:text-white/25 hover:text-gray-600 dark:hover:text-white/50 border border-transparent hover:border-black/10 dark:hover:border-white/10"
+                        >
+                          {expandedCards.has(i) ? (
+                            <><ChevronUp className="h-3 w-3" />details</>
+                          ) : (
+                            <><ChevronDown className="h-3 w-3" />details</>
+                          )}
+                        </button>
+
+                        {expandedCards.has(i) && (
+                          <div className={`${isCreateListView ? "grid grid-cols-3 gap-4 mb-4" : "grid grid-cols-3 gap-1.5 my-3"}`}>
+                            <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
+                              <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+                                <Clock className="h-3 w-3 text-gray-400 dark:text-gray-500" />
+                                Elapsed
+                              </span>
+                              <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
+                                {clock.timeElapsed}
+                              </span>
+                            </div>
+                            <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
+                              <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+                                <RotateCw className={`h-3 w-3 text-gray-400 dark:text-gray-500 ${clock.rotationDirection === 'counterclockwise' ? 'transform -scale-x-100' : ''}`} />
+                                Rotations
+                              </span>
+                              <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
+                                {clock.totalRotations.toLocaleString()}
+                              </span>
+                            </div>
+                            <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
+                              <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+                                <Compass className="h-3 w-3 text-gray-400 dark:text-gray-500" />
+                                Rotation
+                              </span>
+                              <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
+                                {clock.currentDegree.toFixed(3)}°
+                              </span>
+                            </div>
+                            <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
+                              <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+                                <div
+                                  className="w-1 h-1 rounded-full shrink-0"
+                                  style={{ backgroundColor: clockHex }}
+                                />
+                                Focus Nodes
+                              </span>
+                              <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
+                                {clock.focusNodes}
+                              </span>
+                            </div>
+                            <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
+                              <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+                                <div className="w-1 h-1 rounded-full border border-gray-900 dark:border-white/40" />
+                                Satellites
+                              </span>
+                              <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
+                                {clock.satellites.length}
+                              </span>
+                            </div>
+                            <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
+                              <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+                                <Compass className="h-3 w-3 text-gray-400 dark:text-gray-500" />
+                                Start °
+                              </span>
+                              <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
+                                {clock.startingDegree}°
+                              </span>
+                            </div>
                           </div>
-                          <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
-                            <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                              <RotateCw className={`h-3 w-3 text-gray-400 dark:text-gray-500 ${clock.rotationDirection === 'counterclockwise' ? 'transform -scale-x-100' : ''}`} />
-                              Rotations
-                            </span>
-                            <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                              {clock.totalRotations.toLocaleString()}
-                            </span>
-                          </div>
-                          <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
-                            <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                              <Compass className="h-3 w-3 text-gray-400 dark:text-gray-500" />
-                              Rotation
-                            </span>
-                            <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                              {clock.currentDegree.toFixed(3)}°
-                            </span>
-                          </div>
-                          <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
-                            <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                              <div
-                                className="w-1 h-1 rounded-full shrink-0"
-                                style={{ backgroundColor: clockHex }}
-                              />
-                              Focus Nodes
-                            </span>
-                            <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                              {clock.focusNodes}
-                            </span>
-                          </div>
-                          <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
-                            <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                              <div className="w-1 h-1 rounded-full border border-gray-900 dark:border-white/40" />
-                              Satellites
-                            </span>
-                            <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                              {clock.satellites.length}
-                            </span>
-                          </div>
-                          <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
-                            <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                              <Compass className="h-3 w-3 text-gray-400 dark:text-gray-500" />
-                              Start °
-                            </span>
-                            <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                              {clock.startingDegree}°
-                            </span>
-                          </div>
-                        </div>
+                        )}
 
                         <div className={`flex gap-3 mt-auto items-center`}>
                           <button
