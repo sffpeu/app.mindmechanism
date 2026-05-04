@@ -30,6 +30,7 @@ import { cn } from '@/lib/utils';
 function isPublicAuthPath(pathname: string | null) {
   if (!pathname) return true;
   if (pathname === '/' || pathname === '/home' || pathname === '/home/') return true;
+  if (pathname === '/welcome' || pathname === '/welcome/') return true;
   return pathname.startsWith('/auth/');
 }
 

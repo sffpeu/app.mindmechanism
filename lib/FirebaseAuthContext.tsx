@@ -219,6 +219,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await firebaseSignOut(authInstance);
       // Remove the token cookie on sign out
       deleteCookie('__firebase_auth_token');
+      if (typeof window !== 'undefined') {
+        try {
+          window.sessionStorage.removeItem('mindmechanism-welcome-completed')
+          window.sessionStorage.removeItem('mindmechanism-welcome-choice')
+        } catch {
+          /* ignore */
+        }
+      }
       setUser(null);
       setProfile(null);
       // Add a small delay to ensure state is cleared before navigation

@@ -17,16 +17,16 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // If we're on the home page and have a token, redirect to dashboard
+  // If we're on the home page and have a token, go to post-login welcome splash
   if (path === '/' && token) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    return NextResponse.redirect(new URL('/welcome', request.url))
   }
 
-  // If we're on home or auth pages and have a token, redirect to dashboard
+  // If we're on home or auth pages and have a token, redirect to welcome (then user continues to the app)
   const isVerifyEmailPath = path === '/auth/verify-email' || path === '/auth/verify-email/'
   if ((path === '/home' || path === '/home/' || path.startsWith('/auth/')) && token) {
     if (!isVerifyEmailPath) {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+      return NextResponse.redirect(new URL('/welcome', request.url))
     }
   }
 

@@ -4,7 +4,7 @@ export const FIREBASE_EMAIL_LINK_STORAGE_KEY = 'emailForSignIn'
 
 export function getEmailLinkFinishPath(callbackUrl: string): string {
   const path = '/auth/email-link'
-  if (!callbackUrl || callbackUrl === '/dashboard') {
+  if (!callbackUrl || callbackUrl === '/dashboard' || callbackUrl === '/welcome') {
     return path
   }
   const q = new URLSearchParams({ callbackUrl })
@@ -27,7 +27,7 @@ export function sanitizeEmailLinkCallback(raw: string | null): string {
     raw === '/home/' ||
     raw.startsWith('/auth/')
   ) {
-    return '/dashboard'
+    return '/welcome'
   }
-  return raw.startsWith('/') ? raw : '/dashboard'
+  return raw.startsWith('/') ? raw : '/welcome'
 }

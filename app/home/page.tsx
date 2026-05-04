@@ -61,7 +61,7 @@ function HomeLoginContent() {
   const [emailLinkBusy, setEmailLinkBusy] = useState(false)
   const searchParams = useSearchParams()
   const { user } = useAuth()
-  const rawCallback = searchParams.get('callbackUrl') || '/dashboard'
+  const rawCallback = searchParams.get('callbackUrl') || '/welcome'
   // Avoid redirect loop: never send logged-in user back to /home or auth
   const callbackUrl =
     !rawCallback ||
@@ -69,7 +69,7 @@ function HomeLoginContent() {
     rawCallback === '/home' ||
     rawCallback === '/home/' ||
     rawCallback.startsWith('/auth/')
-      ? '/dashboard'
+      ? '/welcome'
       : rawCallback
 
   useEffect(() => {

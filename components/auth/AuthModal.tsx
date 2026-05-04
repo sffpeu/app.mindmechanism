@@ -60,7 +60,7 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
       }
 
       onClose()
-      window.location.assign('/dashboard')
+      window.location.assign('/welcome')
     } catch (error) {
       console.error('Authentication error:', error)
       setError('Failed to authenticate. Please check your credentials.')
@@ -76,7 +76,7 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
       const credential = await signInWithPopup(auth, provider)
       await syncFirebaseAuthCookie(credential.user)
       onClose()
-      window.location.assign('/dashboard')
+      window.location.assign('/welcome')
     } catch (error) {
       console.error('Error signing in with Google:', error)
       setError('Failed to sign in with Google.')

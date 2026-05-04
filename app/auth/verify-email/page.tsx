@@ -26,7 +26,7 @@ function VerifyEmailContent() {
     if (u.emailVerified) {
       await syncFirebaseAuthCookie(u)
       toast.success('Email verified — welcome!')
-      window.location.replace('/dashboard')
+      window.location.replace('/welcome')
       return true
     }
     return false
@@ -63,7 +63,7 @@ function VerifyEmailContent() {
           await syncFirebaseAuthCookie(u)
           if (u.emailVerified) {
             toast.success('Email verified — welcome!')
-            window.location.replace('/dashboard')
+            window.location.replace('/welcome')
             return
           }
         } else {
@@ -89,7 +89,7 @@ function VerifyEmailContent() {
   useEffect(() => {
     if (loading || oobBusy || !user) return
     if (!requiresEmailVerification(user)) {
-      window.location.replace('/dashboard')
+      window.location.replace('/welcome')
     }
   }, [user, loading, oobBusy])
 
