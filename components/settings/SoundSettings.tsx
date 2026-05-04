@@ -278,8 +278,8 @@ export function SoundSettings() {
           <div>
             <p className="text-sm font-medium text-gray-900 dark:text-white">Node frequencies</p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              Breathing with the clock glow on single-node pages — classic sine
-              Hz or planet drone loops; set levels and preview each wheel here
+              Breathing with the clock glow on single-clock, timed session, pair,
+              and trio pages — sine Hz or planet drone loops; preview and levels here
             </p>
           </div>
           <Switch

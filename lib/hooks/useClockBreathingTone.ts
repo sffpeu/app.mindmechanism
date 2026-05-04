@@ -2,7 +2,9 @@
 
 import { useEffect, useRef } from 'react'
 import { useSettings } from '@/lib/hooks/useSettings'
-import { MM_DRONE_PATH } from '@/lib/mmDroneTones'
+import { useSettingsHydrated } from '@/lib/hooks/useSettingsHydrated'
+import { FREQ_FADE_IN_S, masterLevelMult } from '@/lib/breathingToneEnvelope'
+import { decodeDroneSample } from '@/lib/droneSample'
 import {
   CLOCK_BREATH_PERIOD_MS,
   CLOCK_TONE_HZ,
@@ -10,31 +12,8 @@ import {
   breathIntensity01,
 } from '@/lib/clockToneHz'
 
-const FREQ_FADE_IN_S = 3.5
 const MAX_GAIN_SYNTH = 0.12
-/** Looped drones are denser than a sine — base cap before toneVolume × droneClockGain */
 const MAX_GAIN_DRONE = 0.11
-
-const SOUND_CHECK_MS = 2200
-const LEVEL_RAMP_MS = 5200
-const START_LEVEL = 0.028
-const SOUND_CHECK_END_LEVEL = 0.11
-
-function easeOutCubic(t: number): number {
-  return 1 - (1 - t) ** 3
-}
-
-function masterLevelMult(elapsed: number): number {
-  if (elapsed < SOUND_CHECK_MS) {
-    return START_LEVEL + (SOUND_CHECK_END_LEVEL - START_LEVEL) * (elapsed / SOUND_CHECK_MS)
-  }
-  const rampEnd = SOUND_CHECK_MS + LEVEL_RAMP_MS
-  if (elapsed < rampEnd) {
-    const u = (elapsed - SOUND_CHECK_MS) / LEVEL_RAMP_MS
-    return SOUND_CHECK_END_LEVEL + (1 - SOUND_CHECK_END_LEVEL) * easeOutCubic(u)
-  }
-  return 1
-}
 
 /**
  * Breathing tone on single-node clock pages: synthetic sine or looped planet drone
@@ -45,6 +24,8 @@ export function useClockBreathingTone(clockIndex: number, muted: boolean) {
   const rafRef = useRef<number>(0)
   const mutedRef = useRef(muted)
   mutedRef.current = muted
+
+  const settingsHydrated = useSettingsHydrated()
 
   const {
     tonesEnabled,
@@ -71,6 +52,7 @@ export function useClockBreathingTone(clockIndex: number, muted: boolean) {
 
   useEffect(() => {
     if (typeof window === 'undefined') return
+    if (!settingsHydrated) return
 
     const mode: 'synthetic' | 'drone' = toneMode === 'synthetic' ? 'synthetic' : 'drone'
     let ctx: AudioContext
@@ -87,6 +69,7 @@ export function useClockBreathingTone(clockIndex: number, muted: boolean) {
     let osc: OscillatorNode | null = null
     let source: AudioBufferSourceNode | null = null
     let cancelled = false
+    const isCancelled = () => cancelled
 
     const tryResume = () => {
       if (ctx.state === 'suspended') void ctx.resume()
@@ -119,10 +102,7 @@ export function useClockBreathingTone(clockIndex: number, muted: boolean) {
 
     const startDrone = async () => {
       try {
-        const res = await fetch(MM_DRONE_PATH(clockIndex))
-        if (!res.ok || cancelled) return
-        const ab = await res.arrayBuffer()
-        const buffer = await ctx.decodeAudioData(ab.slice(0))
+        const buffer = await decodeDroneSample(ctx, clockIndex, isCancelled)
         if (cancelled) return
         const src = ctx.createBufferSource()
         src.buffer = buffer
@@ -189,5 +169,5 @@ export function useClockBreathingTone(clockIndex: number, muted: boolean) {
       gain.disconnect()
       void ctx.close()
     }
-  }, [clockIndex, toneMode])
+  }, [clockIndex, toneMode, settingsHydrated])
 }
