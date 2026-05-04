@@ -11,6 +11,7 @@ import {
   type CSSProperties,
   type PointerEvent,
   type ReactNode,
+  type ChangeEvent,
 } from 'react'
 import { Card } from '@/components/ui/card'
 import {
@@ -40,6 +41,7 @@ import {
   GripVertical,
   RotateCcw,
   Type,
+  Image as ImageIcon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -50,7 +52,9 @@ import { useNotes } from '@/lib/NotesContext'
 import { Note, WeatherSnapshot } from '@/lib/notes'
 import { toast } from '@/components/ui/use-toast'
 import { WeatherSnapshotPopover } from '@/components/WeatherSnapshotPopover'
-import { Timestamp } from 'firebase/firestore'
+import { Timestamp, doc, setDoc, getDoc, type Firestore } from 'firebase/firestore'
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { getFirebaseStorage, db } from '@/lib/firebase'
 import {
   Select,
   SelectContent,
@@ -104,6 +108,47 @@ interface MoonData {
   moon_illumination: string
   moonrise: string
   moonset: string
+}
+
+async function compressImage(dataUrl: string): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new window.Image()
+    img.onload = () => {
+      const MAX = 900
+      let { width, height } = img
+      if (width > MAX || height > MAX) {
+        if (width > height) {
+          height = Math.round((height * MAX) / width)
+          width = MAX
+        } else {
+          width = Math.round((width * MAX) / height)
+          height = MAX
+        }
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        resolve(dataUrl)
+        return
+      }
+      ctx.drawImage(img, 0, 0, width, height)
+      resolve(canvas.toDataURL('image/jpeg', 0.72))
+    }
+    img.onerror = () => resolve(dataUrl)
+    img.src = dataUrl
+  })
+}
+
+async function uploadNotesBg(dataUrl: string, uid: string): Promise<string> {
+  const compressed = await compressImage(dataUrl)
+  const response = await fetch(compressed)
+  const blob = await response.blob()
+  const storage = getFirebaseStorage()
+  const fileRef = storageRef(storage, `notes-bg/${uid}/background.jpg`)
+  await uploadBytes(fileRef, blob, { contentType: 'image/jpeg' })
+  return getDownloadURL(fileRef)
 }
 
 const clockColors = [
@@ -412,6 +457,8 @@ export default function NotesPage() {
   const [selectedSessionId, setSelectedSessionId] = useState<string>('none')
   const [envSnapshotExpanded, setEnvSnapshotExpanded] = useState(false)
   const [savedNotesPanelOpen, setSavedNotesPanelOpen] = useState(true)
+  const [pageBackground, setPageBackground] = useState<string | null>(null)
+  const bgInputRef = useRef<HTMLInputElement>(null)
   const { playSuccess } = useSoundEffects()
 
   const [panelLayout, setPanelLayout] = useState(staticPanelLayoutForHydration)
@@ -430,6 +477,31 @@ export default function NotesPage() {
   useEffect(() => {
     setEnvSnapshotExpanded(false)
   }, [selectedNote?.id])
+
+  useEffect(() => {
+    if (!user) return
+    let mounted = true
+    void (async () => {
+      let attempts = 0
+      while (!db && attempts < 20) {
+        await new Promise((r) => setTimeout(r, 100))
+        attempts++
+      }
+      if (!db || !mounted) return
+      try {
+        const snap = await getDoc(doc(db as Firestore, 'users', user.uid, 'preferences', 'notes'))
+        if (snap.exists() && mounted) {
+          const bg = snap.data()?.background
+          if (bg) setPageBackground(bg)
+        }
+      } catch (err) {
+        console.error('Failed to load notes background:', err)
+      }
+    })()
+    return () => {
+      mounted = false
+    }
+  }, [user])
 
   useLayoutEffect(() => {
     try {
@@ -682,6 +754,53 @@ export default function NotesPage() {
     setSelectedSessionId('none')
   }
 
+  const handleBgUpload = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0]
+      if (!file) return
+      const reader = new FileReader()
+      reader.onload = (ev) => {
+        const dataUrl = ev.target?.result as string
+        setPageBackground(dataUrl)
+        if (user) {
+          void (async () => {
+            try {
+              const downloadUrl = await uploadNotesBg(dataUrl, user.uid)
+              setPageBackground(downloadUrl)
+              if (db) {
+                await setDoc(
+                  doc(db as Firestore, 'users', user.uid, 'preferences', 'notes'),
+                  { background: downloadUrl },
+                  { merge: true }
+                )
+              }
+            } catch (err) {
+              console.error('Notes background upload failed:', err)
+            }
+          })()
+        }
+      }
+      reader.readAsDataURL(file)
+      e.target.value = ''
+    },
+    [user]
+  )
+
+  const handleBgClear = useCallback(async () => {
+    setPageBackground(null)
+    if (user && db) {
+      try {
+        await setDoc(
+          doc(db as Firestore, 'users', user.uid, 'preferences', 'notes'),
+          { background: null },
+          { merge: true }
+        )
+      } catch (err) {
+        console.error('Failed to clear notes background:', err)
+      }
+    }
+  }, [user])
+
   // Accent colour for voice UI — matches the linked session's wheel, or a neutral violet
   const voiceAccentColor =
     selectedSessionId !== 'none'
@@ -895,17 +1014,50 @@ export default function NotesPage() {
   }
 
   return (
-    <div className="h-full overflow-hidden flex flex-col bg-gray-50 dark:bg-black/95">
-      <div className="flex-1 min-h-0 overflow-y-auto">
-        <div className="max-w-7xl mx-auto pl-16 pr-4 py-6">
+    <div
+      className={cn(
+        'relative flex h-full flex-col overflow-hidden',
+        pageBackground ? 'bg-black' : 'bg-gray-50 dark:bg-black/95'
+      )}
+    >
+      {pageBackground ? (
+        <>
+          <div
+            className="pointer-events-none absolute inset-0 z-0"
+            style={{
+              backgroundImage: `url(${pageBackground})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          />
+          <div
+            className="pointer-events-none absolute inset-0 z-0 bg-black/[0.55]"
+            aria-hidden
+          />
+        </>
+      ) : null}
+      <div className="relative z-[1] flex min-h-0 flex-1 overflow-y-auto">
+        <div className="mx-auto max-w-7xl pl-16 pr-4 py-6">
           <div className="mb-6 flex flex-col gap-4">
             <div className="min-w-0">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Notes</h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-xl">
+              <h1
+                className={cn(
+                  'text-2xl font-bold tracking-tight',
+                  pageBackground ? 'text-white' : 'text-gray-900 dark:text-white'
+                )}
+              >
+                Notes
+              </h1>
+              <p
+                className={cn(
+                  'mt-1 max-w-xl text-sm',
+                  pageBackground ? 'text-white/60' : 'text-gray-500 dark:text-gray-400'
+                )}
+              >
                 Write with optional session and environment context—saved notes stay easy to scan in the list.
               </p>
             </div>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between w-full">
+            <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
@@ -1000,6 +1152,39 @@ export default function NotesPage() {
                     </div>
                   </PopoverContent>
                 </Popover>
+                <input
+                  ref={bgInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleBgUpload}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => bgInputRef.current?.click()}
+                  title={pageBackground ? 'Change background image' : 'Set a background image'}
+                  aria-label={pageBackground ? 'Change background image' : 'Set a background image'}
+                  className={cn(
+                    'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 transition-colors',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                    pageBackground
+                      ? 'border-blue-500 bg-transparent text-blue-500 hover:bg-blue-50/10 focus-visible:ring-blue-500/45 dark:border-blue-400/85 dark:text-blue-400 dark:hover:bg-blue-950/35 dark:focus-visible:ring-blue-400/40'
+                      : 'border-slate-300 bg-transparent text-slate-500 hover:bg-slate-100/90 focus-visible:ring-slate-400/50 dark:border-white/25 dark:text-white/60 dark:hover:bg-white/10 dark:focus-visible:ring-white/30'
+                  )}
+                >
+                  <ImageIcon className="h-5 w-5" aria-hidden />
+                </button>
+                {pageBackground ? (
+                  <button
+                    type="button"
+                    onClick={() => void handleBgClear()}
+                    title="Remove background image"
+                    aria-label="Remove background image"
+                    className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-transparent text-slate-400 transition-colors hover:border-red-400 hover:text-red-500 dark:border-white/20 dark:text-gray-500 dark:hover:border-red-400/60 dark:hover:text-red-400"
+                  >
+                    <X className="h-4 w-4" aria-hidden />
+                  </button>
+                ) : null}
               </div>
               {(!selectedNote || isEditing) && (
                 <button
