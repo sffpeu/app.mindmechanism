@@ -8,15 +8,16 @@ import { Input } from '@/components/ui/input'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
   Volume2, VolumeX, Music2, ShoppingBag, Lock,
-  CheckCircle2, Loader2, AlertCircle, LogOut,
+  CheckCircle2, Loader2, AlertCircle, LogOut, Play, Square,
 } from 'lucide-react'
 import { useSettings } from '@/lib/hooks/useSettings'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { clockTitles } from '@/lib/clockTitles'
+import { MM_DRONE_PATH, MM_DRONE_PLANET_LABELS } from '@/lib/mmDroneTones'
 import { cn } from '@/lib/utils'
 import { startSpotifyAuth, spotifyTokensValid } from '@/lib/spotify'
 import { authorizeAppleMusic, unauthorizeAppleMusic } from '@/lib/appleMusicKit'
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 
 const CLOCK_COUNT = 9
 
@@ -119,6 +120,8 @@ export function SoundSettings() {
     tonesEnabled, setTonesEnabled,
     toneVolume, setToneVolume,
     clockToneMuted, setClockToneMuted,
+    toneMode, setToneMode,
+    droneClockGain, setDroneClockGain,
     spotifyTokens, setSpotifyTokens,
     appleMusicUserToken, setAppleMusicUserToken,
     sessionStreamingDuringSessions, setSessionStreamingDuringSessions,
@@ -194,6 +197,61 @@ export function SoundSettings() {
     setAppleState(appleMusicUserToken ? 'connected' : 'idle')
   }, [appleMusicUserToken])
 
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null)
+  const previewAudioRef = useRef<HTMLAudioElement | null>(null)
+
+  const stopDronePreview = useCallback(() => {
+    const a = previewAudioRef.current
+    if (a) {
+      a.pause()
+      a.currentTime = 0
+      previewAudioRef.current = null
+    }
+    setPreviewIndex(null)
+  }, [])
+
+  const toggleDronePreview = useCallback(
+    (i: number) => {
+      if (previewIndex === i) {
+        stopDronePreview()
+        return
+      }
+      stopDronePreview()
+      const a = new Audio(MM_DRONE_PATH(i))
+      const g = droneClockGain[i] ?? 1
+      a.volume = Math.min(1, Math.max(0, toneVolume * g * 0.9))
+      a.onended = () => {
+        previewAudioRef.current = null
+        setPreviewIndex(null)
+      }
+      previewAudioRef.current = a
+      setPreviewIndex(i)
+      void a.play().catch(() => {
+        previewAudioRef.current = null
+        setPreviewIndex(null)
+      })
+    },
+    [previewIndex, toneVolume, droneClockGain, stopDronePreview]
+  )
+
+  useEffect(() => {
+    const a = previewAudioRef.current
+    if (a && previewIndex != null) {
+      const g = droneClockGain[previewIndex] ?? 1
+      a.volume = Math.min(1, Math.max(0, toneVolume * g * 0.9))
+    }
+  }, [toneVolume, droneClockGain, previewIndex])
+
+  useEffect(() => {
+    return () => {
+      stopDronePreview()
+    }
+  }, [stopDronePreview])
+
+  useEffect(() => {
+    if (toneMode !== 'drone') stopDronePreview()
+  }, [toneMode, stopDronePreview])
+
   return (
     <div className="space-y-4">
 
@@ -220,8 +278,8 @@ export function SoundSettings() {
           <div>
             <p className="text-sm font-medium text-gray-900 dark:text-white">Node frequencies</p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              Sine tones derived from each wheel's symbolic Hz value —
-              breathing with the clock glow on single-node pages
+              Breathing with the clock glow on single-node pages — classic sine
+              Hz or planet drone loops; set levels and preview each wheel here
             </p>
           </div>
           <Switch
@@ -252,6 +310,84 @@ export function SoundSettings() {
                 <Volume2 className="h-4 w-4 shrink-0 text-gray-400" />
               </div>
             </div>
+
+            <div className="space-y-2 pt-1 border-t border-gray-200 dark:border-gray-800">
+              <Label className="text-xs text-gray-600 dark:text-gray-400">Tone source</Label>
+              <RadioGroup
+                value={toneMode}
+                onValueChange={(v) => setToneMode(v as 'synthetic' | 'drone')}
+                className="flex flex-col gap-2"
+              >
+                <label className="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
+                  <RadioGroupItem value="drone" id="tone-drone" />
+                  <span>Planet drones (MM recordings)</span>
+                </label>
+                <label className="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
+                  <RadioGroupItem value="synthetic" id="tone-synth" />
+                  <span>Synthetic sine (symbolic Hz)</span>
+                </label>
+              </RadioGroup>
+            </div>
+
+            {toneMode === 'drone' && (
+              <div className="space-y-2 pt-1 border-t border-gray-200 dark:border-gray-800">
+                <Label className="text-xs text-gray-600 dark:text-gray-400">
+                  Per-wheel drone level & preview
+                </Label>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-relaxed">
+                  Tap play to hear that wheel’s drone at your current master volume and level.
+                  On the clock page the same sample loops with the breathing glow.
+                </p>
+                <div className="space-y-2 max-h-[min(52vh,22rem)] overflow-y-auto overscroll-contain pr-1">
+                  {Array.from({ length: CLOCK_COUNT }).map((_, i) => {
+                    const gain = droneClockGain[i] ?? 1
+                    const playing = previewIndex === i
+                    return (
+                      <div
+                        key={i}
+                        className="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/60 dark:bg-gray-900/30 px-2 py-1.5"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => toggleDronePreview(i)}
+                          className={cn(
+                            'flex h-8 w-8 shrink-0 items-center justify-center rounded-md border transition-colors',
+                            playing
+                              ? 'border-gray-900 bg-gray-900 text-white dark:border-white dark:bg-white dark:text-black'
+                              : 'border-gray-300 bg-white text-gray-800 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800'
+                          )}
+                          aria-label={playing ? `Stop preview for wheel ${i + 1}` : `Preview drone for wheel ${i + 1}`}
+                        >
+                          {playing ? <Square className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5 pl-0.5" />}
+                        </button>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 truncate">
+                            {clockTitles[i]}
+                          </p>
+                          <p className="text-[11px] text-gray-800 dark:text-gray-200 truncate">
+                            {MM_DRONE_PLANET_LABELS[i]}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[10px] tabular-nums text-gray-500 w-8 shrink-0">
+                              {Math.round(gain * 100)}%
+                            </span>
+                            <Slider
+                              value={[gain]}
+                              onValueChange={([v]) => setDroneClockGain(i, v)}
+                              min={0}
+                              max={2}
+                              step={0.02}
+                              className="flex-1"
+                              aria-label={`Drone level for ${clockTitles[i]}`}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label className="text-xs text-gray-600 dark:text-gray-400">Per-node mute</Label>

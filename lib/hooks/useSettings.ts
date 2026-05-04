@@ -21,6 +21,17 @@ interface SettingsState {
   clockToneMuted: boolean[];
   setClockToneMuted: (index: number, muted: boolean) => void;
 
+  /** Sine Hz from symbolic values vs looped planet drone samples */
+  toneMode: 'synthetic' | 'drone';
+  setToneMode: (mode: 'synthetic' | 'drone') => void;
+
+  /**
+   * Per-clock gain for drone samples (0–2, 1 = 100%). Ignored in synthetic mode.
+   * Multiplied with master toneVolume and the breathing envelope on clock pages.
+   */
+  droneClockGain: number[];
+  setDroneClockGain: (index: number, gain: number) => void;
+
   /**
    * Smart Home: connected hub type.
    * null = not connected. Populated after local pairing flow.
@@ -113,6 +124,16 @@ export const useSettings = create<SettingsState>()(
         const next = [...get().clockToneMuted]
         next[index] = muted
         set({ clockToneMuted: next })
+      },
+
+      toneMode: 'drone',
+      setToneMode: (mode) => set({ toneMode: mode }),
+
+      droneClockGain: Array(CLOCK_COUNT).fill(1) as number[],
+      setDroneClockGain: (index, gain) => {
+        const next = [...get().droneClockGain]
+        next[index] = Math.max(0, Math.min(2, gain))
+        set({ droneClockGain: next })
       },
 
       smartHomeHub: null,

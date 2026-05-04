@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { useSettings } from '@/lib/hooks/useSettings'
+import { MM_DRONE_PATH } from '@/lib/mmDroneTones'
 import {
   CLOCK_BREATH_PERIOD_MS,
   CLOCK_TONE_HZ,
@@ -9,9 +11,10 @@ import {
 } from '@/lib/clockToneHz'
 
 const FREQ_FADE_IN_S = 3.5
-const MAX_GAIN = 0.12
+const MAX_GAIN_SYNTH = 0.12
+/** Looped drones are denser than a sine — base cap before toneVolume × droneClockGain */
+const MAX_GAIN_DRONE = 0.11
 
-/** Quiet “sound check” phase: breathing applies but overall level stays very low, then ramps up */
 const SOUND_CHECK_MS = 2200
 const LEVEL_RAMP_MS = 5200
 const START_LEVEL = 0.028
@@ -34,20 +37,42 @@ function masterLevelMult(elapsed: number): number {
 }
 
 /**
- * Plays a sine tone per clock index: frequency fades up on start; loudness follows
- * the same ~60s breathing curve as the clock glow. Begins at very low level during
- * the sound-check window, then ramps to full breathing response.
+ * Breathing tone on single-node clock pages: synthetic sine or looped planet drone
+ * sample, with gain following the same ~60s curve as the clock glow. Respects
+ * Settings → Node frequencies (master volume, per-node mute, tone mode, drone levels).
  */
 export function useClockBreathingTone(clockIndex: number, muted: boolean) {
   const rafRef = useRef<number>(0)
   const mutedRef = useRef(muted)
   mutedRef.current = muted
 
+  const {
+    tonesEnabled,
+    toneVolume,
+    clockToneMuted,
+    toneMode,
+    droneClockGain,
+  } = useSettings()
+
+  const settingsRef = useRef({
+    tonesEnabled,
+    toneVolume,
+    clockMuted: clockToneMuted[clockIndex] ?? false,
+    toneMode: toneMode ?? 'drone',
+    droneGain: droneClockGain[clockIndex] ?? 1,
+  })
+  settingsRef.current = {
+    tonesEnabled,
+    toneVolume,
+    clockMuted: clockToneMuted[clockIndex] ?? false,
+    toneMode: toneMode ?? 'drone',
+    droneGain: droneClockGain[clockIndex] ?? 1,
+  }
+
   useEffect(() => {
     if (typeof window === 'undefined') return
-    const raw = CLOCK_TONE_HZ[clockIndex] ?? CLOCK_TONE_HZ[0]
-    const targetHz = audibleHzFromClockTone(raw)
 
+    const mode: 'synthetic' | 'drone' = toneMode === 'synthetic' ? 'synthetic' : 'drone'
     let ctx: AudioContext
     try {
       ctx = new AudioContext()
@@ -55,26 +80,13 @@ export function useClockBreathingTone(clockIndex: number, muted: boolean) {
       return
     }
 
-    const osc = ctx.createOscillator()
     const gain = ctx.createGain()
-    osc.type = 'sine'
-    osc.frequency.setValueAtTime(20, ctx.currentTime)
-    osc.frequency.exponentialRampToValueAtTime(
-      Math.max(30, targetHz),
-      ctx.currentTime + FREQ_FADE_IN_S
-    )
     gain.gain.setValueAtTime(0, ctx.currentTime)
-
-    osc.connect(gain)
     gain.connect(ctx.destination)
 
-    // Start the tone as soon as the page loads; gain is 0 until the breathing ramp applies.
-    try {
-      osc.start()
-    } catch {
-      /* already started */
-    }
-    void ctx.resume()
+    let osc: OscillatorNode | null = null
+    let source: AudioBufferSourceNode | null = null
+    let cancelled = false
 
     const tryResume = () => {
       if (ctx.state === 'suspended') void ctx.resume()
@@ -86,6 +98,52 @@ export function useClockBreathingTone(clockIndex: number, muted: boolean) {
     }
     document.addEventListener('visibilitychange', onVis)
 
+    const startSynthetic = () => {
+      const raw = CLOCK_TONE_HZ[clockIndex] ?? CLOCK_TONE_HZ[0]
+      const targetHz = audibleHzFromClockTone(raw)
+      const o = ctx.createOscillator()
+      o.type = 'sine'
+      o.frequency.setValueAtTime(20, ctx.currentTime)
+      o.frequency.exponentialRampToValueAtTime(
+        Math.max(30, targetHz),
+        ctx.currentTime + FREQ_FADE_IN_S
+      )
+      o.connect(gain)
+      try {
+        o.start()
+      } catch {
+        /* already started */
+      }
+      osc = o
+    }
+
+    const startDrone = async () => {
+      try {
+        const res = await fetch(MM_DRONE_PATH(clockIndex))
+        if (!res.ok || cancelled) return
+        const ab = await res.arrayBuffer()
+        const buffer = await ctx.decodeAudioData(ab.slice(0))
+        if (cancelled) return
+        const src = ctx.createBufferSource()
+        src.buffer = buffer
+        src.loop = true
+        src.connect(gain)
+        src.start()
+        source = src
+      } catch (e) {
+        console.warn('[ClockBreathingTone] Drone sample failed, using sine', e)
+        if (!cancelled) startSynthetic()
+      }
+    }
+
+    if (mode === 'drone') {
+      void startDrone()
+    } else {
+      startSynthetic()
+    }
+
+    void ctx.resume()
+
     const t0 = performance.now()
 
     const tick = () => {
@@ -93,27 +151,43 @@ export function useClockBreathingTone(clockIndex: number, muted: boolean) {
       const phase = (elapsed % CLOCK_BREATH_PERIOD_MS) / CLOCK_BREATH_PERIOD_MS
       const breath = breathIntensity01(phase)
       const levelMult = masterLevelMult(elapsed)
-      let g = breath * MAX_GAIN * levelMult
-      if (mutedRef.current) g = 0
+      const s = settingsRef.current
       const now = ctx.currentTime
+
+      if (!s.tonesEnabled || s.clockMuted || mutedRef.current) {
+        gain.gain.setTargetAtTime(0, now, 0.04)
+        rafRef.current = requestAnimationFrame(tick)
+        return
+      }
+
+      const peak = s.toneMode === 'drone' ? MAX_GAIN_DRONE : MAX_GAIN_SYNTH
+      const droneMult = s.toneMode === 'drone' ? Math.max(0, Math.min(2, s.droneGain)) : 1
+      const g = breath * peak * levelMult * s.toneVolume * droneMult
       gain.gain.setTargetAtTime(g, now, 0.04)
       rafRef.current = requestAnimationFrame(tick)
     }
     rafRef.current = requestAnimationFrame(tick)
 
     return () => {
+      cancelled = true
       window.removeEventListener('pointerdown', tryResume)
       window.removeEventListener('keydown', tryResume)
       document.removeEventListener('visibilitychange', onVis)
       cancelAnimationFrame(rafRef.current)
       try {
-        osc.stop()
-        osc.disconnect()
-        gain.disconnect()
+        source?.stop()
+        source?.disconnect()
       } catch {
         /* ignore */
       }
+      try {
+        osc?.stop()
+        osc?.disconnect()
+      } catch {
+        /* ignore */
+      }
+      gain.disconnect()
       void ctx.close()
     }
-  }, [clockIndex])
+  }, [clockIndex, toneMode])
 }
