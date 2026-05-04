@@ -325,14 +325,157 @@ export default function DashboardPage() {
               </div>
             </Card>
 
-            {/* ── Recent Sessions ───────────────────────────────────────── */}
-            <section>
-              <h2 className="mb-0.5 text-base font-semibold text-gray-900 dark:text-white sm:text-lg">
-                Recent Sessions
-              </h2>
-              <p className="mb-3 text-xs text-gray-500 dark:text-gray-400 sm:text-sm">
-                Continue or restart from your latest sessions.
-              </p>
+            {/* ── Recent Sessions (+ Scheduled & Group in header) ───────── */}
+            <section aria-labelledby="recent-sessions-heading">
+              <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                <div className="min-w-0">
+                  <h2
+                    id="recent-sessions-heading"
+                    className="text-base font-semibold text-gray-900 dark:text-white sm:text-lg"
+                  >
+                    Recent Sessions
+                  </h2>
+                  <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 sm:text-sm">
+                    Continue or restart from your latest sessions.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  id="scheduled-group-toggle"
+                  aria-expanded={scheduledPanelOpen}
+                  aria-controls="scheduled-group-panel"
+                  onClick={() => setScheduledPanelOpen((v) => !v)}
+                  className={cn(
+                    'flex w-full shrink-0 items-center justify-between gap-2 rounded-xl border-2 px-3 py-2.5 text-left shadow-md transition-all sm:w-auto sm:min-w-[13.5rem] sm:py-2',
+                    'border-violet-400/90 bg-violet-100/95 text-gray-900 hover:bg-violet-200/90 dark:border-violet-500/55 dark:bg-indigo-950/70 dark:text-white dark:hover:bg-indigo-900/70',
+                    scheduledPanelOpen &&
+                      'ring-2 ring-violet-500/40 ring-offset-2 ring-offset-gray-50 dark:ring-violet-400/35 dark:ring-offset-black'
+                  )}
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <CalendarDays className="h-5 w-5 shrink-0 text-violet-700 dark:text-violet-300" aria-hidden />
+                    <span className="text-sm font-semibold leading-tight">
+                      Scheduled <span className="font-normal opacity-80">&amp;</span> Group
+                    </span>
+                    {scheduledActivityCount > 0 ? (
+                      <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-violet-600 px-1.5 text-xs font-bold text-white dark:bg-violet-500">
+                        {scheduledActivityCount}
+                      </span>
+                    ) : null}
+                  </span>
+                  <ChevronDown
+                    className={cn(
+                      'h-5 w-5 shrink-0 text-violet-700 transition-transform dark:text-violet-300',
+                      scheduledPanelOpen ? 'rotate-180' : 'rotate-0'
+                    )}
+                    aria-hidden
+                  />
+                </button>
+              </div>
+
+              {scheduledPanelOpen && (
+                <Card
+                  id="scheduled-group-panel"
+                  className="mb-4 overflow-hidden rounded-2xl border border-violet-200/80 bg-white/95 shadow-lg dark:border-violet-500/25 dark:bg-gray-950/80"
+                >
+                  <div className="space-y-6 px-4 py-4 sm:px-6 sm:py-5">
+                    {/* Upcoming scheduled sessions */}
+                    <div>
+                      <div className="mb-3 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                          <CalendarClock className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Upcoming scheduled
+                          </h3>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 rounded-full px-3 text-xs"
+                          onClick={() => recentSessionsRef.current?.openOpenSessionsDialog('waiting')}
+                        >
+                          View all
+                        </Button>
+                      </div>
+                      {upcomingScheduledSessions.length > 0 ? (
+                        <ul className="space-y-2">
+                          {upcomingScheduledSessions.map((s) => (
+                            <li
+                              key={s.id}
+                              className="flex items-center justify-between gap-3 rounded-xl border border-black/5 bg-gray-50/80 px-3 py-2.5 dark:border-white/10 dark:bg-white/[0.03]"
+                            >
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
+                                  {clockTitles[s.clockId] ?? `Clock ${s.clockId}`} session
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  {s.startsAt.toLocaleString()}
+                                </p>
+                              </div>
+                              <Clock3 className="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500" aria-hidden />
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-gray-500 dark:text-gray-400">No upcoming sessions.</p>
+                      )}
+                    </div>
+
+                    {/* Group sessions */}
+                    <div>
+                      <div className="mb-3 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Group sessions
+                          </h3>
+                        </div>
+                        <Button asChild type="button" variant="ghost" size="sm" className="h-7 rounded-full px-3 text-xs">
+                          <Link href="/lobby">Lobby</Link>
+                        </Button>
+                      </div>
+                      <div className="mb-3 grid grid-cols-2 gap-2">
+                        <div className="rounded-xl border border-black/5 bg-gray-50/80 px-3 py-3 dark:border-white/10 dark:bg-white/[0.03]">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Planned</p>
+                          <p className="mt-0.5 text-xl font-semibold tabular-nums text-gray-900 dark:text-white">
+                            {groupPlannedSessionsCount}
+                          </p>
+                        </div>
+                        <div className="rounded-xl border border-black/5 bg-gray-50/80 px-3 py-3 dark:border-white/10 dark:bg-white/[0.03]">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Upcoming</p>
+                          <p className="mt-0.5 text-xl font-semibold tabular-nums text-gray-900 dark:text-white">
+                            {groupUpcomingSessionsCount}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-gray-500 dark:text-gray-400">Mandala</span>
+                          <span className="font-medium text-gray-900 dark:text-white">
+                            {groupSessionSummary
+                              ? clockTitles[groupSessionSummary.clockId] ?? `Clock ${groupSessionSummary.clockId}`
+                              : 'Not set'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-gray-500 dark:text-gray-400">Session length</span>
+                          <span className="font-medium tabular-nums text-gray-900 dark:text-white">
+                            {groupSessionSummary ? `${groupSessionSummary.durationMinutes} min` : 'Not set'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-gray-500 dark:text-gray-400">Focus nodes</span>
+                          <span className="font-medium tabular-nums text-gray-900 dark:text-white">
+                            {groupSessionSummary ? groupSessionSummary.focusNodeCount : 0}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              )}
+
               <Card className="rounded-2xl border border-violet-200/90 dark:border-violet-500/30 overflow-hidden bg-violet-50/95 dark:bg-indigo-950/50 shadow-xl shadow-violet-200/40 dark:shadow-indigo-950/40 backdrop-blur-sm p-4 sm:p-6">
                 <DashboardRecentSessions ref={recentSessionsRef} />
               </Card>
@@ -360,137 +503,6 @@ export default function DashboardPage() {
                   <Link href="/notes">Notes</Link>
                 </Button>
               </div>
-            </section>
-
-            {/* ── Scheduled & Group — collapsed by default ──────────────── */}
-            <section>
-              <Card className="rounded-2xl border border-black/5 dark:border-white/10 overflow-hidden bg-white/90 dark:bg-white/5 shadow-sm backdrop-blur-sm">
-                <button
-                  type="button"
-                  aria-expanded={scheduledPanelOpen}
-                  onClick={() => setScheduledPanelOpen((v) => !v)}
-                  className="flex w-full items-center justify-between gap-3 px-4 sm:px-6 py-4 text-left transition-colors hover:bg-gray-50 dark:hover:bg-white/5"
-                >
-                  <span className="flex items-center gap-3 min-w-0">
-                    <CalendarDays className="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500" />
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Scheduled &amp; Group
-                    </span>
-                    {scheduledActivityCount > 0 && (
-                      <span className="inline-flex items-center justify-center h-5 min-w-5 rounded-full bg-violet-100 dark:bg-violet-900/50 px-1.5 text-[11px] font-semibold text-violet-700 dark:text-violet-300">
-                        {scheduledActivityCount}
-                      </span>
-                    )}
-                  </span>
-                  <ChevronDown
-                    className={cn(
-                      'h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500 transition-transform duration-200',
-                      scheduledPanelOpen ? 'rotate-180' : 'rotate-0'
-                    )}
-                    aria-hidden
-                  />
-                </button>
-
-                {scheduledPanelOpen && (
-                  <div className="border-t border-black/5 dark:border-white/10 px-4 sm:px-6 pb-5 pt-4 space-y-6">
-
-                    {/* Upcoming scheduled sessions */}
-                    <div>
-                      <div className="flex items-center justify-between gap-3 mb-3">
-                        <div className="flex items-center gap-2">
-                          <CalendarClock className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Upcoming scheduled
-                          </h3>
-                        </div>
-                        <Button
-                          type="button" variant="ghost" size="sm"
-                          className="rounded-full text-xs h-7 px-3"
-                          onClick={() => recentSessionsRef.current?.openOpenSessionsDialog('waiting')}
-                        >
-                          View all
-                        </Button>
-                      </div>
-                      {upcomingScheduledSessions.length > 0 ? (
-                        <ul className="space-y-2">
-                          {upcomingScheduledSessions.map((s) => (
-                            <li
-                              key={s.id}
-                              className="flex items-center justify-between gap-3 rounded-xl border border-black/5 dark:border-white/10 bg-gray-50/80 dark:bg-white/[0.03] px-3 py-2.5"
-                            >
-                              <div className="min-w-0">
-                                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                  {clockTitles[s.clockId] ?? `Clock ${s.clockId}`} session
-                                </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                  {s.startsAt.toLocaleString()}
-                                </p>
-                              </div>
-                              <Clock3 className="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500" aria-hidden />
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          No upcoming sessions.
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Group sessions */}
-                    <div>
-                      <div className="flex items-center justify-between gap-3 mb-3">
-                        <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Group sessions
-                          </h3>
-                        </div>
-                        <Button asChild type="button" variant="ghost" size="sm" className="rounded-full text-xs h-7 px-3">
-                          <Link href="/lobby">Lobby</Link>
-                        </Button>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2 mb-3">
-                        <div className="rounded-xl border border-black/5 dark:border-white/10 bg-gray-50/80 dark:bg-white/[0.03] px-3 py-3">
-                          <p className="text-xs text-gray-500 dark:text-gray-400">Planned</p>
-                          <p className="text-xl font-semibold text-gray-900 dark:text-white tabular-nums mt-0.5">
-                            {groupPlannedSessionsCount}
-                          </p>
-                        </div>
-                        <div className="rounded-xl border border-black/5 dark:border-white/10 bg-gray-50/80 dark:bg-white/[0.03] px-3 py-3">
-                          <p className="text-xs text-gray-500 dark:text-gray-400">Upcoming</p>
-                          <p className="text-xl font-semibold text-gray-900 dark:text-white tabular-nums mt-0.5">
-                            {groupUpcomingSessionsCount}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex items-center justify-between gap-3">
-                          <span className="text-gray-500 dark:text-gray-400">Mandala</span>
-                          <span className="font-medium text-gray-900 dark:text-white">
-                            {groupSessionSummary
-                              ? (clockTitles[groupSessionSummary.clockId] ?? `Clock ${groupSessionSummary.clockId}`)
-                              : 'Not set'}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between gap-3">
-                          <span className="text-gray-500 dark:text-gray-400">Session length</span>
-                          <span className="font-medium text-gray-900 dark:text-white tabular-nums">
-                            {groupSessionSummary ? `${groupSessionSummary.durationMinutes} min` : 'Not set'}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between gap-3">
-                          <span className="text-gray-500 dark:text-gray-400">Focus nodes</span>
-                          <span className="font-medium text-gray-900 dark:text-white tabular-nums">
-                            {groupSessionSummary ? groupSessionSummary.focusNodeCount : 0}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                  </div>
-                )}
-              </Card>
             </section>
 
           </div>
