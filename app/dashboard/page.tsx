@@ -221,9 +221,9 @@ export default function DashboardPage() {
           <div className="mx-auto max-w-2xl space-y-4 px-4 py-4 sm:px-6 sm:py-5">
 
             {/* ── Profile card ──────────────────────────────────────────── */}
-            <Card className="overflow-hidden rounded-xl border-0 bg-white/90 shadow-md shadow-gray-200/40 backdrop-blur-sm dark:bg-white/5 dark:shadow-none">
-              {/* Banner — short strip so the fold reaches Recent Sessions sooner */}
-              <div className="relative h-10 overflow-hidden sm:h-11" aria-hidden>
+            <Card className="overflow-hidden rounded-2xl border-0 bg-white/90 shadow-xl shadow-gray-200/50 backdrop-blur-sm dark:bg-white/5 dark:shadow-none">
+              {/* Banner */}
+              <div className="relative h-20 overflow-hidden sm:h-24" aria-hidden>
                 {profile?.bannerUrl?.trim() ? (
                   <>
                     <img src={profile.bannerUrl.trim()} alt="" className="absolute inset-0 h-full w-full object-cover" />
@@ -479,30 +479,6 @@ export default function DashboardPage() {
               <Card className="rounded-2xl border border-violet-200/90 dark:border-violet-500/30 overflow-hidden bg-violet-50/95 dark:bg-indigo-950/50 shadow-xl shadow-violet-200/40 dark:shadow-indigo-950/40 backdrop-blur-sm p-4 sm:p-6">
                 <DashboardRecentSessions ref={recentSessionsRef} />
               </Card>
-            </section>
-
-            {/* ── Practice shortcuts ────────────────────────────────────── */}
-            <section
-              className="rounded-2xl border border-violet-200/90 bg-violet-50/90 p-4 dark:border-violet-500/25 dark:bg-indigo-950/45"
-              aria-label="Practice shortcuts"
-            >
-              <p className="text-xs font-medium uppercase tracking-wide text-violet-800 dark:text-violet-200/90 mb-3">
-                Practice
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <Button size="sm" className="rounded-full" asChild>
-                  <Link href="/layers">Home mandala</Link>
-                </Button>
-                <Button size="sm" variant="secondary" className="rounded-full" asChild>
-                  <Link href="/sessions">Sessions</Link>
-                </Button>
-                <Button size="sm" variant="outline" className="rounded-full border-violet-300/80 bg-white/80 dark:border-violet-500/40 dark:bg-black/30" asChild>
-                  <Link href="/glossary">Glossary</Link>
-                </Button>
-                <Button size="sm" variant="outline" className="rounded-full border-violet-300/80 bg-white/80 dark:border-violet-500/40 dark:bg-black/30" asChild>
-                  <Link href="/notes">Notes</Link>
-                </Button>
-              </div>
             </section>
 
           </div>
