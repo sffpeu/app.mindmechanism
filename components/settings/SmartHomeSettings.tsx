@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
+  BookOpen,
+  ChevronDown,
   Lightbulb,
   Loader2,
   Radio,
@@ -270,6 +272,90 @@ export function SmartHomeSettings() {
           </p>
         </Card>
       ) : null}
+
+      <Card className="overflow-hidden border-violet-200/80 bg-violet-50/50 dark:border-violet-500/25 dark:bg-violet-950/20">
+        <details className="group">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 text-sm font-medium text-violet-950 dark:text-violet-100 [&::-webkit-details-marker]:hidden">
+            <span className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4 shrink-0 text-violet-700 dark:text-violet-300" aria-hidden />
+              Expert setup guide — local Philips Hue
+            </span>
+            <ChevronDown className="h-4 w-4 shrink-0 text-violet-700 transition-transform group-open:rotate-180 dark:text-violet-300" aria-hidden />
+          </summary>
+          <div className="space-y-4 border-t border-violet-200/60 px-4 pb-4 pt-3 text-xs leading-relaxed text-gray-700 dark:border-violet-500/20 dark:text-gray-300">
+            <p>
+              <strong>Who this is for:</strong> practitioners who want the mandala wheel colour (routes{' '}
+              <code className="rounded bg-black/5 px-1 font-mono dark:bg-white/10">/0</code>–
+              <code className="rounded bg-black/5 px-1 font-mono dark:bg-white/10">/8</code>) to drive real
+              room lights. Casual use of the site does not require Hue.
+            </p>
+            <p>
+              <strong>Why the public site cannot pair:</strong> the hosted app runs in the cloud (e.g. Vercel). It
+              cannot open TCP to your home <code className="font-mono">192.168.x.x</code> bridge — that is normal
+              networking, not a bug. Pairing and sync require the <strong>Next.js server</strong> to sit on the{' '}
+              <strong>same LAN</strong> as the bridge.
+            </p>
+            <div>
+              <p className="mb-1.5 font-medium text-gray-900 dark:text-white">Prerequisites</p>
+              <ul className="list-disc space-y-1 pl-4">
+                <li>Philips Hue Bridge on your Wi‑Fi, lights already set up in the Hue app.</li>
+                <li>Node.js installed; repo cloned; <code className="font-mono">npm install</code> done.</li>
+                <li>Computer (or home server) on the <strong>same Wi‑Fi</strong> as the bridge.</li>
+              </ul>
+            </div>
+            <div>
+              <p className="mb-1.5 font-medium text-gray-900 dark:text-white">Manual steps</p>
+              <ol className="list-decimal space-y-1.5 pl-4">
+                <li>
+                  From the project root, run <code className="font-mono">npm run dev</code> (or <code className="font-mono">pnpm dev</code>).
+                </li>
+                <li>
+                  Open <code className="font-mono">http://localhost:3000</code> in your browser — or{' '}
+                  <code className="font-mono">{'http://<your-pc-lan-ip>:3000'}</code> from another device on the same Wi‑Fi.
+                </li>
+                <li>Open <strong>Settings → Smart Home</strong> (this panel).</li>
+                <li>
+                  Enter the bridge IP (Hue app → Settings → Bridges → network info), or use <strong>Find bridges</strong>{' '}
+                  when it helps.
+                </li>
+                <li>
+                  <strong>Physically press</strong> the button on the Hue bridge, then within ~30 seconds click{' '}
+                  <strong>Pair with bridge</strong>.
+                </li>
+                <li>
+                  Choose <strong>All lights</strong> or pick <strong>rooms</strong>; use <strong>Refresh rooms</strong> if the list is empty.
+                  Adjust brightness and transition; use <strong>Test colour</strong> to verify.
+                </li>
+                <li>
+                  Open any clock route <code className="font-mono">/0</code> … <code className="font-mono">/8</code> — lights
+                  should track that wheel&apos;s colour while sync is enabled.
+                </li>
+                <li>
+                  Settings (bridge IP, API key, room selection, sliders) persist in this browser under{' '}
+                  <code className="font-mono">localStorage</code> key <code className="font-mono">app-settings</code> (Zustand persist).
+                </li>
+              </ol>
+            </div>
+            <div>
+              <p className="mb-1.5 font-medium text-gray-900 dark:text-white">Troubleshooting</p>
+              <ul className="list-disc space-y-1 pl-4">
+                <li>
+                  <strong>Pair fails / non‑JSON errors:</strong> wrong IP, bridge button not pressed in time, or PC not on
+                  the same VLAN as the bridge.
+                </li>
+                <li>
+                  <strong>Lights do not change on clock pages:</strong> confirm &quot;Sync wheel colours to Hue&quot; is on,
+                  bridge still paired, and you are on a clock URL <code className="font-mono">/0</code>–<code className="font-mono">/8</code>, not only the home mandala grid.
+                </li>
+                <li>
+                  <strong>Rooms list empty:</strong> bridge firmware must expose Hue <strong>Room</strong> groups; try Refresh
+                  after pairing.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </details>
+      </Card>
 
       <Card className="space-y-2 border-amber-200/80 bg-amber-50/90 p-4 dark:border-amber-500/30 dark:bg-amber-950/40">
         <div className="flex items-center gap-2">
