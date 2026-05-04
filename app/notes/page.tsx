@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, type ComponentType, type MouseEvent } from 'react'
+import { useState, useEffect, useRef, useCallback, type ComponentType, type MouseEvent } from 'react'
 import { Card } from '@/components/ui/card'
 import {
   Clock,
@@ -26,6 +26,7 @@ import {
   ChevronDown,
   Mic,
   MicOff,
+  Image as ImageIcon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,7 +37,7 @@ import { useNotes } from '@/lib/NotesContext'
 import { Note, WeatherSnapshot } from '@/lib/notes'
 import { toast } from '@/components/ui/use-toast'
 import { WeatherSnapshotPopover } from '@/components/WeatherSnapshotPopover'
-import { Timestamp } from 'firebase/firestore'
+import { Timestamp, doc, setDoc, getDoc, type Firestore } from 'firebase/firestore'
 import {
   Select,
   SelectContent,
@@ -49,6 +50,8 @@ import { Session } from '@/lib/sessions'
 import { clockTitles } from '@/lib/clockTitles'
 import { useLocation } from '@/lib/hooks/useLocation'
 import { useSoundEffects } from '@/lib/sounds'
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { getFirebaseStorage, db } from '@/lib/firebase'
 
 interface WeatherResponse {
   location: {
@@ -89,6 +92,39 @@ interface MoonData {
   moon_illumination: string
   moonrise: string
   moonset: string
+}
+
+async function compressImage(dataUrl: string): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new window.Image()
+    img.onload = () => {
+      const MAX = 900
+      let { width, height } = img
+      if (width > MAX || height > MAX) {
+        if (width > height) { height = Math.round((height * MAX) / width); width = MAX }
+        else { width = Math.round((width * MAX) / height); height = MAX }
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')
+      if (!ctx) { resolve(dataUrl); return }
+      ctx.drawImage(img, 0, 0, width, height)
+      resolve(canvas.toDataURL('image/jpeg', 0.72))
+    }
+    img.onerror = () => resolve(dataUrl)
+    img.src = dataUrl
+  })
+}
+
+async function uploadNotesBg(dataUrl: string, uid: string): Promise<string> {
+  const compressed = await compressImage(dataUrl)
+  const response = await fetch(compressed)
+  const blob = await response.blob()
+  const storage = getFirebaseStorage()
+  const fileRef = storageRef(storage, `notes-bg/${uid}/background.jpg`)
+  await uploadBytes(fileRef, blob, { contentType: 'image/jpeg' })
+  return getDownloadURL(fileRef)
 }
 
 const clockColors = [
@@ -176,6 +212,8 @@ export default function NotesPage() {
   const [selectedSessionId, setSelectedSessionId] = useState<string>('none')
   const [envSnapshotExpanded, setEnvSnapshotExpanded] = useState(false)
   const [savedNotesPanelOpen, setSavedNotesPanelOpen] = useState(true)
+  const [pageBackground, setPageBackground] = useState<string | null>(null)
+  const bgInputRef = useRef<HTMLInputElement>(null)
   const { playSuccess } = useSoundEffects()
 
   // Voice input state
@@ -251,6 +289,30 @@ export default function NotesPage() {
     return () => clearInterval(interval);
   }, [location?.coords]);
 
+  // Load persisted background from Firestore
+  useEffect(() => {
+    if (!user) return
+    let mounted = true
+    ;(async () => {
+      let attempts = 0
+      while (!db && attempts < 20) {
+        await new Promise(r => setTimeout(r, 100))
+        attempts++
+      }
+      if (!db || !mounted) return
+      try {
+        const snap = await getDoc(doc(db as Firestore, 'users', user.uid, 'preferences', 'notes'))
+        if (snap.exists() && mounted) {
+          const bg = snap.data()?.background
+          if (bg) setPageBackground(bg)
+        }
+      } catch (err) {
+        console.error('Failed to load notes background:', err)
+      }
+    })()
+    return () => { mounted = false }
+  }, [user])
+
   const createWeatherSnapshot = (): WeatherSnapshot | undefined => {
     if (!weatherData || !moon) return undefined;
 
@@ -293,7 +355,7 @@ export default function NotesPage() {
     try {
       const weatherSnapshot = createWeatherSnapshot();
       const finalSessionId = selectedSessionId === "none" ? null : selectedSessionId;
-      
+
       if (selectedNote && isEditing) {
         await editNote(selectedNote.id, noteTitle, noteContent, weatherSnapshot, finalSessionId)
       } else {
@@ -343,6 +405,50 @@ export default function NotesPage() {
     setIsEditing(false)
     setSelectedSessionId('none')
   }
+
+  const handleBgUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string
+      setPageBackground(dataUrl)
+      if (user) {
+        ;(async () => {
+          try {
+            const downloadUrl = await uploadNotesBg(dataUrl, user.uid)
+            setPageBackground(downloadUrl)
+            if (db) {
+              await setDoc(
+                doc(db as Firestore, 'users', user.uid, 'preferences', 'notes'),
+                { background: downloadUrl },
+                { merge: true }
+              )
+            }
+          } catch (err) {
+            console.error('Notes background upload failed:', err)
+          }
+        })()
+      }
+    }
+    reader.readAsDataURL(file)
+    e.target.value = ''
+  }, [user])
+
+  const handleBgClear = useCallback(async () => {
+    setPageBackground(null)
+    if (user && db) {
+      try {
+        await setDoc(
+          doc(db as Firestore, 'users', user.uid, 'preferences', 'notes'),
+          { background: null },
+          { merge: true }
+        )
+      } catch (err) {
+        console.error('Failed to clear notes background:', err)
+      }
+    }
+  }, [user])
 
   // Accent colour for voice UI — matches the linked session's wheel, or a neutral violet
   const voiceAccentColor =
@@ -557,35 +663,86 @@ export default function NotesPage() {
   }
 
   return (
-    <div className="h-full overflow-hidden flex flex-col bg-gray-50 dark:bg-black/95">
-      <div className="flex-1 min-h-0 overflow-y-auto">
+    <div className={cn('h-full overflow-hidden flex flex-col relative', pageBackground ? 'bg-black' : 'bg-gray-50 dark:bg-black/95')}>
+      {/* Custom background image + dark overlay */}
+      {pageBackground && (
+        <>
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 0,
+            backgroundImage: `url(${pageBackground})`,
+            backgroundSize: 'cover', backgroundPosition: 'center',
+          }} />
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 0,
+            background: 'rgba(0,0,0,0.55)', pointerEvents: 'none',
+          }} />
+        </>
+      )}
+      <div className="flex-1 min-h-0 overflow-y-auto" style={{ position: 'relative', zIndex: 1 }}>
         <div className="max-w-7xl mx-auto pl-16 pr-4 py-6">
           <div className="mb-6 flex flex-col gap-4">
             <div className="min-w-0">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Notes</h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-xl">
+              <h1 className={cn('text-2xl font-bold tracking-tight', pageBackground ? 'text-white' : 'text-gray-900 dark:text-white')}>Notes</h1>
+              <p className={cn('text-sm mt-1 max-w-xl', pageBackground ? 'text-white/60' : 'text-gray-500 dark:text-gray-400')}>
                 Write with optional session and environment context—saved notes stay easy to scan in the list.
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between w-full">
-              <button
-                type="button"
-                onClick={() => setSavedNotesPanelOpen((open) => !open)}
-                aria-expanded={savedNotesPanelOpen}
-                aria-controls={savedNotesPanelOpen ? 'notes-saved-list-panel' : undefined}
-                id="notes-saved-list-toggle"
-                title={savedNotesPanelOpen ? 'Hide the saved notes list' : 'Show the saved notes list'}
-                aria-label={savedNotesPanelOpen ? 'Hide saved notes panel' : 'Show saved notes panel'}
-                className={cn(
-                  'inline-flex h-10 w-10 shrink-0 items-center justify-center self-start rounded-lg border-2 transition-colors',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                  savedNotesPanelOpen
-                    ? 'border-slate-300 bg-transparent text-slate-700 hover:bg-slate-100/90 focus-visible:ring-slate-400/50 dark:border-white/25 dark:text-white dark:hover:bg-white/10 dark:focus-visible:ring-white/30'
-                    : 'border-blue-500 bg-transparent text-blue-600 hover:bg-blue-50 focus-visible:ring-blue-500/45 dark:border-blue-400/85 dark:text-blue-400 dark:hover:bg-blue-950/35 dark:focus-visible:ring-blue-400/40'
+              {/* Left controls: panel toggle + background image */}
+              <div className="flex items-center gap-2 self-start">
+                <button
+                  type="button"
+                  onClick={() => setSavedNotesPanelOpen((open) => !open)}
+                  aria-expanded={savedNotesPanelOpen}
+                  aria-controls={savedNotesPanelOpen ? 'notes-saved-list-panel' : undefined}
+                  id="notes-saved-list-toggle"
+                  title={savedNotesPanelOpen ? 'Hide the saved notes list' : 'Show the saved notes list'}
+                  aria-label={savedNotesPanelOpen ? 'Hide saved notes panel' : 'Show saved notes panel'}
+                  className={cn(
+                    'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 transition-colors',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                    savedNotesPanelOpen
+                      ? 'border-slate-300 bg-transparent text-slate-700 hover:bg-slate-100/90 focus-visible:ring-slate-400/50 dark:border-white/25 dark:text-white dark:hover:bg-white/10 dark:focus-visible:ring-white/30'
+                      : 'border-blue-500 bg-transparent text-blue-600 hover:bg-blue-50 focus-visible:ring-blue-500/45 dark:border-blue-400/85 dark:text-blue-400 dark:hover:bg-blue-950/35 dark:focus-visible:ring-blue-400/40'
+                  )}
+                >
+                  <ClipboardList className="h-6 w-6" aria-hidden />
+                </button>
+
+                {/* Background image controls */}
+                <input
+                  ref={bgInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleBgUpload}
+                  style={{ display: 'none' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => bgInputRef.current?.click()}
+                  title={pageBackground ? 'Change background image' : 'Set a background image'}
+                  className={cn(
+                    'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 transition-colors',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                    pageBackground
+                      ? 'border-blue-500 bg-transparent text-blue-500 hover:bg-blue-50/10 focus-visible:ring-blue-500/45 dark:border-blue-400/85 dark:text-blue-400 dark:hover:bg-blue-950/35 dark:focus-visible:ring-blue-400/40'
+                      : 'border-slate-300 bg-transparent text-slate-500 hover:bg-slate-100/90 focus-visible:ring-slate-400/50 dark:border-white/25 dark:text-white/60 dark:hover:bg-white/10 dark:focus-visible:ring-white/30'
+                  )}
+                >
+                  <ImageIcon className="h-5 w-5" aria-hidden />
+                </button>
+                {pageBackground && (
+                  <button
+                    type="button"
+                    onClick={handleBgClear}
+                    title="Remove background image"
+                    className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-300 dark:border-white/20 bg-transparent text-slate-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:border-red-400 dark:hover:border-red-400/60 transition-colors"
+                  >
+                    <X className="h-4 w-4" aria-hidden />
+                  </button>
                 )}
-              >
-                <ClipboardList className="h-6 w-6" aria-hidden />
-              </button>
+              </div>
+
               {(!selectedNote || isEditing) && (
                 <button
                   type="button"
@@ -679,7 +836,7 @@ export default function NotesPage() {
                         <div className="flex items-center gap-1">
                           {note.weatherSnapshot && (
                             <WeatherSnapshotPopover weatherSnapshot={note.weatherSnapshot}>
-                              <button 
+                              <button
                                 className="p-1 rounded-md hover:bg-blue-100 dark:hover:bg-blue-500/20 group transition-colors"
                                 onClick={(e) => e.stopPropagation()}
                               >
@@ -1267,4 +1424,4 @@ export default function NotesPage() {
       </div>
     </div>
   )
-} 
+}
