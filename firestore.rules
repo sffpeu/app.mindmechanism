@@ -22,7 +22,7 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated() && request.resource.data.source == 'user' && request.resource.data.user_id == request.auth.uid;
       allow update, delete: if isAuthenticated() && (
-        resource.data.source == 'user' && 
+        resource.data.source == 'user' &&
         resource.data.user_id == request.auth.uid
       );
     }
@@ -34,6 +34,11 @@ service cloud.firestore {
 
     // Focus Deck sessions — per-user, full CRUD, private
     match /users/{userId}/deckSessions/{sessionId} {
+      allow read, write: if isUserAuthenticated(userId);
+    }
+
+    // User preferences (notes background, etc.) — per-user, private
+    match /users/{userId}/preferences/{prefId} {
       allow read, write: if isUserAuthenticated(userId);
     }
 
@@ -120,4 +125,4 @@ service cloud.firestore {
       allow read: if isAuthenticated();
     }
   }
-} 
+}
