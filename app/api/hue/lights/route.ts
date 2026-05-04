@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { bridgeRequest, parseBridgeJson } from '@/lib/hueBridge'
+import { lanHueBlockedReason } from '@/lib/hueLanReachability'
 
 export const runtime = 'nodejs'
 import type { HueLightState } from '@/lib/hueColors'
@@ -38,6 +39,11 @@ export async function POST(req: NextRequest) {
   const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$|^[\w.-]+\.local$/
   if (!ipPattern.test(bridgeIp.trim())) {
     return NextResponse.json({ error: 'Invalid bridge IP address' }, { status: 400 })
+  }
+
+  const blocked = lanHueBlockedReason(bridgeIp.trim())
+  if (blocked) {
+    return NextResponse.json({ error: blocked }, { status: 400 })
   }
 
   const base = `/api/${apiKey}`

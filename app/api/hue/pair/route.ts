@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { bridgeRequest, parseBridgeJson } from '@/lib/hueBridge'
+import { lanHueBlockedReason } from '@/lib/hueLanReachability'
 
 export const runtime = 'nodejs'
 
@@ -27,6 +28,11 @@ export async function POST(req: NextRequest) {
   const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$|^[\w.-]+\.local$/
   if (!ipPattern.test(bridgeIp)) {
     return NextResponse.json({ error: 'Invalid bridge IP address' }, { status: 400 })
+  }
+
+  const blocked = lanHueBlockedReason(bridgeIp)
+  if (blocked) {
+    return NextResponse.json({ error: blocked }, { status: 400 })
   }
 
   /**

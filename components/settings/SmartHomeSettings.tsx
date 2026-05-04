@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,6 +18,7 @@ import { CLOCK_HEX, clockIndexToHueState } from '@/lib/hueColors'
 import { clockTitles } from '@/lib/clockTitles'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { HUE_CLOUD_LAN_MESSAGE, isHueLanUiAllowedHostname } from '@/lib/hueLanReachability'
 
 type HueDiscoveryEntry = {
   id?: string
@@ -54,20 +55,20 @@ export function SmartHomeSettings() {
   const [roomsBusy, setRoomsBusy] = useState(false)
   const [roomsList, setRoomsList] = useState<HueRoomRow[]>([])
   const [discovered, setDiscovered] = useState<HueDiscoveryEntry[]>([])
+  const [hueLanUiAllowed, setHueLanUiAllowed] = useState(false)
 
   useEffect(() => {
     setBridgeInput(hueBridgeIp ?? '')
   }, [hueBridgeIp])
 
+  useEffect(() => {
+    setHueLanUiAllowed(isHueLanUiAllowedHostname(window.location.hostname))
+  }, [])
+
   const connected = Boolean(hueBridgeIp && hueApiKey && smartHomeHub === 'hue')
 
-  const isProbablyLocalServer =
-    typeof window !== 'undefined' &&
-    (window.location.hostname === 'localhost' ||
-      window.location.hostname === '127.0.0.1' ||
-      window.location.hostname.endsWith('.local'))
-
   const fetchRooms = useCallback(async () => {
+    if (!hueLanUiAllowed) return
     if (!hueBridgeIp?.trim() || !hueApiKey?.trim()) return
     setRoomsBusy(true)
     try {
@@ -99,11 +100,11 @@ export function SmartHomeSettings() {
     } finally {
       setRoomsBusy(false)
     }
-  }, [hueBridgeIp, hueApiKey])
+  }, [hueLanUiAllowed, hueBridgeIp, hueApiKey])
 
   useEffect(() => {
-    if (connected) void fetchRooms()
-  }, [connected, fetchRooms])
+    if (connected && hueLanUiAllowed) void fetchRooms()
+  }, [connected, fetchRooms, hueLanUiAllowed])
 
   const applyRoomSelection = useCallback(
     (roomIds: string[], roomRows: HueRoomRow[]) => {
@@ -146,6 +147,10 @@ export function SmartHomeSettings() {
   }
 
   const handlePair = async () => {
+    if (!hueLanUiAllowed) {
+      toast.error(HUE_CLOUD_LAN_MESSAGE)
+      return
+    }
     const ip = bridgeInput.trim()
     if (!ip) {
       toast.error('Enter your Hue bridge IP address first.')
@@ -218,6 +223,10 @@ export function SmartHomeSettings() {
   }
 
   const handleTestColour = async () => {
+    if (!hueLanUiAllowed) {
+      toast.error(HUE_CLOUD_LAN_MESSAGE)
+      return
+    }
     if (!hueBridgeIp?.trim() || !hueApiKey?.trim()) return
     if (!hueUseAllLights && hueLightIds.length === 0) {
       toast.error('Select at least one room, or enable “All lights”.')
@@ -249,20 +258,19 @@ export function SmartHomeSettings() {
     }
   }
 
-  const productionWarning = useMemo(
-    () =>
-      !isProbablyLocalServer ? (
-        <p className="text-xs text-amber-800 dark:text-amber-200/90">
-          <strong>Deployed builds</strong> usually cannot reach a bridge on your Wi‑Fi. Run{' '}
-          <code className="rounded bg-amber-100 px-1 dark:bg-amber-950/80">next dev</code> on the
-          same network as the bridge, or self‑host the app at home.
-        </p>
-      ) : null,
-    [isProbablyLocalServer]
-  )
-
   return (
     <div className="space-y-4">
+      {!hueLanUiAllowed ? (
+        <Card className="space-y-2 border-red-300/90 bg-red-50 p-4 dark:border-red-500/40 dark:bg-red-950/35">
+          <p className="text-sm font-semibold text-red-900 dark:text-red-100">
+            Hue pairing is not available on this site
+          </p>
+          <p className="text-xs leading-relaxed text-red-900/90 dark:text-red-100/90">
+            {HUE_CLOUD_LAN_MESSAGE}
+          </p>
+        </Card>
+      ) : null}
+
       <Card className="space-y-2 border-amber-200/80 bg-amber-50/90 p-4 dark:border-amber-500/30 dark:bg-amber-950/40">
         <div className="flex items-center gap-2">
           <Radio className="h-4 w-4 text-amber-700 dark:text-amber-400" />
@@ -273,7 +281,6 @@ export function SmartHomeSettings() {
           on the same network as the bridge so <code className="rounded bg-black/5 px-1 dark:bg-white/10">/api/hue/*</code>{' '}
           can reach it.
         </p>
-        {productionWarning}
       </Card>
 
       <Card className="space-y-2 p-4 bg-white/50 dark:bg-black/50">
@@ -337,7 +344,8 @@ export function SmartHomeSettings() {
               type="button"
               variant="outline"
               size="sm"
-              disabled={discoverBusy}
+              disabled={discoverBusy || !hueLanUiAllowed}
+              title={!hueLanUiAllowed ? HUE_CLOUD_LAN_MESSAGE : undefined}
               onClick={() => void handleDiscover()}
               className="gap-1.5"
             >
@@ -375,7 +383,8 @@ export function SmartHomeSettings() {
           <Button
             type="button"
             size="sm"
-            disabled={pairBusy}
+            disabled={pairBusy || !hueLanUiAllowed}
+            title={!hueLanUiAllowed ? HUE_CLOUD_LAN_MESSAGE : undefined}
             onClick={() => void handlePair()}
             className="gap-1.5"
           >
@@ -399,6 +408,12 @@ export function SmartHomeSettings() {
 
       {connected ? (
         <>
+          {!hueLanUiAllowed ? (
+            <Card className="border-amber-200/80 bg-amber-50/90 p-3 text-xs text-amber-950 dark:border-amber-500/30 dark:bg-amber-950/40 dark:text-amber-100/90">
+              Your bridge is saved in this browser, but{' '}
+              <strong>live sync only works</strong> when you run the app from localhost or your LAN IP on the same Wi‑Fi as the bridge.
+            </Card>
+          ) : null}
           <Card className="space-y-4 p-4 bg-white/50 dark:bg-black/50">
             <div className="flex items-center justify-between gap-3">
               <Label htmlFor="hue-sync-enabled" className="text-sm font-medium">
@@ -453,7 +468,8 @@ export function SmartHomeSettings() {
                 variant="ghost"
                 size="sm"
                 className="h-8 gap-1 text-xs"
-                disabled={roomsBusy}
+                disabled={roomsBusy || !hueLanUiAllowed}
+                title={!hueLanUiAllowed ? HUE_CLOUD_LAN_MESSAGE : undefined}
                 onClick={() => void fetchRooms()}
               >
                 {roomsBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
@@ -517,6 +533,8 @@ export function SmartHomeSettings() {
               variant="secondary"
               size="sm"
               className="gap-2"
+              disabled={!hueLanUiAllowed}
+              title={!hueLanUiAllowed ? HUE_CLOUD_LAN_MESSAGE : undefined}
               onClick={() => void handleTestColour()}
             >
               <Wand2 className="h-4 w-4" />
