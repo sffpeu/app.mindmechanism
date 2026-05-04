@@ -44,9 +44,19 @@ interface SettingsState {
   hueBrightness: number;
   setHueBrightness: (bri: number) => void;
 
+  /** Colour transition when the wheel changes (seconds). Default 1.2 */
+  hueTransitionSec: number;
+  setHueTransitionSec: (sec: number) => void;
+
+  /**
+   * When true, sync affects all lights on the bridge (hueLightIds ignored).
+   * When false, only hueLightIds are updated — must be non-empty to sync.
+   */
+  hueUseAllLights: boolean;
+  setHueUseAllLights: (useAll: boolean) => void;
+
   /**
    * Resolved light IDs to control (derived from room selection).
-   * Empty array means all lights on the bridge.
    */
   hueLightIds: string[];
   setHueLightIds: (ids: string[]) => void;
@@ -103,6 +113,13 @@ export const useSettings = create<SettingsState>()(
 
       hueBrightness: 180,
       setHueBrightness: (bri) => set({ hueBrightness: Math.max(1, Math.min(254, bri)) }),
+
+      hueTransitionSec: 1.2,
+      setHueTransitionSec: (sec) =>
+        set({ hueTransitionSec: Math.max(0.2, Math.min(5, sec)) }),
+
+      hueUseAllLights: true,
+      setHueUseAllLights: (useAll) => set({ hueUseAllLights: useAll }),
 
       hueLightIds: [],
       setHueLightIds: (ids) => set({ hueLightIds: ids }),

@@ -24,18 +24,21 @@ export function useHueSync(clockIndex: number) {
     hueApiKey,
     hueBrightness,
     hueLightIds,
+    hueTransitionSec,
+    hueUseAllLights,
   } = useSettings()
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (!hueEnabled || !hueBridgeIp || !hueApiKey) return
+    if (!hueUseAllLights && hueLightIds.length === 0) return
 
     // Debounce: cancel any pending call from a previous render
     if (timerRef.current) clearTimeout(timerRef.current)
 
     timerRef.current = setTimeout(() => {
-      const state = clockIndexToHueState(clockIndex, hueBrightness)
+      const state = clockIndexToHueState(clockIndex, hueBrightness, hueTransitionSec)
 
       fetch('/api/hue/lights', {
         method: 'POST',
@@ -44,7 +47,7 @@ export function useHueSync(clockIndex: number) {
           bridgeIp: hueBridgeIp,
           apiKey: hueApiKey,
           state,
-          lightIds: hueLightIds.length > 0 ? hueLightIds : undefined,
+          lightIds: hueUseAllLights ? undefined : hueLightIds,
         }),
       }).catch((err) => {
         // Non-fatal — light sync failure should never disrupt the session
@@ -55,5 +58,14 @@ export function useHueSync(clockIndex: number) {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current)
     }
-  }, [clockIndex, hueEnabled, hueBridgeIp, hueApiKey, hueBrightness, hueLightIds])
+  }, [
+    clockIndex,
+    hueEnabled,
+    hueBridgeIp,
+    hueApiKey,
+    hueBrightness,
+    hueLightIds,
+    hueTransitionSec,
+    hueUseAllLights,
+  ])
 }
