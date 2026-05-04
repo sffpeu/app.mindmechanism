@@ -1,6 +1,16 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback, type ComponentType, type MouseEvent } from 'react'
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  type ComponentType,
+  type MouseEvent,
+  type CSSProperties,
+  type PointerEvent,
+  type ReactNode,
+} from 'react'
 import { Card } from '@/components/ui/card'
 import {
   Clock,
@@ -27,6 +37,8 @@ import {
   Mic,
   MicOff,
   Image as ImageIcon,
+  GripVertical,
+  RotateCcw,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -197,6 +209,194 @@ function sessionGroupDisplay(session: Session): { typeLabel: string; participant
   }
 }
 
+const LS_NOTES_PANELS = 'mindmechanism-notes-panels-v1'
+const LS_NOTES_A11Y = 'mindmechanism-notes-a11y-v1'
+
+function defaultPanelPositions(): { saved: { x: number; y: number }; editor: { x: number; y: number } } {
+  if (typeof window === 'undefined') {
+    return { saved: { x: 24, y: 108 }, editor: { x: 380, y: 108 } }
+  }
+  const vw = window.innerWidth
+  const vh = window.innerHeight
+  const savedW = 320
+  const editorW = Math.min(560, vw - 32)
+  const savedX = 16
+  const savedY = Math.min(108, vh * 0.12)
+  let editorX = savedX + savedW + 16
+  if (editorX + editorW > vw - 16) {
+    editorX = Math.max(16, vw - editorW - 16)
+  }
+  return {
+    saved: { x: savedX, y: savedY },
+    editor: { x: editorX, y: savedY },
+  }
+}
+
+type NotesPanelKey = 'saved' | 'editor'
+
+type PanelLayout = {
+  saved: { x: number; y: number }
+  editor: { x: number; y: number }
+  savedCollapsed: boolean
+  editorCollapsed: boolean
+}
+
+function defaultPanelLayout(): PanelLayout {
+  const pos = defaultPanelPositions()
+  return {
+    ...pos,
+    savedCollapsed: false,
+    editorCollapsed: false,
+  }
+}
+
+function NotesFloatingPanel({
+  id,
+  position,
+  zIndex,
+  widthClassName,
+  collapsed,
+  onToggleCollapse,
+  collapseLabelExpanded,
+  collapseLabelCollapsed,
+  onMove,
+  onBringToFront,
+  dragLabel,
+  handleLeft,
+  handleRight,
+  children,
+}: {
+  id: string
+  position: { x: number; y: number }
+  zIndex: number
+  widthClassName: string
+  collapsed: boolean
+  onToggleCollapse: () => void
+  collapseLabelExpanded: string
+  collapseLabelCollapsed: string
+  onMove: (x: number, y: number) => void
+  onBringToFront: () => void
+  dragLabel: string
+  handleLeft: ReactNode
+  handleRight?: ReactNode
+  children: ReactNode
+}) {
+  const rootRef = useRef<HTMLDivElement>(null)
+  const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null)
+
+  const clampPosition = useCallback((x: number, y: number) => {
+    const el = rootRef.current
+    const w = el?.offsetWidth ?? 360
+    const h = el?.offsetHeight ?? 420
+    const margin = 8
+    const vw = window.innerWidth
+    const vh = window.innerHeight
+    return {
+      x: Math.min(Math.max(margin, x), Math.max(margin, vw - w - margin)),
+      y: Math.min(Math.max(margin, y), Math.max(margin, vh - h - margin)),
+    }
+  }, [])
+
+  const endDrag = useCallback((e: PointerEvent<HTMLDivElement>) => {
+    if (!dragRef.current) return
+    dragRef.current = null
+    try {
+      rootRef.current?.releasePointerCapture(e.pointerId)
+    } catch {
+      /* already released */
+    }
+  }, [])
+
+  const onHandlePointerDown = (e: PointerEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onBringToFront()
+    dragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      origX: position.x,
+      origY: position.y,
+    }
+    rootRef.current?.setPointerCapture(e.pointerId)
+  }
+
+  const onRootPointerMove = (e: PointerEvent<HTMLDivElement>) => {
+    if (!dragRef.current) return
+    const dx = e.clientX - dragRef.current.startX
+    const dy = e.clientY - dragRef.current.startY
+    const next = clampPosition(dragRef.current.origX + dx, dragRef.current.origY + dy)
+    onMove(next.x, next.y)
+  }
+
+  return (
+    <div
+      ref={rootRef}
+      id={id}
+      role="region"
+      aria-label={dragLabel}
+      className={cn('fixed', !collapsed && 'max-h-[min(85vh,880px)]', widthClassName)}
+      style={{ left: position.x, top: position.y, zIndex }}
+      onMouseDown={onBringToFront}
+      onPointerMove={onRootPointerMove}
+      onPointerUp={endDrag}
+      onPointerCancel={endDrag}
+    >
+      <Card
+        className={cn(
+          'card flex flex-col overflow-hidden bg-white shadow-xl backdrop-blur-lg dark:bg-black/40',
+          'border border-black/5 dark:border-white/10',
+          !collapsed && 'max-h-[min(85vh,880px)]'
+        )}
+      >
+        <div
+          className={cn(
+            'flex shrink-0 items-center gap-1 border-black/10 bg-gray-50/90 px-2 py-2 dark:border-white/10 dark:bg-black/30',
+            !collapsed && 'border-b'
+          )}
+        >
+          <button
+            type="button"
+            data-notes-drag-handle
+            aria-label={dragLabel}
+            onPointerDown={onHandlePointerDown}
+            className={cn(
+              'flex min-w-0 flex-1 items-center gap-2 rounded-md px-1 py-1 text-left',
+              'cursor-grab touch-none active:cursor-grabbing',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50'
+            )}
+          >
+            <GripVertical className="h-4 w-4 shrink-0 text-gray-400" aria-hidden />
+            <div className="min-w-0 flex-1">{handleLeft}</div>
+          </button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0 text-gray-600 dark:text-gray-300"
+            aria-expanded={!collapsed}
+            title={collapsed ? collapseLabelCollapsed : collapseLabelExpanded}
+            aria-label={collapsed ? collapseLabelCollapsed : collapseLabelExpanded}
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation()
+              onToggleCollapse()
+            }}
+          >
+            <ChevronDown
+              className={cn('h-4 w-4 transition-transform duration-200', collapsed && '-rotate-90')}
+              aria-hidden
+            />
+          </Button>
+          {handleRight ? <div className="flex shrink-0 items-center gap-1">{handleRight}</div> : null}
+        </div>
+        {!collapsed ? (
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</div>
+        ) : null}
+      </Card>
+    </div>
+  )
+}
+
 export default function NotesPage() {
   const { user } = useAuth()
   const { notes, isLoading, addNote, editNote, removeNote } = useNotes()
@@ -216,6 +416,12 @@ export default function NotesPage() {
   const bgInputRef = useRef<HTMLInputElement>(null)
   const { playSuccess } = useSoundEffects()
 
+  const [panelLayout, setPanelLayout] = useState(defaultPanelLayout)
+  const [frontPanel, setFrontPanel] = useState<NotesPanelKey>('editor')
+  const [notesFontPx, setNotesFontPx] = useState(16)
+  const [notesTextColor, setNotesTextColor] = useState<string | null>(null)
+  const panelsHydratedRef = useRef(false)
+
   // Voice input state
   const [isListening, setIsListening] = useState(false)
   const [voiceTarget, setVoiceTarget] = useState<'title' | 'body' | null>(null)
@@ -226,6 +432,79 @@ export default function NotesPage() {
   useEffect(() => {
     setEnvSnapshotExpanded(false)
   }, [selectedNote?.id])
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LS_NOTES_PANELS)
+      if (raw) {
+        const p = JSON.parse(raw) as {
+          saved?: { x: number; y: number }
+          editor?: { x: number; y: number }
+          savedCollapsed?: boolean
+          editorCollapsed?: boolean
+        }
+        const defs = defaultPanelLayout()
+        setPanelLayout({
+          saved: p.saved && typeof p.saved.x === 'number' ? p.saved : defs.saved,
+          editor: p.editor && typeof p.editor.x === 'number' ? p.editor : defs.editor,
+          savedCollapsed: typeof p.savedCollapsed === 'boolean' ? p.savedCollapsed : defs.savedCollapsed,
+          editorCollapsed: typeof p.editorCollapsed === 'boolean' ? p.editorCollapsed : defs.editorCollapsed,
+        })
+      }
+      const a11y = localStorage.getItem(LS_NOTES_A11Y)
+      if (a11y) {
+        const j = JSON.parse(a11y) as { fontPx?: number; color?: string | null }
+        if (typeof j.fontPx === 'number' && j.fontPx >= 12 && j.fontPx <= 32) {
+          setNotesFontPx(j.fontPx)
+        }
+        if (j.color === null || typeof j.color === 'string') {
+          setNotesTextColor(j.color ?? null)
+        }
+      }
+    } catch {
+      /* ignore */
+    } finally {
+      panelsHydratedRef.current = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!panelsHydratedRef.current) return
+    try {
+      localStorage.setItem(LS_NOTES_PANELS, JSON.stringify(panelLayout))
+    } catch {
+      /* ignore */
+    }
+  }, [panelLayout])
+
+  useEffect(() => {
+    if (!panelsHydratedRef.current) return
+    try {
+      localStorage.setItem(
+        LS_NOTES_A11Y,
+        JSON.stringify({ fontPx: notesFontPx, color: notesTextColor })
+      )
+    } catch {
+      /* ignore */
+    }
+  }, [notesFontPx, notesTextColor])
+
+  const noteTypographyStyle: CSSProperties = {
+    fontSize: notesFontPx,
+    ...(notesTextColor != null ? { color: notesTextColor } : {}),
+  }
+
+  const resetPanelLayout = () => {
+    setPanelLayout(defaultPanelLayout())
+  }
+
+  const resetNoteTypography = () => {
+    setNotesFontPx(16)
+    setNotesTextColor(null)
+  }
+
+  const zSaved = frontPanel === 'saved' ? 50 : 42
+  const zEditor = frontPanel === 'editor' ? 50 : 42
 
   // Load recent sessions
   useEffect(() => {
@@ -762,55 +1041,107 @@ export default function NotesPage() {
                 </button>
               )}
             </div>
-          </div>
-          <div
-            className={cn(
-              'grid grid-cols-1 gap-4 md:gap-6',
-              savedNotesPanelOpen && 'md:grid-cols-3'
-            )}
-          >
-          {/* Left Column: Saved Notes */}
-          {savedNotesPanelOpen && (
-          <div
-            id="notes-saved-list-panel"
-            role="region"
-            aria-labelledby="notes-saved-list-toggle"
-            className="space-y-4"
-          >
-            <Card className="card p-3 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2 min-w-0">
-                  <ClipboardList className="h-3.5 w-3.5 text-gray-500 shrink-0" />
-                  <h2 className="text-sm font-semibold dark:text-white">Saved notes</h2>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-2 text-xs text-gray-600 dark:text-gray-300"
-                    onClick={() => setSortOrder((prev) => (prev === 'newest' ? 'oldest' : 'newest'))}
-                  >
-                    <ArrowUpDown className="h-3.5 w-3.5 mr-1" />
-                    {sortOrder === 'newest' ? 'Newest' : 'Oldest'}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 shrink-0"
-                    onClick={clearForm}
-                    title="New note"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
+            <div className="flex flex-col gap-3 rounded-xl border border-black/10 bg-white/60 p-3 dark:border-white/10 dark:bg-black/25 sm:flex-row sm:flex-wrap sm:items-center">
+              <div className="flex items-center gap-2">
+                <label htmlFor="notes-font-size" className="text-xs text-gray-600 dark:text-gray-400">
+                  Text size
+                </label>
+                <input
+                  id="notes-font-size"
+                  type="range"
+                  min={12}
+                  max={28}
+                  value={notesFontPx}
+                  onChange={(e) => setNotesFontPx(Number(e.target.value))}
+                  className="h-2 w-32 cursor-pointer accent-blue-600"
+                />
+                <span className="w-9 text-xs tabular-nums text-gray-600 dark:text-gray-300">{notesFontPx}px</span>
               </div>
-              <div className="space-y-1.5 mt-2">
+              <div className="flex items-center gap-2">
+                <label htmlFor="notes-text-color" className="text-xs text-gray-600 dark:text-gray-400">
+                  Text colour
+                </label>
+                <input
+                  id="notes-text-color"
+                  type="color"
+                  value={notesTextColor ?? '#1f2937'}
+                  onChange={(e) => setNotesTextColor(e.target.value)}
+                  className="h-9 w-12 cursor-pointer rounded border border-black/20 bg-white p-0.5 dark:border-white/20"
+                  title="Note text colour"
+                />
+                <Button type="button" variant="ghost" size="sm" className="h-8 text-xs" onClick={() => setNotesTextColor(null)}>
+                  Theme default
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2 sm:ml-auto">
+                <Button type="button" variant="outline" size="sm" className="h-8 gap-1" onClick={resetPanelLayout}>
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  Reset panels
+                </Button>
+                <Button type="button" variant="ghost" size="sm" className="h-8 text-xs" onClick={resetNoteTypography}>
+                  Reset text
+                </Button>
+              </div>
+            </div>
+            <p className="max-w-2xl text-xs text-gray-500 dark:text-gray-400">
+              Drag a panel by the grip, use the chevron to show or hide content, and place panels wherever suits you. Positions
+              and text settings are saved on this device.
+            </p>
+          </div>
+          <div className="relative min-h-[min(50vh,420px)]">
+            {savedNotesPanelOpen && (
+              <NotesFloatingPanel
+                id="notes-saved-list-panel"
+                position={panelLayout.saved}
+                zIndex={zSaved}
+                widthClassName="w-[min(calc(100vw-2rem),22rem)]"
+                collapsed={panelLayout.savedCollapsed}
+                onToggleCollapse={() =>
+                  setPanelLayout((prev) => ({
+                    ...prev,
+                    savedCollapsed: !prev.savedCollapsed,
+                  }))
+                }
+                collapseLabelExpanded="Collapse saved notes"
+                collapseLabelCollapsed="Expand saved notes"
+                onMove={(x, y) =>
+                  setPanelLayout((prev) => ({
+                    ...prev,
+                    saved: { x, y },
+                  }))
+                }
+                onBringToFront={() => setFrontPanel('saved')}
+                dragLabel="Move saved notes panel"
+                handleLeft={
+                  <div className="flex min-w-0 items-center gap-2">
+                    <ClipboardList className="h-3.5 w-3.5 shrink-0 text-gray-500" aria-hidden />
+                    <span className="truncate text-sm font-semibold text-gray-900 dark:text-white">Saved notes</span>
+                  </div>
+                }
+                handleRight={
+                  <>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2 text-xs text-gray-600 dark:text-gray-300"
+                      onClick={() => setSortOrder((prev) => (prev === 'newest' ? 'oldest' : 'newest'))}
+                    >
+                      <ArrowUpDown className="mr-1 h-3.5 w-3.5" />
+                      {sortOrder === 'newest' ? 'Newest' : 'Oldest'}
+                    </Button>
+                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={clearForm} title="New note">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </>
+                }
+              >
+                <div className="p-3 pt-2" onFocusCapture={() => setFrontPanel('saved')}>
+                  <div className="space-y-1.5">
                 {isLoading ? (
                   <p className="text-center text-xs text-gray-500 dark:text-gray-400 py-8">Loading notes…</p>
                 ) : sortedNotes.length === 0 ? (
-                  <p className="text-center text-xs text-gray-500 dark:text-gray-400 py-8">No saved notes yet. Start one on the right.</p>
+                  <p className="text-center text-xs text-gray-500 dark:text-gray-400 py-8">No saved notes yet. Start one in the editor panel.</p>
                 ) : (
                   sortedNotes.map((note) => (
                     <div
@@ -832,7 +1163,15 @@ export default function NotesPage() {
                       )}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <h3 className="text-sm font-medium dark:text-white truncate min-w-0">{note.title}</h3>
+                        <h3
+                          className={cn(
+                            'min-w-0 truncate font-medium leading-tight',
+                            notesTextColor == null && 'text-gray-900 dark:text-white'
+                          )}
+                          style={noteTypographyStyle}
+                        >
+                          {note.title}
+                        </h3>
                         <div className="flex items-center gap-1">
                           {note.weatherSnapshot && (
                             <WeatherSnapshotPopover weatherSnapshot={note.weatherSnapshot}>
@@ -870,7 +1209,12 @@ export default function NotesPage() {
                         <Clock className="h-3 w-3 text-gray-400 dark:text-gray-500 shrink-0" />
                         <p className="text-[10px] text-gray-400 dark:text-gray-500">{formatDate(note.updatedAt)}</p>
                       </div>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5 line-clamp-2">{note.content}</p>
+                      <p
+                        className={cn('mt-0.5 line-clamp-2', notesTextColor == null && 'text-gray-600 dark:text-gray-400')}
+                        style={noteTypographyStyle}
+                      >
+                        {note.content}
+                      </p>
                       {note.sessionId &&
                         (() => {
                           const s = recentSessions.find((x) => x.id === note.sessionId)
@@ -889,72 +1233,85 @@ export default function NotesPage() {
                   ))
                 )}
               </div>
-            </Card>
-          </div>
-          )}
+                </div>
+              </NotesFloatingPanel>
+            )}
 
-          {/* Right Column: Write/View Note */}
-          <div className={cn(savedNotesPanelOpen && 'md:col-span-2')}>
-            <Card className="card p-4 bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all">
+            <NotesFloatingPanel
+              id="notes-editor-panel"
+              position={panelLayout.editor}
+              zIndex={zEditor}
+              widthClassName="w-[min(calc(100vw-2rem),40rem)]"
+              collapsed={panelLayout.editorCollapsed}
+              onToggleCollapse={() =>
+                setPanelLayout((prev) => ({
+                  ...prev,
+                  editorCollapsed: !prev.editorCollapsed,
+                }))
+              }
+              collapseLabelExpanded="Collapse note editor"
+              collapseLabelCollapsed="Expand note editor"
+              onMove={(x, y) =>
+                setPanelLayout((prev) => ({
+                  ...prev,
+                  editor: { x, y },
+                }))
+              }
+              onBringToFront={() => setFrontPanel('editor')}
+              dragLabel="Move note editor panel"
+              handleLeft={
+                selectedNote && !isEditing ? (
+                  <div className="flex min-w-0 items-center gap-2">
+                    <FileText className="h-3.5 w-3.5 shrink-0 text-gray-500" aria-hidden />
+                    <span className="truncate text-sm font-semibold text-gray-900 dark:text-white">View note</span>
+                  </div>
+                ) : (
+                  <div className="min-w-0">
+                    <span className="text-base font-semibold text-gray-900 dark:text-white">
+                      {selectedNote ? 'Edit note' : 'Write a note'}
+                    </span>
+                    <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Title and body are required to save.</p>
+                  </div>
+                )
+              }
+              handleRight={
+                selectedNote ? (
+                  <>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => setIsEditing(!isEditing)}
+                      title={isEditing ? 'Done' : 'Edit'}
+                      aria-label={isEditing ? 'Cancel editing' : 'Edit note'}
+                    >
+                      {isEditing ? (
+                        <X className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                      ) : (
+                        <Edit className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-600 hover:bg-red-500/10 hover:text-red-700 dark:text-red-400"
+                      onClick={() => handleDeleteNote(selectedNote.id)}
+                      title="Delete note"
+                      aria-label="Delete note"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </>
+                ) : null
+              }
+            >
               <div
-                className={cn(
-                  'flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between',
-                  selectedNote && !isEditing ? 'mb-2' : 'mb-3'
-                )}
+                className="space-y-3 p-4 pt-3"
+                onFocusCapture={() => setFrontPanel('editor')}
+                role="presentation"
               >
-                <div>
-                  {selectedNote && !isEditing ? (
-                    <div className="flex items-center gap-2">
-                      <FileText className="h-3.5 w-3.5 text-gray-500 shrink-0" />
-                      <h2 className="text-sm font-semibold dark:text-white">View note</h2>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-base font-semibold dark:text-white">
-                          {selectedNote ? 'Edit note' : 'Write a note'}
-                        </h2>
-                      </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                        Title and body are required to save.
-                      </p>
-                    </>
-                  )}
-                </div>
-                <div className="flex flex-wrap items-center gap-1 sm:justify-end shrink-0">
-                  {selectedNote && (
-                    <>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => setIsEditing(!isEditing)}
-                        title={isEditing ? 'Done' : 'Edit'}
-                        aria-label={isEditing ? 'Cancel editing' : 'Edit note'}
-                      >
-                        {isEditing ? (
-                          <X className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-                        ) : (
-                          <Edit className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-                        )}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-500/10 dark:text-red-400"
-                        onClick={() => handleDeleteNote(selectedNote.id)}
-                        title="Delete note"
-                        aria-label="Delete note"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </div>
-
               {selectedNote && !isEditing && (
                 <div
                   className={cn(
@@ -963,7 +1320,12 @@ export default function NotesPage() {
                   )}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-sm font-medium dark:text-white truncate min-w-0">{noteTitle}</h3>
+                    <h3
+                      className={cn('min-w-0 truncate font-medium leading-tight', notesTextColor == null && 'text-gray-900 dark:text-white')}
+                      style={noteTypographyStyle}
+                    >
+                      {noteTitle}
+                    </h3>
                     <div className="flex items-center gap-1 shrink-0">
                       {selectedNote.weatherSnapshot && (
                         <WeatherSnapshotPopover weatherSnapshot={selectedNote.weatherSnapshot}>
@@ -1003,7 +1365,13 @@ export default function NotesPage() {
                       {formatDate(selectedNote.updatedAt)}
                     </p>
                   </div>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5 whitespace-pre-wrap break-words">
+                  <p
+                    className={cn(
+                      'mt-0.5 whitespace-pre-wrap break-words leading-relaxed',
+                      notesTextColor == null && 'text-gray-600 dark:text-gray-400'
+                    )}
+                    style={noteTypographyStyle}
+                  >
                     {noteContent}
                   </p>
                   {selectedNote.sessionId &&
@@ -1240,7 +1608,11 @@ export default function NotesPage() {
                           placeholder="Give your note a short title"
                           value={noteTitle}
                           onChange={(e) => setNoteTitle(e.target.value)}
-                          className="bg-white dark:bg-black/40 flex-1"
+                          style={noteTypographyStyle}
+                          className={cn(
+                            'flex-1 bg-white dark:bg-black/40',
+                            notesTextColor == null && 'text-gray-900 dark:text-gray-100'
+                          )}
                         />
                         <button
                           type="button"
@@ -1301,7 +1673,11 @@ export default function NotesPage() {
                         placeholder="Write freely—everything saves to your account."
                         value={noteContent}
                         onChange={(e) => setNoteContent(e.target.value)}
-                        className="min-h-[280px] sm:min-h-[360px] md:min-h-[420px] resize-y text-sm bg-white dark:bg-black/40"
+                        style={noteTypographyStyle}
+                        className={cn(
+                          'min-h-[280px] resize-y bg-white sm:min-h-[360px] md:min-h-[420px] dark:bg-black/40',
+                          notesTextColor == null && 'text-gray-900 dark:text-gray-100'
+                        )}
                       />
                       {isListening && voiceTarget === 'body' && (
                         <p
@@ -1417,9 +1793,9 @@ export default function NotesPage() {
                   </div>
                 )}
               </div>
-            </Card>
+              </div>
+            </NotesFloatingPanel>
           </div>
-        </div>
         </div>
       </div>
     </div>
