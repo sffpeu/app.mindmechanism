@@ -147,3 +147,19 @@ export function spotifyTokensValid(tokens: SpotifyTokens | null): boolean {
   if (!tokens) return false
   return Date.now() < tokens.expiresAt - 60_000 // 60s buffer
 }
+
+/** Returns a fresh access token, refreshing via refresh_token when needed. */
+export async function getSpotifyAccessToken(
+  tokens: SpotifyTokens,
+  setSpotifyTokens: (t: SpotifyTokens | null) => void
+): Promise<string | null> {
+  if (spotifyTokensValid(tokens)) return tokens.accessToken
+  try {
+    const fresh = await refreshSpotifyToken(tokens.refreshToken)
+    setSpotifyTokens(fresh)
+    return fresh.accessToken
+  } catch {
+    setSpotifyTokens(null)
+    return null
+  }
+}

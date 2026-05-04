@@ -12,7 +12,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useSettings } from '@/lib/hooks/useSettings'
-import { refreshSpotifyToken, spotifyTokensValid } from '@/lib/spotify'
+import { getSpotifyAccessToken } from '@/lib/spotify'
 
 // ── Spotify SDK types (minimal) ───────────────────────────────────────────────
 declare global {
@@ -83,7 +83,7 @@ function loadSpotifySDK(): Promise<void> {
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
-export function useSpotifyPlayer() {
+export function useSpotifyPlayer(connectWhen = true) {
   const { spotifyTokens, setSpotifyTokens } = useSettings()
   const playerRef = useRef<SpotifyPlayer | null>(null)
   const [deviceId, setDeviceId] = useState<string | null>(null)
@@ -91,22 +91,20 @@ export function useSpotifyPlayer() {
   const [ready, setReady] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Stable token getter — refreshes if expired
   const getToken = useCallback(async (): Promise<string | null> => {
     if (!spotifyTokens) return null
-    if (spotifyTokensValid(spotifyTokens)) return spotifyTokens.accessToken
-    try {
-      const fresh = await refreshSpotifyToken(spotifyTokens.refreshToken)
-      setSpotifyTokens(fresh)
-      return fresh.accessToken
-    } catch {
-      setSpotifyTokens(null)
-      return null
-    }
+    return getSpotifyAccessToken(spotifyTokens, setSpotifyTokens)
   }, [spotifyTokens, setSpotifyTokens])
 
   useEffect(() => {
-    if (!spotifyTokens) return
+    if (!spotifyTokens || !connectWhen) {
+      playerRef.current?.disconnect()
+      playerRef.current = null
+      setReady(false)
+      setDeviceId(null)
+      setPlayback(INITIAL_STATE)
+      return
+    }
 
     let player: SpotifyPlayer
 
@@ -180,8 +178,9 @@ export function useSpotifyPlayer() {
       playerRef.current?.disconnect()
       playerRef.current = null
       setReady(false)
+      setDeviceId(null)
     }
-  }, [!!spotifyTokens]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [!!spotifyTokens, connectWhen, getToken]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const togglePlay = useCallback(() => playerRef.current?.togglePlay(), [])
   const nextTrack   = useCallback(() => playerRef.current?.nextTrack(), [])

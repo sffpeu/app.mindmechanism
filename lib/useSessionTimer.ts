@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSoundEffects } from '@/lib/sounds'
 import { updateSessionProgress } from '@/lib/sessions'
+import { useSessionStreamingMusic } from '@/lib/hooks/useSessionStreamingMusic'
 
 export function useSessionTimer(
   duration: number | null,
@@ -19,6 +20,21 @@ export function useSessionTimer(
   const { playClick } = useSoundEffects()
 
   remainingTimeRef.current = remainingTime
+
+  const bootstrappingFromDurationProp =
+    typeof duration === 'number' &&
+    duration > 0 &&
+    remainingTime == null &&
+    initialDuration == null
+
+  const sessionActive =
+    bootstrappingFromDurationProp ||
+    (initialDuration != null &&
+      initialDuration > 0 &&
+      remainingTime != null &&
+      remainingTime > 0)
+
+  useSessionStreamingMusic({ sessionActive, isPaused })
 
   // Initialize timer from duration or saved session
   useEffect(() => {

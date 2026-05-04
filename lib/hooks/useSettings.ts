@@ -78,6 +78,22 @@ interface SettingsState {
   /** Apple Music user token returned from MusicKit.authorize(). null = not connected */
   appleMusicUserToken: string | null;
   setAppleMusicUserToken: (token: string | null) => void;
+
+  /** When true, a timed session starts streaming from Spotify or Apple if connected */
+  sessionStreamingDuringSessions: boolean;
+  setSessionStreamingDuringSessions: (enabled: boolean) => void;
+
+  /** Which service to prefer during sessions when both are connected */
+  sessionMusicProvider: 'auto' | 'spotify' | 'apple';
+  setSessionMusicProvider: (p: 'auto' | 'spotify' | 'apple') => void;
+
+  /** Optional spotify:playlist:id, open.spotify.com URL, or raw playlist id */
+  spotifySessionPlaylistUri: string | null;
+  setSpotifySessionPlaylistUri: (uri: string | null) => void;
+
+  /** Optional Apple Music share URL or pl.* / p.* playlist id */
+  appleMusicSessionPlaylistUrl: string | null;
+  setAppleMusicSessionPlaylistUrl: (url: string | null) => void;
 }
 
 export const useSettings = create<SettingsState>()(
@@ -132,6 +148,21 @@ export const useSettings = create<SettingsState>()(
 
       appleMusicUserToken: null,
       setAppleMusicUserToken: (token) => set({ appleMusicUserToken: token }),
+
+      sessionStreamingDuringSessions: true,
+      setSessionStreamingDuringSessions: (enabled) =>
+        set({ sessionStreamingDuringSessions: enabled }),
+
+      sessionMusicProvider: 'auto',
+      setSessionMusicProvider: (p) => set({ sessionMusicProvider: p }),
+
+      spotifySessionPlaylistUri: null,
+      setSpotifySessionPlaylistUri: (uri) =>
+        set({ spotifySessionPlaylistUri: uri?.trim() ? uri.trim() : null }),
+
+      appleMusicSessionPlaylistUrl: null,
+      setAppleMusicSessionPlaylistUrl: (url) =>
+        set({ appleMusicSessionPlaylistUrl: url?.trim() ? url.trim() : null }),
     }),
     {
       name: 'app-settings',

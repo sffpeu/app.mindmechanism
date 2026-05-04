@@ -4,6 +4,8 @@ import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
+import { Input } from '@/components/ui/input'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
   Volume2, VolumeX, Music2, ShoppingBag, Lock,
   CheckCircle2, Loader2, AlertCircle, LogOut,
@@ -14,7 +16,7 @@ import { clockTitles } from '@/lib/clockTitles'
 import { cn } from '@/lib/utils'
 import { startSpotifyAuth, spotifyTokensValid } from '@/lib/spotify'
 import { authorizeAppleMusic, unauthorizeAppleMusic } from '@/lib/appleMusicKit'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 
 const CLOCK_COUNT = 9
 
@@ -119,6 +121,10 @@ export function SoundSettings() {
     clockToneMuted, setClockToneMuted,
     spotifyTokens, setSpotifyTokens,
     appleMusicUserToken, setAppleMusicUserToken,
+    sessionStreamingDuringSessions, setSessionStreamingDuringSessions,
+    sessionMusicProvider, setSessionMusicProvider,
+    spotifySessionPlaylistUri, setSpotifySessionPlaylistUri,
+    appleMusicSessionPlaylistUrl, setAppleMusicSessionPlaylistUrl,
   } = useSettings()
 
   const { profile } = useAuth()
@@ -179,6 +185,14 @@ export function SoundSettings() {
     setAppleMusicUserToken(null)
     setAppleState('idle')
   }, [setAppleMusicUserToken])
+
+  useEffect(() => {
+    setSpotifyState(spotifyTokensValid(spotifyTokens) ? 'connected' : 'idle')
+  }, [spotifyTokens])
+
+  useEffect(() => {
+    setAppleState(appleMusicUserToken ? 'connected' : 'idle')
+  }, [appleMusicUserToken])
 
   return (
     <div className="space-y-4">
@@ -290,32 +304,113 @@ export function SoundSettings() {
         </div>
 
         {hasStreamingAccess ? (
-          <div className="grid grid-cols-2 gap-2 pt-1">
-            <ServiceButton
-              label="Apple Music"
-              icon={
-                <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current shrink-0" aria-hidden>
-                  <path d="M23.994 6.124a9.23 9.23 0 0 0-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 0 0-1.877-.726 10.496 10.496 0 0 0-1.564-.15c-.04-.003-.083-.01-.124-.013H5.986c-.152.01-.303.017-.455.026C4.786.07 4.043.15 3.34.428 2.004.958 1.04 1.88.475 3.208c-.192.448-.292.925-.363 1.408-.056.392-.088.785-.1 1.18 0 .032-.007.062-.01.093v12.223c.01.14.017.283.027.424.05.815.154 1.624.497 2.373.65 1.42 1.738 2.353 3.234 2.802.42.127.856.187 1.293.228.497.044.995.06 1.494.065h11.22c.54-.005 1.075-.047 1.61-.1.386-.04.772-.1 1.148-.213 1.357-.384 2.366-1.17 3.005-2.417.38-.754.487-1.566.535-2.39.01-.14.014-.28.018-.42V6.124zm-6.954 1.976l-5.8 3.35a.776.776 0 0 1-1.172-.668V4.6a.776.776 0 0 1 1.173-.668l5.8 3.348a.776.776 0 0 1 0 1.82z"/>
-                </svg>
-              }
-              state={appleState}
-              errorMsg={appleError}
-              onConnect={connectAppleMusic}
-              onDisconnect={disconnectAppleMusic}
-            />
-            <ServiceButton
-              label="Spotify"
-              icon={
-                <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current text-[#1DB954] shrink-0" aria-hidden>
-                  <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
-                </svg>
-              }
-              state={spotifyState}
-              errorMsg={spotifyError}
-              onConnect={connectSpotify}
-              onDisconnect={disconnectSpotify}
-            />
-          </div>
+          <>
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <ServiceButton
+                label="Apple Music"
+                icon={
+                  <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current shrink-0" aria-hidden>
+                    <path d="M23.994 6.124a9.23 9.23 0 0 0-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 0 0-1.877-.726 10.496 10.496 0 0 0-1.564-.15c-.04-.003-.083-.01-.124-.013H5.986c-.152.01-.303.017-.455.026C4.786.07 4.043.15 3.34.428 2.004.958 1.04 1.88.475 3.208c-.192.448-.292.925-.363 1.408-.056.392-.088.785-.1 1.18 0 .032-.007.062-.01.093v12.223c.01.14.017.283.027.424.05.815.154 1.624.497 2.373.65 1.42 1.738 2.353 3.234 2.802.42.127.856.187 1.293.228.497.044.995.06 1.494.065h11.22c.54-.005 1.075-.047 1.61-.1.386-.04.772-.1 1.148-.213 1.357-.384 2.366-1.17 3.005-2.417.38-.754.487-1.566.535-2.39.01-.14.014-.28.018-.42V6.124zm-6.954 1.976l-5.8 3.35a.776.776 0 0 1-1.172-.668V4.6a.776.776 0 0 1 1.173-.668l5.8 3.348a.776.776 0 0 1 0 1.82z"/>
+                  </svg>
+                }
+                state={appleState}
+                errorMsg={appleError}
+                onConnect={connectAppleMusic}
+                onDisconnect={disconnectAppleMusic}
+              />
+              <ServiceButton
+                label="Spotify"
+                icon={
+                  <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current text-[#1DB954] shrink-0" aria-hidden>
+                    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+                  </svg>
+                }
+                state={spotifyState}
+                errorMsg={spotifyError}
+                onConnect={connectSpotify}
+                onDisconnect={disconnectSpotify}
+              />
+            </div>
+
+            <div className="pt-3 mt-1 border-t border-gray-200 dark:border-gray-800 space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-gray-900 dark:text-white">During timed sessions</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">
+                    Shuffle-play from a playlist when the session timer runs. Pausing the timer pauses playback.
+                  </p>
+                </div>
+                <Switch
+                  checked={sessionStreamingDuringSessions}
+                  onCheckedChange={setSessionStreamingDuringSessions}
+                  aria-label="Play streaming music during timed sessions"
+                />
+              </div>
+
+              {sessionStreamingDuringSessions && (
+                <div className="space-y-3 pl-0.5">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Preferred service
+                    </Label>
+                    <RadioGroup
+                      value={sessionMusicProvider}
+                      onValueChange={(v) =>
+                        setSessionMusicProvider(v as 'auto' | 'spotify' | 'apple')
+                      }
+                      className="flex flex-col gap-2"
+                    >
+                      {(
+                        [
+                          ['auto', 'Automatic (Spotify if connected, otherwise Apple Music)'],
+                          ['spotify', 'Spotify'],
+                          ['apple', 'Apple Music'],
+                        ] as const
+                      ).map(([value, label]) => (
+                        <label
+                          key={value}
+                          className="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer"
+                        >
+                          <RadioGroupItem value={value} id={`mm-music-${value}`} />
+                          <span>{label}</span>
+                        </label>
+                      ))}
+                    </RadioGroup>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label htmlFor="spotify-pl" className="text-[10px] text-gray-500 dark:text-gray-400">
+                      Spotify playlist (optional)
+                    </Label>
+                    <Input
+                      id="spotify-pl"
+                      placeholder="Open in Spotify URL, spotify:playlist:…, or ID"
+                      value={spotifySessionPlaylistUri ?? ''}
+                      onChange={(e) =>
+                        setSpotifySessionPlaylistUri(e.target.value.trim() || null)
+                      }
+                      className="h-8 text-xs"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label htmlFor="apple-pl" className="text-[10px] text-gray-500 dark:text-gray-400">
+                      Apple Music playlist (optional)
+                    </Label>
+                    <Input
+                      id="apple-pl"
+                      placeholder="Share link or pl.… / p.… id — else a library playlist"
+                      value={appleMusicSessionPlaylistUrl ?? ''}
+                      onChange={(e) =>
+                        setAppleMusicSessionPlaylistUrl(e.target.value.trim() || null)
+                      }
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
         ) : (
           <p className="text-xs text-gray-400 dark:text-gray-500">
             Available on Standard and Sovereign membership.
