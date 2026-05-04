@@ -36,9 +36,9 @@ import {
   ChevronDown,
   Mic,
   MicOff,
-  Image as ImageIcon,
   GripVertical,
   RotateCcw,
+  Type,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -49,7 +49,7 @@ import { useNotes } from '@/lib/NotesContext'
 import { Note, WeatherSnapshot } from '@/lib/notes'
 import { toast } from '@/components/ui/use-toast'
 import { WeatherSnapshotPopover } from '@/components/WeatherSnapshotPopover'
-import { Timestamp, doc, setDoc, getDoc, type Firestore } from 'firebase/firestore'
+import { Timestamp } from 'firebase/firestore'
 import {
   Select,
   SelectContent,
@@ -62,8 +62,7 @@ import { Session } from '@/lib/sessions'
 import { clockTitles } from '@/lib/clockTitles'
 import { useLocation } from '@/lib/hooks/useLocation'
 import { useSoundEffects } from '@/lib/sounds'
-import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { getFirebaseStorage, db } from '@/lib/firebase'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 interface WeatherResponse {
   location: {
@@ -104,39 +103,6 @@ interface MoonData {
   moon_illumination: string
   moonrise: string
   moonset: string
-}
-
-async function compressImage(dataUrl: string): Promise<string> {
-  return new Promise((resolve) => {
-    const img = new window.Image()
-    img.onload = () => {
-      const MAX = 900
-      let { width, height } = img
-      if (width > MAX || height > MAX) {
-        if (width > height) { height = Math.round((height * MAX) / width); width = MAX }
-        else { width = Math.round((width * MAX) / height); height = MAX }
-      }
-      const canvas = document.createElement('canvas')
-      canvas.width = width
-      canvas.height = height
-      const ctx = canvas.getContext('2d')
-      if (!ctx) { resolve(dataUrl); return }
-      ctx.drawImage(img, 0, 0, width, height)
-      resolve(canvas.toDataURL('image/jpeg', 0.72))
-    }
-    img.onerror = () => resolve(dataUrl)
-    img.src = dataUrl
-  })
-}
-
-async function uploadNotesBg(dataUrl: string, uid: string): Promise<string> {
-  const compressed = await compressImage(dataUrl)
-  const response = await fetch(compressed)
-  const blob = await response.blob()
-  const storage = getFirebaseStorage()
-  const fileRef = storageRef(storage, `notes-bg/${uid}/background.jpg`)
-  await uploadBytes(fileRef, blob, { contentType: 'image/jpeg' })
-  return getDownloadURL(fileRef)
 }
 
 const clockColors = [
@@ -212,23 +178,42 @@ function sessionGroupDisplay(session: Session): { typeLabel: string; participant
 const LS_NOTES_PANELS = 'mindmechanism-notes-panels-v1'
 const LS_NOTES_A11Y = 'mindmechanism-notes-a11y-v1'
 
+/** Bump when default positions or dock rules change — forces one-time re-apply from defaults */
+const PANEL_LAYOUT_REVISION = 2
+
+/** Viewport px reserved on the left so floating panels clear the vertical AppDock */
+const NOTES_DOCK_GUTTER = 104
+
 function defaultPanelPositions(): { saved: { x: number; y: number }; editor: { x: number; y: number } } {
+  const margin = 12
+  const savedW = 320
   if (typeof window === 'undefined') {
-    return { saved: { x: 24, y: 108 }, editor: { x: 380, y: 108 } }
+    return {
+      saved: { x: NOTES_DOCK_GUTTER, y: 96 },
+      editor: { x: NOTES_DOCK_GUTTER + savedW + margin, y: 96 },
+    }
   }
   const vw = window.innerWidth
   const vh = window.innerHeight
-  const savedW = 320
-  const editorW = Math.min(560, vw - 32)
-  const savedX = 16
-  const savedY = Math.min(108, vh * 0.12)
-  let editorX = savedX + savedW + 16
-  if (editorX + editorW > vw - 16) {
-    editorX = Math.max(16, vw - editorW - 16)
+  const savedX = NOTES_DOCK_GUTTER
+  const savedY = Math.min(112, Math.max(72, vh * 0.09))
+  const editorW = Math.min(560, vw - NOTES_DOCK_GUTTER - margin * 2)
+  let editorX = savedX + savedW + margin
+  let editorY = savedY
+
+  if (editorX + editorW + margin > vw) {
+    editorX = Math.max(NOTES_DOCK_GUTTER, vw - editorW - margin)
   }
+
+  const overlapX = !(savedX + savedW <= editorX || editorX + editorW <= savedX)
+  if (overlapX) {
+    editorX = NOTES_DOCK_GUTTER
+    editorY = savedY + 340
+  }
+
   return {
     saved: { x: savedX, y: savedY },
-    editor: { x: editorX, y: savedY },
+    editor: { x: editorX, y: editorY },
   }
 }
 
@@ -289,10 +274,12 @@ function NotesFloatingPanel({
     const w = el?.offsetWidth ?? 360
     const h = el?.offsetHeight ?? 420
     const margin = 8
+    const minX = Math.max(margin, NOTES_DOCK_GUTTER)
     const vw = window.innerWidth
     const vh = window.innerHeight
+    const maxX = Math.max(minX, vw - w - margin)
     return {
-      x: Math.min(Math.max(margin, x), Math.max(margin, vw - w - margin)),
+      x: Math.min(Math.max(x, minX), maxX),
       y: Math.min(Math.max(margin, y), Math.max(margin, vh - h - margin)),
     }
   }, [])
@@ -412,8 +399,6 @@ export default function NotesPage() {
   const [selectedSessionId, setSelectedSessionId] = useState<string>('none')
   const [envSnapshotExpanded, setEnvSnapshotExpanded] = useState(false)
   const [savedNotesPanelOpen, setSavedNotesPanelOpen] = useState(true)
-  const [pageBackground, setPageBackground] = useState<string | null>(null)
-  const bgInputRef = useRef<HTMLInputElement>(null)
   const { playSuccess } = useSoundEffects()
 
   const [panelLayout, setPanelLayout] = useState(defaultPanelLayout)
@@ -438,18 +423,36 @@ export default function NotesPage() {
       const raw = localStorage.getItem(LS_NOTES_PANELS)
       if (raw) {
         const p = JSON.parse(raw) as {
+          revision?: number
           saved?: { x: number; y: number }
           editor?: { x: number; y: number }
           savedCollapsed?: boolean
           editorCollapsed?: boolean
         }
         const defs = defaultPanelLayout()
-        setPanelLayout({
-          saved: p.saved && typeof p.saved.x === 'number' ? p.saved : defs.saved,
-          editor: p.editor && typeof p.editor.x === 'number' ? p.editor : defs.editor,
-          savedCollapsed: typeof p.savedCollapsed === 'boolean' ? p.savedCollapsed : defs.savedCollapsed,
-          editorCollapsed: typeof p.editorCollapsed === 'boolean' ? p.editorCollapsed : defs.editorCollapsed,
-        })
+        const storedRevision = typeof p.revision === 'number' ? p.revision : 0
+        const layoutStale = storedRevision < PANEL_LAYOUT_REVISION
+
+        if (layoutStale) {
+          setPanelLayout({
+            ...defs,
+            savedCollapsed: typeof p.savedCollapsed === 'boolean' ? p.savedCollapsed : defs.savedCollapsed,
+            editorCollapsed: typeof p.editorCollapsed === 'boolean' ? p.editorCollapsed : defs.editorCollapsed,
+          })
+        } else {
+          const posSaved =
+            p.saved && typeof p.saved.x === 'number' && typeof p.saved.y === 'number' ? p.saved : defs.saved
+          const posEditor =
+            p.editor && typeof p.editor.x === 'number' && typeof p.editor.y === 'number' ? p.editor : defs.editor
+          const overlapsDock = (pt: { x: number }) => pt.x < NOTES_DOCK_GUTTER
+          const useDefaultPositions = overlapsDock(posSaved) || overlapsDock(posEditor)
+          setPanelLayout({
+            saved: useDefaultPositions ? defs.saved : posSaved,
+            editor: useDefaultPositions ? defs.editor : posEditor,
+            savedCollapsed: typeof p.savedCollapsed === 'boolean' ? p.savedCollapsed : defs.savedCollapsed,
+            editorCollapsed: typeof p.editorCollapsed === 'boolean' ? p.editorCollapsed : defs.editorCollapsed,
+          })
+        }
       }
       const a11y = localStorage.getItem(LS_NOTES_A11Y)
       if (a11y) {
@@ -471,7 +474,10 @@ export default function NotesPage() {
   useEffect(() => {
     if (!panelsHydratedRef.current) return
     try {
-      localStorage.setItem(LS_NOTES_PANELS, JSON.stringify(panelLayout))
+      localStorage.setItem(
+        LS_NOTES_PANELS,
+        JSON.stringify({ revision: PANEL_LAYOUT_REVISION, ...panelLayout })
+      )
     } catch {
       /* ignore */
     }
@@ -568,30 +574,6 @@ export default function NotesPage() {
     return () => clearInterval(interval);
   }, [location?.coords]);
 
-  // Load persisted background from Firestore
-  useEffect(() => {
-    if (!user) return
-    let mounted = true
-    ;(async () => {
-      let attempts = 0
-      while (!db && attempts < 20) {
-        await new Promise(r => setTimeout(r, 100))
-        attempts++
-      }
-      if (!db || !mounted) return
-      try {
-        const snap = await getDoc(doc(db as Firestore, 'users', user.uid, 'preferences', 'notes'))
-        if (snap.exists() && mounted) {
-          const bg = snap.data()?.background
-          if (bg) setPageBackground(bg)
-        }
-      } catch (err) {
-        console.error('Failed to load notes background:', err)
-      }
-    })()
-    return () => { mounted = false }
-  }, [user])
-
   const createWeatherSnapshot = (): WeatherSnapshot | undefined => {
     if (!weatherData || !moon) return undefined;
 
@@ -634,7 +616,7 @@ export default function NotesPage() {
     try {
       const weatherSnapshot = createWeatherSnapshot();
       const finalSessionId = selectedSessionId === "none" ? null : selectedSessionId;
-
+      
       if (selectedNote && isEditing) {
         await editNote(selectedNote.id, noteTitle, noteContent, weatherSnapshot, finalSessionId)
       } else {
@@ -684,50 +666,6 @@ export default function NotesPage() {
     setIsEditing(false)
     setSelectedSessionId('none')
   }
-
-  const handleBgUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      const dataUrl = ev.target?.result as string
-      setPageBackground(dataUrl)
-      if (user) {
-        ;(async () => {
-          try {
-            const downloadUrl = await uploadNotesBg(dataUrl, user.uid)
-            setPageBackground(downloadUrl)
-            if (db) {
-              await setDoc(
-                doc(db as Firestore, 'users', user.uid, 'preferences', 'notes'),
-                { background: downloadUrl },
-                { merge: true }
-              )
-            }
-          } catch (err) {
-            console.error('Notes background upload failed:', err)
-          }
-        })()
-      }
-    }
-    reader.readAsDataURL(file)
-    e.target.value = ''
-  }, [user])
-
-  const handleBgClear = useCallback(async () => {
-    setPageBackground(null)
-    if (user && db) {
-      try {
-        await setDoc(
-          doc(db as Firestore, 'users', user.uid, 'preferences', 'notes'),
-          { background: null },
-          { merge: true }
-        )
-      } catch (err) {
-        console.error('Failed to clear notes background:', err)
-      }
-    }
-  }, [user])
 
   // Accent colour for voice UI — matches the linked session's wheel, or a neutral violet
   const voiceAccentColor =
@@ -942,33 +880,18 @@ export default function NotesPage() {
   }
 
   return (
-    <div className={cn('h-full overflow-hidden flex flex-col relative', pageBackground ? 'bg-black' : 'bg-gray-50 dark:bg-black/95')}>
-      {/* Custom background image + dark overlay */}
-      {pageBackground && (
-        <>
-          <div style={{
-            position: 'absolute', inset: 0, zIndex: 0,
-            backgroundImage: `url(${pageBackground})`,
-            backgroundSize: 'cover', backgroundPosition: 'center',
-          }} />
-          <div style={{
-            position: 'absolute', inset: 0, zIndex: 0,
-            background: 'rgba(0,0,0,0.55)', pointerEvents: 'none',
-          }} />
-        </>
-      )}
-      <div className="flex-1 min-h-0 overflow-y-auto" style={{ position: 'relative', zIndex: 1 }}>
+    <div className="h-full overflow-hidden flex flex-col bg-gray-50 dark:bg-black/95">
+      <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="max-w-7xl mx-auto pl-16 pr-4 py-6">
           <div className="mb-6 flex flex-col gap-4">
             <div className="min-w-0">
-              <h1 className={cn('text-2xl font-bold tracking-tight', pageBackground ? 'text-white' : 'text-gray-900 dark:text-white')}>Notes</h1>
-              <p className={cn('text-sm mt-1 max-w-xl', pageBackground ? 'text-white/60' : 'text-gray-500 dark:text-gray-400')}>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Notes</h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-xl">
                 Write with optional session and environment context—saved notes stay easy to scan in the list.
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between w-full">
-              {/* Left controls: panel toggle + background image */}
-              <div className="flex items-center gap-2 self-start">
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setSavedNotesPanelOpen((open) => !open)}
@@ -987,41 +910,82 @@ export default function NotesPage() {
                 >
                   <ClipboardList className="h-6 w-6" aria-hidden />
                 </button>
-
-                {/* Background image controls */}
-                <input
-                  ref={bgInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleBgUpload}
-                  style={{ display: 'none' }}
-                />
-                <button
-                  type="button"
-                  onClick={() => bgInputRef.current?.click()}
-                  title={pageBackground ? 'Change background image' : 'Set a background image'}
-                  className={cn(
-                    'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 transition-colors',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                    pageBackground
-                      ? 'border-blue-500 bg-transparent text-blue-500 hover:bg-blue-50/10 focus-visible:ring-blue-500/45 dark:border-blue-400/85 dark:text-blue-400 dark:hover:bg-blue-950/35 dark:focus-visible:ring-blue-400/40'
-                      : 'border-slate-300 bg-transparent text-slate-500 hover:bg-slate-100/90 focus-visible:ring-slate-400/50 dark:border-white/25 dark:text-white/60 dark:hover:bg-white/10 dark:focus-visible:ring-white/30'
-                  )}
-                >
-                  <ImageIcon className="h-5 w-5" aria-hidden />
-                </button>
-                {pageBackground && (
-                  <button
-                    type="button"
-                    onClick={handleBgClear}
-                    title="Remove background image"
-                    className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-300 dark:border-white/20 bg-transparent text-slate-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:border-red-400 dark:hover:border-red-400/60 transition-colors"
-                  >
-                    <X className="h-4 w-4" aria-hidden />
-                  </button>
-                )}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className={cn(
+                        'h-10 w-10 shrink-0 rounded-lg border-2 border-black/10 bg-transparent dark:border-white/15',
+                        'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-white/10'
+                      )}
+                      title="Text size, colour, and panel layout"
+                      aria-label="Text size, colour, and panel layout"
+                    >
+                      <Type className="h-5 w-5" aria-hidden />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="z-[13000] w-[min(calc(100vw-2rem),20rem)] space-y-3 p-3" align="start" sideOffset={6}>
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Reading and writing</p>
+                      <div className="flex items-center gap-2">
+                        <label htmlFor="notes-font-size" className="sr-only">
+                          Text size
+                        </label>
+                        <span className="w-8 text-xs text-gray-500 dark:text-gray-400">Aa</span>
+                        <input
+                          id="notes-font-size"
+                          type="range"
+                          min={12}
+                          max={28}
+                          value={notesFontPx}
+                          onChange={(e) => setNotesFontPx(Number(e.target.value))}
+                          className="h-2 min-w-0 flex-1 cursor-pointer accent-blue-600"
+                        />
+                        <span className="w-9 shrink-0 text-right text-xs tabular-nums text-gray-600 dark:text-gray-300">
+                          {notesFontPx}px
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label htmlFor="notes-text-color" className="text-xs text-gray-600 dark:text-gray-400">
+                          Colour
+                        </label>
+                        <input
+                          id="notes-text-color"
+                          type="color"
+                          value={notesTextColor ?? '#1f2937'}
+                          onChange={(e) => setNotesTextColor(e.target.value)}
+                          className="h-8 w-10 shrink-0 cursor-pointer rounded border border-black/20 bg-white p-0.5 dark:border-white/20"
+                          title="Note text colour"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="ml-auto h-8 shrink-0 px-2 text-xs"
+                          onClick={() => setNotesTextColor(null)}
+                        >
+                          Theme
+                        </Button>
+                      </div>
+                      <Button type="button" variant="ghost" size="sm" className="h-8 w-full text-xs" onClick={resetNoteTypography}>
+                        Reset text to default
+                      </Button>
+                    </div>
+                    <div className="border-t border-black/10 pt-2 dark:border-white/10">
+                      <p className="mb-2 text-xs font-medium text-gray-600 dark:text-gray-300">Panels</p>
+                      <Button type="button" variant="outline" size="sm" className="h-8 w-full gap-1.5 text-xs" onClick={resetPanelLayout}>
+                        <RotateCcw className="h-3.5 w-3.5" />
+                        Reset positions and expand
+                      </Button>
+                      <p className="mt-2 text-[11px] leading-snug text-gray-500 dark:text-gray-400">
+                        Saved on this device. Drag by the grip; chevron collapses the panel.
+                      </p>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
-
               {(!selectedNote || isEditing) && (
                 <button
                   type="button"
@@ -1041,52 +1005,6 @@ export default function NotesPage() {
                 </button>
               )}
             </div>
-            <div className="flex flex-col gap-3 rounded-xl border border-black/10 bg-white/60 p-3 dark:border-white/10 dark:bg-black/25 sm:flex-row sm:flex-wrap sm:items-center">
-              <div className="flex items-center gap-2">
-                <label htmlFor="notes-font-size" className="text-xs text-gray-600 dark:text-gray-400">
-                  Text size
-                </label>
-                <input
-                  id="notes-font-size"
-                  type="range"
-                  min={12}
-                  max={28}
-                  value={notesFontPx}
-                  onChange={(e) => setNotesFontPx(Number(e.target.value))}
-                  className="h-2 w-32 cursor-pointer accent-blue-600"
-                />
-                <span className="w-9 text-xs tabular-nums text-gray-600 dark:text-gray-300">{notesFontPx}px</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <label htmlFor="notes-text-color" className="text-xs text-gray-600 dark:text-gray-400">
-                  Text colour
-                </label>
-                <input
-                  id="notes-text-color"
-                  type="color"
-                  value={notesTextColor ?? '#1f2937'}
-                  onChange={(e) => setNotesTextColor(e.target.value)}
-                  className="h-9 w-12 cursor-pointer rounded border border-black/20 bg-white p-0.5 dark:border-white/20"
-                  title="Note text colour"
-                />
-                <Button type="button" variant="ghost" size="sm" className="h-8 text-xs" onClick={() => setNotesTextColor(null)}>
-                  Theme default
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2 sm:ml-auto">
-                <Button type="button" variant="outline" size="sm" className="h-8 gap-1" onClick={resetPanelLayout}>
-                  <RotateCcw className="h-3.5 w-3.5" />
-                  Reset panels
-                </Button>
-                <Button type="button" variant="ghost" size="sm" className="h-8 text-xs" onClick={resetNoteTypography}>
-                  Reset text
-                </Button>
-              </div>
-            </div>
-            <p className="max-w-2xl text-xs text-gray-500 dark:text-gray-400">
-              Drag a panel by the grip, use the chevron to show or hide content, and place panels wherever suits you. Positions
-              and text settings are saved on this device.
-            </p>
           </div>
           <div className="relative min-h-[min(50vh,420px)]">
             {savedNotesPanelOpen && (
@@ -1175,7 +1093,7 @@ export default function NotesPage() {
                         <div className="flex items-center gap-1">
                           {note.weatherSnapshot && (
                             <WeatherSnapshotPopover weatherSnapshot={note.weatherSnapshot}>
-                              <button
+                              <button 
                                 className="p-1 rounded-md hover:bg-blue-100 dark:hover:bg-blue-500/20 group transition-colors"
                                 onClick={(e) => e.stopPropagation()}
                               >
@@ -1800,4 +1718,4 @@ export default function NotesPage() {
       </div>
     </div>
   )
-}
+} 
