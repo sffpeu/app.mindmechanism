@@ -52,7 +52,7 @@ import { useNotes } from '@/lib/NotesContext'
 import { Note, WeatherSnapshot } from '@/lib/notes'
 import { toast } from '@/components/ui/use-toast'
 import { WeatherSnapshotPopover } from '@/components/WeatherSnapshotPopover'
-import { Timestamp, doc, setDoc, getDoc, type Firestore } from 'firebase/firestore'
+import { Timestamp, doc, setDoc, getDoc, deleteField, type Firestore } from 'firebase/firestore'
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { getFirebaseStorage, db } from '@/lib/firebase'
 import {
@@ -68,6 +68,15 @@ import { clockTitles } from '@/lib/clockTitles'
 import { useLocation } from '@/lib/hooks/useLocation'
 import { useSoundEffects } from '@/lib/sounds'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+
+/** Firestore `db` can be unset briefly after navigation; wait before preferences writes. */
+async function waitForNotesDb(maxMs = 8000): Promise<Firestore | null> {
+  const start = Date.now()
+  while (!db && Date.now() - start < maxMs) {
+    await new Promise((r) => setTimeout(r, 100))
+  }
+  return db ? (db as Firestore) : null
+}
 
 interface WeatherResponse {
   location: {
@@ -482,20 +491,43 @@ export default function NotesPage() {
     if (!user) return
     let mounted = true
     void (async () => {
-      let attempts = 0
-      while (!db && attempts < 20) {
-        await new Promise((r) => setTimeout(r, 100))
-        attempts++
-      }
-      if (!db || !mounted) return
+      const fs = await waitForNotesDb()
+      if (!mounted) return
+      let loadedFromCloud = false
       try {
-        const snap = await getDoc(doc(db as Firestore, 'users', user.uid, 'preferences', 'notes'))
-        if (snap.exists() && mounted) {
-          const bg = snap.data()?.background
-          if (bg) setPageBackground(bg)
+        if (fs) {
+          const snap = await getDoc(doc(fs, 'users', user.uid, 'preferences', 'notes'))
+          if (snap.exists() && mounted) {
+            const bg = snap.data()?.background
+            if (typeof bg === 'string' && bg.length > 0) {
+              setPageBackground(bg)
+              loadedFromCloud = true
+              try {
+                localStorage.setItem('mindmechanism-notes-bg-url', bg)
+              } catch {
+                /* ignore */
+              }
+            }
+          }
+        }
+        if (!loadedFromCloud && mounted) {
+          const cached = localStorage.getItem('mindmechanism-notes-bg-url')
+          if (typeof cached === 'string' && cached.length > 0) {
+            setPageBackground(cached)
+          }
         }
       } catch (err) {
         console.error('Failed to load notes background:', err)
+        if (mounted) {
+          try {
+            const cached = localStorage.getItem('mindmechanism-notes-bg-url')
+            if (typeof cached === 'string' && cached.length > 0) {
+              setPageBackground(cached)
+            }
+          } catch {
+            /* ignore */
+          }
+        }
       }
     })()
     return () => {
@@ -762,23 +794,38 @@ export default function NotesPage() {
       reader.onload = (ev) => {
         const dataUrl = ev.target?.result as string
         setPageBackground(dataUrl)
-        if (user) {
-          void (async () => {
-            try {
-              const downloadUrl = await uploadNotesBg(dataUrl, user.uid)
-              setPageBackground(downloadUrl)
-              if (db) {
-                await setDoc(
-                  doc(db as Firestore, 'users', user.uid, 'preferences', 'notes'),
-                  { background: downloadUrl },
-                  { merge: true }
-                )
-              }
-            } catch (err) {
-              console.error('Notes background upload failed:', err)
+        if (!user) return
+        void (async () => {
+          try {
+            const downloadUrl = await uploadNotesBg(dataUrl, user.uid)
+            setPageBackground(downloadUrl)
+            const fs = await waitForNotesDb()
+            if (!fs) {
+              toast({
+                title: 'Background not saved yet',
+                description: 'Connection is still starting. Wait a moment and try choosing the image again.',
+              })
+              return
             }
-          })()
-        }
+            await setDoc(
+              doc(fs, 'users', user.uid, 'preferences', 'notes'),
+              { background: downloadUrl },
+              { merge: true }
+            )
+            try {
+              localStorage.setItem('mindmechanism-notes-bg-url', downloadUrl)
+            } catch {
+              /* ignore */
+            }
+            toast({ title: 'Background saved', description: 'Applied on this account across devices.' })
+          } catch (err) {
+            console.error('Notes background upload failed:', err)
+            toast({
+              title: 'Could not save background',
+              description: err instanceof Error ? err.message : 'Upload or sync failed.',
+            })
+          }
+        })()
       }
       reader.readAsDataURL(file)
       e.target.value = ''
@@ -788,16 +835,34 @@ export default function NotesPage() {
 
   const handleBgClear = useCallback(async () => {
     setPageBackground(null)
-    if (user && db) {
-      try {
-        await setDoc(
-          doc(db as Firestore, 'users', user.uid, 'preferences', 'notes'),
-          { background: null },
-          { merge: true }
-        )
-      } catch (err) {
-        console.error('Failed to clear notes background:', err)
+    if (!user) return
+    try {
+      const fs = await waitForNotesDb()
+      if (!fs) {
+        toast({ title: 'Not cleared on account', description: 'Database not ready; background removed on this page only.' })
+        try {
+          localStorage.removeItem('mindmechanism-notes-bg-url')
+        } catch {
+          /* ignore */
+        }
+        return
       }
+      await setDoc(
+        doc(fs, 'users', user.uid, 'preferences', 'notes'),
+        { background: deleteField() },
+        { merge: true }
+      )
+      try {
+        localStorage.removeItem('mindmechanism-notes-bg-url')
+      } catch {
+        /* ignore */
+      }
+    } catch (err) {
+      console.error('Failed to clear notes background:', err)
+      toast({
+        title: 'Could not clear saved background',
+        description: err instanceof Error ? err.message : undefined,
+      })
     }
   }, [user])
 
@@ -1057,8 +1122,14 @@ export default function NotesPage() {
                 Write with optional session and environment context—saved notes stay easy to scan in the list.
               </p>
             </div>
-            <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex flex-wrap items-center gap-2">
+            <div
+              className={cn(
+                'sticky top-0 z-[130] -mx-2 mb-2 flex flex-wrap items-center gap-2 rounded-xl border px-2 py-2 shadow-sm backdrop-blur-md',
+                pageBackground
+                  ? 'border-white/15 bg-black/55'
+                  : 'border-black/10 bg-gray-50/95 dark:border-white/10 dark:bg-black/80'
+              )}
+            >
                 <button
                   type="button"
                   onClick={() => setSavedNotesPanelOpen((open) => !open)}
@@ -1185,25 +1256,24 @@ export default function NotesPage() {
                     <X className="h-4 w-4" aria-hidden />
                   </button>
                 ) : null}
-              </div>
-              {(!selectedNote || isEditing) && (
-                <button
-                  type="button"
-                  onClick={handleSaveNote}
-                  disabled={!canSave}
-                  className={cn(
-                    'inline-flex items-center justify-center gap-2 rounded-xl border-2 border-transparent bg-transparent px-5 py-3 min-h-[3rem] w-full sm:w-auto sm:shrink-0 self-end sm:self-auto',
-                    'text-base font-semibold text-green-600 dark:text-green-400',
-                    'transition-colors',
-                    'hover:bg-white hover:text-green-700 dark:hover:bg-white dark:hover:text-green-600 hover:shadow-sm',
-                    'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:shadow-none disabled:dark:hover:bg-transparent',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500/40 focus-visible:ring-offset-2'
-                  )}
-                >
-                  <Save className="h-6 w-6" aria-hidden />
-                  Save
-                </button>
-              )}
+                {(!selectedNote || isEditing) && (
+                  <button
+                    type="button"
+                    onClick={handleSaveNote}
+                    disabled={!canSave}
+                    title={canSave ? 'Save note' : 'Title and note text required to save'}
+                    aria-label="Save note"
+                    className={cn(
+                      'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 transition-colors',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                      canSave
+                        ? 'border-green-500/70 text-green-600 hover:bg-green-50 focus-visible:ring-green-500/45 dark:text-green-400 dark:hover:bg-green-950/35'
+                        : 'cursor-not-allowed border-slate-200/90 text-slate-300 opacity-45 dark:border-white/15 dark:text-white/25'
+                    )}
+                  >
+                    <Save className="h-6 w-6" aria-hidden />
+                  </button>
+                )}
             </div>
           </div>
           <div className="relative min-h-[min(50vh,420px)]">
