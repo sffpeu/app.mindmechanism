@@ -252,57 +252,64 @@ export default function DashboardPage() {
 
               {/* Content */}
               <div className="px-4 sm:px-6 pt-5 pb-6">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                  <Avatar className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl border-2 border-white dark:border-gray-800 shadow-lg flex-shrink-0 ring-1 ring-black/5 dark:ring-white/10">
-                    <AvatarImage src={user.photoURL || undefined} className="object-cover" />
-                    <AvatarFallback className="rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-xl font-semibold">
-                      {user.displayName
-                        ? user.displayName.split(/\s+/).map((n) => n[0]).join('').slice(0, 2).toUpperCase()
-                        : <User className="h-8 w-8" />}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate">
-                      {user.displayName || 'User'}
-                    </h2>
-                    <div className="flex items-center gap-2 mt-1 text-gray-500 dark:text-gray-400">
-                      <Mail className="h-4 w-4 flex-shrink-0 opacity-70" />
-                      <span className="text-sm truncate">{user.email}</span>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+                  {/* Identity */}
+                  <div className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:items-center">
+                    <Avatar className="h-20 w-20 sm:h-24 sm:w-24 flex-shrink-0 rounded-2xl border-2 border-white shadow-lg ring-1 ring-black/5 dark:border-gray-800 dark:ring-white/10">
+                      <AvatarImage src={user.photoURL || undefined} className="object-cover" />
+                      <AvatarFallback className="rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-xl font-semibold text-white">
+                        {user.displayName
+                          ? user.displayName.split(/\s+/).map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+                          : <User className="h-8 w-8" />}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <h2 className="truncate text-xl font-bold text-gray-900 sm:text-2xl dark:text-white">
+                        {user.displayName || 'User'}
+                      </h2>
+                      <div className="mt-1 flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                        <Mail className="h-4 w-4 flex-shrink-0 opacity-70" />
+                        <span className="truncate text-sm">{user.email}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Meta rows */}
-                <div className="mt-6 pt-6 border-t border-gray-100 dark:border-white/10 space-y-3">
-                  {timeStats.lastSignInTime && (
-                    <div className="flex items-center justify-between gap-3 text-sm">
-                      <span className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                        <LogIn className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                        Last sign in
+                  {/* Account meta — beside identity on sm+; frees vertical space for content below */}
+                  <div
+                    className={cn(
+                      'w-full shrink-0 space-y-2.5 border-t border-gray-100 pt-4 text-sm dark:border-white/10',
+                      'sm:mt-0.5 sm:w-auto sm:min-w-[10.5rem] sm:max-w-[22rem] sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0 sm:text-right'
+                    )}
+                  >
+                    {timeStats.lastSignInTime && (
+                      <div className="flex items-center justify-between gap-3 sm:block sm:space-y-0.5 sm:text-right">
+                        <span className="flex items-center gap-2 text-gray-500 dark:text-gray-400 sm:block">
+                          <LogIn className="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500 sm:hidden" />
+                          Last sign in
+                        </span>
+                        <span className="font-medium tabular-nums text-gray-900 dark:text-white sm:block">
+                          {timeStats.lastSignInTime.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                    {memberSince && (
+                      <div className="flex items-center justify-between gap-3 sm:block sm:space-y-0.5 sm:text-right">
+                        <span className="flex items-center gap-2 text-gray-500 dark:text-gray-400 sm:block">
+                          <Calendar className="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500 sm:hidden" />
+                          Member since
+                        </span>
+                        <span className="font-medium text-gray-900 dark:text-white sm:block">{memberSince}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between gap-3 sm:block sm:space-y-0.5 sm:text-right">
+                      <span className="flex items-center gap-2 text-gray-500 dark:text-gray-400 sm:block">
+                        <span className="flex h-4 w-4 items-center justify-center text-[10px] font-semibold text-gray-400 dark:text-gray-500 sm:hidden">
+                          M
+                        </span>
+                        Membership
                       </span>
-                      <span className="font-medium text-gray-900 dark:text-white tabular-nums">
-                        {timeStats.lastSignInTime.toLocaleString()}
-                      </span>
+                      <span className={cn('block font-medium tabular-nums', tierCfg.color)}>{tierCfg.label}</span>
                     </div>
-                  )}
-                  {memberSince && (
-                    <div className="flex items-center justify-between gap-3 text-sm">
-                      <span className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                        <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                        Member since
-                      </span>
-                      <span className="font-medium text-gray-900 dark:text-white">{memberSince}</span>
-                    </div>
-                  )}
-                  {/* Tier — discrete, informational only */}
-                  <div className="flex items-center justify-between gap-3 text-sm">
-                    <span className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                      <span className="h-4 w-4 flex items-center justify-center text-[10px] font-semibold text-gray-400 dark:text-gray-500">M</span>
-                      Membership
-                    </span>
-                    <span className={cn('font-medium tabular-nums', tierCfg.color)}>
-                      {tierCfg.label}
-                    </span>
                   </div>
                 </div>
 
