@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
-  User, Mail, Calendar, CalendarClock, LogIn, Pencil, LogOut,
+  User, Mail, CalendarClock, Pencil, LogOut,
   Clock3, XCircle, ChevronDown, CalendarDays, Users,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -218,12 +218,12 @@ export default function DashboardPage() {
     <ProtectedRoute>
       <div className="h-full overflow-hidden flex flex-col bg-gradient-to-b from-gray-50 to-gray-100/80 dark:from-black dark:to-gray-950/50">
         <div className="flex-1 min-h-0 overflow-y-auto">
-          <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+          <div className="mx-auto max-w-2xl space-y-4 px-4 py-4 sm:px-6 sm:py-5">
 
             {/* ── Profile card ──────────────────────────────────────────── */}
-            <Card className="overflow-hidden rounded-2xl bg-white/90 dark:bg-white/5 border-0 shadow-xl shadow-gray-200/50 dark:shadow-none backdrop-blur-sm">
-              {/* Banner */}
-              <div className="relative h-20 sm:h-24 overflow-hidden" aria-hidden>
+            <Card className="overflow-hidden rounded-xl border-0 bg-white/90 shadow-md shadow-gray-200/40 backdrop-blur-sm dark:bg-white/5 dark:shadow-none">
+              {/* Banner — short strip so the fold reaches Recent Sessions sooner */}
+              <div className="relative h-10 overflow-hidden sm:h-11" aria-hidden>
                 {profile?.bannerUrl?.trim() ? (
                   <>
                     <img src={profile.bannerUrl.trim()} alt="" className="absolute inset-0 h-full w-full object-cover" />
@@ -250,95 +250,87 @@ export default function DashboardPage() {
                 <div className="absolute inset-x-0 top-0 h-px bg-white/20" />
               </div>
 
-              {/* Content */}
-              <div className="px-4 sm:px-6 pt-5 pb-6">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-                  {/* Identity */}
-                  <div className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:items-center">
-                    <Avatar className="h-20 w-20 sm:h-24 sm:w-24 flex-shrink-0 rounded-2xl border-2 border-white shadow-lg ring-1 ring-black/5 dark:border-gray-800 dark:ring-white/10">
-                      <AvatarImage src={user.photoURL || undefined} className="object-cover" />
-                      <AvatarFallback className="rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-xl font-semibold text-white">
-                        {user.displayName
-                          ? user.displayName.split(/\s+/).map((n) => n[0]).join('').slice(0, 2).toUpperCase()
-                          : <User className="h-8 w-8" />}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1">
-                      <h2 className="truncate text-xl font-bold text-gray-900 sm:text-2xl dark:text-white">
-                        {user.displayName || 'User'}
-                      </h2>
-                      <div className="mt-1 flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                        <Mail className="h-4 w-4 flex-shrink-0 opacity-70" />
-                        <span className="truncate text-sm">{user.email}</span>
-                      </div>
+              {/* Content — dense: meta runs under the name; actions immediately follow */}
+              <div className="px-3 pb-3 pt-3 sm:px-5 sm:pb-3.5 sm:pt-3.5">
+                <div className="flex gap-3 sm:items-start sm:gap-4">
+                  <Avatar className="h-14 w-14 shrink-0 rounded-xl border-2 border-white shadow-md ring-1 ring-black/5 dark:border-gray-800 dark:ring-white/10 sm:h-16 sm:w-16">
+                    <AvatarImage src={user.photoURL || undefined} className="object-cover" />
+                    <AvatarFallback className="rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-base font-semibold text-white sm:text-lg">
+                      {user.displayName
+                        ? user.displayName.split(/\s+/).map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+                        : <User className="h-6 w-6" />}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="truncate text-lg font-bold leading-tight text-gray-900 dark:text-white sm:text-xl">
+                      {user.displayName || 'User'}
+                    </h2>
+                    <div className="mt-0.5 flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
+                      <Mail className="h-3.5 w-3.5 shrink-0 opacity-70" />
+                      <span className="truncate text-xs">{user.email}</span>
+                    </div>
+
+                    {/* Compact account detail — one secondary block, small type */}
+                    <div className="mt-1.5 space-y-1 text-[11px] leading-snug text-gray-500 dark:text-gray-400 sm:text-xs">
+                      {(memberSince || timeStats.lastSignInTime) ? (
+                        <p className="flex flex-wrap gap-x-2 gap-y-0.5">
+                          {memberSince ? (
+                            <span>
+                              Member since{' '}
+                              <span className="font-medium text-gray-700 dark:text-gray-300">{memberSince}</span>
+                            </span>
+                          ) : null}
+                          {memberSince && timeStats.lastSignInTime ? (
+                            <span className="text-gray-300 dark:text-gray-600" aria-hidden>
+                              ·
+                            </span>
+                          ) : null}
+                          {timeStats.lastSignInTime ? (
+                            <span>
+                              Last sign-in{' '}
+                              <span className="font-medium tabular-nums text-gray-700 dark:text-gray-300">
+                                {timeStats.lastSignInTime.toLocaleString(undefined, {
+                                  dateStyle: 'short',
+                                  timeStyle: 'short',
+                                })}
+                              </span>
+                            </span>
+                          ) : null}
+                        </p>
+                      ) : null}
+                      <p className={cn('font-medium', tierCfg.color)}>
+                        Membership · {tierCfg.label}
+                      </p>
+                    </div>
+
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <Button variant="outline" size="sm" asChild className="h-8 gap-1.5 rounded-full px-3 text-xs">
+                        <Link href="/settings">
+                          <Pencil className="h-3.5 w-3.5" />
+                          Edit profile
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => signOut()}
+                        className="h-8 gap-1.5 rounded-full px-3 text-xs text-gray-600 hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-950/30 dark:hover:text-red-400"
+                      >
+                        <LogOut className="h-3.5 w-3.5" />
+                        Sign out
+                      </Button>
                     </div>
                   </div>
-
-                  {/* Account meta — beside identity on sm+; frees vertical space for content below */}
-                  <div
-                    className={cn(
-                      'w-full shrink-0 space-y-2.5 border-t border-gray-100 pt-4 text-sm dark:border-white/10',
-                      'sm:mt-0.5 sm:w-auto sm:min-w-[10.5rem] sm:max-w-[22rem] sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0 sm:text-right'
-                    )}
-                  >
-                    {timeStats.lastSignInTime && (
-                      <div className="flex items-center justify-between gap-3 sm:block sm:space-y-0.5 sm:text-right">
-                        <span className="flex items-center gap-2 text-gray-500 dark:text-gray-400 sm:block">
-                          <LogIn className="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500 sm:hidden" />
-                          Last sign in
-                        </span>
-                        <span className="font-medium tabular-nums text-gray-900 dark:text-white sm:block">
-                          {timeStats.lastSignInTime.toLocaleString()}
-                        </span>
-                      </div>
-                    )}
-                    {memberSince && (
-                      <div className="flex items-center justify-between gap-3 sm:block sm:space-y-0.5 sm:text-right">
-                        <span className="flex items-center gap-2 text-gray-500 dark:text-gray-400 sm:block">
-                          <Calendar className="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500 sm:hidden" />
-                          Member since
-                        </span>
-                        <span className="font-medium text-gray-900 dark:text-white sm:block">{memberSince}</span>
-                      </div>
-                    )}
-                    <div className="flex items-center justify-between gap-3 sm:block sm:space-y-0.5 sm:text-right">
-                      <span className="flex items-center gap-2 text-gray-500 dark:text-gray-400 sm:block">
-                        <span className="flex h-4 w-4 items-center justify-center text-[10px] font-semibold text-gray-400 dark:text-gray-500 sm:hidden">
-                          M
-                        </span>
-                        Membership
-                      </span>
-                      <span className={cn('block font-medium tabular-nums', tierCfg.color)}>{tierCfg.label}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <Button variant="outline" size="sm" asChild className="gap-2 rounded-full px-5">
-                    <Link href="/settings">
-                      <Pencil className="h-4 w-4" />
-                      Edit profile
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="ghost" size="sm"
-                    onClick={() => signOut()}
-                    className="gap-2 rounded-full px-5 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    Sign out
-                  </Button>
                 </div>
               </div>
             </Card>
 
             {/* ── Recent Sessions ───────────────────────────────────────── */}
             <section>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+              <h2 className="mb-0.5 text-base font-semibold text-gray-900 dark:text-white sm:text-lg">
                 Recent Sessions
               </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              <p className="mb-3 text-xs text-gray-500 dark:text-gray-400 sm:text-sm">
                 Continue or restart from your latest sessions.
               </p>
               <Card className="rounded-2xl border border-violet-200/90 dark:border-violet-500/30 overflow-hidden bg-violet-50/95 dark:bg-indigo-950/50 shadow-xl shadow-violet-200/40 dark:shadow-indigo-950/40 backdrop-blur-sm p-4 sm:p-6">
