@@ -3,6 +3,7 @@
 import {
   useState,
   useEffect,
+  useLayoutEffect,
   useRef,
   useCallback,
   type ComponentType,
@@ -235,6 +236,18 @@ function defaultPanelLayout(): PanelLayout {
   }
 }
 
+/** Same as `defaultPanelPositions` when `window` is undefined — used for `useState` so SSR and the first client render match (avoids hydration errors). */
+function staticPanelLayoutForHydration(): PanelLayout {
+  const margin = 12
+  const savedW = 320
+  return {
+    saved: { x: NOTES_DOCK_GUTTER, y: 96 },
+    editor: { x: NOTES_DOCK_GUTTER + savedW + margin, y: 96 },
+    savedCollapsed: false,
+    editorCollapsed: false,
+  }
+}
+
 function NotesFloatingPanel({
   id,
   position,
@@ -401,7 +414,7 @@ export default function NotesPage() {
   const [savedNotesPanelOpen, setSavedNotesPanelOpen] = useState(true)
   const { playSuccess } = useSoundEffects()
 
-  const [panelLayout, setPanelLayout] = useState(defaultPanelLayout)
+  const [panelLayout, setPanelLayout] = useState(staticPanelLayoutForHydration)
   const [frontPanel, setFrontPanel] = useState<NotesPanelKey>('editor')
   const [notesFontPx, setNotesFontPx] = useState(16)
   const [notesTextColor, setNotesTextColor] = useState<string | null>(null)
@@ -418,10 +431,12 @@ export default function NotesPage() {
     setEnvSnapshotExpanded(false)
   }, [selectedNote?.id])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     try {
       const raw = localStorage.getItem(LS_NOTES_PANELS)
-      if (raw) {
+      if (!raw) {
+        setPanelLayout(defaultPanelLayout())
+      } else {
         const p = JSON.parse(raw) as {
           revision?: number
           saved?: { x: number; y: number }
