@@ -33,6 +33,9 @@ function isPublicAuthPath(pathname: string | null) {
   return pathname.startsWith('/auth/');
 }
 
+/** Horizontal center of dock icons: pl-3 + Dock mx-2 + half of vertical rail width (see `panelHeight` on Dock, default 64) */
+const DOCK_ICON_CENTER_LEFT = 'calc(0.75rem + 0.5rem + 32px)'
+
 const navItems = [
   { title: 'Home', href: '/layers', icon: Home },
   { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -174,14 +177,20 @@ export function AppDock() {
           </Dock>
         </div>
       </div>
-      {/* Persistent ⓘ button — top-left, never idle-fades, visible on every page */}
+      {/* Info — top of screen, aligned with dock icon column; never idle-fades */}
       <button
         type="button"
         onClick={() => setIsInfoOpen(true)}
-        aria-label="Open information"
-        className="fixed top-4 left-4 z-[12001] flex items-center justify-center h-8 w-8 rounded-full bg-black/5 dark:bg-white/10 text-black/40 dark:text-white/40 border border-black/8 dark:border-white/12 hover:bg-black/10 dark:hover:bg-white/15 hover:text-black/70 dark:hover:text-white/70 transition-all duration-200"
+        aria-label="App information"
+        className={cn(
+          'fixed top-4 z-[12001] flex h-10 w-10 -translate-x-1/2 items-center justify-center rounded-full shadow-md ring-2 ring-black/10 transition-all duration-200',
+          'bg-gray-200 text-neutral-800 hover:bg-gray-300 hover:ring-black/15',
+          'dark:bg-neutral-800 dark:text-neutral-100 dark:ring-white/20 dark:hover:bg-neutral-700 dark:hover:ring-white/30',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900'
+        )}
+        style={{ left: DOCK_ICON_CENTER_LEFT }}
       >
-        <Info className="h-3.5 w-3.5" />
+        <Info className="h-5 w-5" aria-hidden />
       </button>
 
       <SettingsDialog
