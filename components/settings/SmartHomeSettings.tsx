@@ -159,7 +159,15 @@ export function SmartHomeSettings() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bridgeIp: ip }),
       })
-      const data = await res.json()
+      const text = await res.text()
+      let data: { error?: string; username?: string }
+      try {
+        data = JSON.parse(text) as { error?: string; username?: string }
+      } catch {
+        throw new Error(
+          `Server returned non-JSON (try local dev on the same Wi‑Fi as the bridge). Start: ${text.slice(0, 80)}`
+        )
+      }
       if (!res.ok) {
         throw new Error(typeof data.error === 'string' ? data.error : 'Pairing failed')
       }

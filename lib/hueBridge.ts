@@ -60,8 +60,8 @@ function nodeRequest(
   })
 }
 
-function looksLikeJson(s: string): boolean {
-  const t = s.trimStart()
+export function looksLikeJson(s: string): boolean {
+  const t = s.trimStart().replace(/^\uFEFF/, '')
   return t.startsWith('[') || t.startsWith('{')
 }
 
@@ -97,9 +97,22 @@ export async function bridgeRequest(
 }
 
 export function parseBridgeJson<T = unknown>(raw: string): T {
+  const trimmed = raw.replace(/^\uFEFF/, '').trim()
+  if (!trimmed) {
+    throw new Error('Bridge returned an empty body — check the IP and that this is your Hue bridge.')
+  }
+  if (!looksLikeJson(trimmed)) {
+    const preview = trimmed.slice(0, 160).replace(/\s+/g, ' ')
+    throw new Error(
+      `Bridge did not return JSON (wrong IP, captive portal, or not a Hue bridge). Starts with: ${preview}`
+    )
+  }
   try {
-    return JSON.parse(raw) as T
-  } catch {
-    throw new Error(`Bridge non-JSON: "${raw.slice(0, 300).replace(/\s+/g, ' ')}"`)
+    return JSON.parse(trimmed) as T
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    throw new Error(
+      `Bridge JSON parse failed (${msg}). Raw start: ${trimmed.slice(0, 200).replace(/\s+/g, ' ')}`
+    )
   }
 }
