@@ -232,6 +232,23 @@ function sessionGroupDisplay(session: Session): { typeLabel: string; participant
 
 const LS_NOTES_PANELS = 'mindmechanism-notes-panels-v1'
 const LS_NOTES_A11Y = 'mindmechanism-notes-a11y-v1'
+/** Always persist background URL here first (short string); survives reload even if Firestore is slow. */
+const LS_NOTES_BG_URL = 'mindmechanism-notes-bg-url'
+
+/** Floating panels cannot move above this Y — keeps them below the sticky Notes toolbar */
+const NOTES_FLOAT_TOP_MIN = 120
+
+function persistNotesBgLocal(url: string | null) {
+  try {
+    if (url == null || url === '') {
+      localStorage.removeItem(LS_NOTES_BG_URL)
+    } else {
+      localStorage.setItem(LS_NOTES_BG_URL, url)
+    }
+  } catch {
+    /* quota / private mode */
+  }
+}
 
 /** Bump when default positions or dock rules change — forces one-time re-apply from defaults */
 const PANEL_LAYOUT_REVISION = 2
@@ -244,14 +261,14 @@ function defaultPanelPositions(): { saved: { x: number; y: number }; editor: { x
   const savedW = 320
   if (typeof window === 'undefined') {
     return {
-      saved: { x: NOTES_DOCK_GUTTER, y: 96 },
-      editor: { x: NOTES_DOCK_GUTTER + savedW + margin, y: 96 },
+      saved: { x: NOTES_DOCK_GUTTER, y: NOTES_FLOAT_TOP_MIN },
+      editor: { x: NOTES_DOCK_GUTTER + savedW + margin, y: NOTES_FLOAT_TOP_MIN },
     }
   }
   const vw = window.innerWidth
   const vh = window.innerHeight
   const savedX = NOTES_DOCK_GUTTER
-  const savedY = Math.min(112, Math.max(72, vh * 0.09))
+  const savedY = Math.max(NOTES_FLOAT_TOP_MIN, Math.min(200, Math.max(72, vh * 0.09)))
   const editorW = Math.min(560, vw - NOTES_DOCK_GUTTER - margin * 2)
   let editorX = savedX + savedW + margin
   let editorY = savedY
@@ -295,8 +312,8 @@ function staticPanelLayoutForHydration(): PanelLayout {
   const margin = 12
   const savedW = 320
   return {
-    saved: { x: NOTES_DOCK_GUTTER, y: 96 },
-    editor: { x: NOTES_DOCK_GUTTER + savedW + margin, y: 96 },
+    saved: { x: NOTES_DOCK_GUTTER, y: NOTES_FLOAT_TOP_MIN },
+    editor: { x: NOTES_DOCK_GUTTER + savedW + margin, y: NOTES_FLOAT_TOP_MIN },
     savedCollapsed: false,
     editorCollapsed: false,
   }
@@ -345,9 +362,11 @@ function NotesFloatingPanel({
     const vw = window.innerWidth
     const vh = window.innerHeight
     const maxX = Math.max(minX, vw - w - margin)
+    const minY = Math.max(margin, NOTES_FLOAT_TOP_MIN)
+    const maxY = Math.max(minY, vh - h - margin)
     return {
       x: Math.min(Math.max(x, minX), maxX),
-      y: Math.min(Math.max(margin, y), Math.max(margin, vh - h - margin)),
+      y: Math.min(Math.max(y, minY), maxY),
     }
   }, [])
 
@@ -502,16 +521,12 @@ export default function NotesPage() {
             if (typeof bg === 'string' && bg.length > 0) {
               setPageBackground(bg)
               loadedFromCloud = true
-              try {
-                localStorage.setItem('mindmechanism-notes-bg-url', bg)
-              } catch {
-                /* ignore */
-              }
+              persistNotesBgLocal(bg)
             }
           }
         }
         if (!loadedFromCloud && mounted) {
-          const cached = localStorage.getItem('mindmechanism-notes-bg-url')
+          const cached = localStorage.getItem(LS_NOTES_BG_URL)
           if (typeof cached === 'string' && cached.length > 0) {
             setPageBackground(cached)
           }
@@ -520,7 +535,7 @@ export default function NotesPage() {
         console.error('Failed to load notes background:', err)
         if (mounted) {
           try {
-            const cached = localStorage.getItem('mindmechanism-notes-bg-url')
+            const cached = localStorage.getItem(LS_NOTES_BG_URL)
             if (typeof cached === 'string' && cached.length > 0) {
               setPageBackground(cached)
             }
@@ -537,6 +552,10 @@ export default function NotesPage() {
 
   useLayoutEffect(() => {
     try {
+      const bgCache = localStorage.getItem(LS_NOTES_BG_URL)
+      if (typeof bgCache === 'string' && bgCache.length > 0) {
+        setPageBackground(bgCache)
+      }
       const raw = localStorage.getItem(LS_NOTES_PANELS)
       if (!raw) {
         setPanelLayout(defaultPanelLayout())
@@ -559,10 +578,13 @@ export default function NotesPage() {
             editorCollapsed: typeof p.editorCollapsed === 'boolean' ? p.editorCollapsed : defs.editorCollapsed,
           })
         } else {
-          const posSaved =
+          const clampPanelY = (y: number) => Math.max(y, NOTES_FLOAT_TOP_MIN)
+          const posSavedRaw =
             p.saved && typeof p.saved.x === 'number' && typeof p.saved.y === 'number' ? p.saved : defs.saved
-          const posEditor =
+          const posEditorRaw =
             p.editor && typeof p.editor.x === 'number' && typeof p.editor.y === 'number' ? p.editor : defs.editor
+          const posSaved = { ...posSavedRaw, y: clampPanelY(posSavedRaw.y) }
+          const posEditor = { ...posEditorRaw, y: clampPanelY(posEditorRaw.y) }
           const overlapsDock = (pt: { x: number }) => pt.x < NOTES_DOCK_GUTTER
           const useDefaultPositions = overlapsDock(posSaved) || overlapsDock(posEditor)
           setPanelLayout({
@@ -791,7 +813,7 @@ export default function NotesPage() {
       const file = e.target.files?.[0]
       if (!file) return
       const reader = new FileReader()
-      reader.onload = (ev) => {
+        reader.onload = (ev) => {
         const dataUrl = ev.target?.result as string
         setPageBackground(dataUrl)
         if (!user) return
@@ -799,11 +821,13 @@ export default function NotesPage() {
           try {
             const downloadUrl = await uploadNotesBg(dataUrl, user.uid)
             setPageBackground(downloadUrl)
+            persistNotesBgLocal(downloadUrl)
             const fs = await waitForNotesDb()
             if (!fs) {
               toast({
-                title: 'Background not saved yet',
-                description: 'Connection is still starting. Wait a moment and try choosing the image again.',
+                title: 'Saved on this device',
+                description:
+                  'Cloud sync is still starting; your background will sync when the connection is ready.',
               })
               return
             }
@@ -812,17 +836,15 @@ export default function NotesPage() {
               { background: downloadUrl },
               { merge: true }
             )
-            try {
-              localStorage.setItem('mindmechanism-notes-bg-url', downloadUrl)
-            } catch {
-              /* ignore */
-            }
             toast({ title: 'Background saved', description: 'Applied on this account across devices.' })
           } catch (err) {
             console.error('Notes background upload failed:', err)
             toast({
-              title: 'Could not save background',
-              description: err instanceof Error ? err.message : 'Upload or sync failed.',
+              title: 'Could not finish cloud sync',
+              description:
+                err instanceof Error
+                  ? `${err.message} — image is kept on this device until sync succeeds.`
+                  : 'Upload or sync failed; image is kept on this device.',
             })
           }
         })()
@@ -835,16 +857,12 @@ export default function NotesPage() {
 
   const handleBgClear = useCallback(async () => {
     setPageBackground(null)
+    persistNotesBgLocal(null)
     if (!user) return
     try {
       const fs = await waitForNotesDb()
       if (!fs) {
         toast({ title: 'Not cleared on account', description: 'Database not ready; background removed on this page only.' })
-        try {
-          localStorage.removeItem('mindmechanism-notes-bg-url')
-        } catch {
-          /* ignore */
-        }
         return
       }
       await setDoc(
@@ -852,11 +870,6 @@ export default function NotesPage() {
         { background: deleteField() },
         { merge: true }
       )
-      try {
-        localStorage.removeItem('mindmechanism-notes-bg-url')
-      } catch {
-        /* ignore */
-      }
     } catch (err) {
       console.error('Failed to clear notes background:', err)
       toast({
@@ -1102,12 +1115,19 @@ export default function NotesPage() {
         </>
       ) : null}
       <div className="relative z-[1] flex min-h-0 flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-7xl pl-16 pr-4 py-6">
-          <div className="mb-6 flex flex-col gap-4">
-            <div className="min-w-0">
+        <div className="mx-auto max-w-7xl pl-16 pr-4 py-4">
+          <div
+            className={cn(
+              'sticky top-0 z-[200] isolate -mx-2 mb-3 flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-xl border px-2 py-1.5 shadow-sm backdrop-blur-md',
+              pageBackground
+                ? 'border-white/15 bg-black/55'
+                : 'border-black/10 bg-gray-50/95 dark:border-white/10 dark:bg-black/80'
+            )}
+          >
+            <div className="min-w-0 flex-1 basis-[min(100%,14rem)]">
               <h1
                 className={cn(
-                  'text-2xl font-bold tracking-tight',
+                  'text-xl font-bold leading-tight tracking-tight',
                   pageBackground ? 'text-white' : 'text-gray-900 dark:text-white'
                 )}
               >
@@ -1115,21 +1135,14 @@ export default function NotesPage() {
               </h1>
               <p
                 className={cn(
-                  'mt-1 max-w-xl text-sm',
-                  pageBackground ? 'text-white/60' : 'text-gray-500 dark:text-gray-400'
+                  'mt-0.5 line-clamp-1 text-xs',
+                  pageBackground ? 'text-white/65' : 'text-gray-500 dark:text-gray-400'
                 )}
               >
-                Write with optional session and environment context—saved notes stay easy to scan in the list.
+                Session context—saved notes stay easy to scan.
               </p>
             </div>
-            <div
-              className={cn(
-                'sticky top-0 z-[130] -mx-2 mb-2 flex flex-wrap items-center gap-2 rounded-xl border px-2 py-2 shadow-sm backdrop-blur-md',
-                pageBackground
-                  ? 'border-white/15 bg-black/55'
-                  : 'border-black/10 bg-gray-50/95 dark:border-white/10 dark:bg-black/80'
-              )}
-            >
+            <div className="flex flex-wrap items-center gap-1.5 sm:ml-auto sm:justify-end">
                 <button
                   type="button"
                   onClick={() => setSavedNotesPanelOpen((open) => !open)}
