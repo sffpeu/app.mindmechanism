@@ -294,13 +294,6 @@ export default function GlossaryPage() {
                 />
               )}
             </div>
-            {selectedCard && (
-              <GlossaryVisualWordPanel
-                word={selectedCard}
-                clockHexPalette={CLOCK_HEX}
-                onClose={() => setSelectedCard(null)}
-              />
-            )}
           </div>
           <div className="max-w-7xl mx-auto w-full pl-16 pr-4 shrink-0">{bottomChrome}</div>
         </>

@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { GlossaryWord } from '@/types/Glossary'
 import { clockTitles } from '@/lib/clockTitles'
 import { cn } from '@/lib/utils'
+import { GlossaryVisualMagnifier } from '@/components/glossary/GlossaryVisualMagnifier'
 
 const TAU = Math.PI * 2
 const NUM_CLOCKS = 9
@@ -556,6 +557,32 @@ export function GlossaryRadialTree({
 
   const isFullscreen = variant === 'fullscreen'
 
+  const magnifierWord = useMemo(() => {
+    if (!selectedWordId || !isFullscreen) return null
+    return leafById.get(selectedWordId)?.word ?? words.find(w => w.id === selectedWordId) ?? null
+  }, [selectedWordId, isFullscreen, leafById, words])
+
+  const dismissMagnifier = useCallback(() => {
+    if (!magnifierWord || !onSelectWord) return
+    onSelectWord(magnifierWord)
+  }, [magnifierWord, onSelectWord])
+
+  const magnifierHex =
+    magnifierWord &&
+    magnifierWord.clock_id != null &&
+    magnifierWord.clock_id >= 0 &&
+    magnifierWord.clock_id < NUM_CLOCKS
+      ? CLOCK_HEX[magnifierWord.clock_id] ?? '#156fde'
+      : '#6b7280'
+
+  const magnifierChakraTitle =
+    magnifierWord &&
+    magnifierWord.clock_id != null &&
+    magnifierWord.clock_id >= 0 &&
+    magnifierWord.clock_id < NUM_CLOCKS
+      ? clockTitles[magnifierWord.clock_id] ?? 'Glossary'
+      : 'Glossary'
+
   const hoveredLeaf = hoveredWordId ? leafById.get(hoveredWordId) ?? null : null
   const tooltipHex = hoveredLeaf ? (CLOCK_HEX[hoveredLeaf.clockId] ?? '#156fde') : '#156fde'
 
@@ -597,7 +624,10 @@ export function GlossaryRadialTree({
       )}
       <svg
         ref={svgRef}
-        className="w-full h-full touch-none cursor-grab active:cursor-grabbing block"
+        className={cn(
+          'w-full h-full touch-none cursor-grab active:cursor-grabbing block transition-[opacity] duration-300 ease-out',
+          magnifierWord ? 'opacity-[0.38] pointer-events-none' : 'opacity-100'
+        )}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -844,8 +874,16 @@ export function GlossaryRadialTree({
           </g>
         </g>
       </svg>
+      {magnifierWord && (
+        <GlossaryVisualMagnifier
+          word={magnifierWord}
+          hex={magnifierHex}
+          chakraTitle={magnifierChakraTitle}
+          onDismiss={dismissMagnifier}
+        />
+      )}
     </div>
-    {tooltipMounted && hoveredLeaf && mousePos && !dragRef.current.active &&
+    {tooltipMounted && hoveredLeaf && mousePos && !dragRef.current.active && !selectedWordId &&
       createPortal(
         <div
           className="pointer-events-none fixed z-[2000] px-2.5 py-1.5 rounded-md shadow-lg text-sm font-semibold select-none"
