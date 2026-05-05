@@ -1210,9 +1210,17 @@ export default function NotesPage() {
             )}
           >
             <div className="min-w-0 flex-1 basis-[min(100%,14rem)]">
+              <p
+                className={cn(
+                  'text-[9px] font-semibold uppercase tracking-[0.2em] mb-0.5',
+                  pageBackground ? 'text-white/40' : 'text-gray-400 dark:text-gray-500'
+                )}
+              >
+                The Mind Mechanism
+              </p>
               <h1
                 className={cn(
-                  'text-xl font-bold leading-tight tracking-tight',
+                  'text-3xl font-black leading-tight tracking-tight',
                   pageBackground ? 'text-white' : 'text-gray-900 dark:text-white'
                 )}
               >
@@ -1224,7 +1232,7 @@ export default function NotesPage() {
                   pageBackground ? 'text-white/65' : 'text-gray-500 dark:text-gray-400'
                 )}
               >
-                Session context—saved notes stay easy to scan.
+                Session context — saved notes stay easy to scan.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-1.5 sm:ml-auto sm:justify-end">

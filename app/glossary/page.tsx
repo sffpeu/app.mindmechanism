@@ -307,7 +307,8 @@ export default function GlossaryPage() {
       ) : (
         <div className="flex-1 min-h-0 flex flex-col max-w-7xl mx-auto w-full pl-16 pr-4 py-6">
           <div className="mb-6 shrink-0">
-            <h1 className="text-2xl font-semibold dark:text-white mb-2">Glossary</h1>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 mb-1">The Mind Mechanism</p>
+            <h1 className="text-4xl font-black tracking-tight text-gray-900 dark:text-white mb-2">Glossary</h1>
             <p className="text-gray-600 dark:text-gray-400">The vocabulary of the interior. Browse, search, and build your own word set.</p>
           </div>
 

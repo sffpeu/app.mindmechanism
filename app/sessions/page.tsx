@@ -213,6 +213,11 @@ export default function SessionsPage() {
 
         <div className="flex-1 min-h-0 overflow-y-auto">
           <div className="max-w-7xl mx-auto pl-16 pr-4 py-6">
+          <div className="mb-8">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 mb-1">The Mind Mechanism</p>
+            <h1 className="text-4xl font-black tracking-tight text-gray-900 dark:text-white">Sessions</h1>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Configure and launch your focused practice sessions.</p>
+          </div>
           <div className="space-y-8">
             {/* Create Session Section */}
             {!isClockMode && (

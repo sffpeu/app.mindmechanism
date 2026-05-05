@@ -1,10 +1,19 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Montserrat, Lora, IBM_Plex_Sans } from 'next/font/google'
 import './globals.css'
 import { LayoutContent } from './LayoutContent'
 import { SoundProvider } from '@/components/SoundProvider'
 import { ThemeProvider } from '@/components/ThemeProvider'
-const inter = Inter({ subsets: ['latin'] })
+import { FontProvider } from '@/components/FontProvider'
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-montserrat' })
+const lora = Lora({ subsets: ['latin'], variable: '--font-lora' })
+const ibmPlexSans = IBM_Plex_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-ibm-plex',
+})
 
 export const metadata: Metadata = {
   title: 'Mind Mechanism',
@@ -17,18 +26,21 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const fontVars = [inter.variable, montserrat.variable, lora.variable, ibmPlexSans.variable].join(' ')
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+    <html lang="en" suppressHydrationWarning className={fontVars}>
+      <body>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <SoundProvider>
-            <LayoutContent>{children}</LayoutContent>
-          </SoundProvider>
+          <FontProvider>
+            <SoundProvider>
+              <LayoutContent>{children}</LayoutContent>
+            </SoundProvider>
+          </FontProvider>
         </ThemeProvider>
       </body>
     </html>

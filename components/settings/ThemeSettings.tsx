@@ -1,11 +1,13 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useTheme } from '@/app/ThemeContext'
 import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Monitor, Moon, Sun, Lock, Download } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { APP_FONTS, getStoredFont, setAppFont, type AppFontId } from '@/components/FontProvider'
 
 interface ThemePack {
   id: string
@@ -67,6 +69,14 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 export function ThemeSettings() {
   const { setThemePreference, themePreference } = useTheme()
+  const [activeFont, setActiveFont] = useState<AppFontId>('inter')
+
+  useEffect(() => {
+    setActiveFont(getStoredFont())
+    const handler = (e: Event) => setActiveFont((e as CustomEvent<AppFontId>).detail)
+    window.addEventListener('mm-font-change', handler)
+    return () => window.removeEventListener('mm-font-change', handler)
+  }, [])
 
   const grouped = THEME_PACKS.reduce<Record<string, ThemePack[]>>((acc, p) => {
     if (!acc[p.category]) acc[p.category] = []
@@ -76,6 +86,57 @@ export function ThemeSettings() {
 
   return (
     <div className="space-y-4">
+      {/* ── Application Font ──────────────────────────────────────────── */}
+      <Card className="p-4 bg-white/50 dark:bg-black/50">
+        <p className="text-sm font-medium text-gray-900 dark:text-white mb-3">Application font</p>
+        <div className="space-y-2">
+          {APP_FONTS.map((font) => {
+            const isActive = activeFont === font.id
+            return (
+              <button
+                key={font.id}
+                type="button"
+                onClick={() => setAppFont(font.id)}
+                className={cn(
+                  'w-full text-left rounded-lg border p-3 transition-colors',
+                  isActive
+                    ? 'border-violet-500 bg-violet-50/50 dark:bg-violet-950/20'
+                    : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/40'
+                )}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span
+                        className={cn('text-sm font-semibold', isActive ? 'text-violet-700 dark:text-violet-300' : 'text-gray-900 dark:text-white')}
+                        style={{ fontFamily: font.cssVar }}
+                      >
+                        {font.label}
+                      </span>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wide">
+                        {font.register}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">{font.description}</p>
+                    <p
+                      className="text-sm mt-1.5 text-gray-700 dark:text-gray-300"
+                      style={{ fontFamily: font.cssVar }}
+                    >
+                      {font.sampleText}
+                    </p>
+                  </div>
+                  {isActive && (
+                    <div className="shrink-0 mt-0.5 h-4 w-4 rounded-full bg-violet-500 flex items-center justify-center">
+                      <svg viewBox="0 0 8 8" className="h-2.5 w-2.5 fill-white"><path d="M1.5 4l2 2 3-3" stroke="white" strokeWidth="1.2" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </div>
+                  )}
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      </Card>
+
       {/* ── Color Scheme ──────────────────────────────────────────────── */}
       <Card className="p-4 bg-white/50 dark:bg-black/50">
         <p className="text-sm font-medium text-gray-900 dark:text-white mb-3">Color scheme</p>

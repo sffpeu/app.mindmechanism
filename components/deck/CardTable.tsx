@@ -512,10 +512,10 @@ export function CardTable() {
       <div style={{
         position: 'absolute', bottom: 28, left: 76, zIndex: 9999, pointerEvents: 'none',
       }}>
-        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 3, fontWeight: 600 }}>
-          Mind Mechanism
+        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 4, fontWeight: 700 }}>
+          The Mind Mechanism
         </div>
-        <div style={{ fontSize: 28, fontWeight: 800, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+        <div style={{ fontSize: 38, fontWeight: 900, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.03em', textTransform: 'uppercase', lineHeight: 1 }}>
           Focus Deck
         </div>
       </div>
