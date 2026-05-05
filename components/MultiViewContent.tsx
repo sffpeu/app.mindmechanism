@@ -12,6 +12,10 @@ import { MandalaCeremony } from '@/components/MandalaCeremony'
 import { Volume2, VolumeX } from 'lucide-react'
 import { useNineWheelTones } from '@/lib/hooks/useNineWheelTones'
 import { cn } from '@/lib/utils'
+import {
+  VIEWPORT_INSET_LEFT_APP_DOCK_RAIL,
+  VIEWPORT_INSET_RIGHT_CLOCK_DOT_RAIL,
+} from '@/lib/layoutGutters'
 
 const MUTE_KEY = 'mindmechanism.clockSoundMuted'
 
@@ -236,13 +240,13 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
           </>
         )}
         {isMultiView2 && (
-            /* Heading bottom-left, colour toggle bottom-right — tight right inset still clears dot dock */
+            /* Heading inset matches AppDock rail; toggle inset matches clock DotNavigation rail */
             <div
               style={{
                 position: 'absolute',
                 bottom: 16,
-                left: 16,
-                right: 32,
+                left: VIEWPORT_INSET_LEFT_APP_DOCK_RAIL,
+                right: VIEWPORT_INSET_RIGHT_CLOCK_DOT_RAIL,
                 zIndex: 9999,
                 display: 'flex',
                 flexDirection: 'row',
