@@ -141,7 +141,7 @@ function CircularProgressRing({
 // ─────────────────────────────────────────────────────────────────────────────
 function TrioFace({
   idA, idB, idC, showCeremony, onCeremonyEnd,
-  remainingTime, initialDuration, isPaused, colourMode,
+  remainingTime, initialDuration, isPaused, colourMode, continuous,
 }: {
   idA: number
   idB: number
@@ -152,6 +152,7 @@ function TrioFace({
   initialDuration: number | null
   isPaused: boolean
   colourMode: ColourMode
+  continuous?: boolean
 }) {
   const rotA = useClockRotation(idA)
   const rotB = useClockRotation(idB)
@@ -175,16 +176,18 @@ function TrioFace({
       className="relative select-none"
       style={{ width: size, height: size }}
     >
-      <div className="absolute pointer-events-none" style={{ inset: '-3px' }}>
-        <CircularProgressRing
-          remainingTime={remainingTime}
-          initialDuration={initialDuration}
-          isPaused={isPaused}
-          hexA={hexA}
-          hexB={hexB}
-          hexC={hexC}
-        />
-      </div>
+      {!continuous && (
+        <div className="absolute pointer-events-none" style={{ inset: '-3px' }}>
+          <CircularProgressRing
+            remainingTime={remainingTime}
+            initialDuration={initialDuration}
+            isPaused={isPaused}
+            hexA={hexA}
+            hexB={hexB}
+            hexC={hexC}
+          />
+        </div>
+      )}
 
       <div
         className="absolute inset-0 rounded-full overflow-hidden"
@@ -284,12 +287,13 @@ function TrioFace({
 // Session phase
 // ─────────────────────────────────────────────────────────────────────────────
 function SessionPhase({
-  idA, idB, idC, duration, colourMode, onColourModeChange, onEnd,
+  idA, idB, idC, duration, continuous, colourMode, onColourModeChange, onEnd,
 }: {
   idA: number
   idB: number
   idC: number
-  duration: number
+  duration: number | null
+  continuous: boolean
   colourMode: ColourMode
   onColourModeChange: (m: ColourMode) => void
   onEnd: () => void
@@ -305,9 +309,9 @@ function SessionPhase({
   }, [])
 
   const { remainingTime, isPaused, initialDuration, onPauseResume } = useSessionTimer(
-    duration,
+    continuous ? null : duration,
     null,
-    handleComplete,
+    continuous ? undefined : handleComplete,
   )
 
   useTripleBreathingTone(idA, idB, idC, muted)
@@ -328,6 +332,7 @@ function SessionPhase({
         initialDuration={initialDuration}
         isPaused={isPaused}
         colourMode={colourMode}
+        continuous={continuous}
       />
 
       <div
@@ -345,12 +350,25 @@ function SessionPhase({
           <span style={{ color: hexC }}>{clockTitles[idC]}</span>
         </div>
 
-        {remainingTime != null && (
-          <Timer
-            remainingTime={remainingTime}
-            isPaused={isPaused}
-            onPauseResume={onPauseResume}
-          />
+        {continuous ? (
+          <p className="text-[10px] tracking-[0.2em] uppercase text-white/35">Continuous play</p>
+        ) : (
+          remainingTime != null && (
+            <Timer
+              remainingTime={remainingTime}
+              isPaused={isPaused}
+              onPauseResume={onPauseResume}
+            />
+          )
+        )}
+        {continuous && (
+          <button
+            type="button"
+            onClick={onEnd}
+            className="mt-1 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-[10px] font-medium uppercase tracking-widest text-white/60 transition-colors hover:border-white/25 hover:bg-white/10 hover:text-white/85"
+          >
+            End session
+          </button>
         )}
       </div>
 
@@ -534,6 +552,7 @@ function TrioPageContent() {
   const [wheelB, setWheelB] = useState<number | null>(null)
   const [wheelC, setWheelC] = useState<number | null>(null)
   const [duration, setDuration] = useState<number | null>(null)
+  const [continuousPlay, setContinuousPlay] = useState(false)
   const [customMinutes, setCustomMinutes] = useState('')
   const [dragSource, setDragSource] = useState<number | null>(null)
   const [dragOver, setDragOver] = useState<number | null>(null)
@@ -578,18 +597,20 @@ function TrioPageContent() {
     setCustomMinutes(val)
     const mins = parseInt(val)
     if (!isNaN(mins) && mins >= 1 && mins <= 180) {
+      setContinuousPlay(false)
       setDuration(mins * 60_000)
     }
   }
 
   // ── Session phase ─────────────────────────────────────────────────────────
-  if (phase === 'session' && wheelA !== null && wheelB !== null && wheelC !== null && duration !== null) {
+  if (phase === 'session' && wheelA !== null && wheelB !== null && wheelC !== null && (duration !== null || continuousPlay)) {
     return (
       <SessionPhase
         idA={wheelA}
         idB={wheelB}
         idC={wheelC}
         duration={duration}
+        continuous={continuousPlay}
         colourMode={colourMode}
         onColourModeChange={setColourMode}
         onEnd={handleSessionEnd}
@@ -704,19 +725,42 @@ function TrioPageContent() {
                 {DURATION_OPTIONS.map(({ label, ms }) => (
                   <button
                     key={ms}
-                    onClick={() => { setDuration(ms); setCustomMinutes('') }}
+                    type="button"
+                    onClick={() => {
+                      setContinuousPlay(false)
+                      setDuration(ms)
+                      setCustomMinutes('')
+                    }}
                     className="py-3 rounded-xl text-sm font-medium transition-all"
                     style={{
-                      background: duration === ms
+                      background: !continuousPlay && duration === ms
                         ? `linear-gradient(135deg, ${CLOCK_HEX[wheelA]}22 0%, ${CLOCK_HEX[wheelB]}22 50%, ${CLOCK_HEX[wheelC]}22 100%)`
                         : 'rgba(255,255,255,0.04)',
-                      border: `1px solid ${duration === ms ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.07)'}`,
-                      color: duration === ms ? '#fff' : 'rgba(255,255,255,0.4)',
+                      border: `1px solid ${!continuousPlay && duration === ms ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.07)'}`,
+                      color: !continuousPlay && duration === ms ? '#fff' : 'rgba(255,255,255,0.4)',
                     }}
                   >
                     {label}
                   </button>
                 ))}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setContinuousPlay(true)
+                    setDuration(null)
+                    setCustomMinutes('')
+                  }}
+                  className="col-span-2 py-3 rounded-xl text-sm font-medium transition-all"
+                  style={{
+                    background: continuousPlay
+                      ? `linear-gradient(135deg, ${CLOCK_HEX[wheelA]}28 0%, ${CLOCK_HEX[wheelB]}28 50%, ${CLOCK_HEX[wheelC]}28 100%)`
+                      : 'rgba(255,255,255,0.04)',
+                    border: `1px solid ${continuousPlay ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.07)'}`,
+                    color: continuousPlay ? '#fff' : 'rgba(255,255,255,0.45)',
+                  }}
+                >
+                  Continuous play
+                </button>
               </div>
 
               {/* Custom duration */}
@@ -744,21 +788,28 @@ function TrioPageContent() {
 
             <div className="flex gap-3">
               <button
-                onClick={() => setPhase('select')}
+                type="button"
+                onClick={() => {
+                  setPhase('select')
+                  setDuration(null)
+                  setContinuousPlay(false)
+                  setCustomMinutes('')
+                }}
                 className="px-5 py-2.5 rounded-full text-xs font-medium text-white/40 border border-white/10 hover:border-white/20 hover:text-white/60 transition-all"
               >
                 Back
               </button>
               <button
-                onClick={() => duration && setPhase('session')}
-                disabled={!duration}
+                type="button"
+                onClick={() => (duration !== null || continuousPlay) && setPhase('session')}
+                disabled={duration === null && !continuousPlay}
                 className="px-8 py-2.5 rounded-full text-sm font-medium transition-all disabled:opacity-20 disabled:cursor-not-allowed"
                 style={{
-                  background: duration
+                  background: duration !== null || continuousPlay
                     ? `linear-gradient(135deg, ${CLOCK_HEX[wheelA]}44 0%, ${CLOCK_HEX[wheelB]}44 50%, ${CLOCK_HEX[wheelC]}44 100%)`
                     : 'rgba(255,255,255,0.05)',
-                  border: `1px solid ${duration ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.07)'}`,
-                  color: duration ? '#fff' : 'rgba(255,255,255,0.3)',
+                  border: `1px solid ${duration !== null || continuousPlay ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.07)'}`,
+                  color: duration !== null || continuousPlay ? '#fff' : 'rgba(255,255,255,0.3)',
                 }}
               >
                 Begin
