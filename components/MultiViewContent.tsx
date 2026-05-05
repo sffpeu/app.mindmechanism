@@ -170,10 +170,34 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
             isSmallMultiView={type === 2}
           />
         )}
-        {/* Colour / Mono toggle — bottom left */}
-        <div className="absolute bottom-4 left-4">
-          <MultiColourToggle mode={colourMode} onChange={setColourMode} />
-        </div>
+        {!isMultiView2 && (
+          /* Colour / Mono toggle — bottom left, type 1 only */
+          <div className="absolute bottom-4 left-4">
+            <MultiColourToggle mode={colourMode} onChange={setColourMode} />
+          </div>
+        )}
+        {isMultiView2 && (
+          <>
+            {/* Colour toggle + heading stacked — bottom-left, aligned to nav panel */}
+            <div style={{ position: 'absolute', bottom: 28, left: 76, zIndex: 9999 }}>
+              <div style={{ marginBottom: 14, pointerEvents: 'auto' }}>
+                <MultiColourToggle mode={colourMode} onChange={setColourMode} />
+              </div>
+              <div style={{ pointerEvents: 'none' }}>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 4, fontWeight: 700 }}>
+                  The Mind Mechanism
+                </div>
+                <div style={{ fontSize: 34, fontWeight: 900, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.03em', textTransform: 'uppercase', lineHeight: 1 }}>
+                  Multiview
+                </div>
+              </div>
+            </div>
+            {/* Copyright — bottom-right */}
+            <div style={{ position: 'absolute', bottom: 20, right: 24, zIndex: 9999, pointerEvents: 'none', fontSize: 9, color: 'rgba(255,255,255,0.18)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              © 2026 Sean Fortune · All Rights Reserved
+            </div>
+          </>
+        )}
       </div>
 
       {/* Content Layer */}
@@ -329,19 +353,6 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
         )}
         {type === 2 && (
           <>
-          {/* Heading overlay — bottom-left */}
-          <div style={{ position: 'absolute', bottom: 28, left: 76, zIndex: 9999, pointerEvents: 'none' }}>
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 4, fontWeight: 700 }}>
-              The Mind Mechanism
-            </div>
-            <div style={{ fontSize: 34, fontWeight: 900, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.03em', textTransform: 'uppercase', lineHeight: 1 }}>
-              Multiview
-            </div>
-          </div>
-          {/* Copyright — bottom-right */}
-          <div style={{ position: 'absolute', bottom: 20, right: 24, zIndex: 9999, pointerEvents: 'none', fontSize: 9, color: 'rgba(255,255,255,0.18)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-            © 2026 The One Legged Poet · All Rights Reserved
-          </div>
           <div className="relative w-[450px] h-[450px]">
             {/* Satellite grid pattern - 30% less visible */}
             <motion.div 
