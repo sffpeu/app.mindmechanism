@@ -13,7 +13,7 @@ import {
   Sun,
   Moon,
   Maximize2,
-  LayoutGrid,
+  SquareStack,
   Minimize2,
 } from 'lucide-react';
 import { Dock, DockIcon, DockItem, DockLabel } from '@/components/ui/dock';
@@ -43,7 +43,7 @@ const navItems = [
   { title: 'Sessions', href: '/sessions', icon: Clock },
   { title: 'Notes', href: '/notes', icon: ClipboardList },
   { title: 'Glossary', href: '/glossary', icon: BookOpen },
-  { title: 'Deck', href: '/deck', icon: LayoutGrid },
+  { title: 'Deck', href: '/deck', icon: SquareStack },
 ];
 
 export function AppDock() {
