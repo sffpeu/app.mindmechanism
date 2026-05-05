@@ -14,11 +14,6 @@ import {
   spotifyStartContext,
   spotifyTransferPlayback,
 } from '@/lib/spotifyPlayback'
-import { initMusicKit, getMusicKit } from '@/lib/appleMusicKit'
-import {
-  fetchAppleLibraryPlaylistIds,
-  normalizeAppleMusicPlaylistId,
-} from '@/lib/appleMusicSession'
 
 export interface SessionStreamingMusicArgs {
   /** True while the timed session has remaining time &gt; 0 */
@@ -28,8 +23,8 @@ export interface SessionStreamingMusicArgs {
 
 /**
  * When a timed session is active, starts playback on the user’s chosen
- * service (Spotify Web Playback SDK + Web API, or Apple MusicKit) and
- * mirrors pause/resume to the session timer.
+ * service (Spotify Web Playback SDK + Web API) and mirrors pause/resume
+ * to the session timer.
  */
 export function useSessionStreamingMusic({
   sessionActive,
@@ -38,27 +33,19 @@ export function useSessionStreamingMusic({
   const {
     spotifyTokens,
     setSpotifyTokens,
-    appleMusicUserToken,
     sessionStreamingDuringSessions,
     sessionMusicProvider,
     spotifySessionPlaylistUri,
-    appleMusicSessionPlaylistUrl,
   } = useSettings()
 
-  const hasAppleToken = Boolean(appleMusicUserToken)
   const hasSpotifyTokens = spotifyTokensValid(spotifyTokens)
 
   const spotifyWants =
     sessionStreamingDuringSessions &&
     hasSpotifyTokens &&
-    (sessionMusicProvider === 'spotify' || sessionMusicProvider === 'auto')
-
-  const appleWants =
-    sessionStreamingDuringSessions &&
-    hasAppleToken &&
-    (sessionMusicProvider === 'apple' ||
-      (sessionMusicProvider === 'auto' && !hasSpotifyTokens) ||
-      (sessionMusicProvider === 'spotify' && !hasSpotifyTokens))
+    (sessionMusicProvider === 'spotify' ||
+      sessionMusicProvider === 'auto' ||
+      sessionMusicProvider === 'apple')
 
   const spotifyConnectWhen = sessionActive && spotifyWants
 
@@ -67,9 +54,7 @@ export function useSessionStreamingMusic({
   )
 
   const spotifyLiveRef = useRef(false)
-  const appleLiveRef = useRef(false)
   const startedSpotifyRef = useRef(false)
-  const startedAppleRef = useRef(false)
 
   const getSpotifyToken = useCallback(async () => {
     if (!spotifyTokens) return null
@@ -172,87 +157,6 @@ export function useSessionStreamingMusic({
   useEffect(() => {
     if (!sessionActive) {
       startedSpotifyRef.current = false
-    }
-  }, [sessionActive])
-
-  // ── Apple Music ─────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!sessionActive || !appleWants || isPaused) return
-    if (startedAppleRef.current) return
-
-    let cancelled = false
-
-    void (async () => {
-      try {
-        await initMusicKit()
-        const mk = getMusicKit()
-        if (cancelled || !mk?.isAuthorized) return
-
-        const configured = normalizeAppleMusicPlaylistId(
-          appleMusicSessionPlaylistUrl ?? undefined
-        )
-        let playlistId: string | null = configured
-        if (!playlistId && appleMusicUserToken) {
-          const ids = await fetchAppleLibraryPlaylistIds(appleMusicUserToken)
-          if (ids.length > 0) {
-            playlistId = ids[Math.floor(Math.random() * ids.length)]!
-          }
-        }
-        if (!playlistId) return
-
-        await mk.setQueue({ playlist: playlistId })
-        await mk.player.play()
-        if (cancelled) return
-        startedAppleRef.current = true
-        appleLiveRef.current = true
-      } catch (e) {
-        console.warn('[session music] Apple Music start failed:', e)
-      }
-    })()
-
-    return () => {
-      cancelled = true
-    }
-  }, [
-    sessionActive,
-    appleWants,
-    isPaused,
-    appleMusicUserToken,
-    appleMusicSessionPlaylistUrl,
-  ])
-
-  useEffect(() => {
-    if (!sessionActive || !appleWants || !appleLiveRef.current) return
-
-    const mk = getMusicKit()
-    if (!mk) return
-
-    try {
-      if (isPaused) mk.player.pause()
-      else void mk.player.play()
-    } catch (e) {
-      console.warn('[session music] Apple pause/resume:', e)
-    }
-  }, [isPaused, sessionActive, appleWants])
-
-  useEffect(() => {
-    if (sessionActive || !appleLiveRef.current) return
-    appleLiveRef.current = false
-    startedAppleRef.current = false
-
-    const mk = getMusicKit()
-    if (mk) {
-      try {
-        mk.player.pause()
-      } catch {
-        /* ignore */
-      }
-    }
-  }, [sessionActive])
-
-  useEffect(() => {
-    if (!sessionActive) {
-      startedAppleRef.current = false
     }
   }, [sessionActive])
 

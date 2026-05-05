@@ -16,7 +16,6 @@ import { clockTitles } from '@/lib/clockTitles'
 import { MM_DRONE_PATH, MM_DRONE_PLANET_LABELS } from '@/lib/mmDroneTones'
 import { cn } from '@/lib/utils'
 import { startSpotifyAuth, spotifyTokensValid } from '@/lib/spotify'
-import { authorizeAppleMusic, unauthorizeAppleMusic } from '@/lib/appleMusicKit'
 import { useState, useCallback, useEffect, useRef } from 'react'
 
 const CLOCK_COUNT = 9
@@ -123,11 +122,9 @@ export function SoundSettings() {
     toneMode, setToneMode,
     droneClockGain, setDroneClockGain,
     spotifyTokens, setSpotifyTokens,
-    appleMusicUserToken, setAppleMusicUserToken,
     sessionStreamingDuringSessions, setSessionStreamingDuringSessions,
     sessionMusicProvider, setSessionMusicProvider,
     spotifySessionPlaylistUri, setSpotifySessionPlaylistUri,
-    appleMusicSessionPlaylistUrl, setAppleMusicSessionPlaylistUrl,
   } = useSettings()
 
   const { profile } = useAuth()
@@ -160,42 +157,15 @@ export function SoundSettings() {
     setSpotifyState('idle')
   }, [setSpotifyTokens])
 
-  // Apple Music
-  const [appleState, setAppleState] = useState<ConnectState>(
-    appleMusicUserToken ? 'connected' : 'idle'
-  )
-  const [appleError, setAppleError] = useState<string | undefined>()
-
-  const connectAppleMusic = useCallback(async () => {
-    setAppleState('connecting')
-    setAppleError(undefined)
-    try {
-      const userToken = await authorizeAppleMusic()
-      setAppleMusicUserToken(userToken)
-      setAppleState('connected')
-    } catch (err) {
-      setAppleState('error')
-      setAppleError(err instanceof Error ? err.message : 'Apple Music authorisation failed')
-    }
-  }, [setAppleMusicUserToken])
-
-  const disconnectAppleMusic = useCallback(async () => {
-    try {
-      await unauthorizeAppleMusic()
-    } catch {
-      // best-effort
-    }
-    setAppleMusicUserToken(null)
-    setAppleState('idle')
-  }, [setAppleMusicUserToken])
-
   useEffect(() => {
     setSpotifyState(spotifyTokensValid(spotifyTokens) ? 'connected' : 'idle')
   }, [spotifyTokens])
-
   useEffect(() => {
-    setAppleState(appleMusicUserToken ? 'connected' : 'idle')
-  }, [appleMusicUserToken])
+    // Apple integration is mothballed. Normalize any persisted value.
+    if (sessionMusicProvider === 'apple') {
+      setSessionMusicProvider('auto')
+    }
+  }, [sessionMusicProvider, setSessionMusicProvider])
 
   const [previewIndex, setPreviewIndex] = useState<number | null>(null)
   const previewAudioRef = useRef<HTMLAudioElement | null>(null)
@@ -441,19 +411,7 @@ export function SoundSettings() {
 
         {hasStreamingAccess ? (
           <>
-            <div className="grid grid-cols-2 gap-2 pt-1">
-              <ServiceButton
-                label="Apple Music"
-                icon={
-                  <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current shrink-0" aria-hidden>
-                    <path d="M23.994 6.124a9.23 9.23 0 0 0-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 0 0-1.877-.726 10.496 10.496 0 0 0-1.564-.15c-.04-.003-.083-.01-.124-.013H5.986c-.152.01-.303.017-.455.026C4.786.07 4.043.15 3.34.428 2.004.958 1.04 1.88.475 3.208c-.192.448-.292.925-.363 1.408-.056.392-.088.785-.1 1.18 0 .032-.007.062-.01.093v12.223c.01.14.017.283.027.424.05.815.154 1.624.497 2.373.65 1.42 1.738 2.353 3.234 2.802.42.127.856.187 1.293.228.497.044.995.06 1.494.065h11.22c.54-.005 1.075-.047 1.61-.1.386-.04.772-.1 1.148-.213 1.357-.384 2.366-1.17 3.005-2.417.38-.754.487-1.566.535-2.39.01-.14.014-.28.018-.42V6.124zm-6.954 1.976l-5.8 3.35a.776.776 0 0 1-1.172-.668V4.6a.776.776 0 0 1 1.173-.668l5.8 3.348a.776.776 0 0 1 0 1.82z"/>
-                  </svg>
-                }
-                state={appleState}
-                errorMsg={appleError}
-                onConnect={connectAppleMusic}
-                onDisconnect={disconnectAppleMusic}
-              />
+            <div className="grid grid-cols-1 gap-2 pt-1">
               <ServiceButton
                 label="Spotify"
                 icon={
@@ -467,6 +425,9 @@ export function SoundSettings() {
                 onDisconnect={disconnectSpotify}
               />
             </div>
+            <p className="text-[10px] text-gray-500 dark:text-gray-400">
+              SoundCloud support is planned next. Apple Music is currently mothballed.
+            </p>
 
             <div className="pt-3 mt-1 border-t border-gray-200 dark:border-gray-800 space-y-3">
               <div className="flex items-center justify-between gap-3">
@@ -492,15 +453,14 @@ export function SoundSettings() {
                     <RadioGroup
                       value={sessionMusicProvider}
                       onValueChange={(v) =>
-                        setSessionMusicProvider(v as 'auto' | 'spotify' | 'apple')
+                        setSessionMusicProvider(v as 'auto' | 'spotify')
                       }
                       className="flex flex-col gap-2"
                     >
                       {(
                         [
-                          ['auto', 'Automatic (Spotify if connected, otherwise Apple Music)'],
+                          ['auto', 'Automatic (Spotify)'],
                           ['spotify', 'Spotify'],
-                          ['apple', 'Apple Music'],
                         ] as const
                       ).map(([value, label]) => (
                         <label
@@ -529,20 +489,6 @@ export function SoundSettings() {
                     />
                   </div>
 
-                  <div className="space-y-1">
-                    <Label htmlFor="apple-pl" className="text-[10px] text-gray-500 dark:text-gray-400">
-                      Apple Music playlist (optional)
-                    </Label>
-                    <Input
-                      id="apple-pl"
-                      placeholder="Share link or pl.… / p.… id — else a library playlist"
-                      value={appleMusicSessionPlaylistUrl ?? ''}
-                      onChange={(e) =>
-                        setAppleMusicSessionPlaylistUrl(e.target.value.trim() || null)
-                      }
-                      className="h-8 text-xs"
-                    />
-                  </div>
                 </div>
               )}
             </div>
