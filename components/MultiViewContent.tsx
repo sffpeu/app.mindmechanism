@@ -236,26 +236,36 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
           </>
         )}
         {isMultiView2 && (
-          <>
-            {/* Colour toggle + heading stacked — bottom-right, aligned to nav panel far (left) edge */}
-            <div style={{ position: 'absolute', bottom: 28, right: 56, zIndex: 9999, textAlign: 'right' }}>
-              <div style={{ marginBottom: 14, pointerEvents: 'auto', display: 'flex', justifyContent: 'flex-end' }}>
-                <MultiColourToggle mode={colourMode} onChange={setColourMode} isDarkMode={isDarkMode} />
-              </div>
-              <div style={{ pointerEvents: 'none' }}>
+            /* Heading bottom-left, colour toggle bottom-right — same row; inset right clears dot dock */
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 16,
+                left: 16,
+                right: 56,
+                zIndex: 9999,
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'flex-end',
+                justifyContent: 'space-between',
+                gap: 16,
+              }}
+            >
+              <div style={{ pointerEvents: 'none', textAlign: 'left' }}>
                 <div style={{ fontSize: 10, color: isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)', letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 4, fontWeight: 700 }}>
                   The Mind Mechanism
                 </div>
                 <div style={{ fontSize: 34, fontWeight: 900, color: isDarkMode ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)', letterSpacing: '0.03em', textTransform: 'uppercase', lineHeight: 1 }}>
                   Multiview
                 </div>
+                <div style={{ marginTop: 8, fontSize: 9, color: isDarkMode ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.18)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                  © 2026 Sean Fortune · All Rights Reserved
+                </div>
+              </div>
+              <div style={{ pointerEvents: 'auto', flexShrink: 0 }}>
+                <MultiColourToggle mode={colourMode} onChange={setColourMode} isDarkMode={isDarkMode} />
               </div>
             </div>
-            {/* Copyright — bottom-right, below heading block */}
-            <div style={{ position: 'absolute', bottom: 8, right: 56, zIndex: 9999, pointerEvents: 'none', fontSize: 9, color: isDarkMode ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.18)', letterSpacing: '0.1em', textTransform: 'uppercase', textAlign: 'right' }}>
-              © 2026 Sean Fortune · All Rights Reserved
-            </div>
-          </>
         )}
       </div>
 
