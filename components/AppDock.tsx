@@ -63,10 +63,12 @@ export function AppDock() {
   const showDock =
     !isPublicAuthPath(pathname) && (loading || user !== null);
 
-  /** Wheel sessions, Multiview routes, and /layers home mandala. */
+  /** Wheel sessions, multiview, layers, paired/trio timed mandalas. */
   const isImmersiveMandalaPage =
     /^\/[0-8]$/.test(pathname ?? '') ||
     pathname === '/layers' ||
+    pathname === '/pair' ||
+    pathname === '/trio' ||
     (pathname ?? '').startsWith('/multiview/')
   const { isIdle } = useIdleFade()
 

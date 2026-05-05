@@ -23,6 +23,7 @@ import { MandalaCeremony } from '@/components/MandalaCeremony'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { cn } from '@/lib/utils'
 import Timer from '@/components/Timer'
+import { useIdleFade } from '@/lib/hooks/useIdleFade'
 
 const CLOCK_HEX = [
   '#fd290a', '#fba63b', '#f7da5f', '#6dc037',
@@ -311,6 +312,8 @@ function SessionPhase({
 
   useTripleBreathingTone(idA, idB, idC, muted)
 
+  const { isIdle } = useIdleFade()
+
   return (
     <div className="fixed inset-0 flex flex-col items-center justify-center gap-8"
          style={{ background: '#09090b' }}>
@@ -327,24 +330,36 @@ function SessionPhase({
         colourMode={colourMode}
       />
 
-      {/* Wheel names */}
-      <div className="flex items-center gap-3 text-xs tracking-widest uppercase">
-        <span style={{ color: hexA }}>{clockTitles[idA]}</span>
-        <span className="text-white/20">×</span>
-        <span style={{ color: hexB }}>{clockTitles[idB]}</span>
-        <span className="text-white/20">×</span>
-        <span style={{ color: hexC }}>{clockTitles[idC]}</span>
+      <div
+        className={cn(
+          'flex flex-col items-center gap-2 transition-opacity duration-700',
+          isIdle && 'pointer-events-none opacity-0',
+        )}
+      >
+        {/* Wheel names */}
+        <div className="flex items-center gap-3 text-xs tracking-widest uppercase">
+          <span style={{ color: hexA }}>{clockTitles[idA]}</span>
+          <span className="text-white/20">×</span>
+          <span style={{ color: hexB }}>{clockTitles[idB]}</span>
+          <span className="text-white/20">×</span>
+          <span style={{ color: hexC }}>{clockTitles[idC]}</span>
+        </div>
+
+        {remainingTime != null && (
+          <Timer
+            remainingTime={remainingTime}
+            isPaused={isPaused}
+            onPauseResume={onPauseResume}
+          />
+        )}
       </div>
 
-      {remainingTime != null && (
-        <Timer
-          remainingTime={remainingTime}
-          isPaused={isPaused}
-          onPauseResume={onPauseResume}
-        />
-      )}
-
-      <div className="fixed bottom-4 left-4 z-50">
+      <div
+        className={cn(
+          'fixed bottom-4 left-4 z-50 transition-opacity duration-700',
+          isIdle && 'pointer-events-none opacity-0',
+        )}
+      >
         <ColourToggle mode={colourMode} onChange={onColourModeChange} />
       </div>
 
@@ -354,7 +369,9 @@ function SessionPhase({
         className={cn(
           'fixed bottom-4 right-4 z-50 flex h-11 w-11 items-center justify-center rounded-full',
           'border border-white/15 bg-black/80 text-gray-100 shadow-md backdrop-blur-sm',
-          'transition-colors hover:bg-black/90 pointer-events-auto'
+          'pointer-events-auto transition-opacity duration-700',
+          'transition-colors hover:bg-black/90',
+          isIdle && 'pointer-events-none opacity-0',
         )}
         aria-label={muted ? 'Unmute tones' : 'Mute tones'}
       >
