@@ -9,6 +9,52 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { clockSatellites, defaultSatelliteConfigs } from '@/lib/satelliteDefaults'
 import { SatelliteNameLabel } from '@/components/SatelliteNameLabel'
 import { MandalaCeremony } from '@/components/MandalaCeremony'
+import { Volume2, VolumeX } from 'lucide-react'
+import { useNineWheelTones } from '@/lib/hooks/useNineWheelTones'
+import { cn } from '@/lib/utils'
+
+const MUTE_KEY = 'mindmechanism.clockSoundMuted'
+
+function readMuted(): boolean {
+  if (typeof window === 'undefined') return false
+  try { return localStorage.getItem(MUTE_KEY) === 'true' } catch { return false }
+}
+
+function MultiView1SoundLayer({ isDarkMode }: { isDarkMode: boolean }) {
+  const [muted, setMuted] = useState(false)
+
+  useEffect(() => { setMuted(readMuted()) }, [])
+
+  useNineWheelTones(muted)
+
+  const toggle = useCallback(() => {
+    setMuted((m) => {
+      const next = !m
+      try { localStorage.setItem(MUTE_KEY, String(next)) } catch { /* ignore */ }
+      return next
+    })
+  }, [])
+
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      className={cn(
+        'absolute bottom-4 right-4 z-[1001] flex h-11 w-11 items-center justify-center rounded-full',
+        'border shadow-md backdrop-blur-sm transition-colors pointer-events-auto',
+        isDarkMode
+          ? 'border-white/15 bg-black/80 text-gray-100 hover:bg-black/90'
+          : 'border-black/10 bg-white/90 text-gray-800 hover:bg-white'
+      )}
+      aria-label={muted ? 'Unmute all wheels' : 'Mute all wheels'}
+      title={muted ? 'Sound muted — click to enable' : 'All nine wheels sounding — click to mute'}
+    >
+      {muted
+        ? <VolumeX className="h-5 w-5" aria-hidden />
+        : <Volume2 className="h-5 w-5" aria-hidden />}
+    </button>
+  )
+}
 
 type ColourMode = 'colour' | 'mono'
 
@@ -180,10 +226,14 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
           />
         )}
         {!isMultiView2 && (
-          /* Colour / Mono toggle — bottom left, type 1 only */
-          <div className="absolute bottom-4 left-4">
-            <MultiColourToggle mode={colourMode} onChange={setColourMode} isDarkMode={isDarkMode} />
-          </div>
+          <>
+            {/* Colour / Mono toggle — bottom left */}
+            <div className="absolute bottom-4 left-4">
+              <MultiColourToggle mode={colourMode} onChange={setColourMode} isDarkMode={isDarkMode} />
+            </div>
+            {/* Nine-wheel sound + mute toggle — bottom right */}
+            <MultiView1SoundLayer isDarkMode={isDarkMode} />
+          </>
         )}
         {isMultiView2 && (
           <>
