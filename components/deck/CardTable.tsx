@@ -431,15 +431,15 @@ export function CardTable() {
   const nodeMap = Object.fromEntries(MANDALA_NODES.map(n => [n.id, n]))
 
   const ctrlBtn: React.CSSProperties = {
-    padding: '7px 14px',
+    padding: '10px 18px',
     background: 'transparent',
-    color: '#aaa',
+    color: 'rgba(255,255,255,0.88)',
     border: 'none',
-    borderRadius: 20,
-    fontSize: 12,
+    borderRadius: 22,
+    fontSize: 14,
     fontWeight: 600,
     cursor: 'pointer',
-    letterSpacing: '0.04em',
+    letterSpacing: '0.02em',
     whiteSpace: 'nowrap',
   }
 
@@ -524,7 +524,7 @@ export function CardTable() {
         </div>
       </div>
 
-      {/* Help — glossary-style strip + frosted chrome (wheel red accent) */}
+      {/* Help — round frosted control with wheel-red rim */}
       <button
         type="button"
         aria-label="Open deck help"
@@ -535,19 +535,17 @@ export function CardTable() {
           top: 20,
           right: 24,
           zIndex: 9999,
-          minWidth: 44,
-          height: 44,
-          padding: '0 14px',
-          borderRadius: 10,
-          border: '1px solid rgba(255,255,255,0.1)',
-          borderLeftWidth: 3,
-          borderLeftStyle: 'solid',
-          borderLeftColor: DECK_CHROME_HELP_HEX,
-          backgroundColor: `${DECK_CHROME_HELP_HEX}14`,
+          width: 48,
+          height: 48,
+          padding: 0,
+          borderRadius: '50%',
+          border: `2px solid ${DECK_CHROME_HELP_HEX}`,
+          boxShadow: `0 0 0 1px rgba(255,255,255,0.12), 0 0 20px ${DECK_CHROME_HELP_HEX}33`,
+          backgroundColor: `${DECK_CHROME_HELP_HEX}18`,
           backdropFilter: 'blur(14px)',
           WebkitBackdropFilter: 'blur(14px)',
-          color: 'rgba(255,255,255,0.92)',
-          fontSize: 17,
+          color: 'rgba(255,255,255,0.95)',
+          fontSize: 18,
           fontWeight: 700,
           cursor: 'pointer',
           display: 'flex',
@@ -578,10 +576,14 @@ export function CardTable() {
         {/* Expanded strip */}
         {showControls && (
           <div style={{
-            display: 'flex', alignItems: 'center', gap: 2,
-            background: 'rgba(14,14,16,0.88)', backdropFilter: 'blur(18px)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: 32, padding: '4px 6px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            background: 'rgba(14,14,16,0.92)',
+            backdropFilter: 'blur(18px)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 999,
+            padding: '6px 10px',
           }}>
             <button onClick={() => { setShowCreateSession(true); setShowControls(false) }} style={ctrlBtn}>New Session</button>
             <Divider />
@@ -597,7 +599,10 @@ export function CardTable() {
             <button onClick={() => { setShowSaveModal(true); setShowControls(false) }} style={ctrlBtn}>Save</button>
             <button
               onClick={() => { setShowSessions(true); setShowControls(false) }}
-              style={{ ...ctrlBtn, color: savedSessions.length > 0 ? '#ccc' : '#555' }}
+              style={{
+                ...ctrlBtn,
+                color: savedSessions.length > 0 ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.42)',
+              }}
             >
               Sessions{savedSessions.length > 0 ? ` (${savedSessions.length})` : ''}
             </button>
@@ -612,7 +617,7 @@ export function CardTable() {
             {tableBackground && (
               <button
                 onClick={() => setTableBackground(null)}
-                style={{ ...ctrlBtn, color: 'rgba(255,255,255,0.25)', fontSize: 11 }}
+                style={{ ...ctrlBtn, color: 'rgba(255,255,255,0.45)', fontSize: 14 }}
                 title="Remove background"
               >
                 ✕
@@ -621,26 +626,24 @@ export function CardTable() {
           </div>
         )}
 
-        {/* Session tools toggle — gold accent strip (matches glossary-style chrome) */}
+        {/* Session tools toggle — round gold-rim control */}
         <button
           type="button"
           aria-label={showControls ? 'Close session tools' : 'Open session tools'}
           title={showControls ? 'Close' : 'Session tools'}
           onClick={() => setShowControls(v => !v)}
           style={{
-            minWidth: 44,
-            height: 44,
-            padding: '0 12px',
-            borderRadius: 10,
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderLeftWidth: 3,
-            borderLeftStyle: 'solid',
-            borderLeftColor: DECK_CHROME_SESSION_HEX,
-            backgroundColor: showControls ? `${DECK_CHROME_SESSION_HEX}22` : `${DECK_CHROME_SESSION_HEX}14`,
+            width: 48,
+            height: 48,
+            padding: 0,
+            borderRadius: '50%',
+            border: `2px solid ${DECK_CHROME_SESSION_HEX}`,
+            boxShadow: `0 0 0 1px rgba(255,255,255,0.1), 0 0 18px ${DECK_CHROME_SESSION_HEX}33`,
+            backgroundColor: showControls ? `${DECK_CHROME_SESSION_HEX}28` : `${DECK_CHROME_SESSION_HEX}18`,
             backdropFilter: 'blur(14px)',
             WebkitBackdropFilter: 'blur(14px)',
-            color: 'rgba(255,255,255,0.9)',
-            fontSize: showControls ? 20 : 18,
+            color: 'rgba(255,255,255,0.95)',
+            fontSize: showControls ? 22 : 20,
             fontWeight: 700,
             cursor: 'pointer',
             display: 'flex',
@@ -711,7 +714,17 @@ export function CardTable() {
 }
 
 function Divider() {
-  return <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.08)', margin: '0 4px', flexShrink: 0 }} />
+  return (
+    <div
+      style={{
+        width: 1,
+        height: 26,
+        background: 'rgba(255,255,255,0.14)',
+        margin: '0 6px',
+        flexShrink: 0,
+      }}
+    />
+  )
 }
 
 function SaveModal({ defaultName, onSave, onClose }: {
