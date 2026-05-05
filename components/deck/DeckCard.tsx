@@ -219,23 +219,36 @@ export function DeckCard({
                 {isBlank ? 'Custom Card' : `Wheel ${node.wheel} · ${node.wheelName}`}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                {hasImage && (
-                  <button
-                    onPointerDown={e => { e.stopPropagation(); onAnnotationChange('textIsLight', !(annotation.textIsLight ?? false)) }}
-                    title={(annotation.textIsLight ?? false) ? 'Switch to dark text' : 'Switch to light text'}
+                {/* Colour picker — "A" shows live text colour; click to pick any colour */}
+                <label
+                  title="Text colour"
+                  onPointerDown={e => e.stopPropagation()}
+                  style={{
+                    width: 22, height: 22, borderRadius: '50%',
+                    background: annotation.textColor ? 'transparent' : (hasImage ? (annotation.textIsLight ? '#fff' : '#111') : 'rgba(0,0,0,0.12)'),
+                    border: annotation.textColor
+                      ? `2px solid ${annotation.textColor}`
+                      : '1px solid rgba(128,128,128,0.35)',
+                    cursor: 'pointer', fontSize: 11, fontWeight: 900,
+                    color: annotation.textColor ?? resolveColor('#111', '#fff'),
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    lineHeight: 1, padding: 0, position: 'relative', overflow: 'hidden',
+                    flexShrink: 0,
+                  }}
+                >
+                  A
+                  <input
+                    type="color"
+                    value={annotation.textColor ?? '#ffffff'}
+                    onChange={e => onAnnotationChange('textColor', e.target.value)}
+                    onPointerDown={e => e.stopPropagation()}
                     style={{
-                      width: 22, height: 22, borderRadius: '50%',
-                      background: (annotation.textIsLight ?? false) ? '#fff' : '#111',
-                      border: `2px solid ${(annotation.textIsLight ?? false) ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.3)'}`,
-                      cursor: 'pointer', fontSize: 11, fontWeight: 900,
-                      color: (annotation.textIsLight ?? false) ? '#111' : '#fff',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      lineHeight: 1, padding: 0,
+                      position: 'absolute', opacity: 0,
+                      inset: 0, width: '100%', height: '100%',
+                      cursor: 'pointer', padding: 0, border: 'none',
                     }}
-                  >
-                    A
-                  </button>
-                )}
+                  />
+                </label>
                 <button onClick={handleSpeak} onPointerDown={stopProp} title="Speak term"
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: resolveColor('#bbb', 'rgba(255,255,255,0.7)'), fontSize: 13, padding: '2px 3px' }}>
                   🔊
@@ -496,30 +509,6 @@ export function DeckCard({
                     cursor: 'pointer', padding: 0, flexShrink: 0,
                   }}
                 />
-                {/* Free colour picker */}
-                <label
-                  title="Choose any text colour"
-                  onPointerDown={e => e.stopPropagation()}
-                  style={{
-                    width: 16, height: 16, borderRadius: '50%', flexShrink: 0,
-                    background: annotation.textColor ?? '#888888',
-                    border: annotation.textColor ? '2px solid rgba(255,255,255,0.6)' : '1px solid rgba(255,255,255,0.12)',
-                    cursor: 'pointer', position: 'relative', overflow: 'hidden',
-                    display: 'inline-block',
-                  }}
-                >
-                  <input
-                    type="color"
-                    value={annotation.textColor ?? '#ffffff'}
-                    onChange={e => onAnnotationChange('textColor', e.target.value)}
-                    onPointerDown={e => e.stopPropagation()}
-                    style={{
-                      position: 'absolute', opacity: 0,
-                      inset: 0, width: '100%', height: '100%',
-                      cursor: 'pointer', padding: 0, border: 'none',
-                    }}
-                  />
-                </label>
                 {/* Wheel colour */}
                 <button
                   onPointerDown={e => { e.stopPropagation(); onAnnotationChange('textColor', wheelColor) }}
