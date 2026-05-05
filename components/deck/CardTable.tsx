@@ -11,6 +11,7 @@ import { addUserWord } from '@/lib/glossary'
 import { getFirebaseStorage, db } from '@/lib/firebase'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { cn } from '@/lib/utils'
+import { playDeckSessionLoadTone, playDeckSessionSaveTone } from '@/lib/deckSessionTone'
 
 interface CardState {
   nodeId: string
@@ -395,6 +396,7 @@ export function CardTable() {
           doc(db as Firestore, 'users', user.uid, 'deckSessions', session.id),
           session
         )
+        playDeckSessionSaveTone()
         showToast(`"${name}" saved`)
       } catch (err) {
         console.error('Firestore session save failed:', err)
@@ -406,6 +408,7 @@ export function CardTable() {
   }, [cards, annotations, tableBackground, savedSessions, user, showToast])
 
   const handleLoadSession = useCallback((session: SavedSession) => {
+    playDeckSessionLoadTone()
     setCards(session.cards)
     // Merge stored annotations with EMPTY_ANNOTATION defaults so new fields are always present
     const normAnnotations: Record<string, Annotation> = {}
