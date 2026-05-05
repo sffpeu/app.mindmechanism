@@ -43,13 +43,6 @@ const SIZE_MAP = {
   lg: { term: 26, body: 13.5, phonetic: 11.5 },
 }
 
-const COLOUR_SWATCHES: Array<{ color: string; label: string }> = [
-  { color: '#ffffff', label: 'White' },
-  { color: '#f0e8d0', label: 'Parchment' },
-  { color: '#9ecfff', label: 'Sky' },
-  { color: '#a8f0cc', label: 'Mint' },
-  { color: '#f5c842', label: 'Gold' },
-]
 
 function speakTerm(term: string) {
   if (typeof window === 'undefined' || !window.speechSynthesis) return
@@ -495,27 +488,38 @@ export function DeckCard({
                 {/* Auto — resets to theme default */}
                 <button
                   onPointerDown={e => { e.stopPropagation(); onAnnotationChange('textColor', null) }}
-                  title="Default colour"
+                  title="Reset to default colour"
                   style={{
                     width: 16, height: 16, borderRadius: '50%',
                     background: 'conic-gradient(#111 0deg 180deg, #f0f0f0 180deg 360deg)',
-                    border: (annotation.textColor ?? null) === null ? '2px solid #aaa' : '1px solid rgba(255,255,255,0.12)',
+                    border: annotation.textColor === null ? '2px solid #aaa' : '1px solid rgba(255,255,255,0.12)',
                     cursor: 'pointer', padding: 0, flexShrink: 0,
                   }}
                 />
-                {COLOUR_SWATCHES.map(({ color, label }) => (
-                  <button
-                    key={color}
-                    onPointerDown={e => { e.stopPropagation(); onAnnotationChange('textColor', color) }}
-                    title={label}
+                {/* Free colour picker */}
+                <label
+                  title="Choose any text colour"
+                  onPointerDown={e => e.stopPropagation()}
+                  style={{
+                    width: 16, height: 16, borderRadius: '50%', flexShrink: 0,
+                    background: annotation.textColor ?? '#888888',
+                    border: annotation.textColor ? '2px solid rgba(255,255,255,0.6)' : '1px solid rgba(255,255,255,0.12)',
+                    cursor: 'pointer', position: 'relative', overflow: 'hidden',
+                    display: 'inline-block',
+                  }}
+                >
+                  <input
+                    type="color"
+                    value={annotation.textColor ?? '#ffffff'}
+                    onChange={e => onAnnotationChange('textColor', e.target.value)}
+                    onPointerDown={e => e.stopPropagation()}
                     style={{
-                      width: 16, height: 16, borderRadius: '50%',
-                      background: color,
-                      border: annotation.textColor === color ? '2px solid #fff' : '1px solid rgba(255,255,255,0.12)',
-                      cursor: 'pointer', padding: 0, flexShrink: 0,
+                      position: 'absolute', opacity: 0,
+                      inset: 0, width: '100%', height: '100%',
+                      cursor: 'pointer', padding: 0, border: 'none',
                     }}
                   />
-                ))}
+                </label>
                 {/* Wheel colour */}
                 <button
                   onPointerDown={e => { e.stopPropagation(); onAnnotationChange('textColor', wheelColor) }}
