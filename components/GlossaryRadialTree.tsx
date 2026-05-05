@@ -120,6 +120,24 @@ function wheelZoomFocalSvg(
   return { fx: tx + dx * scale, fy: ty + dy * scale }
 }
 
+/** Unit vector from chakra hub toward leaf (My Words: from origin toward the word). */
+function radialPulseUnit(leaf: LayoutLeaf, clocks: LayoutClock[]): { nx: number; ny: number } {
+  const hub = clocks.find(c => c.clockId === leaf.clockId)
+  const hx = hub?.x ?? 0
+  const hy = hub?.y ?? 0
+  const dx = leaf.x - hx
+  const dy = leaf.y - hy
+  const len = Math.hypot(dx, dy) || 1
+  return { nx: dx / len, ny: dy / len }
+}
+
+/** Stagger motion so leaves in the same wedge do not move in perfect lockstep. */
+function glossaryLeafStaggerSec(id: string): string {
+  let h = 0
+  for (let i = 0; i < id.length; i++) h = (h + id.charCodeAt(i) * (i + 1)) % 997
+  return `${(h / 997) * 1.65}s`
+}
+
 type BuildLayoutOptions = {
   /** All-view overview: no word leaves or hub→word links, only hubs + root links. */
   omitWordLeaves?: boolean
@@ -829,11 +847,27 @@ export function GlossaryRadialTree({
                 const dotR = isSelected ? 8.5 : isHoverOnly ? 6 : 5.5
                 const dotSw = isSelected ? 2.25 : 1.35
 
+                const pulseFloat =
+                  layoutFocusClockId !== null &&
+                  leaf.clockId === layoutFocusClockId &&
+                  !allViewOverview
+                const { nx, ny } = pulseFloat ? radialPulseUnit(leaf, layout.clocks) : { nx: 0, ny: 0 }
+                const floatAmp = 22
+                const pulseStyle = pulseFloat
+                  ? ({
+                      ['--gflx' as string]: `${nx * floatAmp}px`,
+                      ['--gfly' as string]: `${ny * floatAmp}px`,
+                      ['--gfglow' as string]: `${clockHex}99`,
+                      animationDelay: glossaryLeafStaggerSec(leaf.id),
+                    } as React.CSSProperties)
+                  : undefined
+
                 return (
                   <g
                     key={leaf.id}
                     opacity={groupOp}
-                    className="cursor-pointer"
+                    className={cn('cursor-pointer', pulseFloat && 'glossary-leaf-pulse-float')}
+                    style={pulseStyle}
                     onPointerEnter={() => setHoveredWordId(leaf.id)}
                     onPointerLeave={() => setHoveredWordId((h) => (h === leaf.id ? null : h))}
                     onPointerDown={(e) => e.stopPropagation()}

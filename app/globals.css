@@ -202,4 +202,29 @@ img[src$=".svg"] * {
     opacity: 1;
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.75);
   }
+  .glossary-leaf-pulse-float {
+    animation: none !important;
+    filter: none !important;
+    transform: none !important;
+  }
+}
+
+/* Glossary radial visual: words pulse and drift along hub → leaf line when a chakra colour is selected */
+@keyframes glossary-leaf-line-float {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  50% {
+    transform: translate(var(--gflx, 0px), var(--gfly, 0px)) scale(1.09);
+    filter: drop-shadow(0 0 14px var(--gfglow, transparent));
+  }
+}
+
+.glossary-leaf-pulse-float {
+  animation: glossary-leaf-line-float 2.35s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: transform, filter;
 }
