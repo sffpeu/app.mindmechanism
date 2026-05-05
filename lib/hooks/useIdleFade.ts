@@ -1,33 +1,50 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useSyncExternalStore } from 'react'
+import {
+  getMandalaIdleSuppress,
+  subscribeMandalaIdleSuppress,
+} from '@/lib/mandalaIdleSuppress'
+import {
+  attachImmersiveIdleController,
+  detachImmersiveIdleController,
+  getImmersiveIdleSnapshot,
+  subscribeImmersiveIdle,
+  immersiveIdleOnSuppressChange,
+} from '@/lib/immersiveIdleController'
 
-const IDLE_MS = 5000
+const DEFAULT_IDLE_MS = 60_000
 
-export function useIdleFade() {
-  const [isIdle, setIsIdle] = useState(false)
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+export type UseIdleFadeOptions = {
+  idleMs?: number
+}
 
-  const reset = useCallback(() => {
-    setIsIdle(false)
-    if (timerRef.current) clearTimeout(timerRef.current)
-    timerRef.current = setTimeout(() => setIsIdle(true), IDLE_MS)
-  }, [])
+/**
+ * Shared across AppDock + mandala pages: after one minute without pointer/keyboard
+ * activity, `isIdle` is true so chrome can fade. Pointer activity wakes everyone.
+ * `setMandalaIdleSuppress(true)` keeps chrome visible (selected node / glossary / MV2 focus).
+ */
+export function useIdleFade(options?: UseIdleFadeOptions) {
+  const idleMs = options?.idleMs ?? DEFAULT_IDLE_MS
+  const mandalaSuppress = useSyncExternalStore(
+    subscribeMandalaIdleSuppress,
+    getMandalaIdleSuppress,
+    () => false,
+  )
+  const sharedIdle = useSyncExternalStore(
+    subscribeImmersiveIdle,
+    getImmersiveIdleSnapshot,
+    () => false,
+  )
 
   useEffect(() => {
-    reset()
-    window.addEventListener('mousemove', reset)
-    window.addEventListener('mousedown', reset)
-    window.addEventListener('touchstart', reset)
-    window.addEventListener('keydown', reset)
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current)
-      window.removeEventListener('mousemove', reset)
-      window.removeEventListener('mousedown', reset)
-      window.removeEventListener('touchstart', reset)
-      window.removeEventListener('keydown', reset)
-    }
-  }, [reset])
+    attachImmersiveIdleController(idleMs)
+    return () => detachImmersiveIdleController()
+  }, [idleMs])
 
-  return { isIdle }
+  useEffect(() => {
+    immersiveIdleOnSuppressChange()
+  }, [mandalaSuppress])
+
+  return { isIdle: sharedIdle && !mandalaSuppress }
 }

@@ -14,6 +14,8 @@ import { useNineWheelTones } from '@/lib/hooks/useNineWheelTones'
 import { cn } from '@/lib/utils'
 import { MultiColourToggle, type ColourMode } from '@/components/MultiColourToggle'
 import { MultiView2Overlay } from '@/components/MultiView2Overlay'
+import { useIdleFade } from '@/lib/hooks/useIdleFade'
+import { setMandalaIdleSuppress } from '@/lib/mandalaIdleSuppress'
 
 const MUTE_KEY = 'mindmechanism.clockSoundMuted'
 
@@ -75,6 +77,7 @@ const LAYERS_LARGE_BG_CLOCK_OPACITY_DARK = 0.09
 const CLOCK_HEX = ['#fd290a','#fba63b','#f7da5f','#6dc037','#156fde','#941952','#541b96','#ee5fa7','#56c1ff']
 
 export function MultiViewContent({ type }: MultiViewContentProps) {
+  const { isIdle } = useIdleFade()
   const [showElements, setShowElements] = useState(true)
   const [colourMode, setColourMode] = useState<ColourMode>('mono')
   const { isDarkMode } = useTheme()
@@ -82,6 +85,14 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
   const isMultiView2 = type === 2
   const [hoveredOuterClockIndex, setHoveredOuterClockIndex] = useState<number | null>(null)
   const [focusedOuterClockIndex, setFocusedOuterClockIndex] = useState<number | null>(null)
+  useEffect(() => {
+    if (!isMultiView2) {
+      setMandalaIdleSuppress(false)
+      return
+    }
+    setMandalaIdleSuppress(focusedOuterClockIndex !== null)
+    return () => setMandalaIdleSuppress(false)
+  }, [isMultiView2, focusedOuterClockIndex])
   const [rotationValues, setRotationValues] = useState<Record<number, number[]>>({})
   const animationRef = useRef<number>()
   const [visibleNumbers, setVisibleNumbers] = useState<Record<number, boolean>>({})
@@ -187,7 +198,12 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
   return (
     <div className="h-full flex flex-col bg-gray-50 dark:bg-black/90 overflow-hidden">
       {/* Navigation Layer */}
-      <div className="fixed inset-0 pointer-events-none z-[999]">
+      <div
+        className={cn(
+          'fixed inset-0 pointer-events-none z-[999] transition-opacity duration-700',
+          isIdle && 'opacity-0',
+        )}
+      >
         {showElements && (
           <DotNavigation
             activeDot={9}

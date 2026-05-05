@@ -8,6 +8,7 @@ import { ClockBreathingTone } from '@/components/ClockBreathingTone'
 import { ClockBreathingGlow } from '@/components/ClockBreathingGlow'
 import { useHueSync } from '@/lib/hooks/useHueSync'
 import { useIdleFade } from '@/lib/hooks/useIdleFade'
+import { setMandalaIdleSuppress } from '@/lib/mandalaIdleSuppress'
 import { ClockFocusNodeAppear } from '@/components/ClockFocusNodeAppear'
 import { ClockPageSettingsTrigger } from '@/components/ClockPageSettingsTrigger'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -132,6 +133,11 @@ function NodesPageContent() {
   const [glossaryWords, setGlossaryWords] = useState<GlossaryWord[]>([])
   const [loadingGlossary, setLoadingGlossary] = useState(true)
   const [selectedWord, setSelectedWord] = useState<string | null>(null)
+  useEffect(() => {
+    const active = selectedNodeIndices.length > 0 || selectedWord != null
+    setMandalaIdleSuppress(active)
+    return () => setMandalaIdleSuppress(false)
+  }, [selectedNodeIndices, selectedWord])
   const [pillHoveredNodeIndex, setPillHoveredNodeIndex] = useState<number | null>(null)
   const [glossaryOpenForNode, setGlossaryOpenForNode] = useState<number | null>(null)
   const [cardPosition, setCardPosition] = useState<{ x: number; y: number } | null>(null)
@@ -837,7 +843,10 @@ function NodesPageContent() {
       {/* COLOUR / MONO toggle */}
       <button
         onClick={() => setColourMode(m => m === 'colour' ? 'mono' : 'colour')}
-        className="fixed bottom-4 left-4 z-[999] flex items-center gap-0 rounded-full border border-white/20 bg-black/60 backdrop-blur-sm text-[10px] font-medium tracking-widest text-white/70 overflow-hidden select-none"
+        className={cn(
+          'fixed bottom-4 left-4 z-[999] flex items-center gap-0 rounded-full border border-white/20 bg-black/60 backdrop-blur-sm text-[10px] font-medium tracking-widest text-white/70 overflow-hidden select-none transition-opacity duration-700',
+          isIdle && 'pointer-events-none opacity-0',
+        )}
         aria-label="Toggle colour mode"
       >
         <span className={`px-3 py-1.5 transition-colors ${

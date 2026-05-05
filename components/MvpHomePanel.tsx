@@ -4,10 +4,13 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import { useIdleFade } from '@/lib/hooks/useIdleFade'
 
 const STORAGE_KEY = 'mindmechanism_mvp_home_panel_dismissed_v1'
 
 export function MvpHomePanel() {
+  const { isIdle } = useIdleFade()
   const [dismissed, setDismissed] = useState<boolean | null>(null)
 
   useEffect(() => {
@@ -31,7 +34,10 @@ export function MvpHomePanel() {
 
   return (
     <div
-      className="pointer-events-none fixed inset-x-0 top-0 z-[11000] flex justify-center px-3 pt-3 sm:pt-4"
+      className={cn(
+        'pointer-events-none fixed inset-x-0 top-0 z-[11000] flex justify-center px-3 pt-3 transition-opacity duration-700 sm:pt-4',
+        isIdle && 'opacity-0',
+      )}
       role="region"
       aria-label="Getting started"
     >

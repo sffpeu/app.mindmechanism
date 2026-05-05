@@ -63,7 +63,11 @@ export function AppDock() {
   const showDock =
     !isPublicAuthPath(pathname) && (loading || user !== null);
 
-  const isClockPage = /^\/[0-8]$/.test(pathname ?? '')
+  /** Wheel sessions, Multiview routes, and /layers home mandala. */
+  const isImmersiveMandalaPage =
+    /^\/[0-8]$/.test(pathname ?? '') ||
+    pathname === '/layers' ||
+    (pathname ?? '').startsWith('/multiview/')
   const { isIdle } = useIdleFade()
 
   const dockUi = (
@@ -71,7 +75,7 @@ export function AppDock() {
       {/* Above clock DotNavigation (z-[10000]) so main nav stays clickable during sessions */}
       <div className={cn(
         "fixed left-0 top-0 bottom-0 z-[12000] flex flex-col items-start justify-center pointer-events-none pl-3 transition-opacity duration-700",
-        isClockPage && isIdle && "opacity-0 pointer-events-none"
+        isImmersiveMandalaPage && isIdle && "opacity-0 pointer-events-none"
       )}>
         {/* Broadcast pill slot — clock pages portal SessionPresenceBroadcast here */}
         <div id="dock-broadcast-slot" className="pointer-events-auto" />
