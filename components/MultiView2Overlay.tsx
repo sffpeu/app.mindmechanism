@@ -1,46 +1,15 @@
 'use client'
 
 /**
- * Multi View 2 footer: heading + colour toggle, anchored to outer dock gutters + translate.
- *
- * Hydrates one-shot from localStorage if present (tuning from draggable builds); falls back to
- * MULTIVIEW2_OVERLAY_OFFSETS_BASE. To bake permanently, paste saved JSON into
- * lib/multiView2OverlayOffsets.ts as MULTIVIEW2_OVERLAY_OFFSETS_BASE.
+ * Multi View 2 footer: heading left edge aligns with AppDock icon column;
+ * colour toggle right edge aligns with DotNavigation dot column (see layoutGutters).
  */
 
-import { useEffect, useState } from 'react'
 import { MultiColourToggle, type ColourMode } from '@/components/MultiColourToggle'
 import {
-  VIEWPORT_INSET_LEFT_NAV_OUTER,
-  VIEWPORT_INSET_RIGHT_NAV_OUTER,
+  VIEWPORT_INSET_LEFT_APP_DOCK_ICONS,
+  VIEWPORT_INSET_RIGHT_CLOCK_DOT_ICONS,
 } from '@/lib/layoutGutters'
-import {
-  MULTIVIEW2_OVERLAY_OFFSETS_BASE,
-  type MultiView2OverlayOffsets,
-} from '@/lib/multiView2OverlayOffsets'
-
-export const MULTIVIEW2_OVERLAY_OFFSETS_STORAGE_KEY =
-  'mindmechanism.multiview2.overlayOffsets.v1' as const
-
-function parseStored(raw: string | null): MultiView2OverlayOffsets | null {
-  if (!raw) return null
-  try {
-    const p = JSON.parse(raw) as Partial<MultiView2OverlayOffsets>
-    const heading = p.heading
-    const toggle = p.toggle
-    if (
-      typeof heading?.x !== 'number' ||
-      typeof heading?.y !== 'number' ||
-      typeof toggle?.x !== 'number' ||
-      typeof toggle?.y !== 'number'
-    ) {
-      return null
-    }
-    return { heading: { x: heading.x, y: heading.y }, toggle: { x: toggle.x, y: toggle.y } }
-  } catch {
-    return null
-  }
-}
 
 export function MultiView2Overlay({
   colourMode,
@@ -51,34 +20,19 @@ export function MultiView2Overlay({
   onColourChange: (m: ColourMode) => void
   isDarkMode: boolean
 }) {
-  const [offsets, setOffsets] = useState<MultiView2OverlayOffsets>(MULTIVIEW2_OVERLAY_OFFSETS_BASE)
-
-  useEffect(() => {
-    const parsed = parseStored(localStorage.getItem(MULTIVIEW2_OVERLAY_OFFSETS_STORAGE_KEY))
-    if (parsed) setOffsets(parsed)
-  }, [])
-
-  const headingStyle = {
-    position: 'absolute' as const,
-    bottom: 16,
-    left: VIEWPORT_INSET_LEFT_NAV_OUTER,
-    zIndex: 9999,
-    transform: `translate(${offsets.heading.x}px, ${offsets.heading.y}px)`,
-    pointerEvents: 'none' as const,
-  }
-
-  const toggleStyle = {
-    position: 'absolute' as const,
-    bottom: 16,
-    right: VIEWPORT_INSET_RIGHT_NAV_OUTER,
-    zIndex: 9999,
-    transform: `translate(${offsets.toggle.x}px, ${offsets.toggle.y}px)`,
-    pointerEvents: 'auto' as const,
-  }
-
   return (
     <>
-      <div role="group" aria-label="Multiview title" style={headingStyle}>
+      <div
+        role="group"
+        aria-label="Multiview title"
+        style={{
+          position: 'absolute',
+          bottom: 16,
+          left: VIEWPORT_INSET_LEFT_APP_DOCK_ICONS,
+          zIndex: 9999,
+          pointerEvents: 'none',
+        }}
+      >
         <div style={{ textAlign: 'left' }}>
           <div
             style={{
@@ -118,7 +72,15 @@ export function MultiView2Overlay({
         </div>
       </div>
 
-      <div style={toggleStyle}>
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 16,
+          right: VIEWPORT_INSET_RIGHT_CLOCK_DOT_ICONS,
+          zIndex: 9999,
+          pointerEvents: 'auto',
+        }}
+      >
         <MultiColourToggle
           mode={colourMode}
           onChange={onColourChange}
