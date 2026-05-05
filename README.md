@@ -12,3 +12,7 @@ Next.js app for **focused practice** with nine celestial mandala clocks: Firebas
 6. **Lobby** — Group scheduling and gathering flows (where configured).
 
 Production: **app-mindmechanism.vercel.app**. Repo: `sffpeu/app.mindmechanism` on GitHub.
+
+## Agent Handoff Note
+
+For current AI-agent implementation context (Spotify/drone direction, Apple mothballing, and next steps), see `CLAUDE_CODE_HANDOFF.md`.
