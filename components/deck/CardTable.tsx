@@ -10,6 +10,7 @@ import { collection, doc, getDocs, setDoc, deleteDoc, query, orderBy, type Fires
 import { addUserWord } from '@/lib/glossary'
 import { getFirebaseStorage, db } from '@/lib/firebase'
 import { useAuth } from '@/lib/FirebaseAuthContext'
+import { cn } from '@/lib/utils'
 
 interface CardState {
   nodeId: string
@@ -83,6 +84,12 @@ const EMPTY_ANNOTATION: Annotation = { userDef: '', notes: '', imageUrl: null, t
 /** Left-edge stripe colours — glossary / notes wheel family (thin accent bar on dark chrome). */
 const DECK_CHROME_HELP_HEX = '#fd290a'
 const DECK_CHROME_SESSION_HEX = '#eab308'
+
+/** Session toolbar: gold hover on most actions; Draw uses green hover (incl. counter). */
+const DECK_STRIP_BTN =
+  'rounded-full border border-transparent px-[18px] py-2.5 text-sm font-semibold tracking-wide text-white/90 transition-colors duration-150 hover:border-amber-400/50 hover:bg-amber-500/18 hover:text-amber-100'
+const DECK_STRIP_BTN_DRAW =
+  'rounded-full border border-transparent px-[18px] py-2.5 text-sm font-semibold tracking-wide text-white/90 transition-colors duration-150 hover:border-emerald-400/55 hover:bg-emerald-500/22 hover:text-emerald-100'
 
 export function CardTable() {
   const { user } = useAuth()
@@ -430,19 +437,6 @@ export function CardTable() {
 
   const nodeMap = Object.fromEntries(MANDALA_NODES.map(n => [n.id, n]))
 
-  const ctrlBtn: React.CSSProperties = {
-    padding: '10px 18px',
-    background: 'transparent',
-    color: 'rgba(255,255,255,0.88)',
-    border: 'none',
-    borderRadius: 22,
-    fontSize: 14,
-    fontWeight: 600,
-    cursor: 'pointer',
-    letterSpacing: '0.02em',
-    whiteSpace: 'nowrap',
-  }
-
   return (
     <div
       ref={tableRef}
@@ -585,39 +579,57 @@ export function CardTable() {
             borderRadius: 999,
             padding: '6px 10px',
           }}>
-            <button onClick={() => { setShowCreateSession(true); setShowControls(false) }} style={ctrlBtn}>New Session</button>
-            <Divider />
-            <button onClick={handleScatter} style={ctrlBtn}>Scatter</button>
             <button
+              type="button"
+              className={DECK_STRIP_BTN}
+              onClick={() => { setShowCreateSession(true); setShowControls(false) }}
+            >
+              New Session
+            </button>
+            <Divider />
+            <button type="button" className={DECK_STRIP_BTN} onClick={handleScatter}>
+              Scatter
+            </button>
+            <button
+              type="button"
               onClick={handleDraw}
               disabled={remainingDeck.length === 0}
-              style={{ ...ctrlBtn, opacity: remainingDeck.length === 0 ? 0.3 : 1 }}
+              className={cn(
+                DECK_STRIP_BTN_DRAW,
+                'disabled:pointer-events-none disabled:opacity-30 disabled:hover:border-transparent disabled:hover:bg-transparent disabled:hover:text-white/90',
+              )}
             >
               Draw{remainingDeck.length > 0 ? ` (${remainingDeck.length})` : ''}
             </button>
             <Divider />
-            <button onClick={() => { setShowSaveModal(true); setShowControls(false) }} style={ctrlBtn}>Save</button>
             <button
+              type="button"
+              className={DECK_STRIP_BTN}
+              onClick={() => { setShowSaveModal(true); setShowControls(false) }}
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              className={cn(DECK_STRIP_BTN, savedSessions.length === 0 && 'text-white/45')}
               onClick={() => { setShowSessions(true); setShowControls(false) }}
-              style={{
-                ...ctrlBtn,
-                color: savedSessions.length > 0 ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.42)',
-              }}
             >
               Sessions{savedSessions.length > 0 ? ` (${savedSessions.length})` : ''}
             </button>
             <Divider />
             <button
+              type="button"
+              className={DECK_STRIP_BTN}
               onClick={() => bgInputRef.current?.click()}
-              style={ctrlBtn}
               title={tableBackground ? 'Change background' : 'Set background'}
             >
               {tableBackground ? '🖼 ✓' : '🖼'}
             </button>
             {tableBackground && (
               <button
+                type="button"
+                className={cn(DECK_STRIP_BTN, 'text-white/50')}
                 onClick={() => setTableBackground(null)}
-                style={{ ...ctrlBtn, color: 'rgba(255,255,255,0.45)', fontSize: 14 }}
                 title="Remove background"
               >
                 ✕
@@ -820,6 +832,14 @@ function SaveModal({ defaultName, onSave, onClose }: {
 }
 
 function HelpPanel({ onClose }: { onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+
   const sections: Array<{ title: string; items: Array<{ label: string; desc: string }> }> = [
     {
       title: 'Working with cards',
@@ -854,57 +874,102 @@ function HelpPanel({ onClose }: { onClose: () => void }) {
   ]
 
   return (
-    <div
-      style={{
-        position: 'absolute', inset: 0, zIndex: 20000,
-        background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)',
-        display: 'flex', justifyContent: 'flex-end',
-      }}
-      onClick={onClose}
-    >
+    <>
+      {/* Light scrim — deck stays visible; click outside closes */}
       <div
-        onClick={e => e.stopPropagation()}
+        role="presentation"
+        aria-hidden
         style={{
-          width: 380, height: '100%', overflowY: 'auto',
-          background: '#1a1a1c', borderLeft: '1px solid #2a2a2e',
-          boxShadow: '-24px 0 64px rgba(0,0,0,0.6)',
-          display: 'flex', flexDirection: 'column',
+          position: 'fixed',
+          inset: 0,
+          zIndex: 19990,
+          background: 'rgba(0,0,0,0.38)',
+          backdropFilter: 'blur(4px)',
+          WebkitBackdropFilter: 'blur(4px)',
+        }}
+        onClick={onClose}
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="deck-help-title"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          position: 'fixed',
+          zIndex: 20000,
+          left: '50%',
+          top: 'max(72px, 8vh)',
+          transform: 'translateX(-50%)',
+          width: 'min(420px, calc(100vw - 28px))',
+          maxHeight: 'min(82vh, 720px)',
+          display: 'flex',
+          flexDirection: 'column',
+          background: '#161618',
+          borderRadius: 16,
+          border: '1px solid rgba(255,255,255,0.12)',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.55)',
+          overflow: 'hidden',
         }}
       >
-        {/* Header */}
-        <div style={{
-          padding: '24px 24px 18px', borderBottom: '1px solid #252527',
-          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
-          flexShrink: 0,
-        }}>
+        <div
+          style={{
+            padding: '20px 22px 16px',
+            borderBottom: '1px solid rgba(255,255,255,0.08)',
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            flexShrink: 0,
+          }}
+        >
           <div>
-            <div style={{ fontSize: 10, color: '#444', textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: 5 }}>
+            <div
+              style={{
+                fontSize: 10,
+                color: 'rgba(255,255,255,0.38)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.14em',
+                marginBottom: 5,
+              }}
+            >
               Focus Deck
             </div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: '#eee' }}>How to use</div>
+            <div id="deck-help-title" style={{ fontSize: 18, fontWeight: 800, color: '#f4f4f5' }}>
+              How to use
+            </div>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#444', fontSize: 18, cursor: 'pointer', padding: '2px 4px' }}>
-            ✕
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-2 text-white/40 transition-colors hover:bg-white/10 hover:text-white/80"
+            aria-label="Close help"
+          >
+            <span className="text-lg leading-none">✕</span>
           </button>
         </div>
 
-        {/* Content */}
-        <div style={{ padding: '8px 0 32px', flex: 1 }}>
-          {sections.map(section => (
-            <div key={section.title} style={{ padding: '20px 24px 4px' }}>
-              <div style={{
-                fontSize: 10, color: '#555', textTransform: 'uppercase',
-                letterSpacing: '0.14em', fontWeight: 600, marginBottom: 14,
-                paddingBottom: 8, borderBottom: '1px solid #222224',
-              }}>
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '8px 0 24px' }}>
+          {sections.map((section) => (
+            <div key={section.title} style={{ padding: '16px 22px 4px' }}>
+              <div
+                style={{
+                  fontSize: 10,
+                  color: 'rgba(255,255,255,0.42)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.14em',
+                  fontWeight: 600,
+                  marginBottom: 12,
+                  paddingBottom: 8,
+                  borderBottom: '1px solid rgba(255,255,255,0.08)',
+                }}
+              >
                 {section.title}
               </div>
-              {section.items.map(item => (
+              {section.items.map((item) => (
                 <div key={item.label} style={{ marginBottom: 14 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#ccc', marginBottom: 3 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#e4e4e7', marginBottom: 4 }}>
                     {item.label}
                   </div>
-                  <div style={{ fontSize: 12, color: '#555', lineHeight: 1.65 }}>
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.52)', lineHeight: 1.65 }}>
                     {item.desc}
                   </div>
                 </div>
@@ -913,7 +978,7 @@ function HelpPanel({ onClose }: { onClose: () => void }) {
           ))}
         </div>
       </div>
-    </div>
+    </>
   )
 }
 
