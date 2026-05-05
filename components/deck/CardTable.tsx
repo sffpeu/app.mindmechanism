@@ -867,7 +867,7 @@ function HelpPanel({ onClose }: { onClose: () => void }) {
     {
       title: 'Sessions',
       items: [
-        { label: 'New Session', desc: 'Open the session builder: choose how many cards to draw (3–16) and a session name. Only wheels with enough nodes are eligible.' },
+        { label: 'New Session', desc: 'Open the session builder: initial wheel cards (0–16), optional blank cards (up to 8), and a session name. Use 0 wheel cards for a blanks-only start, then Draw to pull wheel cards from the deck.' },
         { label: 'Scatter', desc: 'Randomise the positions of all cards currently on the table.' },
         { label: 'Draw', desc: 'Deal one additional card from the remaining deck onto the table.' },
         { label: 'Save', desc: 'Snapshot the current table — card positions, flip states, annotations, and images — to your cloud account. Images are stored in Firebase Storage; session metadata in Firestore.' },

@@ -25,18 +25,21 @@ export function CreateSessionModal({ onStart, onClose }: Props) {
   const wheels = Object.keys(wheelData).map(Number).sort((a, b) => a - b)
   const eligibleWheels = wheels.filter(w => wheelData[w].ids.length >= count)
   const eligibleNodeIds = eligibleWheels.flatMap(w => wheelData[w].ids)
-  const canStart = eligibleNodeIds.length >= count
-  const canProceed = blankCount > 0 || canStart
+  /** When count > 0, the pooled wheel nodes must cover the draw size. */
+  const taxonomyPoolOk = count === 0 || eligibleNodeIds.length >= count
+  /** At least one card on the table: wheel draw, blanks, or both. */
+  const hasAnyCards = blankCount > 0 || count > 0
+  const canProceed = hasAnyCards && taxonomyPoolOk
 
   const handleStart = () => {
     if (!canProceed) return
     const shuffled = [...eligibleNodeIds].sort(() => Math.random() - 0.5)
-    const drawnIds = canStart ? shuffled.slice(0, count) : []
+    const drawnIds = count > 0 ? shuffled.slice(0, count) : []
     onStart(drawnIds, sessionName.trim() || 'Session', blankCount)
   }
 
   const inc = () => setCount(c => Math.min(16, c + 1))
-  const dec = () => setCount(c => Math.max(3, c - 1))
+  const dec = () => setCount(c => Math.max(0, c - 1))
   const incBlank = () => setBlankCount(c => Math.min(8, c + 1))
   const decBlank = () => setBlankCount(c => Math.max(0, c - 1))
 
@@ -67,7 +70,7 @@ export function CreateSessionModal({ onStart, onClose }: Props) {
             Create Session
           </div>
           <div style={{ fontSize: 13, color: '#444', marginTop: 4 }}>
-            Draw from wheels with enough nodes to match your count
+            Initial wheel cards (0–16), plus up to 8 blank cards. Set wheel draw to 0 for blanks only — then use Draw to add wheel cards from the deck.
           </div>
         </div>
 
@@ -102,17 +105,17 @@ export function CreateSessionModal({ onStart, onClose }: Props) {
                 fontSize: 10, color: '#555', textTransform: 'uppercase',
                 letterSpacing: '0.1em', display: 'block', marginBottom: 14,
               }}>
-                Cards to draw
+                Wheel cards on table
               </label>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <button
                   onClick={dec}
-                  disabled={count <= 3}
+                  disabled={count <= 0}
                   style={{
                     width: 38, height: 38, borderRadius: '50%',
                     background: '#252527', border: '1px solid #363638',
-                    color: count <= 3 ? '#333' : '#aaa', fontSize: 22,
-                    cursor: count <= 3 ? 'default' : 'pointer',
+                    color: count <= 0 ? '#333' : '#aaa', fontSize: 22,
+                    cursor: count <= 0 ? 'default' : 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flexShrink: 0,
                   }}
@@ -132,7 +135,7 @@ export function CreateSessionModal({ onStart, onClose }: Props) {
                     fontSize: 10, color: '#3a3a3a', marginTop: 6,
                     letterSpacing: '0.1em', textTransform: 'uppercase',
                   }}>
-                    min 3 · max 16
+                    min 0 · max 16
                   </div>
                 </div>
 
