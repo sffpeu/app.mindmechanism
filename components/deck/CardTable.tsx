@@ -520,16 +520,31 @@ export function CardTable() {
         </div>
       </div>
 
-      {/* Help button — top right */}
+      {/* Help button — top right (high-contrast red so it reads on any table bg) */}
       <button
+        type="button"
+        aria-label="Open deck help"
+        title="Help"
         onClick={() => setShowHelp(true)}
         style={{
-          position: 'absolute', top: 20, right: 24, zIndex: 9999,
-          width: 32, height: 32, borderRadius: '50%',
-          background: 'rgba(255,255,255,0.06)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          color: 'rgba(255,255,255,0.35)', fontSize: 14, fontWeight: 700,
-          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          position: 'absolute',
+          top: 20,
+          right: 24,
+          zIndex: 9999,
+          width: 44,
+          height: 44,
+          borderRadius: '50%',
+          background: 'linear-gradient(165deg, #f87171 0%, #b91c1c 100%)',
+          border: '2px solid rgba(254, 242, 242, 0.95)',
+          color: '#fff',
+          fontSize: 18,
+          fontWeight: 700,
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow:
+            '0 0 18px rgba(239, 68, 68, 0.75), 0 0 36px rgba(239, 68, 68, 0.4), inset 0 1px 0 rgba(255,255,255,0.35)',
         }}
       >
         ?
@@ -598,17 +613,31 @@ export function CardTable() {
           </div>
         )}
 
-        {/* Toggle button */}
+        {/* Toggle — gold beacon so session tools stay discoverable on busy backgrounds */}
         <button
+          type="button"
+          aria-label={showControls ? 'Close session tools' : 'Open session tools'}
+          title={showControls ? 'Close' : 'Session tools'}
           onClick={() => setShowControls(v => !v)}
           style={{
-            width: 36, height: 36, borderRadius: '50%',
-            background: showControls ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.06)',
-            border: `1px solid ${showControls ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.09)'}`,
-            color: showControls ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.3)',
-            fontSize: showControls ? 18 : 16, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: 44,
+            height: 44,
+            borderRadius: '50%',
+            background: showControls
+              ? 'linear-gradient(165deg, #fde047 0%, #ca8a04 100%)'
+              : 'linear-gradient(165deg, #fcd34d 0%, #d97706 100%)',
+            border: '2px solid rgba(254, 249, 195, 0.95)',
+            color: '#422006',
+            fontSize: showControls ? 22 : 20,
+            fontWeight: 700,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             transition: 'all 0.18s',
+            boxShadow: showControls
+              ? '0 0 18px rgba(234, 179, 8, 0.65), 0 0 34px rgba(245, 158, 11, 0.35), inset 0 1px 0 rgba(255,255,255,0.45)'
+              : '0 0 16px rgba(251, 191, 36, 0.7), 0 0 32px rgba(245, 158, 11, 0.38), inset 0 1px 0 rgba(255,255,255,0.45)',
           }}
         >
           {showControls ? '×' : '⋯'}
