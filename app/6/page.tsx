@@ -9,12 +9,11 @@ import { ClockBreathingGlow } from '@/components/ClockBreathingGlow'
 import { useHueSync } from '@/lib/hooks/useHueSync'
 import { useIdleFade } from '@/lib/hooks/useIdleFade'
 import { ClockFocusNodeAppear } from '@/components/ClockFocusNodeAppear'
-import { ClockPageSettingsTrigger, ClockPageIconButton } from '@/components/ClockPageSettingsTrigger'
+import { ClockPageSettingsTrigger } from '@/components/ClockPageSettingsTrigger'
 import { motion, AnimatePresence } from 'framer-motion'
 import { clockSettings } from '@/lib/clockSettings'
-import { formatSatelliteRevolutionPeriod } from '@/lib/satelliteRotation'
 import Image from 'next/image'
-import { List, Info, Satellite, Clock as ClockIcon, Calendar, RotateCw, Timer as TimerIcon, Compass, HelpCircle, Book, User, Edit, LogOut, Play, BookOpen, Library, Sun, Moon, MapPin, Cloud, Droplets, Wind, X } from 'lucide-react'
+import { List, Satellite, HelpCircle, Book, User, Edit, LogOut, Play, BookOpen, Library, Sun, Moon, MapPin, Cloud, Droplets, Wind, X } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Timer from '@/components/Timer'
@@ -118,21 +117,12 @@ function NodesPageContent() {
     return true
   })
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const [isInfoOpen, setIsInfoOpen] = useState(false)
   const { isDarkMode, setIsDarkMode } = useTheme()
   const [remainingTime, setRemainingTime] = useState<number | null>(null)
   const [isPaused, setIsPaused] = useState(false)
   const [showCeremony, setShowCeremony] = useState(false)
   const [colourMode, setColourMode] = useState<'colour' | 'mono'>('mono')
   const [sessionId, setSessionId] = useState<string | null>(null)
-  const [currentTime, setCurrentTime] = useState(new Date())
-  const [clockInfo, setClockInfo] = useState({
-    rotation: 0,
-    rotationsCompleted: 0,
-    elapsedTime: '0y 0d 0h 0m 0s',
-    currentRotation: 0,
-    direction: 'clockwise'
-  })
   const [glossaryWords, setGlossaryWords] = useState<GlossaryWord[]>([])
   const [loadingGlossary, setLoadingGlossary] = useState(true)
   const [selectedWord, setSelectedWord] = useState<string | null>(null)
@@ -253,7 +243,6 @@ function NodesPageContent() {
   // Handle mounting
   useEffect(() => {
     setMounted(true)
-    setCurrentTime(new Date())
   }, [])
 
   // Fetch weather and moon data
@@ -345,30 +334,6 @@ function NodesPageContent() {
     return () => cancelAnimationFrame(animationId)
   }, [startingDegree, rotationTime, rotationDirection, currentClockSettings.startDateTime])
 
-  // Update current time every second
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date())
-    }, 1000)
-    return () => clearInterval(timer)
-  }, [])
-
-  // Update clock info
-  useEffect(() => {
-    const startDateTime = currentClockSettings.startDateTime
-    const now = Date.now()
-    const elapsedMilliseconds = now - startDateTime.getTime()
-    const rotations = Math.floor(elapsedMilliseconds / rotationTime)
-
-    setClockInfo({
-      rotation: currentDegree,
-      rotationsCompleted: rotations,
-      elapsedTime: getElapsedTime(startDateTime),
-      currentRotation: currentDegree,
-      direction: rotationDirection
-    })
-  }, [currentTime, rotationTime, currentDegree, rotationDirection, currentClockSettings.startDateTime])
-
   // Load glossary words
   useEffect(() => {
     const loadGlossaryWords = async () => {
@@ -435,17 +400,6 @@ function NodesPageContent() {
   }
 
 
-  // Add getElapsedTime helper function
-  const getElapsedTime = (startDateTime: Date): string => {
-    const elapsed = Date.now() - startDateTime.getTime()
-    const years = Math.floor(elapsed / (365 * 24 * 60 * 60 * 1000))
-    const remainingDays = Math.floor((elapsed % (365 * 24 * 60 * 60 * 1000)) / (24 * 60 * 60 * 1000))
-    const hours = Math.floor((elapsed % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000))
-    const minutes = Math.floor((elapsed % (60 * 60 * 1000)) / (60 * 1000))
-    const seconds = Math.floor((elapsed % (60 * 1000)) / 1000)
-    return `${years}y ${remainingDays}d ${hours}h ${minutes}m ${seconds}s`
-  }
-
 
   const remainingSessionTime = duration != null ? (sessionState.remainingTime ?? duration) : null
   const totalForProgress =
@@ -497,155 +451,16 @@ function NodesPageContent() {
                       </DraggableClockPanel>
         </div>
 
-        {/* Timer and Info Component */}
-        <div className={cn("fixed bottom-4 left-4 z-50 flex items-center gap-2 transition-opacity duration-700", isIdle && "opacity-0 pointer-events-none")}>
-          {remainingTime !== null && (
+        {/* Session pause/resume — bottom left (colour toggle uses same corner at z-[999]) */}
+        {remainingTime !== null && (
+          <div className={cn("fixed bottom-4 left-4 z-50 transition-opacity duration-700", isIdle && "opacity-0 pointer-events-none")}>
             <Timer
               remainingTime={remainingTime}
               isPaused={isPaused}
               onPauseResume={handlePauseResume}
             />
-          )}
-          <div className="relative">
-            <ClockPageIconButton clockHex={clockHex} aria-label="Clock Information" onClick={() => setIsInfoOpen(o => !o)}>
-              <Info className="h-2.5 w-2.5" style={{ color: 'currentColor' }} />
-            </ClockPageIconButton>
           </div>
-          <DraggableClockPanel open={isInfoOpen} onClose={() => setIsInfoOpen(false)} clockHex={clockHex} clockIndex={6} instanceId="info-6" panelWidth="300px">
-            <div className="p-3 max-h-[70vh] overflow-y-auto">
-                  <div className="space-y-3">
-                    {/* Clock Title and Description */}
-                    <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10 text-center">
-                      <h3 className="text-sm font-medium text-orange-500">
-                        {clockTitles[CLOCK_INDEX]}
-                      </h3>
-                      <p className="text-xs text-black/60 dark:text-white/60">
-                        {currentClockSettings.startDateTime.getDate().toString().padStart(2, '0')}.{(currentClockSettings.startDateTime.getMonth() + 1).toString().padStart(2, '0')}.{currentClockSettings.startDateTime.getFullYear()}
-                      </p>
-                      <p className="text-xs text-black/60 dark:text-white/60 line-clamp-2">
-                        The culmination of the solar journey, split into male and female reflections to achieve harmonic balance in the crown.
-                      </p>
-                    </div>
-
-                    {/* Clock Information */}
-                    <div className="space-y-2 pb-3 border-b border-black/10 dark:border-white/10">
-                      <div>
-                        <p className="text-xs font-medium text-black/60 dark:text-white/60 flex items-center gap-1">
-                          <ClockIcon className="h-3 w-3" />
-                          Current
-                        </p>
-                        <p className="text-sm font-medium text-black/90 dark:text-white/90">
-                          {currentTime.toLocaleTimeString()}
-                        </p>
-                      </div>
-
-                      <div>
-                        <p className="text-xs font-medium text-black/60 dark:text-white/60 flex items-center gap-1">
-                          <TimerIcon className="h-3 w-3" />
-                          Elapsed
-                        </p>
-                        <p className="text-sm font-medium text-black/90 dark:text-white/90 font-mono">
-                          {clockInfo.elapsedTime}
-                        </p>
-                      </div>
-
-                      <div className="grid grid-cols-4 gap-2">
-                        <div>
-                          <p className="text-xs font-medium text-black/60 dark:text-white/60 flex items-center gap-1">
-                            <Compass className="h-3 w-3" />
-                            Start °
-                          </p>
-                          <p className="text-sm font-medium text-black/90 dark:text-white/90">
-                            {startingDegree.toFixed(1)}°
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs font-medium text-black/60 dark:text-white/60 flex items-center gap-1">
-                            <RotateCw className="h-3 w-3" />
-                            Rotation
-                          </p>
-                          <p className="text-sm font-medium text-black/90 dark:text-white/90">
-                            {currentDegree.toFixed(3)}°
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="grid grid-cols-4 gap-2">
-                      <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
-                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                          <div className="w-1 h-1 rounded-full bg-orange-500" />
-                          Focus Nodes
-                        </span>
-                        <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                          {focusNodes}
-                        </span>
-                      </div>
-                      <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
-                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                          <div className="w-1 h-1 rounded-full border border-gray-900 dark:border-white/40" />
-                          Satellites
-                        </span>
-                        <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                          {satelliteConfigs.length}
-                        </span>
-                      </div>
-                      <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
-                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                          <RotateCw className="h-3 w-3 text-gray-400 dark:text-gray-500" />
-                          Rotations
-                        </span>
-                        <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                          {clockInfo.rotationsCompleted}
-                        </span>
-                      </div>
-                      <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
-                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-                          <Compass className="h-3 w-3 text-gray-400 dark:text-gray-500" />
-                          Rotation
-                        </span>
-                        <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
-                          {clockInfo.direction === 'clockwise' ? '+' : ''}{currentDegree.toFixed(3)}°
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Satellites — one revolution duration and angular speed */}
-                    <div className="pt-2 border-t border-black/10 dark:border-white/10">
-                      <p className="text-xs font-medium text-black/60 dark:text-white/60 mb-2 flex items-center gap-1">
-                        <Satellite className="h-3 w-3" />
-                        Satellites
-                      </p>
-                      {satelliteConfigs.length === 0 ? (
-                        <p className="text-xs text-black/50 dark:text-white/50">None on this clock.</p>
-                      ) : (
-                        <ul className="max-h-40 space-y-2 overflow-y-auto pr-1 text-left">
-                          {satelliteConfigs.map((sat, i) => (
-                            <li
-                              key={i}
-                              className="rounded-md bg-gray-50 px-2 py-1.5 text-[11px] dark:bg-white/5"
-                            >
-                              <div className="flex items-center justify-between gap-2">
-                                <span className="font-medium text-black/90 dark:text-white/90">
-                                  {sat.name ?? `Satellite ${i + 1}`}
-                                </span>
-                                <span className="shrink-0 text-black/55 dark:text-white/55">
-                                  {sat.rotationDirection === 'clockwise' ? 'CW' : 'CCW'}
-                                </span>
-                              </div>
-                              <div className="mt-0.5 tabular-nums text-black/70 dark:text-white/70">
-                                {formatSatelliteRevolutionPeriod(sat.rotationTime)} to complete one rotation
-                              </div>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  </div>
-            </div>
-          </DraggableClockPanel>
-        </div>
+        )}
         {user?.uid && mounted && createPortal(
           <SessionPresenceBroadcast
             uid={user.uid}
