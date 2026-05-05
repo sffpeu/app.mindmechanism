@@ -18,10 +18,15 @@ function multiImgSrc(clockIndex: number, mode: ColourMode) {
     : `/${clockIndex + 1}.svg`
 }
 
-function MultiColourToggle({ mode, onChange }: { mode: ColourMode; onChange: (m: ColourMode) => void }) {
+function MultiColourToggle({ mode, onChange, isDarkMode }: { mode: ColourMode; onChange: (m: ColourMode) => void; isDarkMode: boolean }) {
   return (
-    <div className="flex rounded-full border border-white/10 dark:border-white/10 border-black/10 overflow-hidden"
-         style={{ fontSize: 9 }}>
+    <div
+      className="flex rounded-full overflow-hidden"
+      style={{
+        fontSize: 9,
+        border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'}`,
+      }}
+    >
       {(['colour', 'mono'] as ColourMode[]).map(m => (
         <button
           key={m}
@@ -29,8 +34,12 @@ function MultiColourToggle({ mode, onChange }: { mode: ColourMode; onChange: (m:
           onClick={() => onChange(m)}
           className="px-3 py-1 tracking-widest uppercase transition-colors pointer-events-auto"
           style={{
-            background: mode === m ? 'rgba(255,255,255,0.12)' : 'transparent',
-            color:      mode === m ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.3)',
+            background: mode === m
+              ? (isDarkMode ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.07)')
+              : 'transparent',
+            color: mode === m
+              ? (isDarkMode ? 'rgba(255,255,255,0.78)' : 'rgba(0,0,0,0.65)')
+              : (isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'),
           }}
         >
           {m}
@@ -173,27 +182,27 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
         {!isMultiView2 && (
           /* Colour / Mono toggle — bottom left, type 1 only */
           <div className="absolute bottom-4 left-4">
-            <MultiColourToggle mode={colourMode} onChange={setColourMode} />
+            <MultiColourToggle mode={colourMode} onChange={setColourMode} isDarkMode={isDarkMode} />
           </div>
         )}
         {isMultiView2 && (
           <>
-            {/* Colour toggle + heading stacked — bottom-left, aligned to nav panel */}
-            <div style={{ position: 'absolute', bottom: 28, left: 76, zIndex: 9999 }}>
-              <div style={{ marginBottom: 14, pointerEvents: 'auto' }}>
-                <MultiColourToggle mode={colourMode} onChange={setColourMode} />
+            {/* Colour toggle + heading stacked — bottom-right, aligned to nav panel far (left) edge */}
+            <div style={{ position: 'absolute', bottom: 28, right: 56, zIndex: 9999, textAlign: 'right' }}>
+              <div style={{ marginBottom: 14, pointerEvents: 'auto', display: 'flex', justifyContent: 'flex-end' }}>
+                <MultiColourToggle mode={colourMode} onChange={setColourMode} isDarkMode={isDarkMode} />
               </div>
               <div style={{ pointerEvents: 'none' }}>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 4, fontWeight: 700 }}>
+                <div style={{ fontSize: 10, color: isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)', letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 4, fontWeight: 700 }}>
                   The Mind Mechanism
                 </div>
-                <div style={{ fontSize: 34, fontWeight: 900, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.03em', textTransform: 'uppercase', lineHeight: 1 }}>
+                <div style={{ fontSize: 34, fontWeight: 900, color: isDarkMode ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)', letterSpacing: '0.03em', textTransform: 'uppercase', lineHeight: 1 }}>
                   Multiview
                 </div>
               </div>
             </div>
-            {/* Copyright — bottom-right */}
-            <div style={{ position: 'absolute', bottom: 20, right: 24, zIndex: 9999, pointerEvents: 'none', fontSize: 9, color: 'rgba(255,255,255,0.18)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            {/* Copyright — bottom-right, below heading block */}
+            <div style={{ position: 'absolute', bottom: 8, right: 56, zIndex: 9999, pointerEvents: 'none', fontSize: 9, color: isDarkMode ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.18)', letterSpacing: '0.1em', textTransform: 'uppercase', textAlign: 'right' }}>
               © 2026 Sean Fortune · All Rights Reserved
             </div>
           </>
