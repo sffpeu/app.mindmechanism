@@ -13,8 +13,8 @@ import { Volume2, VolumeX } from 'lucide-react'
 import { useNineWheelTones } from '@/lib/hooks/useNineWheelTones'
 import { cn } from '@/lib/utils'
 import {
-  VIEWPORT_INSET_LEFT_APP_DOCK_RAIL,
-  VIEWPORT_INSET_RIGHT_CLOCK_DOT_RAIL,
+  VIEWPORT_INSET_LEFT_NAV_OUTER,
+  VIEWPORT_INSET_RIGHT_NAV_OUTER,
 } from '@/lib/layoutGutters'
 
 const MUTE_KEY = 'mindmechanism.clockSoundMuted'
@@ -240,13 +240,13 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
           </>
         )}
         {isMultiView2 && (
-            /* Heading inset matches AppDock rail; toggle inset matches clock DotNavigation rail */
+            /* Heading / toggle align to outer (screen-adjacent) edge of each dock, not past the rail */
             <div
               style={{
                 position: 'absolute',
                 bottom: 16,
-                left: VIEWPORT_INSET_LEFT_APP_DOCK_RAIL,
-                right: VIEWPORT_INSET_RIGHT_CLOCK_DOT_RAIL,
+                left: VIEWPORT_INSET_LEFT_NAV_OUTER,
+                right: VIEWPORT_INSET_RIGHT_NAV_OUTER,
                 zIndex: 9999,
                 display: 'flex',
                 flexDirection: 'row',
