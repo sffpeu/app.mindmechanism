@@ -4,12 +4,13 @@ import { useState, useMemo } from 'react'
 import { MANDALA_NODES, WHEEL_COLORS } from '@/data/mandalaNodes'
 
 interface Props {
-  onStart: (nodeIds: string[], sessionName: string) => void
+  onStart: (nodeIds: string[], sessionName: string, blankCount: number) => void
   onClose: () => void
 }
 
 export function CreateSessionModal({ onStart, onClose }: Props) {
   const [count, setCount] = useState(9)
+  const [blankCount, setBlankCount] = useState(0)
   const [sessionName, setSessionName] = useState('')
 
   const wheelData = useMemo(() => {
@@ -25,15 +26,19 @@ export function CreateSessionModal({ onStart, onClose }: Props) {
   const eligibleWheels = wheels.filter(w => wheelData[w].ids.length >= count)
   const eligibleNodeIds = eligibleWheels.flatMap(w => wheelData[w].ids)
   const canStart = eligibleNodeIds.length >= count
+  const canProceed = blankCount > 0 || canStart
 
   const handleStart = () => {
-    if (!canStart) return
+    if (!canProceed) return
     const shuffled = [...eligibleNodeIds].sort(() => Math.random() - 0.5)
-    onStart(shuffled.slice(0, count), sessionName.trim() || 'Session')
+    const drawnIds = canStart ? shuffled.slice(0, count) : []
+    onStart(drawnIds, sessionName.trim() || 'Session', blankCount)
   }
 
   const inc = () => setCount(c => Math.min(16, c + 1))
   const dec = () => setCount(c => Math.max(3, c - 1))
+  const incBlank = () => setBlankCount(c => Math.min(8, c + 1))
+  const decBlank = () => setBlankCount(c => Math.max(0, c - 1))
 
   return (
     <div
@@ -148,6 +153,59 @@ export function CreateSessionModal({ onStart, onClose }: Props) {
               </div>
             </div>
 
+            {/* Blank cards picker */}
+            <div>
+              <label style={{
+                fontSize: 10, color: '#555', textTransform: 'uppercase',
+                letterSpacing: '0.1em', display: 'block', marginBottom: 10,
+              }}>
+                Blank cards <span style={{ color: '#3a3a3a', fontStyle: 'italic', textTransform: 'none' }}>— fill in your own words</span>
+              </label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <button
+                  onClick={decBlank}
+                  disabled={blankCount <= 0}
+                  style={{
+                    width: 30, height: 30, borderRadius: '50%',
+                    background: '#252527', border: '1px solid #363638',
+                    color: blankCount <= 0 ? '#333' : '#aaa', fontSize: 18,
+                    cursor: blankCount <= 0 ? 'default' : 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  −
+                </button>
+                <div style={{ flex: 1, textAlign: 'center' }}>
+                  <div style={{
+                    fontSize: 40, fontWeight: 900, color: blankCount > 0 ? '#fff' : '#333',
+                    lineHeight: 1, letterSpacing: '-0.03em',
+                    fontVariantNumeric: 'tabular-nums',
+                    transition: 'color 0.15s',
+                  }}>
+                    {blankCount}
+                  </div>
+                  <div style={{ fontSize: 10, color: '#3a3a3a', marginTop: 4, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                    max 8
+                  </div>
+                </div>
+                <button
+                  onClick={incBlank}
+                  disabled={blankCount >= 8}
+                  style={{
+                    width: 30, height: 30, borderRadius: '50%',
+                    background: '#252527', border: '1px solid #363638',
+                    color: blankCount >= 8 ? '#333' : '#aaa', fontSize: 18,
+                    cursor: blankCount >= 8 ? 'default' : 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
             {/* Eligibility summary */}
             <div style={{ fontSize: 12, color: '#3a3a3a', lineHeight: 1.6 }}>
               {eligibleNodeIds.length} nodes across {eligibleWheels.length} wheel{eligibleWheels.length !== 1 ? 's' : ''} eligible
@@ -220,14 +278,14 @@ export function CreateSessionModal({ onStart, onClose }: Props) {
           </button>
           <button
             onClick={handleStart}
-            disabled={!canStart}
+            disabled={!canProceed}
             style={{
               padding: '9px 26px',
-              background: canStart ? '#ffffff' : '#252527',
-              color: canStart ? '#000' : '#3a3a3a',
+              background: canProceed ? '#ffffff' : '#252527',
+              color: canProceed ? '#000' : '#3a3a3a',
               border: 'none', borderRadius: 8,
               fontSize: 13, fontWeight: 700,
-              cursor: canStart ? 'pointer' : 'not-allowed',
+              cursor: canProceed ? 'pointer' : 'not-allowed',
               letterSpacing: '0.04em',
               transition: 'background 0.18s, color 0.18s',
             }}

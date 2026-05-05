@@ -7,6 +7,7 @@ import { CreateSessionModal } from './CreateSessionModal'
 import { SessionsPanel, type SavedSession } from './SessionsPanel'
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { collection, doc, getDocs, setDoc, deleteDoc, query, orderBy, type Firestore } from 'firebase/firestore'
+import { addUserWord } from '@/lib/glossary'
 import { getFirebaseStorage, db } from '@/lib/firebase'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 
@@ -17,6 +18,7 @@ interface CardState {
   rotation: number
   zIndex: number
   isFlipped: boolean
+  customContent?: { term: string; definition: string; phonetic: string }
 }
 
 const DEFAULT_DRAW_SIZE = 9
@@ -76,7 +78,7 @@ async function uploadToStorage(dataUrl: string, uid: string, label: string): Pro
   return getDownloadURL(fileRef)
 }
 
-const EMPTY_ANNOTATION: Annotation = { userDef: '', notes: '', imageUrl: null }
+const EMPTY_ANNOTATION: Annotation = { userDef: '', notes: '', imageUrl: null, textIsLight: false, textSize: 'md', textColor: null }
 
 export function CardTable() {
   const { user } = useAuth()
@@ -151,16 +153,13 @@ export function CardTable() {
     setCards(prev => prev.map(c => c.nodeId === nodeId ? { ...c, x, y } : c))
   }, [])
 
-  const handleAnnotationChange = useCallback((nodeId: string, field: keyof Annotation, value: string | null) => {
-    // Update state immediately so the card renders the image without delay
+  const handleAnnotationChange = useCallback((nodeId: string, field: keyof Annotation, value: string | boolean | null) => {
     setAnnotations(prev => ({
       ...prev,
-      [nodeId]: { ...prev[nodeId] ?? EMPTY_ANNOTATION, [field]: value },
+      [nodeId]: { ...EMPTY_ANNOTATION, ...(prev[nodeId] ?? {}), [field]: value },
     }))
 
-    // When a new image is set as a raw data URL, upload it to Firebase Storage
-    // in the background and silently swap the data URL for the permanent CDN URL.
-    if (field === 'imageUrl' && value && value.startsWith('data:') && user) {
+    if (field === 'imageUrl' && typeof value === 'string' && value.startsWith('data:') && user) {
       const uid = user.uid
       ;(async () => {
         try {
@@ -177,11 +176,37 @@ export function CardTable() {
     }
   }, [user])
 
-  const handleSendToGlossary = useCallback((nodeId: string) => {
+  const handleSendToGlossary = useCallback(async (nodeId: string) => {
+    const card = cards.find(c => c.nodeId === nodeId)
+    if (card?.customContent) {
+      const { term, definition, phonetic } = card.customContent
+      if (!term.trim()) { showToast('Add a term to the card first'); return }
+      const result = await addUserWord({
+        word: term.trim(),
+        definition: definition.trim() || '',
+        phonetic_spelling: phonetic.trim() || '',
+        grade: 3,
+        rating: '~',
+        source: 'user',
+        version: 'User',
+        language: 'en',
+        user_id: user?.uid,
+      })
+      showToast(result ? `"${term.trim()}" added to My Words` : 'Failed to add — try again')
+      return
+    }
     const node = MANDALA_NODES.find(n => n.id === nodeId)
     if (!node) return
     showToast(`"${node.term}" sent to Glossary`)
-  }, [showToast])
+  }, [cards, showToast, user])
+
+  const handleCustomContentChange = useCallback((nodeId: string, field: 'term' | 'definition' | 'phonetic', value: string) => {
+    setCards(prev => prev.map(c =>
+      c.nodeId === nodeId && c.customContent
+        ? { ...c, customContent: { ...c.customContent, [field]: value } }
+        : c
+    ))
+  }, [])
 
   const handleScatter = useCallback(() => {
     const el = tableRef.current
@@ -233,11 +258,21 @@ export function CardTable() {
     e.target.value = ''
   }, [user])
 
-  const handleSessionStart = useCallback((nodeIds: string[], sessionName: string) => {
+  const handleSessionStart = useCallback((nodeIds: string[], sessionName: string, blankCount: number) => {
     const el = tableRef.current
     if (!el) return
     const { clientWidth: w, clientHeight: h } = el
-    setCards(makeScattered(nodeIds, w, h))
+    const taxonomyCards = makeScattered(nodeIds, w, h)
+    const blankCards: CardState[] = Array.from({ length: blankCount }, (_, i) => ({
+      nodeId: `blank-${Date.now()}-${i}`,
+      x: MARGIN + Math.random() * Math.max(0, w - CARD_W - MARGIN * 2),
+      y: MARGIN + Math.random() * Math.max(0, h - CARD_H - MARGIN * 2),
+      rotation: (Math.random() - 0.5) * 22,
+      zIndex: taxonomyCards.length + i + 1,
+      isFlipped: false,
+      customContent: { term: '', definition: '', phonetic: '' },
+    }))
+    setCards([...taxonomyCards, ...blankCards])
     setRemainingDeck(MANDALA_NODES.filter(n => !nodeIds.includes(n.id)).map(n => n.id))
     setAnnotations({})
     setExpandedNode(null)
@@ -308,7 +343,12 @@ export function CardTable() {
 
   const handleLoadSession = useCallback((session: SavedSession) => {
     setCards(session.cards)
-    setAnnotations(session.annotations)
+    // Merge stored annotations with EMPTY_ANNOTATION defaults so new fields are always present
+    const normAnnotations: Record<string, Annotation> = {}
+    for (const [k, v] of Object.entries(session.annotations)) {
+      normAnnotations[k] = { ...EMPTY_ANNOTATION, ...v }
+    }
+    setAnnotations(normAnnotations)
     setTableBackground(session.tableBackground ?? null)
     setCurrentSessionName(session.name)
     setRemainingDeck(
@@ -379,12 +419,24 @@ export function CardTable() {
       }} />
 
       {cards.map(card => {
+        const isBlank = !!card.customContent
         const node = nodeMap[card.nodeId]
-        if (!node) return null
+        if (!node && !isBlank) return null
+        const effectiveNode = node ?? {
+          id: card.nodeId,
+          term: card.customContent!.term,
+          phonetic: card.customContent!.phonetic,
+          definition: card.customContent!.definition,
+          wheel: 0,
+          wheelName: 'Custom',
+          grade: 0,
+          rate: '~' as const,
+          nodeId: 0,
+        }
         return (
           <DeckCard
             key={card.nodeId}
-            node={node}
+            node={effectiveNode}
             x={card.x}
             y={card.y}
             rotation={card.rotation}
@@ -396,7 +448,9 @@ export function CardTable() {
             onPositionChange={(x, y) => handlePositionChange(card.nodeId, x, y)}
             onAnnotationChange={(field, value) => handleAnnotationChange(card.nodeId, field, value)}
             onSendToGlossary={() => handleSendToGlossary(card.nodeId)}
-            onExpand={() => setExpandedNode(node)}
+            onExpand={() => setExpandedNode(effectiveNode)}
+            customContent={card.customContent}
+            onCustomContentChange={isBlank ? (field, value) => handleCustomContentChange(card.nodeId, field, value) : undefined}
           />
         )
       })}

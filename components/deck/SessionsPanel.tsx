@@ -13,11 +13,15 @@ export interface SavedSession {
     rotation: number
     zIndex: number
     isFlipped: boolean
+    customContent?: { term: string; definition: string; phonetic: string }
   }>
   annotations: Record<string, {
     userDef: string
     notes: string
     imageUrl: string | null
+    textIsLight?: boolean
+    textSize?: 'sm' | 'md' | 'lg'
+    textColor?: string | null
   }>
 }
 
