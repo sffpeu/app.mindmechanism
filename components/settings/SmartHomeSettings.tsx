@@ -369,7 +369,7 @@ export function SmartHomeSettings() {
         </p>
       </Card>
 
-      <Card className="space-y-2 p-4 bg-white/50 dark:bg-black/50">
+      <Card className="space-y-2 p-4 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800">
         <p className="text-sm font-medium text-gray-900 dark:text-white">Matter</p>
         <p className="text-xs leading-relaxed text-gray-600 dark:text-gray-400">
           Matter bulbs paired in Apple Home or Google Home often still appear on your{' '}
@@ -379,7 +379,7 @@ export function SmartHomeSettings() {
         </p>
       </Card>
 
-      <Card className="space-y-3 p-4 bg-white/50 dark:bg-black/50">
+      <Card className="space-y-3 p-4 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800">
         <div className="flex items-center gap-2">
           <Lightbulb className="h-4 w-4 text-violet-600 dark:text-violet-400" />
           <p className="text-sm font-medium text-gray-900 dark:text-white">Wheel → room lighting</p>
@@ -403,7 +403,7 @@ export function SmartHomeSettings() {
       </Card>
 
       {/* Bridge connection */}
-      <Card className="space-y-4 p-4 bg-white/50 dark:bg-black/50">
+      <Card className="space-y-4 p-4 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-sm font-medium text-gray-900 dark:text-white">Philips Hue bridge</p>
           {connected ? (
@@ -500,7 +500,7 @@ export function SmartHomeSettings() {
               <strong>live sync only works</strong> when you run the app from localhost or your LAN IP on the same Wi‑Fi as the bridge.
             </Card>
           ) : null}
-          <Card className="space-y-4 p-4 bg-white/50 dark:bg-black/50">
+          <Card className="space-y-4 p-4 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800">
             <div className="flex items-center justify-between gap-3">
               <Label htmlFor="hue-sync-enabled" className="text-sm font-medium">
                 Sync wheel colours to Hue
@@ -546,7 +546,7 @@ export function SmartHomeSettings() {
             </div>
           </Card>
 
-          <Card className="space-y-3 p-4 bg-white/50 dark:bg-black/50">
+          <Card className="space-y-3 p-4 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-sm font-medium text-gray-900 dark:text-white">Target lights</p>
               <Button

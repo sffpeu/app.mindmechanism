@@ -226,7 +226,7 @@ export function SoundSettings() {
     <div className="space-y-4">
 
       {/* ── Interface sounds ──────────────────────────────────────────── */}
-      <Card className="p-4 bg-white/50 dark:bg-black/50">
+      <Card className="p-4 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-900 dark:text-white">Interface sounds</p>
@@ -243,7 +243,7 @@ export function SoundSettings() {
       </Card>
 
       {/* ── Node frequencies ──────────────────────────────────────────── */}
-      <Card className="p-4 bg-white/50 dark:bg-black/50 space-y-4">
+      <Card className="p-4 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-900 dark:text-white">Node frequencies</p>
@@ -394,7 +394,7 @@ export function SoundSettings() {
       </Card>
 
       {/* ── Your music ────────────────────────────────────────────────── */}
-      <Card className={cn('p-4 bg-white/50 dark:bg-black/50 space-y-3', !hasStreamingAccess && 'opacity-70')}>
+      <Card className={cn('p-4 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 space-y-3', !hasStreamingAccess && 'opacity-70')}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-2">
             <Music2 className="h-4 w-4 text-gray-500 dark:text-gray-400 mt-0.5 shrink-0" />
@@ -511,7 +511,7 @@ export function SoundSettings() {
         </p>
         <div className="space-y-2">
           {SOUND_PACKS.map((pack) => (
-            <Card key={pack.id} className="p-3 bg-white/50 dark:bg-black/50 opacity-70">
+            <Card key={pack.id} className="p-3 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 opacity-70">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-2 min-w-0">
                   <ShoppingBag className="h-4 w-4 text-gray-400 shrink-0 mt-0.5" />

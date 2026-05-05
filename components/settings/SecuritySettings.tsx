@@ -13,7 +13,7 @@ export function SecuritySettings() {
   }
 
   return (
-    <Card className="p-4 bg-white/50 dark:bg-black/50">
+    <Card className="p-4 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Mail className="h-4 w-4 text-gray-600 dark:text-gray-300" />

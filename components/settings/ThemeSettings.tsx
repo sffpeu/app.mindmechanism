@@ -87,7 +87,7 @@ export function ThemeSettings() {
   return (
     <div className="space-y-4">
       {/* ── Application Font ──────────────────────────────────────────── */}
-      <Card className="p-4 bg-white/50 dark:bg-black/50">
+      <Card className="p-4 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800">
         <p className="text-sm font-medium text-gray-900 dark:text-white mb-3">Application font</p>
         <div className="space-y-2">
           {APP_FONTS.map((font) => {
@@ -138,7 +138,7 @@ export function ThemeSettings() {
       </Card>
 
       {/* ── Color Scheme ──────────────────────────────────────────────── */}
-      <Card className="p-4 bg-white/50 dark:bg-black/50">
+      <Card className="p-4 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800">
         <p className="text-sm font-medium text-gray-900 dark:text-white mb-3">Color scheme</p>
         <RadioGroup
           value={themePreference}
@@ -179,7 +179,7 @@ export function ThemeSettings() {
               <Card
                 key={pack.id}
                 className={cn(
-                  'p-3 bg-white/50 dark:bg-black/50',
+                  'p-3 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800',
                   !pack.available && 'opacity-70'
                 )}
               >

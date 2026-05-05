@@ -80,7 +80,7 @@ export function WheelFacesSettings() {
   }
 
   return (
-    <Card className="p-4 bg-white/50 dark:bg-black/50">
+    <Card className="p-4 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800">
       <div className="space-y-1.5 mb-3">
         <Label className="text-sm text-gray-700 dark:text-gray-300">Wheel face overlays</Label>
         <p className="text-xs text-gray-500 dark:text-gray-400">

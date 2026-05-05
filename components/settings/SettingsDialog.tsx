@@ -67,14 +67,16 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
         className={cn(
           'max-w-[840px] w-[95vw] max-h-[min(90vh,820px)]',
           'gap-0 p-0 flex flex-col overflow-hidden',
-          'bg-white/92 dark:bg-black/92 backdrop-blur-lg'
+          'border border-neutral-200 bg-white text-neutral-900 shadow-2xl',
+          'dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100',
+          'backdrop-blur-xl'
         )}
       >
         <DialogTitle className="sr-only">Settings</DialogTitle>
 
         {/* ── Header ──────────────────────────────────────────────────── */}
-        <div className="flex shrink-0 items-center justify-between border-b border-gray-200 dark:border-gray-800 px-4 py-3">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Settings</h1>
+        <div className="flex shrink-0 items-center justify-between border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">
+          <h1 className="text-xl font-bold text-neutral-900 dark:text-neutral-50">Settings</h1>
           <button
             type="button"
             onClick={onClose}
@@ -85,7 +87,7 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
         </div>
 
         {/* ── Mobile tab strip ────────────────────────────────────────── */}
-        <div className="sm:hidden flex overflow-x-auto scrollbar-none border-b border-gray-200 dark:border-gray-800 shrink-0">
+        <div className="sm:hidden flex shrink-0 overflow-x-auto border-b border-neutral-200 bg-neutral-50 scrollbar-none dark:border-neutral-800 dark:bg-neutral-900">
           {TABS.map(({ id, label, Icon }) => (
             <button
               key={id}
@@ -108,7 +110,7 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
         <div className="flex flex-1 min-h-0">
           {/* Desktop sidebar nav */}
           <nav
-            className="hidden sm:flex flex-col w-44 shrink-0 border-r border-gray-200 dark:border-gray-800 p-2 gap-0.5"
+            className="hidden sm:flex w-44 shrink-0 flex-col gap-0.5 border-r border-neutral-200 bg-neutral-50 p-2 dark:border-neutral-800 dark:bg-neutral-900"
             aria-label="Settings navigation"
           >
             {TABS.map(({ id, label, Icon }) => (
@@ -131,7 +133,7 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
           </nav>
 
           {/* Content panel */}
-          <div className="flex-1 min-w-0 min-h-0 overflow-y-auto overscroll-contain p-4">
+          <div className="min-h-0 flex-1 min-w-0 overflow-y-auto overscroll-contain bg-white p-4 dark:bg-neutral-950">
             {activeTab === 'profile'    && <PersonalInfoSettings onChangesPending={setHasChanges} />}
             {activeTab === 'wheel'      && <WheelFacesSettings />}
             {activeTab === 'appearance' && <ThemeSettings />}
@@ -142,8 +144,8 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
         </div>
 
         {/* ── Footer ──────────────────────────────────────────────────── */}
-        <div className="flex shrink-0 items-center justify-between gap-2 border-t border-gray-200 dark:border-gray-800 px-4 py-3">
-          <span className="text-xs text-gray-400 dark:text-gray-500">
+        <div className="flex shrink-0 items-center justify-between gap-2 border-t border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">
+          <span className="text-xs text-neutral-500 dark:text-neutral-400">
             {showSaveFooter
               ? hasChanges ? 'You have unsaved changes' : ''
               : 'Changes apply immediately'}

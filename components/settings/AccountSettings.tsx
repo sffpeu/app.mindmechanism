@@ -24,7 +24,7 @@ export function AccountSettings() {
   return (
     <div className="space-y-4">
       {/* ── Membership ────────────────────────────────────────────────── */}
-      <Card className="p-4 bg-white/50 dark:bg-black/50 space-y-3">
+      <Card className="p-4 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 space-y-3">
         <p className="text-sm font-medium text-gray-900 dark:text-white">Membership</p>
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-500 dark:text-gray-400">Tier</span>
@@ -49,7 +49,7 @@ export function AccountSettings() {
       </Card>
 
       {/* ── Authentication ────────────────────────────────────────────── */}
-      <Card className="p-4 bg-white/50 dark:bg-black/50">
+      <Card className="p-4 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Mail className="h-4 w-4 text-gray-500 dark:text-gray-400" />

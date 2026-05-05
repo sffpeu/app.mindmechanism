@@ -272,7 +272,7 @@ export function PersonalInfoSettings({ onChangesPending }: PersonalInfoSettingsP
     (!pendingBannerRemove && profile?.bannerUrl?.trim() ? profile.bannerUrl.trim() : null)
 
   return (
-    <Card className="p-4 bg-white/50 dark:bg-black/50">
+    <Card className="p-4 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800">
       <div className="flex items-start gap-4">
         {/* Profile Image */}
         <div className="relative flex-shrink-0">
