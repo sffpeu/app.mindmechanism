@@ -217,7 +217,7 @@ export function CardTable() {
     setCards(prev => prev.map(c => c.nodeId === nodeId ? { ...c, x, y } : c))
   }, [])
 
-  const handleAnnotationChange = useCallback((nodeId: string, field: keyof Annotation, value: string | boolean | null) => {
+  const handleAnnotationChange = useCallback((nodeId: string, field: keyof Annotation, value: string | boolean | number | null) => {
     setAnnotations(prev => ({
       ...prev,
       [nodeId]: { ...EMPTY_ANNOTATION, ...(prev[nodeId] ?? {}), [field]: value },
@@ -987,7 +987,7 @@ function ExpandedView({
 }: {
   node: MandalaNode
   annotation: Annotation
-  onAnnotationChange: (field: keyof Annotation, value: string | null) => void
+  onAnnotationChange: (field: keyof Annotation, value: string | boolean | number | null) => void
   onClose: () => void
 }) {
   const wheelColor = WHEEL_COLORS[node.wheel]

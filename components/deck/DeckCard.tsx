@@ -9,7 +9,12 @@ export interface Annotation {
   notes: string
   imageUrl: string | null
   textIsLight: boolean
+  /** Legacy preset; used only when `textScalePercent` is unset. */
   textSize: 'sm' | 'md' | 'lg'
+  /** 70–160 = % of medium typography; finer control than `textSize` alone. */
+  textScalePercent?: number
+  /** When true, term and body copy use heavier weights on the card face. */
+  textBold?: boolean
   textColor: string | null
 }
 
@@ -24,7 +29,7 @@ interface DeckCardProps {
   onFlip: () => void
   onBringToFront: () => void
   onPositionChange: (x: number, y: number) => void
-  onAnnotationChange: (field: keyof Annotation, value: string | boolean | null) => void
+  onAnnotationChange: (field: keyof Annotation, value: string | boolean | number | null) => void
   onSendToGlossary: () => void
   onExpand: () => void
   customContent?: { term: string; definition: string; phonetic: string }
@@ -43,6 +48,26 @@ const SIZE_MAP = {
   lg: { term: 26, body: 13.5, phonetic: 11.5 },
 }
 
+function legacyScalePercent(textSize: Annotation['textSize']): number {
+  if (textSize === 'sm') return 85
+  if (textSize === 'lg') return 130
+  return 100
+}
+
+/** Continuous scale from slider (or legacy sm/md/lg when slider unset). */
+function resolveFontSizes(annotation: Annotation): { term: number; body: number; phonetic: number } {
+  const base = SIZE_MAP.md
+  let pct = annotation.textScalePercent
+  if (pct == null || Number.isNaN(Number(pct))) {
+    pct = legacyScalePercent(annotation.textSize ?? 'md')
+  }
+  const s = Math.min(160, Math.max(70, Number(pct))) / 100
+  return {
+    term: base.term * s,
+    body: base.body * s,
+    phonetic: base.phonetic * s,
+  }
+}
 
 function speakTerm(term: string) {
   if (typeof window === 'undefined' || !window.speechSynthesis) return
@@ -73,7 +98,12 @@ export function DeckCard({
   })
 
   const hasImage = !!annotation.imageUrl
-  const sz = SIZE_MAP[annotation.textSize ?? 'md']
+  const sz = resolveFontSizes(annotation)
+  const termWeight = annotation.textBold ? 800 : 500
+  const bodyWeight = annotation.textBold ? 600 : 400
+  const scalePercent = Math.round(
+    annotation.textScalePercent ?? legacyScalePercent(annotation.textSize ?? 'md'),
+  )
 
   // Resolve text colour: explicit override > light/dark toggle > default
   const resolveColor = (dark: string, light: string) => {
@@ -258,7 +288,7 @@ export function DeckCard({
 
             {/* Term */}
             <div style={{
-              fontSize: sz.term, fontWeight: 800, letterSpacing: '0.02em',
+              fontSize: sz.term, fontWeight: termWeight, letterSpacing: '0.02em',
               textTransform: 'uppercase', lineHeight: 1.1,
               color: resolveColor('#111', '#fff'), marginBottom: 4,
             }}>
@@ -269,7 +299,7 @@ export function DeckCard({
 
             {/* Phonetic */}
             <div style={{
-              fontSize: sz.phonetic, fontStyle: 'italic',
+              fontSize: sz.phonetic, fontStyle: 'italic', fontWeight: bodyWeight,
               color: resolveColor('#888', 'rgba(255,255,255,0.65)'),
               fontFamily: 'Georgia, serif', marginBottom: 4,
             }}>
@@ -280,7 +310,7 @@ export function DeckCard({
 
             {/* Definition */}
             <div style={{
-              fontSize: sz.body, lineHeight: 1.55,
+              fontSize: sz.body, lineHeight: 1.55, fontWeight: bodyWeight,
               flex: annotation.userDef ? 0 : 1,
               color: resolveColor('#444', 'rgba(255,255,255,0.88)'), marginBottom: 6,
             }}>
@@ -292,7 +322,7 @@ export function DeckCard({
             {/* User definition (taxonomy cards only) */}
             {!isBlank && annotation.userDef ? (
               <div style={{
-                fontSize: sz.body, lineHeight: 1.5, flex: 1,
+                fontSize: sz.body, lineHeight: 1.5, flex: 1, fontWeight: bodyWeight,
                 color: resolveColor('#777', 'rgba(255,255,255,0.62)'),
                 borderTop: `1px solid ${resolveColor('#ebebeb', 'rgba(255,255,255,0.18)')}`,
                 paddingTop: 5, fontStyle: 'italic',
@@ -473,53 +503,108 @@ export function DeckCard({
               </div>
             )}
 
-            {/* Text style: size + colour */}
+            {/* Text style: size slider, weight, colour */}
             <div>
               <label style={{ fontSize: 9, color: '#555', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: 5 }}>
                 Text style
               </label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                {(['sm', 'md', 'lg'] as const).map((size, i) => (
-                  <button
-                    key={size}
-                    onPointerDown={e => { e.stopPropagation(); onAnnotationChange('textSize', size) }}
-                    style={{
-                      width: 24, height: 20, borderRadius: 4,
-                      background: (annotation.textSize ?? 'md') === size ? '#363638' : '#252528',
-                      border: `1px solid ${(annotation.textSize ?? 'md') === size ? '#888' : '#363638'}`,
-                      cursor: 'pointer',
-                      color: (annotation.textSize ?? 'md') === size ? '#ddd' : '#555',
-                      fontSize: [9, 11, 14][i], fontWeight: 700,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      padding: 0,
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 8, color: '#555', width: 28, flexShrink: 0, letterSpacing: '0.06em' }}>Size</span>
+                  <input
+                    type="range"
+                    min={70}
+                    max={160}
+                    step={1}
+                    value={scalePercent}
+                    onPointerDown={stopProp}
+                    onChange={(e) => {
+                      e.stopPropagation()
+                      onAnnotationChange('textScalePercent', Number(e.target.value))
                     }}
-                  >
-                    A
-                  </button>
-                ))}
-                <div style={{ width: 1, height: 14, background: '#2a2a2e', margin: '0 1px', flexShrink: 0 }} />
-                {/* Auto — resets to theme default */}
-                <button
-                  onPointerDown={e => { e.stopPropagation(); onAnnotationChange('textColor', null) }}
-                  title="Reset to default colour"
-                  style={{
-                    width: 16, height: 16, borderRadius: '50%',
-                    background: 'conic-gradient(#111 0deg 180deg, #f0f0f0 180deg 360deg)',
-                    border: annotation.textColor === null ? '2px solid #aaa' : '1px solid rgba(255,255,255,0.12)',
-                    cursor: 'pointer', padding: 0, flexShrink: 0,
-                  }}
-                />
-                {/* Wheel colour */}
-                <button
-                  onPointerDown={e => { e.stopPropagation(); onAnnotationChange('textColor', wheelColor) }}
-                  title="Wheel colour"
-                  style={{
-                    width: 16, height: 16, borderRadius: '50%',
-                    background: wheelColor,
-                    border: annotation.textColor === wheelColor ? '2px solid #fff' : '1px solid rgba(255,255,255,0.12)',
-                    cursor: 'pointer', padding: 0, flexShrink: 0,
-                  }}
-                />
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      height: 6,
+                      accentColor: wheelColor,
+                    }}
+                  />
+                  <span style={{ fontSize: 9, color: '#888', width: 34, flexShrink: 0, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                    {scalePercent}%
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 8, color: '#555', width: 28, flexShrink: 0, letterSpacing: '0.06em' }}>Weight</span>
+                  <div style={{ display: 'flex', gap: 4, flex: 1 }}>
+                    <button
+                      type="button"
+                      onPointerDown={(e) => {
+                        e.stopPropagation()
+                        onAnnotationChange('textBold', false)
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: '4px 8px',
+                        borderRadius: 6,
+                        border: `1px solid ${!annotation.textBold ? '#888' : '#363638'}`,
+                        background: !annotation.textBold ? '#363638' : '#252528',
+                        color: !annotation.textBold ? '#eee' : '#666',
+                        fontSize: 10,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Regular
+                    </button>
+                    <button
+                      type="button"
+                      onPointerDown={(e) => {
+                        e.stopPropagation()
+                        onAnnotationChange('textBold', true)
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: '4px 8px',
+                        borderRadius: 6,
+                        border: `1px solid ${annotation.textBold ? '#888' : '#363638'}`,
+                        background: annotation.textBold ? '#363638' : '#252528',
+                        color: annotation.textBold ? '#eee' : '#666',
+                        fontSize: 10,
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Bold
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                <span style={{ fontSize: 8, color: '#555', width: 28, flexShrink: 0, letterSpacing: '0.06em' }}>Colour</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  {/* Auto — resets to theme default */}
+                  <button
+                    onPointerDown={e => { e.stopPropagation(); onAnnotationChange('textColor', null) }}
+                    title="Reset to default colour"
+                    style={{
+                      width: 16, height: 16, borderRadius: '50%',
+                      background: 'conic-gradient(#111 0deg 180deg, #f0f0f0 180deg 360deg)',
+                      border: annotation.textColor === null ? '2px solid #aaa' : '1px solid rgba(255,255,255,0.12)',
+                      cursor: 'pointer', padding: 0, flexShrink: 0,
+                    }}
+                  />
+                  {/* Wheel colour */}
+                  <button
+                    onPointerDown={e => { e.stopPropagation(); onAnnotationChange('textColor', wheelColor) }}
+                    title="Wheel colour"
+                    style={{
+                      width: 16, height: 16, borderRadius: '50%',
+                      background: wheelColor,
+                      border: annotation.textColor === wheelColor ? '2px solid #fff' : '1px solid rgba(255,255,255,0.12)',
+                      cursor: 'pointer', padding: 0, flexShrink: 0,
+                    }}
+                  />
+                </div>
               </div>
             </div>
 

@@ -21,6 +21,8 @@ export interface SavedSession {
     imageUrl: string | null
     textIsLight?: boolean
     textSize?: 'sm' | 'md' | 'lg'
+    textScalePercent?: number
+    textBold?: boolean
     textColor?: string | null
   }>
 }
