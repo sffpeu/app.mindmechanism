@@ -94,6 +94,34 @@ img[src$=".svg"] * {
   vector-effect: non-scaling-stroke;
 }
 
+/* Notes page — paper background styles for the write panel */
+[data-paper="ruled"] {
+  background-image: repeating-linear-gradient(
+    transparent 0px, transparent 27px,
+    hsl(0 0% 82%) 27px, hsl(0 0% 82%) 28px
+  );
+  background-size: 100% 28px;
+}
+.dark [data-paper="ruled"] {
+  background-image: repeating-linear-gradient(
+    transparent 0px, transparent 27px,
+    hsl(0 0% 22%) 27px, hsl(0 0% 22%) 28px
+  );
+  background-size: 100% 28px;
+}
+[data-paper="grid"] {
+  background-image:
+    linear-gradient(to right, hsl(0 0% 82%) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(0 0% 82%) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+.dark [data-paper="grid"] {
+  background-image:
+    linear-gradient(to right, hsl(0 0% 22%) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(0 0% 22%) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
 /* Hide scrollbars */
 .scrollbar-hide {
   -ms-overflow-style: none;  /* Internet Explorer 10+ */

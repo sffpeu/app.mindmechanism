@@ -42,6 +42,7 @@ import {
   RotateCcw,
   Type,
   Image as ImageIcon,
+  Smile,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -251,7 +252,7 @@ function persistNotesBgLocal(url: string | null) {
 }
 
 /** Bump when default positions or dock rules change — forces one-time re-apply from defaults */
-const PANEL_LAYOUT_REVISION = 2
+const PANEL_LAYOUT_REVISION = 3
 
 /** Viewport px reserved on the left so floating panels clear the vertical AppDock */
 const NOTES_DOCK_GUTTER = 104
@@ -292,16 +293,27 @@ function defaultPanelPositions(): { saved: { x: number; y: number }; editor: { x
 type NotesPanelKey = 'saved' | 'editor'
 
 type PanelLayout = {
-  saved: { x: number; y: number }
-  editor: { x: number; y: number }
+  saved: { x: number; y: number; w: number }
+  editor: { x: number; y: number; w: number }
   savedCollapsed: boolean
   editorCollapsed: boolean
 }
 
+type EditorBgStyle = 'plain' | 'ruled' | 'grid'
+
+const EMOJI_SECTIONS = [
+  { label: 'Smileys', emojis: ['😀','😊','😍','😂','🥰','😎','🤔','😢','🙏','😤','🤩','😌','😴','🫡','😶'] },
+  { label: 'Objects', emojis: ['✏️','📝','📚','💡','⭐','🔑','💎','🎯','🎨','📌','💻','🎵','🔍','💬','🏷️'] },
+  { label: 'Nature', emojis: ['🌿','🌸','🌙','☀️','🌊','🔥','⚡','🌈','🍃','🌺','❄️','🌱','🍀','🌻','🦋'] },
+  { label: 'Symbols', emojis: ['✅','❌','❤️','💔','💯','🔴','🟢','🔵','⭐','💫','✨','🚀','🎭','🌟','🏆'] },
+  { label: 'Hands', emojis: ['👋','👍','👎','👏','✌️','🤝','👌','🤞','💪','🖊️','🫶','🤜','☝️','🫂','🙌'] },
+]
+
 function defaultPanelLayout(): PanelLayout {
   const pos = defaultPanelPositions()
   return {
-    ...pos,
+    saved: { ...pos.saved, w: 352 },
+    editor: { ...pos.editor, w: 560 },
     savedCollapsed: false,
     editorCollapsed: false,
   }
@@ -310,10 +322,10 @@ function defaultPanelLayout(): PanelLayout {
 /** Same as `defaultPanelPositions` when `window` is undefined — used for `useState` so SSR and the first client render match (avoids hydration errors). */
 function staticPanelLayoutForHydration(): PanelLayout {
   const margin = 12
-  const savedW = 320
+  const savedW = 352
   return {
-    saved: { x: NOTES_DOCK_GUTTER, y: NOTES_FLOAT_TOP_MIN },
-    editor: { x: NOTES_DOCK_GUTTER + savedW + margin, y: NOTES_FLOAT_TOP_MIN },
+    saved: { x: NOTES_DOCK_GUTTER, y: NOTES_FLOAT_TOP_MIN, w: savedW },
+    editor: { x: NOTES_DOCK_GUTTER + savedW + margin, y: NOTES_FLOAT_TOP_MIN, w: 560 },
     savedCollapsed: false,
     editorCollapsed: false,
   }
@@ -323,7 +335,9 @@ function NotesFloatingPanel({
   id,
   position,
   zIndex,
-  widthClassName,
+  width,
+  minWidth = 260,
+  onResize,
   collapsed,
   onToggleCollapse,
   collapseLabelExpanded,
@@ -338,7 +352,9 @@ function NotesFloatingPanel({
   id: string
   position: { x: number; y: number }
   zIndex: number
-  widthClassName: string
+  width: number
+  minWidth?: number
+  onResize: (w: number) => void
   collapsed: boolean
   onToggleCollapse: () => void
   collapseLabelExpanded: string
@@ -352,10 +368,11 @@ function NotesFloatingPanel({
 }) {
   const rootRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null)
+  const resizeDragRef = useRef<{ startX: number; startW: number } | null>(null)
 
   const clampPosition = useCallback((x: number, y: number) => {
     const el = rootRef.current
-    const w = el?.offsetWidth ?? 360
+    const w = el?.offsetWidth ?? width
     const h = el?.offsetHeight ?? 420
     const margin = 8
     const minX = Math.max(margin, NOTES_DOCK_GUTTER)
@@ -368,7 +385,7 @@ function NotesFloatingPanel({
       x: Math.min(Math.max(x, minX), maxX),
       y: Math.min(Math.max(y, minY), maxY),
     }
-  }, [])
+  }, [width])
 
   const endDrag = useCallback((e: PointerEvent<HTMLDivElement>) => {
     if (!dragRef.current) return
@@ -401,14 +418,34 @@ function NotesFloatingPanel({
     onMove(next.x, next.y)
   }
 
+  const onResizePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    resizeDragRef.current = { startX: e.clientX, startW: width }
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }
+
+  const onResizePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!resizeDragRef.current) return
+    const dx = e.clientX - resizeDragRef.current.startX
+    const maxW = Math.max(minWidth, window.innerWidth - position.x - 16)
+    const newW = Math.round(Math.min(maxW, Math.max(minWidth, resizeDragRef.current.startW + dx)))
+    onResize(newW)
+  }
+
+  const onResizePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    resizeDragRef.current = null
+    try { e.currentTarget.releasePointerCapture(e.pointerId) } catch { /* released */ }
+  }
+
   return (
     <div
       ref={rootRef}
       id={id}
       role="region"
       aria-label={dragLabel}
-      className={cn('fixed', !collapsed && 'max-h-[min(85vh,880px)]', widthClassName)}
-      style={{ left: position.x, top: position.y, zIndex }}
+      className={cn('fixed', !collapsed && 'max-h-[min(85vh,880px)]')}
+      style={{ left: position.x, top: position.y, zIndex, width }}
       onMouseDown={onBringToFront}
       onPointerMove={onRootPointerMove}
       onPointerUp={endDrag}
@@ -466,6 +503,20 @@ function NotesFloatingPanel({
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</div>
         ) : null}
       </Card>
+      {/* Right-edge resize handle */}
+      <div
+        title="Drag to resize panel width"
+        className={cn(
+          'absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize rounded-r group z-10',
+          'touch-none select-none'
+        )}
+        onPointerDown={onResizePointerDown}
+        onPointerMove={onResizePointerMove}
+        onPointerUp={onResizePointerUp}
+        onPointerCancel={onResizePointerUp}
+      >
+        <div className="absolute inset-y-[20%] right-0 w-0.5 rounded-full bg-transparent group-hover:bg-blue-400/50 transition-colors duration-150" />
+      </div>
     </div>
   )
 }
@@ -493,7 +544,11 @@ export default function NotesPage() {
   const [frontPanel, setFrontPanel] = useState<NotesPanelKey>('editor')
   const [notesFontPx, setNotesFontPx] = useState(16)
   const [notesTextColor, setNotesTextColor] = useState<string | null>(null)
+  const [editorBgStyle, setEditorBgStyle] = useState<EditorBgStyle>('plain')
+  const [emojiPickerOpen, setEmojiPickerOpen] = useState<'title' | 'body' | null>(null)
   const panelsHydratedRef = useRef(false)
+  const titleInputRef = useRef<HTMLInputElement>(null)
+  const bodyTextareaRef = useRef<HTMLTextAreaElement>(null)
 
   // Voice input state
   const [isListening, setIsListening] = useState(false)
@@ -562,8 +617,8 @@ export default function NotesPage() {
       } else {
         const p = JSON.parse(raw) as {
           revision?: number
-          saved?: { x: number; y: number }
-          editor?: { x: number; y: number }
+          saved?: { x: number; y: number; w?: number }
+          editor?: { x: number; y: number; w?: number }
           savedCollapsed?: boolean
           editorCollapsed?: boolean
         }
@@ -583,8 +638,8 @@ export default function NotesPage() {
             p.saved && typeof p.saved.x === 'number' && typeof p.saved.y === 'number' ? p.saved : defs.saved
           const posEditorRaw =
             p.editor && typeof p.editor.x === 'number' && typeof p.editor.y === 'number' ? p.editor : defs.editor
-          const posSaved = { ...posSavedRaw, y: clampPanelY(posSavedRaw.y) }
-          const posEditor = { ...posEditorRaw, y: clampPanelY(posEditorRaw.y) }
+          const posSaved = { ...posSavedRaw, y: clampPanelY(posSavedRaw.y), w: Math.max(260, posSavedRaw.w ?? defs.saved.w) }
+          const posEditor = { ...posEditorRaw, y: clampPanelY(posEditorRaw.y), w: Math.max(320, posEditorRaw.w ?? defs.editor.w) }
           const overlapsDock = (pt: { x: number }) => pt.x < NOTES_DOCK_GUTTER
           const useDefaultPositions = overlapsDock(posSaved) || overlapsDock(posEditor)
           setPanelLayout({
@@ -597,12 +652,15 @@ export default function NotesPage() {
       }
       const a11y = localStorage.getItem(LS_NOTES_A11Y)
       if (a11y) {
-        const j = JSON.parse(a11y) as { fontPx?: number; color?: string | null }
+        const j = JSON.parse(a11y) as { fontPx?: number; color?: string | null; editorBg?: string }
         if (typeof j.fontPx === 'number' && j.fontPx >= 12 && j.fontPx <= 32) {
           setNotesFontPx(j.fontPx)
         }
         if (j.color === null || typeof j.color === 'string') {
           setNotesTextColor(j.color ?? null)
+        }
+        if (j.editorBg === 'ruled' || j.editorBg === 'grid') {
+          setEditorBgStyle(j.editorBg)
         }
       }
     } catch {
@@ -629,12 +687,12 @@ export default function NotesPage() {
     try {
       localStorage.setItem(
         LS_NOTES_A11Y,
-        JSON.stringify({ fontPx: notesFontPx, color: notesTextColor })
+        JSON.stringify({ fontPx: notesFontPx, color: notesTextColor, editorBg: editorBgStyle })
       )
     } catch {
       /* ignore */
     }
-  }, [notesFontPx, notesTextColor])
+  }, [notesFontPx, notesTextColor, editorBgStyle])
 
   const noteTypographyStyle: CSSProperties = {
     fontSize: notesFontPx,
@@ -949,6 +1007,33 @@ export default function NotesPage() {
     setVoiceTarget(target)
   }
 
+  const insertEmoji = (emoji: string, target: 'title' | 'body') => {
+    setEmojiPickerOpen(null)
+    if (target === 'title') {
+      const input = titleInputRef.current
+      if (input) {
+        const start = input.selectionStart ?? noteTitle.length
+        const end = input.selectionEnd ?? noteTitle.length
+        const next = noteTitle.slice(0, start) + emoji + noteTitle.slice(end)
+        setNoteTitle(next)
+        setTimeout(() => { input.focus(); input.setSelectionRange(start + emoji.length, start + emoji.length) }, 0)
+      } else {
+        setNoteTitle((p) => p + emoji)
+      }
+    } else {
+      const ta = bodyTextareaRef.current
+      if (ta) {
+        const start = ta.selectionStart ?? noteContent.length
+        const end = ta.selectionEnd ?? noteContent.length
+        const next = noteContent.slice(0, start) + emoji + noteContent.slice(end)
+        setNoteContent(next)
+        setTimeout(() => { ta.focus(); ta.setSelectionRange(start + emoji.length, start + emoji.length) }, 0)
+      } else {
+        setNoteContent((p) => p + emoji)
+      }
+    }
+  }
+
   const formatDate = (timestamp: any) => {
     if (!timestamp) return ''
     const date = timestamp.toDate()
@@ -1225,13 +1310,33 @@ export default function NotesPage() {
                       </Button>
                     </div>
                     <div className="border-t border-black/10 pt-2 dark:border-white/10">
+                      <p className="mb-1.5 text-xs font-medium text-gray-600 dark:text-gray-300">Write area background</p>
+                      <div className="flex gap-1.5">
+                        {(['plain', 'ruled', 'grid'] as const).map((style) => (
+                          <button
+                            key={style}
+                            type="button"
+                            onClick={() => setEditorBgStyle(style)}
+                            className={cn(
+                              'flex-1 rounded-md border py-1.5 text-xs font-medium capitalize transition-colors',
+                              editorBgStyle === style
+                                ? 'border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-400/70 dark:bg-blue-950/40 dark:text-blue-300'
+                                : 'border-black/10 bg-transparent text-gray-600 hover:bg-gray-100 dark:border-white/15 dark:text-gray-400 dark:hover:bg-white/10'
+                            )}
+                          >
+                            {style === 'plain' ? '— Plain' : style === 'ruled' ? '≡ Ruled' : '⊞ Grid'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="border-t border-black/10 pt-2 dark:border-white/10">
                       <p className="mb-2 text-xs font-medium text-gray-600 dark:text-gray-300">Panels</p>
                       <Button type="button" variant="outline" size="sm" className="h-8 w-full gap-1.5 text-xs" onClick={resetPanelLayout}>
                         <RotateCcw className="h-3.5 w-3.5" />
                         Reset positions and expand
                       </Button>
                       <p className="mt-2 text-[11px] leading-snug text-gray-500 dark:text-gray-400">
-                        Saved on this device. Drag by the grip; chevron collapses the panel.
+                        Saved on this device. Drag by the grip; drag right edge to resize; chevron collapses.
                       </p>
                     </div>
                   </PopoverContent>
@@ -1295,7 +1400,9 @@ export default function NotesPage() {
                 id="notes-saved-list-panel"
                 position={panelLayout.saved}
                 zIndex={zSaved}
-                widthClassName="w-[min(calc(100vw-2rem),22rem)]"
+                width={panelLayout.saved.w}
+                minWidth={240}
+                onResize={(w) => setPanelLayout((prev) => ({ ...prev, saved: { ...prev.saved, w } }))}
                 collapsed={panelLayout.savedCollapsed}
                 onToggleCollapse={() =>
                   setPanelLayout((prev) => ({
@@ -1308,7 +1415,7 @@ export default function NotesPage() {
                 onMove={(x, y) =>
                   setPanelLayout((prev) => ({
                     ...prev,
-                    saved: { x, y },
+                    saved: { ...prev.saved, x, y },
                   }))
                 }
                 onBringToFront={() => setFrontPanel('saved')}
@@ -1442,7 +1549,9 @@ export default function NotesPage() {
               id="notes-editor-panel"
               position={panelLayout.editor}
               zIndex={zEditor}
-              widthClassName="w-[min(calc(100vw-2rem),40rem)]"
+              width={panelLayout.editor.w}
+              minWidth={320}
+              onResize={(w) => setPanelLayout((prev) => ({ ...prev, editor: { ...prev.editor, w } }))}
               collapsed={panelLayout.editorCollapsed}
               onToggleCollapse={() =>
                 setPanelLayout((prev) => ({
@@ -1455,7 +1564,7 @@ export default function NotesPage() {
               onMove={(x, y) =>
                 setPanelLayout((prev) => ({
                   ...prev,
-                  editor: { x, y },
+                  editor: { ...prev.editor, x, y },
                 }))
               }
               onBringToFront={() => setFrontPanel('editor')}
@@ -1795,26 +1904,67 @@ export default function NotesPage() {
                 </div>
               )}
 
-              <div className="space-y-3">
+              <div
+                className="space-y-3"
+                style={notesTextColor != null ? { color: notesTextColor } : undefined}
+              >
                 {(!selectedNote || isEditing) && (
                   <>
                     {/* Title */}
                     <div className="space-y-1.5">
-                      <label htmlFor="note-title" className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                        Title
+                      <label
+                        htmlFor="note-title"
+                        className="text-xs font-medium"
+                        style={notesTextColor != null ? { color: notesTextColor } : { color: undefined }}
+                      >
+                        <span className={notesTextColor == null ? 'text-gray-700 dark:text-gray-300' : ''}>Title</span>
                       </label>
                       <div className="flex gap-2">
                         <Input
                           id="note-title"
+                          ref={titleInputRef}
                           placeholder="Give your note a short title"
                           value={noteTitle}
                           onChange={(e) => setNoteTitle(e.target.value)}
-                          style={noteTypographyStyle}
+                          style={{ fontSize: notesFontPx, ...(notesTextColor != null ? { color: notesTextColor } : {}) }}
                           className={cn(
                             'flex-1 bg-white dark:bg-black/40',
                             notesTextColor == null && 'text-gray-900 dark:text-gray-100'
                           )}
                         />
+                        {/* Emoji picker for title */}
+                        <Popover open={emojiPickerOpen === 'title'} onOpenChange={(open) => setEmojiPickerOpen(open ? 'title' : null)}>
+                          <PopoverTrigger asChild>
+                            <button
+                              type="button"
+                              title="Insert emoji into title"
+                              className="flex items-center justify-center w-10 h-10 rounded-lg border-2 shrink-0 transition-all border-black/10 dark:border-white/15 bg-white dark:bg-black/40 text-gray-400 dark:text-gray-500 hover:text-yellow-500 dark:hover:text-yellow-400"
+                            >
+                              <Smile className="h-4 w-4" />
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="z-[14000] w-72 p-2" align="end" sideOffset={4}>
+                            <div className="space-y-2">
+                              {EMOJI_SECTIONS.map((section) => (
+                                <div key={section.label}>
+                                  <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">{section.label}</p>
+                                  <div className="flex flex-wrap gap-0.5">
+                                    {section.emojis.map((emoji) => (
+                                      <button
+                                        key={emoji}
+                                        type="button"
+                                        onClick={() => insertEmoji(emoji, 'title')}
+                                        className="flex h-8 w-8 items-center justify-center rounded text-base hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                                      >
+                                        {emoji}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                         <button
                           type="button"
                           onClick={() => toggleVoice('title')}
@@ -1840,46 +1990,94 @@ export default function NotesPage() {
                       </div>
                     </div>
 
-                    {/* Body + voice button */}
+                    {/* Body + voice + emoji buttons */}
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <label htmlFor="note-body" className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                        <label htmlFor="note-body" className={cn('text-xs font-medium', notesTextColor == null && 'text-gray-700 dark:text-gray-300')}>
                           Note
                         </label>
-                        <button
-                          type="button"
-                          onClick={() => toggleVoice('body')}
-                          title={isListening && voiceTarget === 'body' ? 'Stop recording' : 'Dictate note'}
-                          className={cn(
-                            'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-medium transition-all',
-                            isListening && voiceTarget === 'body'
-                              ? 'border-transparent animate-pulse text-white'
-                              : 'border-black/10 dark:border-white/15 bg-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10'
-                          )}
-                          style={
-                            isListening && voiceTarget === 'body'
-                              ? { backgroundColor: voiceAccentColor }
-                              : {}
-                          }
-                        >
-                          {isListening && voiceTarget === 'body' ? (
-                            <><MicOff className="h-3.5 w-3.5" /><span>Stop</span></>
-                          ) : (
-                            <><Mic className="h-3.5 w-3.5" /><span>Voice</span></>
-                          )}
-                        </button>
+                        <div className="flex items-center gap-1">
+                          {/* Emoji picker for body */}
+                          <Popover open={emojiPickerOpen === 'body'} onOpenChange={(open) => setEmojiPickerOpen(open ? 'body' : null)}>
+                            <PopoverTrigger asChild>
+                              <button
+                                type="button"
+                                title="Insert emoji into note"
+                                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg border text-xs font-medium transition-all border-black/10 dark:border-white/15 bg-transparent text-gray-400 dark:text-gray-500 hover:text-yellow-500 dark:hover:text-yellow-400 hover:bg-gray-100 dark:hover:bg-white/10"
+                              >
+                                <Smile className="h-3.5 w-3.5" />
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="z-[14000] w-72 p-2" align="end" sideOffset={4}>
+                              <div className="space-y-2">
+                                {EMOJI_SECTIONS.map((section) => (
+                                  <div key={section.label}>
+                                    <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">{section.label}</p>
+                                    <div className="flex flex-wrap gap-0.5">
+                                      {section.emojis.map((emoji) => (
+                                        <button
+                                          key={emoji}
+                                          type="button"
+                                          onClick={() => insertEmoji(emoji, 'body')}
+                                          className="flex h-8 w-8 items-center justify-center rounded text-base hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                                        >
+                                          {emoji}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                          <button
+                            type="button"
+                            onClick={() => toggleVoice('body')}
+                            title={isListening && voiceTarget === 'body' ? 'Stop recording' : 'Dictate note'}
+                            className={cn(
+                              'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-medium transition-all',
+                              isListening && voiceTarget === 'body'
+                                ? 'border-transparent animate-pulse text-white'
+                                : 'border-black/10 dark:border-white/15 bg-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10'
+                            )}
+                            style={
+                              isListening && voiceTarget === 'body'
+                                ? { backgroundColor: voiceAccentColor }
+                                : {}
+                            }
+                          >
+                            {isListening && voiceTarget === 'body' ? (
+                              <><MicOff className="h-3.5 w-3.5" /><span>Stop</span></>
+                            ) : (
+                              <><Mic className="h-3.5 w-3.5" /><span>Voice</span></>
+                            )}
+                          </button>
+                        </div>
                       </div>
-                      <Textarea
-                        id="note-body"
-                        placeholder="Write freely—everything saves to your account."
-                        value={noteContent}
-                        onChange={(e) => setNoteContent(e.target.value)}
-                        style={noteTypographyStyle}
-                        className={cn(
-                          'min-h-[280px] resize-y bg-white sm:min-h-[360px] md:min-h-[420px] dark:bg-black/40',
-                          notesTextColor == null && 'text-gray-900 dark:text-gray-100'
-                        )}
-                      />
+                      {/* Paper background wrapper */}
+                      <div
+                        className="relative rounded-lg overflow-hidden"
+                        data-paper={editorBgStyle !== 'plain' ? editorBgStyle : undefined}
+                      >
+                        <Textarea
+                          id="note-body"
+                          ref={bodyTextareaRef}
+                          placeholder="Write freely—everything saves to your account."
+                          value={noteContent}
+                          onChange={(e) => setNoteContent(e.target.value)}
+                          style={{
+                            fontSize: notesFontPx,
+                            ...(notesTextColor != null ? { color: notesTextColor } : {}),
+                            ...(editorBgStyle === 'ruled' ? { lineHeight: '28px', paddingTop: '6px' } : {}),
+                            ...(editorBgStyle !== 'plain' ? { background: 'transparent' } : {}),
+                          }}
+                          className={cn(
+                            'min-h-[280px] resize-y sm:min-h-[360px] md:min-h-[420px]',
+                            editorBgStyle === 'plain' && 'bg-white dark:bg-black/40',
+                            notesTextColor == null && 'text-gray-900 dark:text-gray-100'
+                          )}
+                        />
+                      </div>
                       {isListening && voiceTarget === 'body' && (
                         <p
                           className="text-xs italic px-1 min-h-[1.25rem] transition-colors"
