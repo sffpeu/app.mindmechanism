@@ -121,17 +121,70 @@ export function CardTable() {
     return () => { mounted = false }
   }, [user])
 
+  const AUTO_SAVE_KEY = 'mm-deck-autosave'
+
+  // On mount: restore auto-saved table state, or fall back to a fresh scatter
   useEffect(() => {
     const el = tableRef.current
     if (!el) return
     const { clientWidth: w, clientHeight: h } = el
     if (w === 0 || h === 0) return
+
+    try {
+      const raw = localStorage.getItem(AUTO_SAVE_KEY)
+      if (raw) {
+        const snap = JSON.parse(raw)
+        if (Array.isArray(snap.cards) && snap.cards.length > 0) {
+          const normAnnotations: Record<string, Annotation> = {}
+          for (const [k, v] of Object.entries(snap.annotations ?? {})) {
+            normAnnotations[k] = { ...EMPTY_ANNOTATION, ...(v as Partial<Annotation>) }
+          }
+          setCards(snap.cards)
+          setAnnotations(normAnnotations)
+          setTableBackground(snap.tableBackground ?? null)
+          setCurrentSessionName(snap.currentSessionName ?? 'Default Draw')
+          setRemainingDeck(snap.remainingDeck ?? [])
+          return
+        }
+      }
+    } catch {
+      // Corrupted snapshot — fall through to default scatter
+    }
+
     const shuffled = [...MANDALA_NODES].sort(() => Math.random() - 0.5)
     const drawn = shuffled.slice(0, DEFAULT_DRAW_SIZE).map(n => n.id)
     const remaining = shuffled.slice(DEFAULT_DRAW_SIZE).map(n => n.id)
     setCards(makeScattered(drawn, w, h))
     setRemainingDeck(remaining)
   }, [])
+
+  // Auto-save all table state to localStorage whenever anything changes (debounced 800ms).
+  // Data URLs (in-flight uploads) are not persisted — only Firebase CDN URLs survive.
+  useEffect(() => {
+    if (cards.length === 0) return
+    const timer = setTimeout(() => {
+      const normAnnotations: Record<string, Annotation> = {}
+      for (const [k, v] of Object.entries(annotations)) {
+        normAnnotations[k] = {
+          ...v,
+          imageUrl: v.imageUrl?.startsWith('https://') ? v.imageUrl : null,
+        }
+      }
+      const snapshot = {
+        cards,
+        annotations: normAnnotations,
+        tableBackground: tableBackground?.startsWith('https://') ? tableBackground : null,
+        currentSessionName,
+        remainingDeck,
+      }
+      try {
+        localStorage.setItem(AUTO_SAVE_KEY, JSON.stringify(snapshot))
+      } catch {
+        // Quota exceeded — silent fail
+      }
+    }, 800)
+    return () => clearTimeout(timer)
+  }, [cards, annotations, tableBackground, currentSessionName, remainingDeck])
 
   const showToast = useCallback((msg: string) => {
     setToast(msg)
