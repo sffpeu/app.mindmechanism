@@ -80,6 +80,10 @@ async function uploadToStorage(dataUrl: string, uid: string, label: string): Pro
 
 const EMPTY_ANNOTATION: Annotation = { userDef: '', notes: '', imageUrl: null, textIsLight: false, textSize: 'md', textColor: null }
 
+/** Left-edge stripe colours — glossary / notes wheel family (thin accent bar on dark chrome). */
+const DECK_CHROME_HELP_HEX = '#fd290a'
+const DECK_CHROME_SESSION_HEX = '#eab308'
+
 export function CardTable() {
   const { user } = useAuth()
   const tableRef = useRef<HTMLDivElement>(null)
@@ -520,7 +524,7 @@ export function CardTable() {
         </div>
       </div>
 
-      {/* Help button — top right (high-contrast red so it reads on any table bg) */}
+      {/* Help — glossary-style strip + frosted chrome (wheel red accent) */}
       <button
         type="button"
         aria-label="Open deck help"
@@ -531,20 +535,24 @@ export function CardTable() {
           top: 20,
           right: 24,
           zIndex: 9999,
-          width: 44,
+          minWidth: 44,
           height: 44,
-          borderRadius: '50%',
-          background: 'linear-gradient(165deg, #f87171 0%, #b91c1c 100%)',
-          border: '2px solid rgba(254, 242, 242, 0.95)',
-          color: '#fff',
-          fontSize: 18,
+          padding: '0 14px',
+          borderRadius: 10,
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderLeftWidth: 3,
+          borderLeftStyle: 'solid',
+          borderLeftColor: DECK_CHROME_HELP_HEX,
+          backgroundColor: `${DECK_CHROME_HELP_HEX}14`,
+          backdropFilter: 'blur(14px)',
+          WebkitBackdropFilter: 'blur(14px)',
+          color: 'rgba(255,255,255,0.92)',
+          fontSize: 17,
           fontWeight: 700,
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow:
-            '0 0 18px rgba(239, 68, 68, 0.75), 0 0 36px rgba(239, 68, 68, 0.4), inset 0 1px 0 rgba(255,255,255,0.35)',
         }}
       >
         ?
@@ -613,31 +621,32 @@ export function CardTable() {
           </div>
         )}
 
-        {/* Toggle — gold beacon so session tools stay discoverable on busy backgrounds */}
+        {/* Session tools toggle — gold accent strip (matches glossary-style chrome) */}
         <button
           type="button"
           aria-label={showControls ? 'Close session tools' : 'Open session tools'}
           title={showControls ? 'Close' : 'Session tools'}
           onClick={() => setShowControls(v => !v)}
           style={{
-            width: 44,
+            minWidth: 44,
             height: 44,
-            borderRadius: '50%',
-            background: showControls
-              ? 'linear-gradient(165deg, #fde047 0%, #ca8a04 100%)'
-              : 'linear-gradient(165deg, #fcd34d 0%, #d97706 100%)',
-            border: '2px solid rgba(254, 249, 195, 0.95)',
-            color: '#422006',
-            fontSize: showControls ? 22 : 20,
+            padding: '0 12px',
+            borderRadius: 10,
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderLeftWidth: 3,
+            borderLeftStyle: 'solid',
+            borderLeftColor: DECK_CHROME_SESSION_HEX,
+            backgroundColor: showControls ? `${DECK_CHROME_SESSION_HEX}22` : `${DECK_CHROME_SESSION_HEX}14`,
+            backdropFilter: 'blur(14px)',
+            WebkitBackdropFilter: 'blur(14px)',
+            color: 'rgba(255,255,255,0.9)',
+            fontSize: showControls ? 20 : 18,
             fontWeight: 700,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            transition: 'all 0.18s',
-            boxShadow: showControls
-              ? '0 0 18px rgba(234, 179, 8, 0.65), 0 0 34px rgba(245, 158, 11, 0.35), inset 0 1px 0 rgba(255,255,255,0.45)'
-              : '0 0 16px rgba(251, 191, 36, 0.7), 0 0 32px rgba(245, 158, 11, 0.38), inset 0 1px 0 rgba(255,255,255,0.45)',
+            transition: 'background-color 0.18s ease',
           }}
         >
           {showControls ? '×' : '⋯'}
