@@ -95,6 +95,30 @@ function sectorAnnulusPath(sectorStart: number, sectorSpan: number, innerR: numb
 /** Pixels beyond the sector annulus outer edge where word nodes sit (labels sit further via radial offset). */
 const LEAF_OUTSET = 118
 
+/**
+ * Wheel zoom focal in SVG root space. If the pointer sits in the hub (near layout origin),
+ * snap the focal point outward onto the word ring so zoom targets vocabulary instead of the empty center.
+ */
+function wheelZoomFocalSvg(
+  mx: number,
+  my: number,
+  tx: number,
+  ty: number,
+  k: number,
+  leafRadius: number
+): { fx: number; fy: number } {
+  const dx = mx - tx
+  const dy = my - ty
+  const dist = Math.hypot(dx, dy)
+  const ringScreen = k * leafRadius * 0.93
+  /** Inside this radius (screen), treat as “over hub” and pull focal to the rim. */
+  const hubRadius = k * leafRadius * 0.4
+  if (dist >= hubRadius) return { fx: mx, fy: my }
+  if (dist < 1e-6) return { fx: tx + ringScreen, fy: ty }
+  const scale = ringScreen / dist
+  return { fx: tx + dx * scale, fy: ty + dy * scale }
+}
+
 type BuildLayoutOptions = {
   /** All-view overview: no word leaves or hub→word links, only hubs + root links. */
   omitWordLeaves?: boolean
@@ -439,15 +463,25 @@ export function GlossaryRadialTree({
     if (!svg) return
     const onWheelNative = (e: WheelEvent) => {
       e.preventDefault()
+      const ctm = svg.getScreenCTM()
+      if (!ctm) return
+      const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse())
       const factor = e.deltaY > 0 ? 0.92 : 1.08
       setTransform(t => {
         const nk = Math.min(6, Math.max(0.08, t.k * factor))
-        return { ...t, k: nk }
+        if (Math.abs(nk - t.k) < 1e-12) return t
+        const { fx, fy } = wheelZoomFocalSvg(p.x, p.y, t.tx, t.ty, t.k, leafRadius)
+        const ratio = nk / t.k
+        return {
+          k: nk,
+          tx: fx - ratio * (fx - t.tx),
+          ty: fy - ratio * (fy - t.ty),
+        }
       })
     }
     svg.addEventListener('wheel', onWheelNative, { passive: false })
     return () => svg.removeEventListener('wheel', onWheelNative)
-  }, [])
+  }, [leafRadius])
 
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     if (e.button !== 0) return
@@ -543,7 +577,7 @@ export function GlossaryRadialTree({
     >
       {!isFullscreen && (
         <p className="absolute top-2 left-2 z-10 text-xs text-gray-500 dark:text-gray-400 pointer-events-none select-none max-w-[min(100%,260px)]">
-          Hover a wedge to focus · scroll zoom · drag pan
+          Hover a wedge to focus · scroll zooms toward pointer (rim when over hub) · drag pan
           {scopeFilter === 'All' && allViewOverview && (
             <span className="block mt-0.5">
               All: click a wedge for words · click the same wedge again to return to overview
