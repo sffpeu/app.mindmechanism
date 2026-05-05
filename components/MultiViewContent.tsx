@@ -236,13 +236,13 @@ export function MultiViewContent({ type }: MultiViewContentProps) {
           </>
         )}
         {isMultiView2 && (
-            /* Heading bottom-left, colour toggle bottom-right — same row; inset right clears dot dock */
+            /* Heading bottom-left, colour toggle bottom-right — tight right inset still clears dot dock */
             <div
               style={{
                 position: 'absolute',
                 bottom: 16,
                 left: 16,
-                right: 56,
+                right: 32,
                 zIndex: 9999,
                 display: 'flex',
                 flexDirection: 'row',
