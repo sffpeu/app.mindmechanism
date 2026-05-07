@@ -15,6 +15,7 @@ function patternSvg(
   lineColor: string,
   fillColor: string
 ): string {
+  if (patternId < 0) return 'none'
   const id = clampPatternId(patternId)
 
   const body = (() => {
@@ -52,6 +53,7 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
     universalBgColor,
     universalPatternId,
     universalPatternSize,
+    universalBackgroundIntensity,
     universalPatternLineColor,
     universalPatternFillColor,
     universalTextScaleEnabled,
@@ -113,6 +115,7 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
     root.style.setProperty('--mm-universal-bg-size', sizes.join(', '))
     root.style.setProperty('--mm-universal-bg-repeat', repeats.join(', '))
     root.style.setProperty('--mm-universal-bg-position', positions.join(', '))
+    root.style.setProperty('--mm-universal-bg-intensity', String(Math.max(0, Math.min(100, universalBackgroundIntensity)) / 100))
     root.style.setProperty(
       '--mm-universal-text-scale',
       shouldApply && universalTextScaleEnabled ? String(universalTextScale) : '1'
@@ -130,6 +133,7 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
     universalBgColor,
     universalPatternId,
     universalPatternSize,
+    universalBackgroundIntensity,
     universalPatternLineColor,
     universalPatternFillColor,
     universalTextScaleEnabled,

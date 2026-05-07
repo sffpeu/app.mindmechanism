@@ -76,15 +76,16 @@ const UNIVERSAL_PALETTE = [
   '#C4B5FD', '#DCFCE7', '#FEF3C7', '#FDE68A',
 ]
 
-const PATTERN_OPTIONS = [
-  'Crosshair',
-  'Diagonal Cross',
-  'Dot Matrix',
-  'Horizontal Lines',
-  'Vertical Lines',
-  'Checker',
-  'Wave',
-  'Diamond',
+const PATTERN_OPTIONS: { id: number; name: string }[] = [
+  { id: -1, name: 'None (solid color)' },
+  { id: 0, name: 'Crosshair' },
+  { id: 1, name: 'Diagonal Cross' },
+  { id: 2, name: 'Dot Matrix' },
+  { id: 3, name: 'Horizontal Lines' },
+  { id: 4, name: 'Vertical Lines' },
+  { id: 5, name: 'Checker' },
+  { id: 6, name: 'Wave' },
+  { id: 7, name: 'Diamond' },
 ]
 
 export function ThemeSettings({ section = 'all' }: { section?: 'all' | 'appearance' | 'accessibility' }) {
@@ -101,6 +102,8 @@ export function ThemeSettings({ section = 'all' }: { section?: 'all' | 'appearan
     setUniversalPatternId,
     universalPatternSize,
     setUniversalPatternSize,
+    universalBackgroundIntensity,
+    setUniversalBackgroundIntensity,
     universalPatternLineColor,
     setUniversalPatternLineColor,
     universalPatternFillColor,
@@ -136,6 +139,7 @@ export function ThemeSettings({ section = 'all' }: { section?: 'all' | 'appearan
       setUniversalBgColor('#1F2937')
       setUniversalPatternId(3)
       setUniversalPatternSize(32)
+      setUniversalBackgroundIntensity(70)
       setUniversalPatternLineColor('#F9FAFB')
       setUniversalPatternFillColor('#111827')
       setUniversalTextScaleEnabled(true)
@@ -146,6 +150,7 @@ export function ThemeSettings({ section = 'all' }: { section?: 'all' | 'appearan
     setUniversalBgColor('#111827')
     setUniversalPatternId(0)
     setUniversalPatternSize(24)
+    setUniversalBackgroundIntensity(70)
     setUniversalPatternLineColor('#93C5FD')
     setUniversalPatternFillColor('#0F172A')
     setUniversalTextScaleEnabled(true)
@@ -195,6 +200,103 @@ export function ThemeSettings({ section = 'all' }: { section?: 'all' | 'appearan
     <div className="space-y-4">
       {showAppearance && (
       <>
+      {/* ── Universal Background ─────────────────────────────────────── */}
+      <Card className="p-4 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 space-y-4">
+        <div>
+          <p className="text-sm font-medium text-gray-900 dark:text-white">Universal background</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            Applies across the app for all users.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Background color (16-shade palette)</p>
+          <div className="grid grid-cols-8 gap-2">
+            {UNIVERSAL_PALETTE.map((color) => (
+              <button
+                key={color}
+                type="button"
+                onClick={() => setUniversalBgColor(color)}
+                className={cn(
+                  'h-7 w-full rounded border transition-all',
+                  universalBgColor.toLowerCase() === color.toLowerCase()
+                    ? 'border-violet-500 ring-2 ring-violet-400/40'
+                    : 'border-black/15 dark:border-white/20'
+                )}
+                style={{ backgroundColor: color }}
+                aria-label={`Set universal background color ${color}`}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Pattern variation</Label>
+          <select
+            value={universalPatternId}
+            onChange={(e) => setUniversalPatternId(Number(e.target.value))}
+            className="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-black/20 px-2.5 py-2 text-sm"
+          >
+            {PATTERN_OPTIONS.map((pattern) => (
+              <option key={pattern.id} value={pattern.id}>
+                {pattern.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            Pattern tile size ({universalPatternSize}px)
+          </Label>
+          <input
+            type="range"
+            min={12}
+            max={96}
+            step={1}
+            value={universalPatternSize}
+            onChange={(e) => setUniversalPatternSize(Number(e.target.value))}
+            className="w-full"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            Background intensity ({universalBackgroundIntensity}%)
+          </Label>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={1}
+            value={universalBackgroundIntensity}
+            onChange={(e) => setUniversalBackgroundIntensity(Number(e.target.value))}
+            className="w-full"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <label className="space-y-1">
+            <span className="text-xs text-gray-500 dark:text-gray-400">Line color</span>
+            <input
+              type="color"
+              value={universalPatternLineColor}
+              onChange={(e) => setUniversalPatternLineColor(e.target.value)}
+              className="h-9 w-full rounded border border-gray-200 dark:border-gray-700 bg-transparent p-1"
+            />
+          </label>
+          <label className="space-y-1">
+            <span className="text-xs text-gray-500 dark:text-gray-400">Fill color</span>
+            <input
+              type="color"
+              value={universalPatternFillColor === '#00000000' ? '#000000' : universalPatternFillColor}
+              onChange={(e) => setUniversalPatternFillColor(e.target.value)}
+              className="h-9 w-full rounded border border-gray-200 dark:border-gray-700 bg-transparent p-1"
+            />
+          </label>
+        </div>
+      </Card>
+
       {/* ── Application Font ──────────────────────────────────────────── */}
       <Card className="p-4 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800">
         <p className="text-sm font-medium text-gray-900 dark:text-white mb-3">Application font</p>
@@ -275,87 +377,6 @@ export function ThemeSettings({ section = 'all' }: { section?: 'all' | 'appearan
             </Label>
           ))}
         </RadioGroup>
-      </Card>
-
-      <Card className="p-4 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 space-y-4">
-        <div>
-          <p className="text-sm font-medium text-gray-900 dark:text-white">Universal background</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            Applies across the app for all users.
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Background color (16-shade palette)</p>
-          <div className="grid grid-cols-8 gap-2">
-            {UNIVERSAL_PALETTE.map((color) => (
-              <button
-                key={color}
-                type="button"
-                onClick={() => setUniversalBgColor(color)}
-                className={cn(
-                  'h-7 w-full rounded border transition-all',
-                  universalBgColor.toLowerCase() === color.toLowerCase()
-                    ? 'border-violet-500 ring-2 ring-violet-400/40'
-                    : 'border-black/15 dark:border-white/20'
-                )}
-                style={{ backgroundColor: color }}
-                aria-label={`Set universal background color ${color}`}
-              />
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Pattern (8 variations)</Label>
-          <select
-            value={universalPatternId}
-            onChange={(e) => setUniversalPatternId(Number(e.target.value))}
-            className="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-black/20 px-2.5 py-2 text-sm"
-          >
-            {PATTERN_OPTIONS.map((name, idx) => (
-              <option key={name} value={idx}>
-                {idx + 1}. {name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="space-y-2">
-          <Label className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-            Pattern tile size ({universalPatternSize}px)
-          </Label>
-          <input
-            type="range"
-            min={12}
-            max={96}
-            step={1}
-            value={universalPatternSize}
-            onChange={(e) => setUniversalPatternSize(Number(e.target.value))}
-            className="w-full"
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <label className="space-y-1">
-            <span className="text-xs text-gray-500 dark:text-gray-400">Line color</span>
-            <input
-              type="color"
-              value={universalPatternLineColor}
-              onChange={(e) => setUniversalPatternLineColor(e.target.value)}
-              className="h-9 w-full rounded border border-gray-200 dark:border-gray-700 bg-transparent p-1"
-            />
-          </label>
-          <label className="space-y-1">
-            <span className="text-xs text-gray-500 dark:text-gray-400">Fill color</span>
-            <input
-              type="color"
-              value={universalPatternFillColor === '#00000000' ? '#000000' : universalPatternFillColor}
-              onChange={(e) => setUniversalPatternFillColor(e.target.value)}
-              className="h-9 w-full rounded border border-gray-200 dark:border-gray-700 bg-transparent p-1"
-            />
-          </label>
-        </div>
       </Card>
 
       <Card className="p-4 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 space-y-4">

@@ -126,6 +126,10 @@ interface SettingsState {
   universalPatternSize: number;
   setUniversalPatternSize: (size: number) => void;
 
+  /** Intensity of patterned/branding layers (0-100) */
+  universalBackgroundIntensity: number;
+  setUniversalBackgroundIntensity: (intensity: number) => void;
+
   /** Pattern stroke colour */
   universalPatternLineColor: string;
   setUniversalPatternLineColor: (color: string) => void;
@@ -263,11 +267,15 @@ export const useSettings = create<SettingsState>()(
       setUniversalBgColor: (color) => set({ universalBgColor: color }),
 
       universalPatternId: 0,
-      setUniversalPatternId: (id) => set({ universalPatternId: Math.max(0, Math.min(7, id)) }),
+      setUniversalPatternId: (id) => set({ universalPatternId: Math.max(-1, Math.min(7, id)) }),
 
       universalPatternSize: 28,
       setUniversalPatternSize: (size) =>
         set({ universalPatternSize: Math.max(12, Math.min(96, Math.round(size))) }),
+
+      universalBackgroundIntensity: 70,
+      setUniversalBackgroundIntensity: (intensity) =>
+        set({ universalBackgroundIntensity: Math.max(0, Math.min(100, Math.round(intensity))) }),
 
       universalPatternLineColor: '#FFFFFF',
       setUniversalPatternLineColor: (color) => set({ universalPatternLineColor: color }),
