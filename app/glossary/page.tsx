@@ -255,8 +255,8 @@ export default function GlossaryPage() {
   const bottomChrome = (
     <div
       className={cn(
-        'shrink-0 border-t border-black/5 dark:border-white/10 p-3 space-y-2 w-full',
-        visualMode ? 'bg-white/90 dark:bg-black/70 backdrop-blur-md z-20' : 'bg-white/90 dark:bg-black/50 backdrop-blur-sm'
+        'shrink-0 border-t border-black/10 dark:border-white/15 p-3 space-y-2 w-full',
+        visualMode ? 'bg-white dark:bg-neutral-950 z-20' : 'bg-white dark:bg-neutral-950'
       )}
     >
       {bottomChromeInner}
@@ -305,9 +305,9 @@ export default function GlossaryPage() {
             <p className="text-gray-600 dark:text-gray-400">The vocabulary of the interior. Browse, search, and build your own word set.</p>
           </div>
 
-          <div className="flex-1 min-h-0 flex flex-row overflow-hidden gap-0">
+          <div className="flex-1 min-h-0 flex flex-row overflow-hidden gap-0 rounded-xl border border-black/10 dark:border-white/15 bg-white dark:bg-neutral-950 shadow-sm">
             {/* Word list + toolbar */}
-            <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+            <div className="flex-1 min-h-0 flex flex-col overflow-hidden bg-white dark:bg-neutral-950">
               <div className="flex-1 min-h-0 relative">
                 <GlossaryWordScrollList
                   loading={loading}
