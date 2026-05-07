@@ -26,6 +26,7 @@ import { useAuth } from '@/lib/FirebaseAuthContext';
 import { useFullscreen } from '@/lib/hooks/useFullscreen';
 import { useIdleFade } from '@/lib/hooks/useIdleFade';
 import { cn } from '@/lib/utils';
+import { useSettings } from '@/lib/hooks/useSettings';
 
 function isPublicAuthPath(pathname: string | null) {
   if (!pathname) return true;
@@ -51,6 +52,7 @@ export function AppDock() {
   const router = useRouter();
   const { user, loading } = useAuth();
   const { isDarkMode, setIsDarkMode } = useTheme();
+  const { accessibilityEnabled, accessibilityMode } = useSettings();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -71,6 +73,7 @@ export function AppDock() {
     pathname === '/trio' ||
     (pathname ?? '').startsWith('/multiview/')
   const { isIdle } = useIdleFade()
+  const cueBoost = accessibilityEnabled && accessibilityMode === 'hearing'
 
   const dockUi = (
     <>
@@ -102,11 +105,13 @@ export function AppDock() {
                 >
                   <DockItem
                     asNavSlot
-                    className={`aspect-square rounded-full transition-colors ${
+                    className={cn(
+                      'aspect-square rounded-full transition-colors',
+                      cueBoost && 'mm-status-cue ring-2 ring-sky-300/60',
                       isActive
                         ? 'bg-black dark:bg-white'
                         : 'bg-gray-200 dark:bg-neutral-800 hover:bg-gray-300 dark:hover:bg-neutral-700'
-                    }`}
+                    )}
                   >
                     <DockLabel>{item.title}</DockLabel>
                     <DockIcon>

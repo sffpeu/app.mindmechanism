@@ -33,6 +33,11 @@
     --ring: 0 0% 3.9%;
  
     --radius: 0.5rem;
+    --mm-universal-bg-color: #111827;
+    --mm-universal-bg-image: none;
+    --mm-universal-bg-size: 28px;
+    --mm-universal-text-scale: 1;
+    --mm-cue-emphasis: 1;
   }
  
   .dark {
@@ -66,6 +71,11 @@
   }
 }
 
+body[data-mm-accessibility="on"][data-mm-accessibility-mode="hearing"] .mm-status-cue {
+  transform: scale(var(--mm-cue-emphasis));
+  box-shadow: 0 0 0 2px rgba(147, 197, 253, 0.32);
+}
+
 @layer base {
   * {
     @apply border-[hsl(var(--border))];
@@ -78,6 +88,11 @@
   body {
     @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))];
     font-family: var(--font-app, var(--font-inter, system-ui, sans-serif));
+    background-color: var(--mm-universal-bg-color);
+    background-image: var(--mm-universal-bg-image);
+    background-size: var(--mm-universal-bg-size) var(--mm-universal-bg-size);
+    background-repeat: repeat;
+    font-size: calc(16px * var(--mm-universal-text-scale));
   }
 }
 

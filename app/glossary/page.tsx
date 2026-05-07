@@ -264,7 +264,7 @@ export default function GlossaryPage() {
   )
 
   return (
-    <div className="h-full overflow-hidden flex flex-col bg-gray-50 dark:bg-black/95">
+    <div className="h-full overflow-hidden flex flex-col bg-transparent">
       {visualMode ? (
         <>
           <div className="flex flex-1 min-h-0 w-full flex-col sm:flex-row overflow-hidden">

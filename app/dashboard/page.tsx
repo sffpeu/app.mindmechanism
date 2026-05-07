@@ -184,7 +184,7 @@ export default function DashboardPage() {
 
   if (isInitializing || authLoading) {
     return (
-      <div className="h-full flex items-center justify-center bg-gray-50/80 dark:bg-black/95">
+      <div className="h-full flex items-center justify-center bg-transparent">
         <LoadingSpinner size="lg" isLoading />
       </div>
     )
@@ -192,7 +192,7 @@ export default function DashboardPage() {
 
   if (authError) {
     return (
-      <div className="h-full flex items-center justify-center bg-gray-50 dark:bg-black/95">
+      <div className="h-full flex items-center justify-center bg-transparent">
         <div className="text-center px-4">
           <XCircle className="h-12 w-12 mx-auto text-red-500 mb-4" />
           <p className="text-gray-600 dark:text-gray-300">{authError}</p>
@@ -216,7 +216,7 @@ export default function DashboardPage() {
 
   return (
     <ProtectedRoute>
-      <div className="h-full overflow-hidden flex flex-col bg-gradient-to-b from-gray-50 to-gray-100/80 dark:from-black dark:to-gray-950/50">
+      <div className="h-full overflow-hidden flex flex-col bg-transparent">
         <div className="flex-1 min-h-0 overflow-y-auto">
           <div className="mx-auto max-w-2xl space-y-4 px-4 py-4 sm:px-6 sm:py-5">
 

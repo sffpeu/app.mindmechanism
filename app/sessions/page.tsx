@@ -203,7 +203,7 @@ export default function SessionsPage() {
 
   return (
     <ProtectedRoute>
-      <div className="h-full overflow-hidden flex flex-col bg-gray-50 dark:bg-black/95">
+      <div className="h-full overflow-hidden flex flex-col bg-transparent">
         {showElements && (
           <DotNavigation
             activeDot={9}
