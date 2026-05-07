@@ -30,7 +30,7 @@ type TabId = 'profile' | 'wheel' | 'appearance' | 'sound' | 'smart-home' | 'acco
 const TABS: { id: TabId; label: string; Icon: React.ElementType }[] = [
   { id: 'profile',    label: 'Profile',     Icon: User        },
   { id: 'wheel',      label: 'Wheel',       Icon: LayoutGrid  },
-  { id: 'appearance', label: 'Appearance',  Icon: Palette     },
+  { id: 'appearance', label: 'Appearance + Access',  Icon: Palette     },
   { id: 'sound',      label: 'Sound',       Icon: Music2      },
   { id: 'smart-home', label: 'Smart Home',  Icon: Home        },
   { id: 'account',    label: 'Account',     Icon: Shield      },
@@ -38,7 +38,7 @@ const TABS: { id: TabId; label: string; Icon: React.ElementType }[] = [
 
 export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
   const [hasChanges, setHasChanges] = useState(false)
-  const [activeTab, setActiveTab] = useState<TabId>('profile')
+  const [activeTab, setActiveTab] = useState<TabId>('appearance')
 
   const handleSave = () => {
     const onComplete = (e: Event) => {
