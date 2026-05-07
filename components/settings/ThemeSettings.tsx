@@ -87,7 +87,7 @@ const PATTERN_OPTIONS = [
   'Diamond',
 ]
 
-export function ThemeSettings() {
+export function ThemeSettings({ section = 'all' }: { section?: 'all' | 'appearance' | 'accessibility' }) {
   const { setThemePreference, themePreference } = useTheme()
   const [activeFont, setActiveFont] = useState<AppFontId>('inter')
   const {
@@ -163,8 +163,13 @@ export function ThemeSettings() {
     return acc
   }, {})
 
+  const showAppearance = section !== 'accessibility'
+  const showAccessibility = section !== 'appearance'
+
   return (
     <div className="space-y-4">
+      {showAppearance && (
+      <>
       {/* ── Application Font ──────────────────────────────────────────── */}
       <Card className="p-4 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800">
         <p className="text-sm font-medium text-gray-900 dark:text-white mb-3">Application font</p>
@@ -246,7 +251,10 @@ export function ThemeSettings() {
           ))}
         </RadioGroup>
       </Card>
+      </>
+      )}
 
+      {showAccessibility && (
       <Card className="p-4 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -423,8 +431,11 @@ export function ThemeSettings() {
           </div>
         )}
       </Card>
+      )}
 
       {/* ── Theme Packs ───────────────────────────────────────────────── */}
+      {showAppearance && (
+      <>
       {(Object.entries(grouped) as [string, ThemePack[]][]).map(([category, packs]) => (
         <div key={category} className="space-y-2">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 px-0.5">
@@ -490,6 +501,8 @@ export function ThemeSettings() {
         Theme packs are free to download for adoption and engagement.
         Corporate and institution packs include branding configuration.
       </p>
+      </>
+      )}
     </div>
   )
 }

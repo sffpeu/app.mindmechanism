@@ -10,6 +10,7 @@ import {
   BookOpen,
   Info,
   Settings,
+  Accessibility,
   Sun,
   Moon,
   Maximize2,
@@ -52,8 +53,11 @@ export function AppDock() {
   const router = useRouter();
   const { user, loading } = useAuth();
   const { isDarkMode, setIsDarkMode } = useTheme();
-  const { accessibilityEnabled, accessibilityMode } = useSettings();
+  const { accessibilityEnabled, accessibilityMode, setAccessibilityEnabled } = useSettings();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [settingsInitialTab, setSettingsInitialTab] = useState<
+    'profile' | 'wheel' | 'appearance' | 'accessibility' | 'sound' | 'smart-home' | 'account' | undefined
+  >(undefined)
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { isFullscreen, toggle: toggleFullscreen, supported: fullscreenSupported } = useFullscreen();
@@ -133,12 +137,49 @@ export function AppDock() {
               onClick={(e) => {
                 e.preventDefault();
                 setIsSettingsOpen(true);
+                setSettingsInitialTab(undefined);
               }}
               className="outline-none border-none cursor-pointer no-underline"
               aria-label="Open settings"
             >
               <DockItem className="aspect-square rounded-full bg-gray-200 dark:bg-neutral-800 hover:bg-gray-300 dark:hover:bg-neutral-700">
                 <DockLabel>Settings</DockLabel>
+                <DockIcon>
+                  <Settings className="h-full w-full text-neutral-600 dark:text-neutral-300" />
+                </DockIcon>
+              </DockItem>
+            </a>
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                setAccessibilityEnabled(!accessibilityEnabled);
+              }}
+              className="outline-none border-none cursor-pointer no-underline"
+              aria-label={accessibilityEnabled ? 'Disable accessibility interface' : 'Enable accessibility interface'}
+            >
+              <DockItem className={cn(
+                "aspect-square rounded-full hover:bg-gray-300 dark:hover:bg-neutral-700",
+                accessibilityEnabled ? "bg-violet-600 text-white" : "bg-gray-200 dark:bg-neutral-800"
+              )}>
+                <DockLabel>{accessibilityEnabled ? 'Accessibility on' : 'Accessibility off'}</DockLabel>
+                <DockIcon>
+                  <Accessibility className={cn("h-full w-full", accessibilityEnabled ? "text-white" : "text-neutral-600 dark:text-neutral-300")} />
+                </DockIcon>
+              </DockItem>
+            </a>
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                setSettingsInitialTab('accessibility');
+                setIsSettingsOpen(true);
+              }}
+              className="outline-none border-none cursor-pointer no-underline"
+              aria-label="Open accessibility settings"
+            >
+              <DockItem className="aspect-square rounded-full bg-gray-200 dark:bg-neutral-800 hover:bg-gray-300 dark:hover:bg-neutral-700">
+                <DockLabel>Accessibility settings</DockLabel>
                 <DockIcon>
                   <Settings className="h-full w-full text-neutral-600 dark:text-neutral-300" />
                 </DockIcon>
@@ -208,6 +249,7 @@ export function AppDock() {
       <SettingsDialog
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
+        initialTab={settingsInitialTab}
       />
       <AppInfoOverlay
         clockHex="#8b5cf6"

@@ -24,6 +24,7 @@ import {
 } from '@/components/DashboardRecentSessions'
 import { clockTitles } from '@/lib/clockTitles'
 import { cn } from '@/lib/utils'
+import { useSettings } from '@/lib/hooks/useSettings'
 
 interface TimeStats {
   totalTime: number
@@ -99,6 +100,7 @@ export default function DashboardPage() {
   const [groupSessionSummary, setGroupSessionSummary] = useState<GroupSessionSummary | null>(null)
   const [scheduledPanelOpen, setScheduledPanelOpen] = useState(false)
   const recentSessionsRef = useRef<DashboardRecentSessionsHandle>(null)
+  const { accessibilityEnabled, setAccessibilityEnabled } = useSettings()
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -324,6 +326,26 @@ export default function DashboardPage() {
                 </div>
               </div>
             </Card>
+
+            <div className="flex items-center justify-between rounded-xl border border-black/10 dark:border-white/15 bg-white/70 dark:bg-black/30 px-3 py-2">
+              <p className="text-sm font-medium text-gray-800 dark:text-gray-100">Accessibility Interface</p>
+              <button
+                type="button"
+                onClick={() => setAccessibilityEnabled(!accessibilityEnabled)}
+                className={cn(
+                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
+                  accessibilityEnabled ? 'bg-violet-600' : 'bg-gray-300 dark:bg-gray-700'
+                )}
+                aria-pressed={accessibilityEnabled}
+              >
+                <span
+                  className={cn(
+                    'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
+                    accessibilityEnabled ? 'translate-x-6' : 'translate-x-1'
+                  )}
+                />
+              </button>
+            </div>
 
             {/* ── Recent Sessions (+ Scheduled & Group in header) ───────── */}
             <section aria-labelledby="recent-sessions-heading">
