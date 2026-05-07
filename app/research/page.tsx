@@ -194,7 +194,7 @@ function ResearchHubContent() {
 export default function ResearchPage() {
   return (
     <ProtectedRoute>
-      <div className="h-full overflow-y-auto bg-gray-50 dark:bg-black/95">
+      <div className="h-full overflow-y-auto bg-transparent">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
           <header className="mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">

@@ -63,14 +63,14 @@ export default function WelcomePage() {
 
   if (loading || !user) {
     return (
-      <div className="flex h-full min-h-0 items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100/90 dark:from-black dark:to-gray-950/80">
+      <div className="flex h-full min-h-0 items-center justify-center bg-transparent">
         <LoadingSpinner size="lg" isLoading />
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-gradient-to-b from-gray-50 to-gray-100/90 dark:from-black dark:to-gray-950/80">
+    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-transparent">
       <div className="mx-auto flex w-full max-w-lg flex-col gap-8 px-6 py-12 sm:py-16">
         <header className="text-center">
           <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white sm:text-3xl">

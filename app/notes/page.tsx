@@ -1163,7 +1163,7 @@ export default function NotesPage() {
 
   if (!user) {
     return (
-      <div className="h-full overflow-hidden flex flex-col bg-gray-50 dark:bg-black/95">
+      <div className="h-full overflow-hidden flex flex-col bg-transparent">
         <div className="flex-1 min-h-0 overflow-y-auto">
           <div className="max-w-7xl mx-auto pl-16 pr-4 py-6">
             <div className="text-center py-8">
@@ -1180,7 +1180,7 @@ export default function NotesPage() {
     <div
       className={cn(
         'relative flex h-full flex-col overflow-hidden',
-        pageBackground ? 'bg-black' : 'bg-gray-50 dark:bg-black/95'
+        pageBackground ? 'bg-black' : 'bg-transparent'
       )}
     >
       {pageBackground ? (

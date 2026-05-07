@@ -9,7 +9,7 @@ export default function LobbyPage() {
   useTimeTracking(user?.uid, 'lobby')
 
   return (
-    <div className="h-full overflow-hidden flex flex-col bg-gradient-to-b from-gray-50 to-gray-100/80 dark:from-black dark:to-gray-950/50">
+    <div className="h-full overflow-hidden flex flex-col bg-transparent">
       <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="max-w-xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
           <header className="mb-6">
