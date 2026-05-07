@@ -105,6 +105,22 @@ export function ThemeSettings({ section = 'all' }: { section?: 'all' | 'appearan
     setUniversalPatternLineColor,
     universalPatternFillColor,
     setUniversalPatternFillColor,
+    customWatermarkEnabled,
+    setCustomWatermarkEnabled,
+    customWatermarkUrl,
+    setCustomWatermarkUrl,
+    customWatermarkSize,
+    setCustomWatermarkSize,
+    customWatermarkTiled,
+    setCustomWatermarkTiled,
+    customLogoEnabled,
+    setCustomLogoEnabled,
+    customLogoUrl,
+    setCustomLogoUrl,
+    customLogoSize,
+    setCustomLogoSize,
+    customLogoPosition,
+    setCustomLogoPosition,
     universalTextScaleEnabled,
     setUniversalTextScaleEnabled,
     universalTextScale,
@@ -148,6 +164,15 @@ export function ThemeSettings({ section = 'all' }: { section?: 'all' | 'appearan
     } else {
       toast.info(`No saved custom ${accessibilityMode} profile yet`)
     }
+  }
+  const handleFileAsDataUrl = (
+    file: File | undefined,
+    setter: (value: string | null) => void
+  ) => {
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => setter(typeof reader.result === 'string' ? reader.result : null)
+    reader.readAsDataURL(file)
   }
 
   useEffect(() => {
@@ -330,6 +355,78 @@ export function ThemeSettings({ section = 'all' }: { section?: 'all' | 'appearan
               className="h-9 w-full rounded border border-gray-200 dark:border-gray-700 bg-transparent p-1"
             />
           </label>
+        </div>
+      </Card>
+
+      <Card className="p-4 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 space-y-4">
+        <div>
+          <p className="text-sm font-medium text-gray-900 dark:text-white">Background branding</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            Add custom watermark and logo layers to the universal background.
+          </p>
+        </div>
+
+        <div className="space-y-3 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+          <div className="flex items-center justify-between">
+            <Label className="text-sm">Enable watermark</Label>
+            <input type="checkbox" checked={customWatermarkEnabled} onChange={(e) => setCustomWatermarkEnabled(e.target.checked)} />
+          </div>
+          <input
+            type="text"
+            value={customWatermarkUrl ?? ''}
+            onChange={(e) => setCustomWatermarkUrl(e.target.value)}
+            placeholder="Watermark image URL or paste"
+            className="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-black/20 px-2.5 py-2 text-sm"
+          />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => handleFileAsDataUrl(e.target.files?.[0], setCustomWatermarkUrl)}
+            className="text-xs"
+          />
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xs text-gray-500 dark:text-gray-400">Watermark size ({customWatermarkSize}px)</span>
+            <input type="range" min={64} max={640} step={4} value={customWatermarkSize} onChange={(e) => setCustomWatermarkSize(Number(e.target.value))} className="w-40" />
+          </div>
+          <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+            <input type="checkbox" checked={customWatermarkTiled} onChange={(e) => setCustomWatermarkTiled(e.target.checked)} />
+            Tile watermark across background
+          </label>
+        </div>
+
+        <div className="space-y-3 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+          <div className="flex items-center justify-between">
+            <Label className="text-sm">Enable logo</Label>
+            <input type="checkbox" checked={customLogoEnabled} onChange={(e) => setCustomLogoEnabled(e.target.checked)} />
+          </div>
+          <input
+            type="text"
+            value={customLogoUrl ?? ''}
+            onChange={(e) => setCustomLogoUrl(e.target.value)}
+            placeholder="Logo image URL or paste"
+            className="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-black/20 px-2.5 py-2 text-sm"
+          />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => handleFileAsDataUrl(e.target.files?.[0], setCustomLogoUrl)}
+            className="text-xs"
+          />
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xs text-gray-500 dark:text-gray-400">Logo size ({customLogoSize}px)</span>
+            <input type="range" min={48} max={420} step={4} value={customLogoSize} onChange={(e) => setCustomLogoSize(Number(e.target.value))} className="w-40" />
+          </div>
+          <select
+            value={customLogoPosition}
+            onChange={(e) => setCustomLogoPosition(e.target.value as 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center')}
+            className="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-black/20 px-2.5 py-2 text-sm"
+          >
+            <option value="top-right">Top right</option>
+            <option value="top-left">Top left</option>
+            <option value="bottom-right">Bottom right</option>
+            <option value="bottom-left">Bottom left</option>
+            <option value="center">Center</option>
+          </select>
         </div>
       </Card>
       </>

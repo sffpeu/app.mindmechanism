@@ -56,6 +56,14 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
     universalPatternFillColor,
     universalTextScaleEnabled,
     universalTextScale,
+    customWatermarkEnabled,
+    customWatermarkUrl,
+    customWatermarkSize,
+    customWatermarkTiled,
+    customLogoEnabled,
+    customLogoUrl,
+    customLogoSize,
+    customLogoPosition,
   } = useSettings()
 
   useEffect(() => {
@@ -70,10 +78,41 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
       universalPatternLineColor,
       universalPatternFillColor
     )
+    const safeUrl = (value: string) => value.replace(/"/g, '%22')
+    const logoPos =
+      customLogoPosition === 'top-left' ? 'top 16px left 16px' :
+      customLogoPosition === 'top-right' ? 'top 16px right 16px' :
+      customLogoPosition === 'bottom-left' ? 'bottom 16px left 16px' :
+      customLogoPosition === 'bottom-right' ? 'bottom 16px right 16px' :
+      'center'
+
+    const layers: string[] = []
+    const sizes: string[] = []
+    const repeats: string[] = []
+    const positions: string[] = []
+
+    if (customLogoEnabled && customLogoUrl) {
+      layers.push(`url("${safeUrl(customLogoUrl)}")`)
+      sizes.push(`${customLogoSize}px auto`)
+      repeats.push('no-repeat')
+      positions.push(logoPos)
+    }
+    if (customWatermarkEnabled && customWatermarkUrl) {
+      layers.push(`url("${safeUrl(customWatermarkUrl)}")`)
+      sizes.push(`${customWatermarkSize}px auto`)
+      repeats.push(customWatermarkTiled ? 'repeat' : 'no-repeat')
+      positions.push(customWatermarkTiled ? 'left top' : 'center')
+    }
+    layers.push(bgImage)
+    sizes.push(`${Math.max(12, Math.min(96, universalPatternSize))}px ${Math.max(12, Math.min(96, universalPatternSize))}px`)
+    repeats.push('repeat')
+    positions.push('left top')
 
     root.style.setProperty('--mm-universal-bg-color', universalBgColor)
-    root.style.setProperty('--mm-universal-bg-image', bgImage)
-    root.style.setProperty('--mm-universal-bg-size', `${Math.max(12, Math.min(96, universalPatternSize))}px`)
+    root.style.setProperty('--mm-universal-bg-image', layers.join(', '))
+    root.style.setProperty('--mm-universal-bg-size', sizes.join(', '))
+    root.style.setProperty('--mm-universal-bg-repeat', repeats.join(', '))
+    root.style.setProperty('--mm-universal-bg-position', positions.join(', '))
     root.style.setProperty(
       '--mm-universal-text-scale',
       shouldApply && universalTextScaleEnabled ? String(universalTextScale) : '1'
@@ -95,6 +134,14 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
     universalPatternFillColor,
     universalTextScaleEnabled,
     universalTextScale,
+    customWatermarkEnabled,
+    customWatermarkUrl,
+    customWatermarkSize,
+    customWatermarkTiled,
+    customLogoEnabled,
+    customLogoUrl,
+    customLogoSize,
+    customLogoPosition,
   ])
 
   return <>{children}</>

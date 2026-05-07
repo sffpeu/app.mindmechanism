@@ -140,6 +140,26 @@ interface SettingsState {
   universalTextScale: number;
   setUniversalTextScale: (scale: number) => void;
 
+  /** Optional universal watermark layer */
+  customWatermarkEnabled: boolean;
+  setCustomWatermarkEnabled: (enabled: boolean) => void;
+  customWatermarkUrl: string | null;
+  setCustomWatermarkUrl: (url: string | null) => void;
+  customWatermarkSize: number;
+  setCustomWatermarkSize: (size: number) => void;
+  customWatermarkTiled: boolean;
+  setCustomWatermarkTiled: (tiled: boolean) => void;
+
+  /** Optional universal logo layer */
+  customLogoEnabled: boolean;
+  setCustomLogoEnabled: (enabled: boolean) => void;
+  customLogoUrl: string | null;
+  setCustomLogoUrl: (url: string | null) => void;
+  customLogoSize: number;
+  setCustomLogoSize: (size: number) => void;
+  customLogoPosition: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center';
+  setCustomLogoPosition: (position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center') => void;
+
   /** Saved user-tuned profiles per accessibility mode */
   accessibilityCustomProfiles: Partial<Record<'visual' | 'hearing', {
     universalBgColor: string;
@@ -261,6 +281,24 @@ export const useSettings = create<SettingsState>()(
       universalTextScale: 1,
       setUniversalTextScale: (scale) =>
         set({ universalTextScale: Math.max(0.85, Math.min(1.5, Number(scale.toFixed(2)))) }),
+
+      customWatermarkEnabled: false,
+      setCustomWatermarkEnabled: (enabled) => set({ customWatermarkEnabled: enabled }),
+      customWatermarkUrl: null,
+      setCustomWatermarkUrl: (url) => set({ customWatermarkUrl: url?.trim() ? url.trim() : null }),
+      customWatermarkSize: 180,
+      setCustomWatermarkSize: (size) => set({ customWatermarkSize: Math.max(64, Math.min(640, Math.round(size))) }),
+      customWatermarkTiled: true,
+      setCustomWatermarkTiled: (tiled) => set({ customWatermarkTiled: tiled }),
+
+      customLogoEnabled: false,
+      setCustomLogoEnabled: (enabled) => set({ customLogoEnabled: enabled }),
+      customLogoUrl: null,
+      setCustomLogoUrl: (url) => set({ customLogoUrl: url?.trim() ? url.trim() : null }),
+      customLogoSize: 140,
+      setCustomLogoSize: (size) => set({ customLogoSize: Math.max(48, Math.min(420, Math.round(size))) }),
+      customLogoPosition: 'top-right',
+      setCustomLogoPosition: (position) => set({ customLogoPosition: position }),
 
       accessibilityCustomProfiles: {},
       saveAccessibilityCustomProfile: (mode) => {

@@ -36,6 +36,8 @@
     --mm-universal-bg-color: #111827;
     --mm-universal-bg-image: none;
     --mm-universal-bg-size: 28px;
+    --mm-universal-bg-repeat: repeat;
+    --mm-universal-bg-position: left top;
     --mm-universal-text-scale: 1;
     --mm-cue-emphasis: 1;
   }
@@ -90,8 +92,9 @@ body[data-mm-accessibility="on"][data-mm-accessibility-mode="hearing"] .mm-statu
     font-family: var(--font-app, var(--font-inter, system-ui, sans-serif));
     background-color: var(--mm-universal-bg-color);
     background-image: var(--mm-universal-bg-image);
-    background-size: var(--mm-universal-bg-size) var(--mm-universal-bg-size);
-    background-repeat: repeat;
+    background-size: var(--mm-universal-bg-size);
+    background-repeat: var(--mm-universal-bg-repeat);
+    background-position: var(--mm-universal-bg-position);
     font-size: calc(16px * var(--mm-universal-text-scale));
   }
 }
