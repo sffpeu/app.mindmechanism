@@ -241,7 +241,7 @@ function HomeLoginContent() {
   }
 
   return (
-    <div className="h-full flex bg-white dark:bg-[hsl(var(--background))]">
+    <div className="h-full flex bg-transparent">
       {/* Left: 60% - Dashboard preview image */}
       <div className="hidden md:block md:w-[60%] relative overflow-hidden bg-gray-100 dark:bg-black/80">
         <Image
@@ -255,7 +255,7 @@ function HomeLoginContent() {
       </div>
 
       {/* Right: 40% - Login panel (matches dashboard card style) */}
-      <div className="w-full md:w-[40%] flex flex-col justify-center px-6 sm:px-10 lg:px-14 py-12 bg-white dark:bg-[hsl(var(--background))]">
+      <div className="w-full md:w-[40%] flex flex-col justify-center px-6 sm:px-10 lg:px-14 py-12 bg-transparent">
         <motion.div
           initial={{ opacity: 0, x: 16 }}
           animate={{ opacity: 1, x: 0 }}
@@ -433,7 +433,7 @@ export default function HomePage() {
   return (
     <Suspense
       fallback={
-        <div className="h-full bg-white dark:bg-[hsl(var(--background))] flex items-center justify-center">
+        <div className="h-full bg-transparent flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-300 dark:border-white/20 border-t-red-600 dark:border-t-red-500" />
         </div>
       }

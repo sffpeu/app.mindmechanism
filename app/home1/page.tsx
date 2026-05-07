@@ -315,7 +315,7 @@ export default function Home1Page() {
   };
 
   return (
-    <div className="h-full flex flex-col bg-gray-50 dark:bg-black/90 overflow-hidden">
+    <div className="h-full flex flex-col bg-transparent overflow-hidden">
       {/* Navigation Layer */}
       <div className="fixed inset-0 pointer-events-none z-[999]">
         {showElements && (

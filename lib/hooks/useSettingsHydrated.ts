@@ -5,11 +5,22 @@ import { useSettings } from '@/lib/hooks/useSettings'
 
 /** True after Zustand persist has loaded from localStorage (Sound settings, etc.). */
 export function useSettingsHydrated(): boolean {
-  const [hydrated, setHydrated] = useState(() => useSettings.persist.hasHydrated())
+  const [hydrated, setHydrated] = useState(() => {
+    const hasHydrated = useSettings.persist?.hasHydrated
+    return typeof hasHydrated === 'function' ? hasHydrated() : true
+  })
 
   useEffect(() => {
-    setHydrated(useSettings.persist.hasHydrated())
-    return useSettings.persist.onFinishHydration(() => setHydrated(true))
+    const hasHydrated = useSettings.persist?.hasHydrated
+    const onFinishHydration = useSettings.persist?.onFinishHydration
+
+    if (typeof hasHydrated !== 'function' || typeof onFinishHydration !== 'function') {
+      setHydrated(true)
+      return
+    }
+
+    setHydrated(hasHydrated())
+    return onFinishHydration(() => setHydrated(true))
   }, [])
 
   return hydrated

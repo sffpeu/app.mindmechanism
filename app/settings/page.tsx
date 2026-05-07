@@ -7,7 +7,7 @@ export default function SettingsPage() {
   const router = useRouter()
 
   return (
-    <div className="h-full min-h-[40vh] bg-gray-50 dark:bg-black/95" aria-hidden>
+    <div className="h-full min-h-[40vh] bg-transparent" aria-hidden>
       <SettingsDialog
         isOpen
         onClose={() => {

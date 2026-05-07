@@ -105,6 +105,53 @@ interface SettingsState {
   /** Optional Apple Music share URL or pl.* / p.* playlist id */
   appleMusicSessionPlaylistUrl: string | null;
   setAppleMusicSessionPlaylistUrl: (url: string | null) => void;
+
+  /** Master toggle for optional accessibility-focused UI layer */
+  accessibilityEnabled: boolean;
+  setAccessibilityEnabled: (enabled: boolean) => void;
+
+  /** Accessibility profile mode */
+  accessibilityMode: 'visual' | 'hearing';
+  setAccessibilityMode: (mode: 'visual' | 'hearing') => void;
+
+  /** Universal app background base colour */
+  universalBgColor: string;
+  setUniversalBgColor: (color: string) => void;
+
+  /** Universal app background repeating pattern */
+  universalPatternId: number;
+  setUniversalPatternId: (id: number) => void;
+
+  /** Pattern tile size in px */
+  universalPatternSize: number;
+  setUniversalPatternSize: (size: number) => void;
+
+  /** Pattern stroke colour */
+  universalPatternLineColor: string;
+  setUniversalPatternLineColor: (color: string) => void;
+
+  /** Pattern fill colour */
+  universalPatternFillColor: string;
+  setUniversalPatternFillColor: (color: string) => void;
+
+  /** Optional text scaling for accessibility */
+  universalTextScaleEnabled: boolean;
+  setUniversalTextScaleEnabled: (enabled: boolean) => void;
+  universalTextScale: number;
+  setUniversalTextScale: (scale: number) => void;
+
+  /** Saved user-tuned profiles per accessibility mode */
+  accessibilityCustomProfiles: Partial<Record<'visual' | 'hearing', {
+    universalBgColor: string;
+    universalPatternId: number;
+    universalPatternSize: number;
+    universalPatternLineColor: string;
+    universalPatternFillColor: string;
+    universalTextScaleEnabled: boolean;
+    universalTextScale: number;
+  }>>;
+  saveAccessibilityCustomProfile: (mode: 'visual' | 'hearing') => void;
+  applyAccessibilityCustomProfile: (mode: 'visual' | 'hearing') => boolean;
 }
 
 export const useSettings = create<SettingsState>()(
@@ -184,6 +231,70 @@ export const useSettings = create<SettingsState>()(
       appleMusicSessionPlaylistUrl: null,
       setAppleMusicSessionPlaylistUrl: (url) =>
         set({ appleMusicSessionPlaylistUrl: url?.trim() ? url.trim() : null }),
+
+      accessibilityEnabled: false,
+      setAccessibilityEnabled: (enabled) => set({ accessibilityEnabled: enabled }),
+
+      accessibilityMode: 'visual',
+      setAccessibilityMode: (mode) => set({ accessibilityMode: mode }),
+
+      // Non-black default per product requirement.
+      universalBgColor: '#111827',
+      setUniversalBgColor: (color) => set({ universalBgColor: color }),
+
+      universalPatternId: 0,
+      setUniversalPatternId: (id) => set({ universalPatternId: Math.max(0, Math.min(7, id)) }),
+
+      universalPatternSize: 28,
+      setUniversalPatternSize: (size) =>
+        set({ universalPatternSize: Math.max(12, Math.min(96, Math.round(size))) }),
+
+      universalPatternLineColor: '#FFFFFF',
+      setUniversalPatternLineColor: (color) => set({ universalPatternLineColor: color }),
+
+      universalPatternFillColor: '#00000000',
+      setUniversalPatternFillColor: (color) => set({ universalPatternFillColor: color }),
+
+      universalTextScaleEnabled: false,
+      setUniversalTextScaleEnabled: (enabled) => set({ universalTextScaleEnabled: enabled }),
+
+      universalTextScale: 1,
+      setUniversalTextScale: (scale) =>
+        set({ universalTextScale: Math.max(0.85, Math.min(1.5, Number(scale.toFixed(2)))) }),
+
+      accessibilityCustomProfiles: {},
+      saveAccessibilityCustomProfile: (mode) => {
+        const s = get()
+        const profile = {
+          universalBgColor: s.universalBgColor,
+          universalPatternId: s.universalPatternId,
+          universalPatternSize: s.universalPatternSize,
+          universalPatternLineColor: s.universalPatternLineColor,
+          universalPatternFillColor: s.universalPatternFillColor,
+          universalTextScaleEnabled: s.universalTextScaleEnabled,
+          universalTextScale: s.universalTextScale,
+        }
+        set({
+          accessibilityCustomProfiles: {
+            ...s.accessibilityCustomProfiles,
+            [mode]: profile,
+          },
+        })
+      },
+      applyAccessibilityCustomProfile: (mode) => {
+        const profile = get().accessibilityCustomProfiles[mode]
+        if (!profile) return false
+        set({
+          universalBgColor: profile.universalBgColor,
+          universalPatternId: profile.universalPatternId,
+          universalPatternSize: profile.universalPatternSize,
+          universalPatternLineColor: profile.universalPatternLineColor,
+          universalPatternFillColor: profile.universalPatternFillColor,
+          universalTextScaleEnabled: profile.universalTextScaleEnabled,
+          universalTextScale: profile.universalTextScale,
+        })
+        return true
+      },
     }),
     {
       name: 'app-settings',

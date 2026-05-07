@@ -428,7 +428,7 @@ function NodesPageContent() {
   return (
     <ProtectedRoute>
       <ClockBreathingTone clockIndex={CLOCK_INDEX} />
-      <div className="h-full overflow-x-hidden flex flex-col bg-gray-50 dark:bg-black/95 min-h-0">
+      <div className="h-full overflow-x-hidden flex flex-col bg-transparent min-h-0">
         {/* Settings Dropdown */}
         <div className={cn("fixed top-4 right-14 z-[200] transition-opacity duration-700", isIdle && "opacity-0 pointer-events-none")}>
           <ClockPageSettingsTrigger clockHex={clockHex} onClick={() => setIsDropdownOpen(o => !o)} />

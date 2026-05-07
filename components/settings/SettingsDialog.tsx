@@ -13,32 +13,39 @@ import {
   User,
   LayoutGrid,
   Palette,
+  Accessibility,
   Music2,
   Home,
   Shield,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
 
 interface SettingsDialogProps {
   isOpen: boolean
   onClose: () => void
+  initialTab?: TabId
 }
 
-type TabId = 'profile' | 'wheel' | 'appearance' | 'sound' | 'smart-home' | 'account'
+type TabId = 'profile' | 'wheel' | 'appearance' | 'accessibility' | 'sound' | 'smart-home' | 'account'
 
 const TABS: { id: TabId; label: string; Icon: React.ElementType }[] = [
   { id: 'profile',    label: 'Profile',     Icon: User        },
   { id: 'wheel',      label: 'Wheel',       Icon: LayoutGrid  },
   { id: 'appearance', label: 'Appearance',  Icon: Palette     },
+  { id: 'accessibility', label: 'Accessibility', Icon: Accessibility },
   { id: 'sound',      label: 'Sound',       Icon: Music2      },
   { id: 'smart-home', label: 'Smart Home',  Icon: Home        },
   { id: 'account',    label: 'Account',     Icon: Shield      },
 ]
 
-export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
+export function SettingsDialog({ isOpen, onClose, initialTab }: SettingsDialogProps) {
   const [hasChanges, setHasChanges] = useState(false)
-  const [activeTab, setActiveTab] = useState<TabId>('profile')
+  const [activeTab, setActiveTab] = useState<TabId>(initialTab ?? 'accessibility')
+
+  useEffect(() => {
+    if (isOpen && initialTab) setActiveTab(initialTab)
+  }, [isOpen, initialTab])
 
   const handleSave = () => {
     const onComplete = (e: Event) => {
@@ -136,7 +143,8 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
           <div className="min-h-0 flex-1 min-w-0 overflow-y-auto overscroll-contain bg-white p-4 dark:bg-neutral-950">
             {activeTab === 'profile'    && <PersonalInfoSettings onChangesPending={setHasChanges} />}
             {activeTab === 'wheel'      && <WheelFacesSettings />}
-            {activeTab === 'appearance' && <ThemeSettings />}
+            {activeTab === 'appearance' && <ThemeSettings section="appearance" />}
+            {activeTab === 'accessibility' && <ThemeSettings section="accessibility" />}
             {activeTab === 'sound'      && <SoundSettings />}
             {activeTab === 'smart-home' && <SmartHomeSettings />}
             {activeTab === 'account'    && <AccountSettings />}

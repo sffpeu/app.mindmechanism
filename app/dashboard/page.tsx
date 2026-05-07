@@ -24,6 +24,7 @@ import {
 } from '@/components/DashboardRecentSessions'
 import { clockTitles } from '@/lib/clockTitles'
 import { cn } from '@/lib/utils'
+import { useSettings } from '@/lib/hooks/useSettings'
 
 interface TimeStats {
   totalTime: number
@@ -99,6 +100,7 @@ export default function DashboardPage() {
   const [groupSessionSummary, setGroupSessionSummary] = useState<GroupSessionSummary | null>(null)
   const [scheduledPanelOpen, setScheduledPanelOpen] = useState(false)
   const recentSessionsRef = useRef<DashboardRecentSessionsHandle>(null)
+  const { accessibilityEnabled, setAccessibilityEnabled } = useSettings()
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -184,7 +186,7 @@ export default function DashboardPage() {
 
   if (isInitializing || authLoading) {
     return (
-      <div className="h-full flex items-center justify-center bg-gray-50/80 dark:bg-black/95">
+      <div className="h-full flex items-center justify-center bg-transparent">
         <LoadingSpinner size="lg" isLoading />
       </div>
     )
@@ -192,7 +194,7 @@ export default function DashboardPage() {
 
   if (authError) {
     return (
-      <div className="h-full flex items-center justify-center bg-gray-50 dark:bg-black/95">
+      <div className="h-full flex items-center justify-center bg-transparent">
         <div className="text-center px-4">
           <XCircle className="h-12 w-12 mx-auto text-red-500 mb-4" />
           <p className="text-gray-600 dark:text-gray-300">{authError}</p>
@@ -216,7 +218,7 @@ export default function DashboardPage() {
 
   return (
     <ProtectedRoute>
-      <div className="h-full overflow-hidden flex flex-col bg-gradient-to-b from-gray-50 to-gray-100/80 dark:from-black dark:to-gray-950/50">
+      <div className="h-full overflow-hidden flex flex-col bg-transparent">
         <div className="flex-1 min-h-0 overflow-y-auto">
           <div className="mx-auto max-w-2xl space-y-4 px-4 py-4 sm:px-6 sm:py-5">
 
@@ -324,6 +326,26 @@ export default function DashboardPage() {
                 </div>
               </div>
             </Card>
+
+            <div className="flex items-center justify-between rounded-xl border border-black/10 dark:border-white/15 bg-white/70 dark:bg-black/30 px-3 py-2">
+              <p className="text-sm font-medium text-gray-800 dark:text-gray-100">Accessibility Interface</p>
+              <button
+                type="button"
+                onClick={() => setAccessibilityEnabled(!accessibilityEnabled)}
+                className={cn(
+                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
+                  accessibilityEnabled ? 'bg-violet-600' : 'bg-gray-300 dark:bg-gray-700'
+                )}
+                aria-pressed={accessibilityEnabled}
+              >
+                <span
+                  className={cn(
+                    'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
+                    accessibilityEnabled ? 'translate-x-6' : 'translate-x-1'
+                  )}
+                />
+              </button>
+            </div>
 
             {/* ── Recent Sessions (+ Scheduled & Group in header) ───────── */}
             <section aria-labelledby="recent-sessions-heading">

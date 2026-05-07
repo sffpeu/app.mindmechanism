@@ -5,6 +5,7 @@ import { LayoutContent } from './LayoutContent'
 import { SoundProvider } from '@/components/SoundProvider'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { FontProvider } from '@/components/FontProvider'
+import { AccessibilityProvider } from '@/components/AccessibilityProvider'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-montserrat' })
@@ -37,9 +38,11 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <FontProvider>
-            <SoundProvider>
-              <LayoutContent>{children}</LayoutContent>
-            </SoundProvider>
+            <AccessibilityProvider>
+              <SoundProvider>
+                <LayoutContent>{children}</LayoutContent>
+              </SoundProvider>
+            </AccessibilityProvider>
           </FontProvider>
         </ThemeProvider>
       </body>

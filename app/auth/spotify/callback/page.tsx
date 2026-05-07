@@ -43,7 +43,7 @@ function SpotifyCallbackInner() {
   }, [searchParams, router, setSpotifyTokens])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-black/95">
+    <div className="min-h-screen flex items-center justify-center bg-transparent">
       <div className="flex flex-col items-center gap-4 p-8 text-center max-w-sm">
         {status === 'loading' && (
           <>
