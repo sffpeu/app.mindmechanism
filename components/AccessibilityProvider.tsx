@@ -65,9 +65,11 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
     const body = document.body
 
     const shouldApply = accessibilityEnabled
-    const bgImage = shouldApply
-      ? patternSvg(universalPatternId, universalPatternLineColor, universalPatternFillColor)
-      : 'none'
+    const bgImage = patternSvg(
+      universalPatternId,
+      universalPatternLineColor,
+      universalPatternFillColor
+    )
 
     root.style.setProperty('--mm-universal-bg-color', universalBgColor)
     root.style.setProperty('--mm-universal-bg-image', bgImage)
