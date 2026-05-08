@@ -136,6 +136,17 @@ service cloud.firestore {
       allow read: if false;
     }
 
+    // Public research programme status (operator-maintained; client read-only).
+    match /research_status/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Per-user Category B contribution summary (incremented when logging research events).
+    match /users/{userId}/researchContribution/{docId} {
+      allow read, write: if isUserAuthenticated(userId);
+    }
+
     // Default rule - require authentication for all other reads (except research_b_events — excluded below).
     match /{document=**} {
       allow read: if isAuthenticated()

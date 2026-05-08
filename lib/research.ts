@@ -62,3 +62,45 @@ export async function getBlogCrosslinks(): Promise<BlogCrosslink[]> {
     return []
   }
 }
+
+/** Public programme status — readable without auth (see Firestore rules). */
+export interface ResearchStatusPublic {
+  hypothesis: string
+  status: string
+  statusLabel: string
+  consentingUsers: number
+  languageFamiliesRepresented: number
+  totalWheelAssignments: number
+  thresholdUsersRequired: number
+  thresholdFamiliesRequired: number
+  preRegistered: boolean
+  lastUpdated: string
+  preRegistrationUrl: string | null
+}
+
+export async function getPublicResearchStatus(): Promise<ResearchStatusPublic | null> {
+  if (!db) return null
+  try {
+    const snap = await getDoc(doc(db as Firestore, 'research_status', 'public'))
+    if (!snap.exists()) return null
+    const d = snap.data()
+    const url = d.pre_registration_url
+    return {
+      hypothesis: typeof d.hypothesis === 'string' ? d.hypothesis : '',
+      status: typeof d.status === 'string' ? d.status : 'accumulating',
+      statusLabel: typeof d.status_label === 'string' ? d.status_label : 'Accumulating data',
+      consentingUsers: typeof d.consenting_users === 'number' ? d.consenting_users : 0,
+      languageFamiliesRepresented:
+        typeof d.language_families_represented === 'number' ? d.language_families_represented : 0,
+      totalWheelAssignments: typeof d.total_wheel_assignments === 'number' ? d.total_wheel_assignments : 0,
+      thresholdUsersRequired: typeof d.threshold_users_required === 'number' ? d.threshold_users_required : 500,
+      thresholdFamiliesRequired:
+        typeof d.threshold_families_required === 'number' ? d.threshold_families_required : 8,
+      preRegistered: d.pre_registered === true,
+      lastUpdated: typeof d.last_updated === 'string' ? d.last_updated : '',
+      preRegistrationUrl: typeof url === 'string' && url.trim() ? url.trim() : null,
+    }
+  } catch {
+    return null
+  }
+}

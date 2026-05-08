@@ -1,8 +1,12 @@
 import {
   collection,
   addDoc,
+  doc,
+  getDoc,
   getDocs,
+  increment,
   query,
+  setDoc,
   where,
   limit,
   writeBatch,
@@ -31,6 +35,59 @@ async function hashUid(uid: string): Promise<string> {
 
 function hasConsentB(profile: UserProfile | null): boolean {
   return profile?.researchConsent?.categoryB?.granted === true
+}
+
+async function incrementContribution(
+  uid: string,
+  field: 'wheel_assignment_count' | 'session_count'
+): Promise<void> {
+  if (!db) return
+  const summaryRef = doc(db as Firestore, 'users', uid, 'researchContribution', 'summary')
+  const snap = await getDoc(summaryRef)
+  if (!snap.exists()) {
+    await setDoc(
+      summaryRef,
+      {
+        contributing_since: Date.now(),
+      },
+      { merge: true }
+    )
+  }
+  await setDoc(
+    summaryRef,
+    {
+      [field]: increment(1),
+      last_contribution_at: Date.now(),
+    },
+    { merge: true }
+  )
+}
+
+export interface UserContributionSummary {
+  wheelAssignmentCount: number
+  sessionCount: number
+  contributingSince: number | null
+  lastContributionAt: number | null
+}
+
+export async function getUserContributionSummary(uid: string): Promise<UserContributionSummary> {
+  const empty: UserContributionSummary = {
+    wheelAssignmentCount: 0,
+    sessionCount: 0,
+    contributingSince: null,
+    lastContributionAt: null,
+  }
+  if (!db) return empty
+  const ref = doc(db as Firestore, 'users', uid, 'researchContribution', 'summary')
+  const snap = await getDoc(ref)
+  if (!snap.exists()) return empty
+  const d = snap.data()
+  return {
+    wheelAssignmentCount: typeof d.wheel_assignment_count === 'number' ? d.wheel_assignment_count : 0,
+    sessionCount: typeof d.session_count === 'number' ? d.session_count : 0,
+    contributingSince: typeof d.contributing_since === 'number' ? d.contributing_since : null,
+    lastContributionAt: typeof d.last_contribution_at === 'number' ? d.last_contribution_at : null,
+  }
 }
 
 export interface CategoryBWheelEvent {
@@ -80,6 +137,7 @@ export async function logWheelAssignment(
 
   const ref = collection(db as Firestore, 'research_b_events')
   await addDoc(ref, event)
+  await incrementContribution(uid, 'wheel_assignment_count')
 }
 
 export async function logSequencerSession(
@@ -107,6 +165,7 @@ export async function logSequencerSession(
 
   const ref = collection(db as Firestore, 'research_b_events')
   await addDoc(ref, event)
+  await incrementContribution(uid, 'session_count')
 }
 
 const BATCH_SIZE = 450

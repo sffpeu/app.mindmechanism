@@ -9,6 +9,7 @@ import { LexiconPanel } from '@/components/record/LexiconPanel'
 import { PhraseHistoryPanel, type PhraseHistoryRow } from '@/components/record/PhraseHistoryPanel'
 import { AffinityPanel } from '@/components/record/AffinityPanel'
 import { ResearchStatusPanel } from '@/components/record/ResearchStatusPanel'
+import { ResearchDashboard } from '@/components/record/ResearchDashboard'
 import { ExportButton } from '@/components/record/ExportButton'
 
 export function MyRecordView() {
@@ -73,6 +74,7 @@ export function MyRecordView() {
       <PhraseHistoryPanel rows={phraseRows} loading={loading} />
       <AffinityPanel profile={affinity} loading={loading} />
       <ResearchStatusPanel consentRecord={profile?.researchConsent} />
+      <ResearchDashboard />
     </div>
   )
 }
