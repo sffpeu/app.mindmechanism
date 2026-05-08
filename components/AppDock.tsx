@@ -17,6 +17,7 @@ import {
   Minimize2,
   Music2,
   Waves,
+  ScrollText,
 } from 'lucide-react';
 import { Dock, DockIcon, DockItem, DockLabel } from '@/components/ui/dock';
 import { useTheme } from '@/app/ThemeContext';
@@ -49,6 +50,7 @@ const navItems = [
   { title: 'Deck', href: '/deck', icon: SquareStack },
   { title: 'Sequencer', href: '/sequencer', icon: Music2 },
   { title: 'Synth Lab', href: '/synth-lab', icon: Waves },
+  { title: 'My Record', href: '/record', icon: ScrollText },
 ];
 
 export function AppDock() {

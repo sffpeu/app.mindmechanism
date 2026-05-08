@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { Suspense, useEffect, useState, useRef, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords, searchWords } from '@/lib/glossary'
 import { AddWordDialog } from '@/components/AddWordDialog'
@@ -17,8 +18,10 @@ import { GlossaryToolbarActions } from '@/components/glossary/GlossaryToolbarAct
 import { GlossaryWordScrollList } from '@/components/glossary/GlossaryWordScrollList'
 import { GlossaryVisualWordPanel } from '@/components/glossary/GlossaryVisualWordPanel'
 import { getVoiceNotesForTarget } from '@/lib/voiceNoteStorage'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 
-export default function GlossaryPage() {
+function GlossaryPageInner() {
+  const searchParams = useSearchParams()
   const { user } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
   const [scopeFilter, setScopeFilter] = useState<'All' | 'Default' | 'Mine' | 'My Words'>('All')
@@ -48,6 +51,12 @@ export default function GlossaryPage() {
   useEffect(() => {
     loadWords()
   }, [])
+
+  useEffect(() => {
+    if (searchParams.get('tab') === 'personal') {
+      setScopeFilter('My Words')
+    }
+  }, [searchParams])
 
   useEffect(() => {
     let active = true
@@ -384,5 +393,19 @@ export default function GlossaryPage() {
         mode={addMode}
       />
     </div>
+  )
+}
+
+export default function GlossaryPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="ml-16 flex min-h-screen items-center justify-center">
+          <LoadingSpinner size="lg" isLoading />
+        </div>
+      }
+    >
+      <GlossaryPageInner />
+    </Suspense>
   )
 }
