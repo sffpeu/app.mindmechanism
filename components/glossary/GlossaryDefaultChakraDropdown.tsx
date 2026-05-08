@@ -14,7 +14,7 @@ import {
 const CLOCK_HEX = ['#fd290a', '#fba63b', '#f7da5f', '#6dc037', '#156fde', '#941952', '#541b96', '#ee5fa7', '#56c1ff']
 
 export type GlossaryDefaultChakraDropdownProps = {
-  scopeFilter: 'All' | 'Default' | 'My Words'
+  scopeFilter: 'All' | 'Default' | 'Mine' | 'My Words'
   selectedClockId: number | null
   onSelectAllDefault: () => void
   onSelectChakra: (clockId: number) => void

@@ -32,6 +32,7 @@ export type GlossaryWordScrollListProps = {
   onSelectCard: (word: GlossaryWord | null) => void
   clockHexPalette: readonly string[]
   hasVoiceNoteWordIds: Set<string>
+  emptyMessage?: string
 }
 
 export function GlossaryWordScrollList({
@@ -43,6 +44,7 @@ export function GlossaryWordScrollList({
   onSelectCard,
   clockHexPalette,
   hasVoiceNoteWordIds,
+  emptyMessage = 'No words found',
 }: GlossaryWordScrollListProps) {
   return (
     <div
@@ -54,7 +56,7 @@ export function GlossaryWordScrollList({
         {loading ? (
           <div className="text-center py-8 text-gray-500 dark:text-gray-400">Loading words...</div>
         ) : letterSections.length === 0 ? (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">No words found</div>
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">{emptyMessage}</div>
         ) : (
           letterSections.map(([letter, sectionWords]) => (
             <div
@@ -71,7 +73,9 @@ export function GlossaryWordScrollList({
                 {sectionWords.map((word) => {
                   const tint = clockTint(word.clock_id, clockHexPalette)
                   const isUserOnly = word.source === 'user'
+                  const isPersonal = word.personal === true
                   const useClockCard = tint != null && !isUserOnly
+                  const displayDefinition = isPersonal ? (word.own_definition || word.definition) : word.definition
 
                   return (
                     <button
@@ -93,7 +97,12 @@ export function GlossaryWordScrollList({
                               boxShadow:
                                 selectedCard?.id === word.id ? `0 0 0 2px ${tint.hex}` : undefined,
                             }
-                          : undefined
+                          : isPersonal
+                            ? {
+                                borderLeftWidth: '4px',
+                                borderLeftColor: tint?.hex ?? '#6b7280',
+                              }
+                            : undefined
                       }
                       onMouseEnter={(e) => {
                         if (!useClockCard) return
@@ -119,7 +128,7 @@ export function GlossaryWordScrollList({
                           </p>
                         ) : word.source === 'user' ? (
                           <span className="text-[10px] font-semibold uppercase tracking-widest text-purple-500 dark:text-purple-400">
-                            My Word
+                            {isPersonal ? '◆ My Word' : 'My Word'}
                           </span>
                         ) : (
                           <span />
@@ -186,7 +195,7 @@ export function GlossaryWordScrollList({
                         </span>
                       )}
 
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mt-1 line-clamp-2">{word.definition}</p>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mt-1 line-clamp-2">{displayDefinition}</p>
                     </button>
                   )
                 })}

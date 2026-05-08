@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { cn } from '@/lib/utils'
@@ -34,7 +34,7 @@ type CompareReport = {
 
 function parseIpaStressPattern(ipaText: string, syllableCount: number): StressKind[] {
   if (!ipaText.trim() || syllableCount <= 0) return []
-  const clean = ipaText.replace(/[\/\[\]]/g, '').trim()
+  const clean = ipaText.replace(/[/[\]]/g, '').trim()
   const segments = clean
     .split(/[.|]/g)
     .map((s) => s.trim())
@@ -132,6 +132,7 @@ function phraseHash(phrase: string): string {
 
 export default function SequencerPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { user, loading } = useAuth()
   const { sequences, saveSequence, deleteSequence, loading: sequencesLoading } = useSequencerStorage()
   const toneMode = useSettings((s) => s.toneMode)
@@ -141,6 +142,7 @@ export default function SequencerPage() {
   const audio = useSequencerAudio(sequencer.sequence)
   const [stressSuggestion, setStressSuggestion] = useState<StressKind[] | null>(null)
   const [comparison, setComparison] = useState<CompareReport | null>(null)
+  const [didApplyGlossaryPrefill, setDidApplyGlossaryPrefill] = useState(false)
 
   useEffect(() => {
     document.title = 'Sequencer'
@@ -151,6 +153,18 @@ export default function SequencerPage() {
       router.replace('/auth/signin')
     }
   }, [loading, router, user])
+
+  useEffect(() => {
+    if (didApplyGlossaryPrefill) return
+    if (searchParams.get('fromGlossary') !== '1') return
+    const mantra = searchParams.get('mantra')
+    const language = searchParams.get('language')
+    const ipa = searchParams.get('ipa')
+    if (mantra) sequencer.setMantraText(mantra)
+    if (language) sequencer.setMantraLanguage(language)
+    if (ipa) sequencer.setIpaText(ipa)
+    setDidApplyGlossaryPrefill(true)
+  }, [didApplyGlossaryPrefill, searchParams, sequencer])
 
   const syllableByStepId = useMemo(() => {
     return sequencer.sequence.syllables.reduce<Record<string, string>>((acc, item) => {

@@ -419,7 +419,9 @@ export async function searchWords(searchText: string): Promise<GlossaryWord[]> {
       }) as GlossaryWord)
       .filter(word =>
         word.word.toLowerCase().includes(searchQuery) ||
-        word.definition.toLowerCase().includes(searchQuery)
+        word.definition.toLowerCase().includes(searchQuery) ||
+        (word.own_definition ?? '').toLowerCase().includes(searchQuery) ||
+        (word.context ?? '').toLowerCase().includes(searchQuery)
       );
     return assignDefaultClockIds(results);
   } catch (error) {

@@ -10,6 +10,7 @@ export type GlossaryToolbarActionsProps = {
   selectedCard: GlossaryWord | null
   onEdit: () => void
   onAdd: () => void
+  onAddPersonal: () => void
 }
 
 export function GlossaryToolbarActions({
@@ -18,6 +19,7 @@ export function GlossaryToolbarActions({
   selectedCard,
   onEdit,
   onAdd,
+  onAddPersonal,
 }: GlossaryToolbarActionsProps) {
   return (
     <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
@@ -54,7 +56,16 @@ export function GlossaryToolbarActions({
         aria-label="Add word"
       >
         <Plus className="w-3.5 h-3.5" />
-        Add
+        Add word
+      </button>
+      <button
+        type="button"
+        onClick={onAddPersonal}
+        className="px-2.5 py-1.5 rounded-full text-xs bg-purple-50 dark:bg-purple-500/20 border border-purple-200 dark:border-purple-500/40 hover:border-purple-300 dark:hover:border-purple-500/60 text-purple-700 dark:text-purple-200 flex items-center gap-1"
+        aria-label="Add your word"
+      >
+        <Plus className="w-3.5 h-3.5" />
+        Add your word
       </button>
     </div>
   )

@@ -21,7 +21,7 @@ import { getVoiceNotesForTarget } from '@/lib/voiceNoteStorage'
 export default function GlossaryPage() {
   const { user } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
-  const [scopeFilter, setScopeFilter] = useState<'All' | 'Default' | 'My Words'>('All')
+  const [scopeFilter, setScopeFilter] = useState<'All' | 'Default' | 'Mine' | 'My Words'>('All')
   const [selectedClockId, setSelectedClockId] = useState<number | null>(null)
   const [selectedSentiment, setSelectedSentiment] = useState<SentimentValue | null>(null)
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
@@ -35,6 +35,7 @@ export default function GlossaryPage() {
   /** Second click on same wedge: rotate diagram so that clock faces 3 o’clock. */
   const [diagramRotationSnapClockId, setDiagramRotationSnapClockId] = useState<number | null>(null)
   const [isAddWordOpen, setIsAddWordOpen] = useState(false)
+  const [addMode, setAddMode] = useState<'formal' | 'personal'>('formal')
   const [selectedCard, setSelectedCard] = useState<GlossaryWord | null>(null)
   const [voiceNoteWordIds, setVoiceNoteWordIds] = useState<Set<string>>(new Set())
   const [editWord, setEditWord] = useState<GlossaryWord | null>(null)
@@ -103,6 +104,8 @@ export default function GlossaryPage() {
   const glossaryFilterIncludes = useCallback(
     (word: GlossaryWord) => {
       if (scopeFilter === 'My Words') {
+        if (word.source !== 'user' || word.user_id !== user?.uid || word.personal !== true) return false
+      } else if (scopeFilter === 'Mine') {
         if (word.source !== 'user' || word.user_id !== user?.uid) return false
       } else if (scopeFilter === 'Default') {
         if (word.clock_id == null || word.clock_id < 0 || word.clock_id > 8) return false
@@ -116,7 +119,7 @@ export default function GlossaryPage() {
 
   const filteredWords = words.filter(glossaryFilterIncludes)
 
-  const setScopeAllOrMy = useCallback((scope: 'All' | 'My Words') => {
+  const setScopeAllOrMy = useCallback((scope: 'All' | 'Mine' | 'My Words') => {
     setSelectedClockId(null)
     setDiagramHoverClockId(null)
     setVisualExpandedClockId(null)
@@ -260,11 +263,19 @@ export default function GlossaryPage() {
           selectedCard={selectedCard}
           onEdit={() => {
             if (selectedCard) {
+              setAddMode(selectedCard.personal ? 'personal' : 'formal')
               setEditWord(selectedCard)
               setIsAddWordOpen(true)
             }
           }}
-          onAdd={() => setIsAddWordOpen(true)}
+          onAdd={() => {
+            setAddMode('formal')
+            setIsAddWordOpen(true)
+          }}
+          onAddPersonal={() => {
+            setAddMode('personal')
+            setIsAddWordOpen(true)
+          }}
         />
       </div>
       {!visualMode && <GlossaryAlphabetStrip selectedLetter={selectedLetter} onLetterClick={scrollToLetter} />}
@@ -337,6 +348,11 @@ export default function GlossaryPage() {
                   onSelectCard={setSelectedCard}
                   clockHexPalette={CLOCK_HEX}
                   hasVoiceNoteWordIds={voiceNoteWordIds}
+                  emptyMessage={
+                    scopeFilter === 'My Words'
+                      ? 'This is your space. Any word you use belongs here.'
+                      : 'No words found'
+                  }
                 />
               </div>
               {bottomChrome}
@@ -358,10 +374,14 @@ export default function GlossaryPage() {
         open={isAddWordOpen}
         onOpenChange={(open) => {
           setIsAddWordOpen(open)
-          if (!open) setEditWord(null)
+          if (!open) {
+            setEditWord(null)
+            setAddMode('formal')
+          }
         }}
         onWordAdded={loadWords}
         editWord={editWord}
+        mode={addMode}
       />
     </div>
   )

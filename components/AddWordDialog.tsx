@@ -18,15 +18,17 @@ import { toast } from 'sonner';
 import { useSoundEffects } from '@/lib/sounds';
 import { GlossaryWord, SUPPORTED_LANGUAGES } from '@/types/Glossary';
 import { cn } from '@/lib/utils';
+import { clockTitles } from '@/lib/clockTitles';
 
 interface AddWordDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onWordAdded: () => void;
   editWord?: GlossaryWord | null;
+  mode?: 'formal' | 'personal';
 }
 
-export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord }: AddWordDialogProps) {
+export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord, mode = 'formal' }: AddWordDialogProps) {
   const { user } = useAuth();
   const { playSuccess } = useSoundEffects();
   const [word, setWord] = useState('');
@@ -35,6 +37,9 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord }: Add
   const [language, setLanguage] = useState('en');
   const [rating, setRating] = useState<'+' | '-' | '~'>('~');
   const [grade, setGrade] = useState<number>(3);
+  const [clockId, setClockId] = useState<string>('none');
+  const [context, setContext] = useState('');
+  const [isPersonal, setIsPersonal] = useState(mode === 'personal');
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingPhonetic, setIsFetchingPhonetic] = useState(false);
   const [showOverwriteChoice, setShowOverwriteChoice] = useState(false);
@@ -55,17 +60,25 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord }: Add
         setLanguage(editWord.language ?? 'en');
         setRating(editWord.rating);
         setGrade(editWord.grade);
+        setClockId(editWord.clock_id == null ? 'none' : String(editWord.clock_id));
+        setContext(editWord.context ?? '');
+        setIsPersonal(editWord.personal === true || mode === 'personal');
       } else {
         resetForm();
+        setIsPersonal(mode === 'personal');
       }
     } else {
       resetForm();
       stopVoice();
     }
-  }, [open, editWord]);
+  }, [open, editWord, mode]);
+  useEffect(() => {
+    if (!editWord) setIsPersonal(mode === 'personal');
+  }, [mode, editWord]);
 
   // Auto-fetch IPA when word field loses focus
   const handleWordBlur = async () => {
+    if (isPersonal) return;
     if (!word.trim() || phoneticSpelling) return;
     setIsFetchingPhonetic(true);
     const ipa = await fetchIpaPhonetic(word.trim(), language);
@@ -83,7 +96,7 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord }: Add
       if (!cancelled) setIsFetchingPhonetic(false);
     });
     return () => { cancelled = true; };
-  }, [language]);
+  }, [language, open, word, phoneticSpelling, isPersonal]);
 
   const stopVoice = () => {
     recognitionRef.current?.stop();
@@ -163,16 +176,21 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord }: Add
     setIsLoading(true);
     setShowOverwriteChoice(false);
     try {
-      const result = await updateUserWord(editWord.id, {
+      const updates: Partial<GlossaryWord> = {
         word: word.trim(),
-        definition: definition.trim(),
+        definition: isPersonal ? (definition.trim() || word.trim()) : definition.trim(),
+        own_definition: isPersonal ? definition.trim() : '',
+        context: isPersonal ? context.trim() : '',
         phonetic_spelling: phoneticSpelling.trim(),
         language,
         rating,
         grade,
-        source: 'system',
-        version: 'Default'
-      });
+        source: 'user',
+        version: 'User',
+        personal: isPersonal,
+      };
+      if (clockId !== 'none') updates.clock_id = Number(clockId);
+      const result = await updateUserWord(editWord.id, updates);
       if (result) {
         playSuccess();
         toast.success('Word updated successfully');
@@ -195,17 +213,22 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord }: Add
     setIsLoading(true);
     if (showOverwriteChoice) setShowOverwriteChoice(false);
     try {
-      const newWord = {
+      const newWord: Omit<GlossaryWord, 'id' | 'created_at'> = {
         word: word.trim(),
-        definition: definition.trim(),
+        definition: isPersonal ? (definition.trim() || word.trim()) : definition.trim(),
+        own_definition: isPersonal ? definition.trim() : '',
+        context: isPersonal ? context.trim() : '',
         phonetic_spelling: phoneticSpelling.trim(),
         language,
         rating,
         grade,
+        clock_id: clockId === 'none' ? undefined : Number(clockId),
         source: 'user' as const,
         version: 'User' as const,
-        user_id: user.uid
+        user_id: user.uid,
+        personal: isPersonal,
       };
+      if (clockId !== 'none') newWord.clock_id = Number(clockId);
       const result = await addUserWord(newWord);
       if (result) {
         playSuccess();
@@ -236,6 +259,9 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord }: Add
     setLanguage('en');
     setRating('~');
     setGrade(3);
+    setClockId('none');
+    setContext('');
+    setIsPersonal(mode === 'personal');
     setInterimTranscript('');
   };
 
@@ -245,14 +271,16 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord }: Add
       <DialogContent className="sm:max-w-[600px] bg-white dark:bg-black border border-gray-200 dark:border-white/10">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white">
-            {isEditMode ? 'Edit Word' : 'Add Word'}
+            {isEditMode ? (isPersonal ? 'Edit your word' : 'Edit word') : (isPersonal ? 'Add your word' : 'Add word')}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-5 py-4">
 
           {/* Language */}
           <div className="space-y-2">
-            <Label className="text-gray-700 dark:text-gray-300">Language</Label>
+            <Label className="text-gray-700 dark:text-gray-300">
+              {isPersonal ? 'What language is this in?' : 'Language'}
+            </Label>
             <Select value={language} onValueChange={setLanguage}>
               <SelectTrigger className="bg-gray-50 dark:bg-white/5">
                 <SelectValue />
@@ -267,7 +295,7 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord }: Add
 
           {/* Word + voice */}
           <div className="space-y-2">
-            <Label htmlFor="word" className="text-gray-700 dark:text-gray-300">Word</Label>
+            <Label htmlFor="word" className="text-gray-700 dark:text-gray-300">{isPersonal ? 'Your word' : 'Word'}</Label>
             <div className="flex gap-2">
               <Input
                 id="word"
@@ -275,8 +303,10 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord }: Add
                 onChange={(e) => setWord(e.target.value)}
                 onBlur={handleWordBlur}
                 className="flex-1 bg-gray-50 dark:bg-white/5"
-                placeholder="Enter a word"
+                placeholder={isPersonal ? 'Enter your word as you use it' : 'Enter a word'}
                 required
+                autoCorrect="off"
+                spellCheck={false}
               />
               <button
                 type="button"
@@ -297,7 +327,7 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord }: Add
           {/* IPA phonetic — auto-filled, always editable */}
           <div className="space-y-2">
             <Label htmlFor="phonetic" className="text-gray-700 dark:text-gray-300 flex items-center gap-2">
-              IPA Phonetic
+              {isPersonal ? 'How do you say it?' : 'IPA Phonetic'}
               {isFetchingPhonetic && (
                 <span className="text-[10px] font-normal text-gray-400 dark:text-gray-500 animate-pulse">fetching…</span>
               )}
@@ -307,14 +337,22 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord }: Add
               value={phoneticSpelling}
               onChange={(e) => setPhoneticSpelling(e.target.value)}
               className="w-full bg-gray-50 dark:bg-white/5 font-mono"
-              placeholder={language === 'other' ? 'Enter IPA manually e.g. /ˈwɜːd/' : 'Auto-fills from dictionary — edit freely'}
+              placeholder={
+                isPersonal
+                  ? 'Optional pronunciation, e.g. /bɛː/'
+                  : language === 'other'
+                    ? 'Enter IPA manually e.g. /ˈwɜːd/'
+                    : 'Auto-fills from dictionary — edit freely'
+              }
             />
           </div>
 
           {/* Definition + voice */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="definition" className="text-gray-700 dark:text-gray-300">Definition</Label>
+              <Label htmlFor="definition" className="text-gray-700 dark:text-gray-300">
+                {isPersonal ? 'What does it mean to you?' : 'Definition'}
+              </Label>
               <button
                 type="button"
                 onClick={() => toggleVoice('definition')}
@@ -336,8 +374,10 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord }: Add
               value={definition}
               onChange={(e) => setDefinition(e.target.value)}
               className="w-full bg-gray-50 dark:bg-white/5 min-h-[100px]"
-              placeholder="Enter the word's definition"
-              required
+              placeholder={isPersonal ? 'Optional personal meaning' : "Enter the word's definition"}
+              required={!isPersonal}
+              autoCorrect={isPersonal ? 'off' : 'on'}
+              spellCheck={!isPersonal}
             />
             {isListening && voiceTarget === 'definition' && (
               <p className="text-xs italic text-violet-500 dark:text-violet-400 px-1 min-h-[1.25rem]">
@@ -345,6 +385,40 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord }: Add
               </p>
             )}
           </div>
+
+          <div className="space-y-2">
+            <Label className="text-gray-700 dark:text-gray-300">
+              {isPersonal ? 'Where do you feel it?' : 'Assign to wheel (optional)'}
+            </Label>
+            <Select value={clockId} onValueChange={setClockId}>
+              <SelectTrigger className="bg-gray-50 dark:bg-white/5">
+                <SelectValue placeholder="No wheel assigned" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No wheel assigned</SelectItem>
+                {clockTitles.map((title, idx) => (
+                  <SelectItem key={title} value={String(idx)}>{title}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {isPersonal && (
+            <div className="space-y-2">
+              <Label htmlFor="context" className="text-gray-700 dark:text-gray-300">
+                What language or context?
+              </Label>
+              <Input
+                id="context"
+                value={context}
+                onChange={(e) => setContext(e.target.value)}
+                className="w-full bg-gray-50 dark:bg-white/5"
+                placeholder="Optional: where/how you use this word"
+                autoCorrect="off"
+                spellCheck={false}
+              />
+            </div>
+          )}
 
           {/* Assessment */}
           <div className="space-y-3">

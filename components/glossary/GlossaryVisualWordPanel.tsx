@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { clockTitles } from '@/lib/clockTitles'
 import { cn } from '@/lib/utils'
 import type { GlossaryWord, GlossaryDefinition } from '@/types/Glossary'
@@ -22,12 +23,14 @@ function languageName(code: string | undefined): string | null {
 }
 
 export function GlossaryVisualWordPanel({ word, clockHexPalette, onClose }: GlossaryVisualWordPanelProps) {
+  const router = useRouter()
   const cid = word.clock_id
   const hex = cid != null && cid >= 0 && cid < clockHexPalette.length ? clockHexPalette[cid] : '#6b7280'
   const [extDef, setExtDef] = useState<GlossaryDefinition | null>(null)
   const [loadingExt, setLoadingExt] = useState(false)
   const [voiceNotes, setVoiceNotes] = useState<VoiceNote[]>([])
   const lang = languageName(word.language)
+  const isPersonal = word.personal === true
 
   useEffect(() => {
     setExtDef(null)
@@ -61,6 +64,16 @@ export function GlossaryVisualWordPanel({ word, clockHexPalette, onClose }: Glos
   const removeVoiceNote = async (noteId: string) => {
     await deleteVoiceNote(noteId)
     setVoiceNotes((prev) => prev.filter((v) => v.id !== noteId))
+  }
+
+  const openInSequencer = () => {
+    const params = new URLSearchParams()
+    params.set('fromGlossary', '1')
+    params.set('mantra', word.word)
+    if (word.language) params.set('language', word.language)
+    if (word.phonetic_spelling) params.set('ipa', word.phonetic_spelling)
+    if (word.clock_id != null) params.set('clockId', String(word.clock_id))
+    router.push(`/sequencer?${params.toString()}`)
   }
 
   return (
@@ -120,19 +133,42 @@ export function GlossaryVisualWordPanel({ word, clockHexPalette, onClose }: Glos
           </span>
           <span className="text-xs text-gray-500 dark:text-gray-400">Grade {word.grade}</span>
           {word.source === 'user' && (
-            <span className="text-xs font-medium text-purple-600 dark:text-purple-400">Your word</span>
+            <span className="text-xs font-medium text-purple-600 dark:text-purple-400">
+              {isPersonal ? '◆ Your personal word' : 'Your word'}
+            </span>
           )}
         </div>
 
         {/* Base definition */}
         <div>
           <h3 className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">
-            Definition
+            {isPersonal ? 'What this means to you' : 'Definition'}
           </h3>
           <p className="text-sm leading-relaxed text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
-            {word.definition || '—'}
+            {(isPersonal ? word.own_definition : word.definition) || word.definition || '—'}
           </p>
         </div>
+
+        {isPersonal && word.context && (
+          <div>
+            <h3 className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">
+              Context
+            </h3>
+            <p className="text-sm leading-relaxed text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
+              {word.context}
+            </p>
+          </div>
+        )}
+
+        {isPersonal && (
+          <button
+            type="button"
+            onClick={openInSequencer}
+            className="w-full rounded-md border border-black/10 dark:border-white/15 px-3 py-2 text-sm font-medium text-gray-800 dark:text-gray-100 hover:bg-black/5 dark:hover:bg-white/10"
+          >
+            Open in Sequencer
+          </button>
+        )}
 
         {/* Extended definitions — from glossary_definitions collection */}
         {loadingExt && (

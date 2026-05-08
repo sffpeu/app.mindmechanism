@@ -12,6 +12,12 @@ export interface GlossaryWord {
   /** For default words: which clock (0–8) this word belongs to. See clockTitles. */
   clock_id?: number;
   user_id?: string;
+  /** True when this user word belongs to the Personal Lexicon. */
+  personal?: boolean;
+  /** Personal meaning in the user's own words. */
+  own_definition?: string;
+  /** Personal provenance/context for where the word lives for the user. */
+  context?: string;
   created_at: string;
   /** Optional pre-recorded pronunciation file. Falls back to Web Speech API when absent. */
   audio_url?: string;

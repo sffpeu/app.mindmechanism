@@ -260,7 +260,7 @@ function pathNodeIdsForWord(wordId: string | null, leafById: Map<string, LayoutL
 }
 
 export type GlossaryVisualFilters = {
-  scopeFilter: 'All' | 'Default' | 'My Words'
+  scopeFilter: 'All' | 'Default' | 'Mine' | 'My Words'
   selectedClockId: number | null
   selectedSentiment: '+' | '~' | '-' | null
   /** For My Words: dim leaves that are not this user's entries. */
@@ -350,25 +350,29 @@ export function GlossaryRadialTree({
     [words]
   )
 
-  /** Logged-in user’s own glossary entries only (visual My Words ring). */
-  const myWordsOnly = useMemo(() => {
-    if (scopeFilter !== 'My Words' || !filterUserId) return [] as GlossaryWord[]
-    return words.filter(w => w.source === 'user' && w.user_id === filterUserId)
+  /** Logged-in user’s own glossary entries for Mine/My Words ring layouts. */
+  const userWordsOnly = useMemo(() => {
+    if ((scopeFilter !== 'Mine' && scopeFilter !== 'My Words') || !filterUserId) return [] as GlossaryWord[]
+    return words.filter(w => {
+      if (w.source !== 'user' || w.user_id !== filterUserId) return false
+      if (scopeFilter === 'My Words') return w.personal === true
+      return true
+    })
   }, [scopeFilter, filterUserId, words])
 
-  const isMyWordsSoloLayout = scopeFilter === 'My Words'
+  const isMyWordsSoloLayout = scopeFilter === 'Mine' || scopeFilter === 'My Words'
 
   /** Stable canvas size (max of focused / unfocused) so focus changes do not jump the view fit. */
   const { layout, extent, outerSectorR, labelFontSize, leafRadius } = useMemo(() => {
     const pad = 280
 
     if (isMyWordsSoloLayout) {
-      const n = myWordsOnly.length
+      const n = userWordsOnly.length
       const rWordBaseLo = Math.max(1400, 520 + Math.sqrt(Math.max(n, 1)) * 42)
       const outerR = rWordBaseLo + 80
       const leafR = outerR + LEAF_OUTSET
       const extentVal = leafR + pad
-      const L = buildLayoutMyWords(myWordsOnly, leafR)
+      const L = buildLayoutMyWords(userWordsOnly, leafR)
       const labelFontSize =
         4.45 * Math.max(6.4, Math.min(12, 560 / Math.sqrt(Math.max(n, 1) + 36)))
       return { layout: L, extent: extentVal, outerSectorR: outerR, labelFontSize, leafRadius: leafR }
@@ -400,7 +404,7 @@ export function GlossaryRadialTree({
     return { layout: L, extent, outerSectorR: outerR, labelFontSize, leafRadius }
   }, [
     isMyWordsSoloLayout,
-    myWordsOnly,
+    userWordsOnly,
     defaultWords,
     layoutFocusClockId,
     allViewOverview,
@@ -443,8 +447,10 @@ export function GlossaryRadialTree({
 
   const leafNotInMyWordsScope = useCallback(
     (w: GlossaryWord) => {
-      if (scopeFilter !== 'My Words' || !filterUserId) return false
-      return w.source !== 'user' || w.user_id !== filterUserId
+      if ((scopeFilter !== 'Mine' && scopeFilter !== 'My Words') || !filterUserId) return false
+      if (w.source !== 'user' || w.user_id !== filterUserId) return true
+      if (scopeFilter === 'My Words') return w.personal !== true
+      return false
     },
     [scopeFilter, filterUserId]
   )
@@ -519,7 +525,7 @@ export function GlossaryRadialTree({
   const onPointerUp = useCallback((e: React.PointerEvent) => {
     dragRef.current.active = false
     try {
-      ;(e.target as HTMLElement).releasePointerCapture(e.pointerId)
+      (e.target as HTMLElement).releasePointerCapture(e.pointerId)
     } catch {
       /* ignore */
     }
@@ -633,9 +639,11 @@ export function GlossaryRadialTree({
               {clockTitles[layoutFocusClockId]} — enlarged layout
             </span>
           )}
-          {scopeFilter === 'My Words' && (
+          {(scopeFilter === 'Mine' || scopeFilter === 'My Words') && (
             <span className="block mt-0.5 text-gray-600 dark:text-gray-400">
-              Only words you added; colors match chakra when set
+              {scopeFilter === 'My Words'
+                ? 'Only personal lexicon words; colors match chakra when set'
+                : 'Only your saved words; colors match chakra when set'}
             </span>
           )}
         </p>
