@@ -54,6 +54,18 @@ export interface UserProfile {
   security: {
     sessionTimeout: number;
   };
+  researchConsent?: {
+    categoryB?: ResearchConsent;
+    categoryC?: ResearchConsent;
+    neverAsk?: boolean;
+    lastPromptedAt?: string;
+  };
+}
+
+export interface ResearchConsent {
+  granted: boolean;
+  timestamp: string;
+  protocolVersion: string;
 }
 
 export interface AuthContextType {
@@ -80,6 +92,7 @@ const emptyProfileShell = (): UserProfile => ({
   security: {
     sessionTimeout: 30,
   },
+  researchConsent: undefined,
 })
 
 const AuthContext = createContext<AuthContextType>({
@@ -145,6 +158,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           security: {
             sessionTimeout: raw.security?.sessionTimeout ?? 30,
           },
+          researchConsent:
+            usersDocData &&
+            typeof usersDocData.researchConsent === 'object' &&
+            usersDocData.researchConsent !== null
+              ? (usersDocData.researchConsent as UserProfile['researchConsent'])
+              : undefined,
         };
         setProfile(profileData);
         return profileData;
@@ -164,6 +183,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           security: {
             sessionTimeout: 30,
           },
+          researchConsent:
+            usersDocData &&
+            typeof usersDocData.researchConsent === 'object' &&
+            usersDocData.researchConsent !== null
+              ? (usersDocData.researchConsent as UserProfile['researchConsent'])
+              : undefined,
         };
         await setDoc(profileRef, defaultProfile);
         setProfile(defaultProfile);

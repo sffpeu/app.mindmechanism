@@ -9,7 +9,7 @@ export function PrivacyData({ clockHex }: { clockHex: string }) {
           Privacy &amp; Data
         </h1>
         <p className="text-gray-500 dark:text-gray-400 text-sm">
-          Last updated: 29 April 2026
+          Last updated: 8 May 2026
         </p>
         <div
           className="mt-5 w-14 h-0.5 rounded-full"
@@ -24,7 +24,15 @@ export function PrivacyData({ clockHex }: { clockHex: string }) {
       <HR />
 
       <Section title="What we collect" clockHex={clockHex}>
-        <P>Mind Mechanism does not collect, store, or transmit personal data. The application operates entirely on your device. No account is required. No usage data, analytics, or telemetry is gathered or sent to external servers.</P>
+        <P>Mind Mechanism operates on a local-first architecture. The application stores your practice records, vocabulary, and reflections on your device. We have no access to your voice recordings, which never leave your device.</P>
+        <P>With your explicit consent, we collect anonymised behavioural data for research purposes: which somatic wheels you assign vocabulary to, and numerical patterns from your phrase practice sessions. This data does not include the words themselves, personally identifying information, or your audio recordings.</P>
+        <P>Research participation is entirely optional. You may opt in, opt out, or change your choices at any time in Settings → Research Participation. Your access to all features is not affected by your choice.</P>
+        <P>
+          For full details of what is collected, on what legal basis, and how it is used, see our full data collection protocol at{' '}
+          <a href="https://github.com/sffpeu/app.mindmechanism/blob/main/DATA_COLLECTION_PROTOCOL.md" className="underline" style={{ color: clockHex }}>
+            DATA_COLLECTION_PROTOCOL.md
+          </a>.
+        </P>
       </Section>
 
       <HR />
@@ -48,7 +56,14 @@ export function PrivacyData({ clockHex }: { clockHex: string }) {
       <HR />
 
       <Section title="Your rights (GDPR)" clockHex={clockHex}>
-        <P>As a user in the European Economic Area, you have the right to access, correct, or erase any personal data we hold about you. Given that we hold no personal data, these rights are satisfied by design. If you have a question or concern, contact us at <a href="mailto:contact@sffp.eu" className="underline" style={{ color: clockHex }}>contact@sffp.eu</a> and we will respond within 30 days.</P>
+        <P>As a user in the European Economic Area, you have the right to access, correct, or erase any personal data we hold about you.</P>
+        <P>
+          For users who have consented to research participation, you have the right to access, rectify, erase, and port your data. To exercise these rights, contact{' '}
+          <a href="mailto:future@theoneleggedpoet.com" className="underline" style={{ color: clockHex }}>
+            future@theoneleggedpoet.com
+          </a>
+          . We will respond within 30 days.
+        </P>
       </Section>
 
       <HR />

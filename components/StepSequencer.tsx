@@ -1654,8 +1654,12 @@ export default function StepSequencer({ mantraText, onPoolFinished }: StepSequen
           Nine lanes match the nine wheels — each loads an MM planet drone preset so you can hit{' '}
           <strong className="text-neutral-300">Play</strong> immediately. Each step fires{' '}
           <strong className="text-neutral-300">attack → sustain (per lane) → release</strong>; keep sustain near zero for key-like taps
-          or lift it slightly for pad feel while avoiding full drone hang. Replace lanes with your own clips when you like; patterns
-          persist.
+          or lift it slightly for pad feel while avoiding full drone hang. Personal clips are session layers for practice
+          composition and do not redefine canonical planetary node identity.
+        </p>
+        <p className="text-[10px] text-neutral-500 -mt-1">
+          Preset tones (Cosmic Octave anchors) remain the taxonomy reference. Imported sounds are additive personal layers
+          and reset with session reload.
         </p>
         <div className="flex flex-wrap items-center gap-2 text-[10px]">
           {presetsLoading && (
@@ -1740,7 +1744,8 @@ export default function StepSequencer({ mantraText, onPoolFinished }: StepSequen
                     size="icon"
                     className="h-8 w-8 text-neutral-400 hover:text-amber-200"
                     onClick={() => onPickFile(ti)}
-                    aria-label={`Import sample wheel ${ti + 1}`}
+                    aria-label={`Import personal layer for wheel ${ti + 1}`}
+                    title="Import personal layer (session-only, non-canonical)"
                   >
                     <Upload className="h-4 w-4" />
                   </Button>

@@ -5,8 +5,14 @@ import { Sparkles } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import SolarSystemResonance from '@/components/SolarSystemResonance'
+import { useAuth } from '@/lib/FirebaseAuthContext'
+import { hasStudentAcademicPortal, tierDisplayName } from '@/lib/portalAccess'
 
 export default function SynthLabPage() {
+  const { profile } = useAuth()
+  const tier = profile?.tier ?? 'open'
+  const hasPortalAccess = hasStudentAcademicPortal(tier)
+
   return (
     <ProtectedRoute>
       <div className="h-full overflow-y-auto bg-transparent ml-16">
@@ -31,6 +37,18 @@ export default function SynthLabPage() {
             </p>
           </header>
 
+          {!hasPortalAccess ? (
+            <Card className="p-5 bg-amber-50/70 dark:bg-amber-950/20 border border-amber-300/40 dark:border-amber-500/30">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-amber-700 dark:text-amber-300">
+                Student + Academic portal required
+              </p>
+              <h2 className="mt-2 text-lg font-semibold text-amber-900 dark:text-amber-100">Synth Lab is portal-gated</h2>
+              <p className="mt-2 text-sm leading-relaxed text-amber-800/90 dark:text-amber-200/90">
+                Live control-tone work is available in the Student + Academic portal only. Current membership:{' '}
+                <strong>{tierDisplayName(tier)}</strong>.
+              </p>
+            </Card>
+          ) : (
           <div className="space-y-6">
             <Card className="p-5 bg-white/80 dark:bg-white/[0.04] border border-black/5 dark:border-white/10">
               <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-3">
@@ -40,6 +58,7 @@ export default function SynthLabPage() {
                 <li>Audio uses your device speakers or headphones via the Web Audio API.</li>
                 <li>If nothing plays on the first tap, tap once more — some browsers unlock audio only after a gesture.</li>
                 <li>Multiple pads can be active at once; levels add together, so keep an eye on volume.</li>
+                <li>Planetary frequencies are canonical anchors in the taxonomy and are not replaceable by uploads.</li>
               </ul>
             </Card>
 
@@ -48,6 +67,7 @@ export default function SynthLabPage() {
               <SolarSystemResonance soundEnabled compact={false} />
             </div>
           </div>
+          )}
         </div>
       </div>
     </ProtectedRoute>

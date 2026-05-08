@@ -9,6 +9,7 @@ import { ToastProvider } from '@/components/ToastProvider';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { EmailVerificationGate } from '@/components/auth/EmailVerificationGate';
 import { AppDock } from '@/components/AppDock';
+import { ResearchConsentTrigger } from '@/components/research/ResearchConsentTrigger';
 
 function isShellPublic(pathname: string): boolean {
   if (pathname === '/' || pathname === '/home' || pathname === '/home/') return true
@@ -41,6 +42,7 @@ function LayoutContentInner({ children }: { children: React.ReactNode }) {
         </div>
       </div>
       <AppDock />
+      <ResearchConsentTrigger />
     </>
   );
 }
