@@ -47,6 +47,11 @@ service cloud.firestore {
       allow read, write: if isUserAuthenticated(userId);
     }
 
+    // Node affinity session log (Category A — personal practice map)
+    match /users/{userId}/nodeAffinityLog/{sessionId} {
+      allow read, write: if isUserAuthenticated(userId);
+    }
+
     // Time tracking
     match /timeTracking/{entryId} {
       allow write: if isAuthenticated();

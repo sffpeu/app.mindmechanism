@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { useAuth } from '@/lib/FirebaseAuthContext'
@@ -20,6 +20,8 @@ import { db } from '@/lib/firebase'
 import { doc, setDoc, getDoc, increment, type Firestore } from 'firebase/firestore'
 import { phraseHash } from '@/lib/phraseProgress'
 import { PhraseProgressCurve } from '@/components/sequencer/PhraseProgressCurve'
+import { NodeAffinityMap } from '@/components/sequencer/NodeAffinityMap'
+import { computeNodeAffinityProfile, type NodeAffinityProfile } from '@/lib/nodeAffinity'
 import { hasStudentAcademicPortal, tierDisplayName } from '@/lib/portalAccess'
 
 type StressKind = 'primary' | 'secondary' | 'unstressed'
@@ -138,10 +140,20 @@ export default function SequencerPage() {
   const [comparison, setComparison] = useState<CompareReport | null>(null)
   const [didApplyGlossaryPrefill, setDidApplyGlossaryPrefill] = useState(false)
   const [progressRefreshKey, setProgressRefreshKey] = useState(0)
+  const [affinityProfile, setAffinityProfile] = useState<NodeAffinityProfile | null>(null)
 
   useEffect(() => {
     document.title = 'Sequencer'
   }, [])
+
+  const refreshAffinityProfile = useCallback(() => {
+    if (!user?.uid) return
+    void computeNodeAffinityProfile(user.uid).then(setAffinityProfile)
+  }, [user?.uid])
+
+  useEffect(() => {
+    refreshAffinityProfile()
+  }, [refreshAffinityProfile])
 
   useEffect(() => {
     if (!loading && !user) {
@@ -237,6 +249,9 @@ export default function SequencerPage() {
         /* Firestore unavailable — comparison UI still works locally */
       }
       setProgressRefreshKey((k) => k + 1)
+    }
+    if (user?.uid) {
+      refreshAffinityProfile()
     }
   }
 
@@ -465,8 +480,27 @@ export default function SequencerPage() {
         />
       ) : null}
 
+      {affinityProfile !== null ? (
+        <div className="mb-6 rounded-2xl border border-black/8 bg-white/60 px-5 py-5 shadow-sm dark:border-white/8 dark:bg-neutral-950/60">
+          <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400 dark:text-neutral-500">
+            Your practice map — last 28 days
+          </p>
+          <NodeAffinityMap profile={affinityProfile} />
+          {affinityProfile.totalSessions > 0 ? (
+            <p className="mt-3 text-[10px] text-gray-400 dark:text-neutral-500">
+              {affinityProfile.totalSessions} session{affinityProfile.totalSessions !== 1 ? 's' : ''} ·{' '}
+              {affinityProfile.totalFires.toLocaleString()} steps
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
       {/* Phrase analyzer — full width, no extra wrapper */}
-      <StepSequencer mantraText={sequencer.sequence.mantraText} onPoolFinished={handlePoolFinished} />
+      <StepSequencer
+        mantraText={sequencer.sequence.mantraText}
+        onPoolFinished={handlePoolFinished}
+        onNodeAffinityLogged={refreshAffinityProfile}
+      />
     </div>
   )
 }

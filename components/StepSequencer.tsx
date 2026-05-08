@@ -45,6 +45,7 @@ import { saveVoiceNote, type VoiceNoteTarget } from '@/lib/voiceNoteStorage'
 import type { GlossaryWord } from '@/types/Glossary'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { logSequencerSession } from '@/lib/researchLogging'
+import { logNodeAffinitySession } from '@/lib/nodeAffinity'
 
 export const STEPS = 16
 /** One lane per mandala / wheel (0–8). */
@@ -99,10 +100,12 @@ type PhrasePool = {
 type StepSequencerProps = {
   mantraText?: string
   onPoolFinished?: (payload: { poolIndex: number; blob: Blob; durationSec: number }) => void
+  /** Called after Category A node-affinity session is logged (main transport stop). */
+  onNodeAffinityLogged?: () => void
 }
 
 /** Rough chromatic alignment with planet drones / wheels */
-const TRACK_COLORS = [
+export const TRACK_COLORS = [
   '#fd290a',
   '#fba63b',
   '#f7da5f',
@@ -210,7 +213,11 @@ function initialTracks(): SequencerTrack[] {
   }))
 }
 
-export default function StepSequencer({ mantraText, onPoolFinished }: StepSequencerProps = {}) {
+export default function StepSequencer({
+  mantraText,
+  onPoolFinished,
+  onNodeAffinityLogged,
+}: StepSequencerProps = {}) {
   const [tracks, setTracks] = useState<SequencerTrack[]>(() => initialTracks())
   const [bpm, setBpm] = useState(() => loadPersistedPattern().bpm)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -468,10 +475,15 @@ export default function StepSequencer({ mantraText, onPoolFinished }: StepSequen
     sessionNodeUsageRef.current = {}
     sessionStepCountRef.current = 0
     if (totalSteps > 0 && user?.uid) {
-      void logSequencerSession(user.uid, profile, {
-        nodeUsage: usage,
-        totalStepsFired: totalSteps,
-      })
+      const uid = user.uid
+      void (async () => {
+        await logSequencerSession(uid, profile, {
+          nodeUsage: usage,
+          totalStepsFired: totalSteps,
+        })
+        await logNodeAffinitySession(uid, usage)
+        onNodeAffinityLogged?.()
+      })()
     }
     setIsPlaying(false)
     setCurrentStep(0)
@@ -479,7 +491,7 @@ export default function StepSequencer({ mantraText, onPoolFinished }: StepSequen
       mediaRecorderRef.current.stop()
       setRecordingActive(false)
     }
-  }, [user?.uid, profile])
+  }, [user?.uid, profile, onNodeAffinityLogged])
 
   const startTransport = useCallback(async () => {
     const ctx = ensureCtx()
