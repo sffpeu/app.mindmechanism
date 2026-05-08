@@ -243,6 +243,8 @@ export default function StepSequencer({ mantraText, onPoolFinished }: StepSequen
   const [phraseReadoutBusy, setPhraseReadoutBusy] = useState(false)
   const [phraseTranscribeBusy, setPhraseTranscribeBusy] = useState(false)
   const [readoutExportMsg, setReadoutExportMsg] = useState<string | null>(null)
+  const [referenceTarget, setReferenceTarget] = useState('')
+  const [listeningCue, setListeningCue] = useState('')
   const [attachOpen, setAttachOpen] = useState(false)
   const [attachTab, setAttachTab] = useState<'deck-card' | 'glossary'>('deck-card')
   const [attachSearch, setAttachSearch] = useState('')
@@ -1106,6 +1108,42 @@ export default function StepSequencer({ mantraText, onPoolFinished }: StepSequen
       />
 
       <Card className="p-4 bg-neutral-950/90 border-neutral-800 text-neutral-100 space-y-4">
+        <div className="rounded-lg border border-amber-400/30 bg-amber-950/20 p-3 space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-200/90">
+            Guided practice scaffold
+          </p>
+          <p className="text-[11px] text-amber-100/80 leading-relaxed">
+            Use a clear reference before recording (IPA, practitioner model, or your target phrase). This tape is for self-observation, not diagnosis.
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <div className="space-y-1">
+              <Label className="text-[10px] uppercase tracking-widest text-amber-200/70">
+                Reference target
+              </Label>
+              <Input
+                value={referenceTarget}
+                onChange={(e) => setReferenceTarget(e.target.value)}
+                placeholder="e.g. /rɪˈmɛm.bə.rɪŋ/ or practitioner model cue"
+                className="bg-neutral-950 border-amber-900/60 text-neutral-100"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[10px] uppercase tracking-widest text-amber-200/70">
+                Listening cue
+              </Label>
+              <Input
+                value={listeningCue}
+                onChange={(e) => setListeningCue(e.target.value)}
+                placeholder="e.g. Consonant at start of 2nd syllable"
+                className="bg-neutral-950 border-amber-900/60 text-neutral-100"
+              />
+            </div>
+          </div>
+          <p className="text-[10px] text-amber-200/70 leading-relaxed">
+            Phrase recordings stay on this device for the current session unless you explicitly attach a local note. If your intent is therapeutic, review with a qualified practitioner.
+          </p>
+        </div>
+
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-500">Phrase analyzer tape</p>
