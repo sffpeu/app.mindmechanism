@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { useAuth } from '@/lib/FirebaseAuthContext'
+import { cn } from '@/lib/utils'
 import StepSequencer from '@/components/StepSequencer'
 import { useSequencer } from '@/lib/hooks/useSequencer'
 import { useSequencerAudio } from '@/lib/hooks/useSequencerAudio'
@@ -218,8 +219,10 @@ export default function SequencerPage() {
   if (!user) return null
 
   return (
-    <div className="min-h-full overflow-y-auto pl-16 pr-4 py-6 sm:pr-6">
-      <div className="mb-4 rounded-xl border border-black/10 bg-white/70 p-4 dark:border-white/10 dark:bg-neutral-950/80">
+    <div className="min-h-full overflow-y-auto pl-16 pr-4 pb-12 pt-4 sm:pr-6">
+
+      {/* Header — no card, just a clean strip */}
+      <div className="mb-6 border-b border-black/8 pb-4 dark:border-white/8">
         <SequencerHeader
           title={sequencer.sequence.title}
           isDirty={sequencer.isDirty}
@@ -235,33 +238,39 @@ export default function SequencerPage() {
         />
       </div>
 
-      <div className="mb-4 rounded-xl border border-black/10 bg-white/70 p-4 dark:border-white/10 dark:bg-neutral-950/80">
-        <div className="mb-3">
-          <MantraInput
-            mantraText={sequencer.sequence.mantraText}
-            mantraLanguage={sequencer.sequence.mantraLanguage}
-            ipaText={sequencer.sequence.ipaText}
-            syllableCount={sequencer.syllables.length}
-            activeStepCount={sequencer.sequence.steps.filter((s) => s.active).length}
-            overflow={sequencer.overflow}
-            onMantraChange={sequencer.setMantraText}
-            onLanguageChange={sequencer.setMantraLanguage}
-            onIpaChange={sequencer.setIpaText}
-          />
-          {stressSuggestion?.length ? (
-            <div className="mt-2 flex items-center justify-between rounded-md border border-amber-400/40 bg-amber-50/70 px-3 py-2 text-xs dark:bg-amber-900/20">
-              <span>IPA stress suggestion ready ({stressSuggestion.length} syllables mapped).</span>
-              <button
-                type="button"
-                className="rounded bg-amber-500 px-2 py-1 font-semibold text-black"
-                onClick={() => sequencer.assignStress(sequencer.syllables, stressSuggestion)}
-              >
-                Apply
-              </button>
-            </div>
-          ) : null}
-        </div>
-        <div className="overflow-x-auto">
+      {/* Mnemonic scaffold — the primary work area */}
+      <div className="mb-6 rounded-2xl border border-black/8 bg-white/60 px-5 py-5 shadow-sm dark:border-white/8 dark:bg-neutral-950/60">
+        <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400 dark:text-neutral-500">
+          Mnemonic scaffold
+        </p>
+        <MantraInput
+          mantraText={sequencer.sequence.mantraText}
+          mantraLanguage={sequencer.sequence.mantraLanguage}
+          ipaText={sequencer.sequence.ipaText}
+          syllableCount={sequencer.syllables.length}
+          activeStepCount={sequencer.sequence.steps.filter((s) => s.active).length}
+          overflow={sequencer.overflow}
+          onMantraChange={sequencer.setMantraText}
+          onLanguageChange={sequencer.setMantraLanguage}
+          onIpaChange={sequencer.setIpaText}
+        />
+
+        {stressSuggestion?.length ? (
+          <div className="mt-3 flex items-center justify-between rounded-lg border border-amber-300/50 bg-amber-50/60 px-3 py-2 dark:border-amber-500/20 dark:bg-amber-950/20">
+            <span className="text-[11px] text-amber-700 dark:text-amber-300">
+              {stressSuggestion.length} syllables mapped from IPA — apply to grid?
+            </span>
+            <button
+              type="button"
+              className="ml-3 rounded-md bg-amber-400/80 px-2.5 py-1 text-[11px] font-semibold text-amber-900 hover:bg-amber-400 dark:bg-amber-500/30 dark:text-amber-200"
+              onClick={() => sequencer.assignStress(sequencer.syllables, stressSuggestion)}
+            >
+              Apply
+            </button>
+          </div>
+        ) : null}
+
+        <div className="mt-5 overflow-x-auto">
           <SequencerGrid
             steps={sequencer.sequence.steps}
             currentStepIndex={audio.currentStepIndex}
@@ -270,7 +279,7 @@ export default function SequencerPage() {
             onAssignNode={sequencer.assignNode}
             onSetDuration={sequencer.setDuration}
           />
-          <div className="mt-1">
+          <div className="mt-1.5">
             <SyllabicAligner
               steps={sequencer.sequence.steps}
               syllables={sequencer.sequence.syllables}
@@ -279,7 +288,8 @@ export default function SequencerPage() {
             />
           </div>
         </div>
-        <div className="mt-3">
+
+        <div className="mt-4 border-t border-black/6 pt-4 dark:border-white/6">
           <SequencerControls
             isPlaying={audio.isPlaying}
             bpm={sequencer.sequence.bpm}
@@ -297,30 +307,100 @@ export default function SequencerPage() {
         </div>
       </div>
 
-      <div className="mb-4 rounded-xl border border-black/10 bg-white/70 p-4 dark:border-white/10 dark:bg-neutral-950/80">
-        <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-gray-500">Pattern comparison</h3>
-        {comparison ? (
-          <div className="space-y-2 text-sm">
-            <p className="font-semibold">Consistency score: {comparison.consistencyScore}/100</p>
-            <p className="text-xs text-gray-500">Rhythm match: {comparison.rhythmMatchPct}%</p>
-            <p className="font-mono text-xs">Target: {comparison.targetPattern}</p>
-            <p className="font-mono text-xs">Your: {comparison.userPattern}</p>
-            <p className="text-xs">
-              Stress hits {comparison.stressHitCount} · misses {comparison.stressMissCount}
-            </p>
-            {comparison.notes.map((n) => (
-              <p key={n} className="text-xs text-amber-600 dark:text-amber-400">
-                {n}
-              </p>
+      {/* Pattern comparison */}
+      {comparison ? (
+        <div className="mb-6 rounded-2xl border border-black/8 bg-white/60 px-5 py-5 shadow-sm dark:border-white/8 dark:bg-neutral-950/60">
+          <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400 dark:text-neutral-500">
+            Pattern comparison
+          </p>
+          <div className="flex items-start gap-6">
+            {/* Score */}
+            <div className="shrink-0 text-center">
+              <div className="text-4xl font-black tabular-nums leading-none text-gray-900 dark:text-white">
+                {comparison.consistencyScore}
+              </div>
+              <div className="mt-1 text-[10px] uppercase tracking-widest text-gray-400">consistency</div>
+            </div>
+            {/* Patterns */}
+            <div className="min-w-0 flex-1 space-y-3">
+              <div>
+                <div className="mb-1 text-[10px] uppercase tracking-widest text-gray-400">target</div>
+                <div className="flex flex-wrap gap-0.5">
+                  {Array.from(comparison.targetPattern).map((ch, i) => (
+                    <div
+                      key={i}
+                      className={cn(
+                        'h-4 w-3 rounded-sm',
+                        ch === '▓'
+                          ? 'bg-violet-500/70 dark:bg-violet-400/60'
+                          : 'bg-gray-200/80 dark:bg-white/10'
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="mb-1 text-[10px] uppercase tracking-widest text-gray-400">yours</div>
+                <div className="flex flex-wrap gap-0.5">
+                  {Array.from(comparison.userPattern).map((ch, i) => (
+                    <div
+                      key={i}
+                      className={cn(
+                        'h-4 w-3 rounded-sm',
+                        ch === '▓'
+                          ? 'bg-emerald-500/70 dark:bg-emerald-400/60'
+                          : 'bg-gray-200/80 dark:bg-white/10'
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+            {/* Stats */}
+            <div className="shrink-0 space-y-2 text-right">
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-gray-400">rhythm</div>
+                <div className="text-sm font-semibold tabular-nums text-gray-700 dark:text-gray-300">
+                  {comparison.rhythmMatchPct}%
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-gray-400">stress</div>
+                <div className="text-sm tabular-nums text-gray-700 dark:text-gray-300">
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">{comparison.stressHitCount}✓</span>
+                  {' '}
+                  <span className="text-gray-400">{comparison.stressMissCount}✗</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          {comparison.notes.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-1.5">
+              {comparison.notes.map((n) => (
+                <span
+                  key={n}
+                  className="rounded-full border border-amber-300/50 bg-amber-50/70 px-2.5 py-0.5 text-[11px] text-amber-700 dark:border-amber-500/20 dark:bg-amber-950/30 dark:text-amber-300"
+                >
+                  {n}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="mb-6 flex items-center gap-3 rounded-2xl border border-dashed border-black/10 px-5 py-4 dark:border-white/10">
+          <div className="flex gap-0.5 opacity-30">
+            {Array.from({ length: 16 }, (_, i) => (
+              <div key={i} className={cn('h-4 w-3 rounded-sm bg-gray-400', i % 3 === 0 && 'bg-violet-400')} />
             ))}
           </div>
-        ) : (
-          <p className="text-xs text-gray-500">
-            Finish a phrase pool recording below to generate rhythm/stress comparison against the current grid.
+          <p className="text-xs text-gray-400 dark:text-neutral-500">
+            Record and finish a phrase pool below to see your pattern here.
           </p>
-        )}
-      </div>
+        </div>
+      )}
 
+      {/* Phrase analyzer — full width, no extra wrapper */}
       <StepSequencer mantraText={sequencer.sequence.mantraText} onPoolFinished={handlePoolFinished} />
     </div>
   )
