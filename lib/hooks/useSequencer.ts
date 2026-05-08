@@ -108,6 +108,30 @@ export function useSequencer(userId: string | null) {
     mutate((prev) => ({ ...prev, mantraLanguage: lang }))
   const setIpaText = (ipa: string) => mutate((prev) => ({ ...prev, ipaText: ipa }))
 
+  const assignStress = (
+    syllableList: string[],
+    stressPattern: Array<'primary' | 'secondary' | 'unstressed'>
+  ) =>
+    mutate((prev) => {
+      const stressByStep = new Map<string, 'primary' | 'secondary' | 'unstressed'>()
+      const max = Math.min(prev.steps.length, syllableList.length, stressPattern.length)
+      for (let i = 0; i < max; i++) {
+        stressByStep.set(prev.steps[i]!.id, stressPattern[i]!)
+      }
+      return {
+        ...prev,
+        steps: prev.steps.map((s) => {
+          const stress = stressByStep.get(s.id)
+          if (!stress) return s
+          return {
+            ...s,
+            active: stress !== 'unstressed',
+            durationMultiplier: stress === 'primary' ? 2 : 1,
+          }
+        }),
+      }
+    })
+
   const loadSequence = (seq: Sequence) => {
     setSequence(recalcSyllables(seq))
     setIsDirty(false)
@@ -130,6 +154,7 @@ export function useSequencer(userId: string | null) {
     setMantraText,
     setMantraLanguage,
     setIpaText,
+    assignStress,
     syllables,
     overflow,
     isDirty,

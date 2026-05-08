@@ -94,6 +94,11 @@ type PhrasePool = {
   transcribeError?: string | null
 }
 
+type StepSequencerProps = {
+  mantraText?: string
+  onPoolFinished?: (payload: { poolIndex: number; blob: Blob; durationSec: number }) => void
+}
+
 /** Rough chromatic alignment with planet drones / wheels */
 const TRACK_COLORS = [
   '#fd290a',
@@ -203,7 +208,7 @@ function initialTracks(): SequencerTrack[] {
   }))
 }
 
-export default function StepSequencer() {
+export default function StepSequencer({ mantraText, onPoolFinished }: StepSequencerProps = {}) {
   const [tracks, setTracks] = useState<SequencerTrack[]>(() => initialTracks())
   const [bpm, setBpm] = useState(() => loadPersistedPattern().bpm)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -626,6 +631,10 @@ export default function StepSequencer() {
           type: recorder.mimeType || 'audio/webm',
         })
         const url = URL.createObjectURL(blob)
+        const nextDurationSec = Math.min(
+          POOL_RECORD_MS / 1000,
+          recordedMsRef.current / 1000
+        )
         setPools((prev) =>
           prev.map((pool, idx) => {
             if (idx !== activePool) return pool
@@ -634,10 +643,7 @@ export default function StepSequencer() {
               ...pool,
               blob,
               url,
-              durationSec: Math.min(
-                POOL_RECORD_MS / 1000,
-                recordedMsRef.current / 1000
-              ),
+              durationSec: nextDurationSec,
               acousticReadout: null,
               acousticReadoutError: null,
               transcriptWords: null,
@@ -647,6 +653,7 @@ export default function StepSequencer() {
             }
           })
         )
+        onPoolFinished?.({ poolIndex: activePool, blob, durationSec: nextDurationSec })
         setPhrasePos(0)
         setPhraseDuration(Math.min(POOL_RECORD_MS / 1000, recordedMs / 1000))
         setPhraseRecActive(false)
@@ -682,7 +689,7 @@ export default function StepSequencer() {
       setPhraseRecActive(false)
       setPhraseError('Microphone access is required to capture a phrase.')
     }
-  }, [activePool, finalizePhrasePool, pools, recordedMs, stopPhrasePlayback])
+  }, [activePool, finalizePhrasePool, onPoolFinished, pools, recordedMs, stopPhrasePlayback])
 
   const pausePhraseRecord = useCallback(() => {
     const recorder = phraseRecorderRef.current
@@ -924,9 +931,11 @@ export default function StepSequencer() {
     setAttachMsg(null)
     setAttachSearch('')
     setSelectedTarget(null)
-    setAttachLabel(pool.transcriptText?.trim() || pool.notes?.trim() || `Pool ${activePool + 1}`)
+    setAttachLabel(
+      mantraText?.trim() || pool.transcriptText?.trim() || pool.notes?.trim() || `Pool ${activePool + 1}`
+    )
     setAttachOpen(true)
-  }, [activePool, pools])
+  }, [activePool, mantraText, pools])
 
   const confirmAttachVoiceNote = useCallback(async () => {
     const pool = pools[activePool]
