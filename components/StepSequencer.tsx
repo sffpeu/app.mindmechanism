@@ -53,6 +53,72 @@ const PRACTICE_POOLS = 3
 const POOL_COLORS = ['#fd290a', '#156fde', '#ee5fa7'] as const
 const STACK_COUNTDOWN_SEC = 3
 
+/**
+ * Warm blob/WebM clips for stacked playback. Many browsers skip or reorder media events
+ * for object URLs; we accept HAVE_METADATA, microtask re-check, or a timeout so preload
+ * never blocks the stack unnecessarily.
+ */
+function waitPhrasePoolAudio(url: string, timeoutMs = 4000): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const a = new Audio()
+    a.preload = 'auto'
+    let settled = false
+
+    const cleanup = () => {
+      clearTimeout(t)
+      a.removeEventListener('loadedmetadata', onMediaEvent)
+      a.removeEventListener('loadeddata', onMediaEvent)
+      a.removeEventListener('canplay', onMediaEvent)
+      a.removeEventListener('canplaythrough', onMediaEvent)
+      a.removeEventListener('error', onError)
+    }
+
+    const finish = () => {
+      if (settled) return
+      settled = true
+      cleanup()
+      resolve()
+    }
+
+    const fail = () => {
+      if (settled) return
+      settled = true
+      cleanup()
+      reject(new Error('media error'))
+    }
+
+    const onMediaEvent = () => finish()
+    const onError = () => fail()
+
+    const t = setTimeout(() => finish(), timeoutMs)
+
+    a.addEventListener('loadedmetadata', onMediaEvent)
+    a.addEventListener('loadeddata', onMediaEvent)
+    a.addEventListener('canplay', onMediaEvent)
+    a.addEventListener('canplaythrough', onMediaEvent)
+    a.addEventListener('error', onError)
+
+    a.src = url
+
+    if (a.readyState >= HTMLMediaElement.HAVE_METADATA && !a.error) {
+      finish()
+      return
+    }
+
+    try {
+      a.load()
+    } catch {
+      fail()
+      return
+    }
+
+    queueMicrotask(() => {
+      if (settled) return
+      if (!a.error && a.readyState >= HTMLMediaElement.HAVE_METADATA) finish()
+    })
+  })
+}
+
 type PhrasePool = {
   blob: Blob | null
   url: string | null
@@ -212,6 +278,8 @@ export default function StepSequencer() {
   const [armedPools, setArmedPools] = useState<number[]>([0])
   const [stackCountdown, setStackCountdown] = useState<number | null>(null)
   const [stackArmedReady, setStackArmedReady] = useState(false)
+  /** Bumped after preload completes so ARMED status re-reads preloadedPoolUrlRef. */
+  const [preloadRevision, setPreloadRevision] = useState(0)
 
   const ctxRef = useRef<AudioContext | null>(null)
   const masterRef = useRef<GainNode | null>(null)
@@ -236,7 +304,8 @@ export default function StepSequencer() {
   )
   const allPoolsTickerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const stackCountdownRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const preloadedPoolsRef = useRef<Set<number>>(new Set())
+  /** Pool index → object URL that finished warm-up (invalidated when URL changes). */
+  const preloadedPoolUrlRef = useRef<Map<number, string>>(new Map())
 
   useEffect(() => {
     tracksRef.current = tracks
@@ -462,11 +531,19 @@ export default function StepSequencer() {
   }, [pools])
 
   useEffect(() => {
-    // pre-arm loading check for stacked playback readiness
+    const m = preloadedPoolUrlRef.current
+    for (let i = 0; i < PRACTICE_POOLS; i++) {
+      if (m.get(i) !== pools[i]?.url) m.delete(i)
+    }
+  }, [pools])
+
+  useEffect(() => {
     const armed = (armedPools.length ? armedPools : [activePool]).filter((i) => !!pools[i]?.url)
-    const ready = armed.length > 0 && armed.every((i) => preloadedPoolsRef.current.has(i))
-    setStackArmedReady(ready)
-  }, [activePool, armedPools, pools])
+    const warmed =
+      armed.length > 0 &&
+      armed.every((i) => preloadedPoolUrlRef.current.get(i) === pools[i]?.url)
+    setStackArmedReady(warmed)
+  }, [activePool, armedPools, pools, preloadRevision])
 
   const preloadArmedPools = useCallback(async () => {
     const order = armedPools.length ? armedPools : [activePool]
@@ -476,36 +553,18 @@ export default function StepSequencer() {
       return false
     }
     for (const idx of targets) {
-      if (preloadedPoolsRef.current.has(idx)) continue
       const pool = pools[idx]
-      if (!pool?.url) continue
+      const url = pool?.url
+      if (!url) continue
+      if (preloadedPoolUrlRef.current.get(idx) === url) continue
       try {
-        const a = new Audio()
-        a.preload = 'auto'
-        a.src = pool.url
-        await new Promise<void>((resolve, reject) => {
-          const ok = () => {
-            a.removeEventListener('canplaythrough', ok)
-            a.removeEventListener('loadeddata', ok)
-            a.removeEventListener('error', fail)
-            resolve()
-          }
-          const fail = () => {
-            a.removeEventListener('canplaythrough', ok)
-            a.removeEventListener('loadeddata', ok)
-            a.removeEventListener('error', fail)
-            reject(new Error('preload failed'))
-          }
-          a.addEventListener('canplaythrough', ok, { once: true })
-          a.addEventListener('loadeddata', ok, { once: true })
-          a.addEventListener('error', fail, { once: true })
-          a.load()
-        })
-        preloadedPoolsRef.current.add(idx)
+        await waitPhrasePoolAudio(url)
       } catch {
-        return false
+        /* Still allow stacked play — fresh Audio() may decode on play(). */
       }
+      preloadedPoolUrlRef.current.set(idx, url)
     }
+    setPreloadRevision((r) => r + 1)
     return true
   }, [activePool, armedPools, pools])
 
@@ -765,11 +824,7 @@ export default function StepSequencer() {
       .filter((p) => p.url)
     if (!active.length) return
     try {
-      const ok = await preloadArmedPools()
-      if (!ok) {
-        setPhraseError('Could not preload armed pools. Try again.')
-        return
-      }
+      await preloadArmedPools()
       stopAllPoolsPlayback()
       setPoolProgress(Array.from({ length: PRACTICE_POOLS }, () => 0))
       let c = STACK_COUNTDOWN_SEC
