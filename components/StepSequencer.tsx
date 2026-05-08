@@ -732,7 +732,7 @@ export default function StepSequencer() {
     URL.revokeObjectURL(u)
   }
 
-  const railW = 'w-[11rem]'
+  const railW = 'w-[16.5rem]'
 
   return (
     <div className="space-y-6">
@@ -984,13 +984,13 @@ export default function StepSequencer() {
       </Card>
 
       <div className="overflow-x-auto rounded-xl border border-neutral-800 bg-neutral-950/80 p-3">
-        <div className="min-w-[760px] space-y-2">
-          <div className={cn('flex gap-1 items-center', `pl-[11rem]`)}>
+        <div className="min-w-[980px] space-y-2">
+          <div className={cn('flex gap-1 items-center', `pl-[16.5rem]`)}>
             {Array.from({ length: STEPS }, (_, s) => (
               <div
                 key={s}
                 className={cn(
-                  'w-7 h-5 rounded text-[10px] font-mono flex items-center justify-center',
+                  'w-7 h-5 rounded text-[10px] font-mono flex items-center justify-center border border-transparent',
                   currentStep === s && isPlaying
                     ? 'bg-amber-500/30 text-amber-200'
                     : 'text-neutral-600'
@@ -1001,26 +1001,34 @@ export default function StepSequencer() {
             ))}
           </div>
           {tracks.map((tr, ti) => (
-            <div key={ti} className="flex gap-1.5 items-center">
-              <div className={cn(railW, 'shrink-0 flex flex-col gap-1 pr-1')}>
-                <div className="flex items-start gap-1.5">
+            <div
+              key={ti}
+              className={cn(
+                'flex gap-2 items-stretch rounded-lg border border-neutral-800/80 bg-neutral-900/45',
+                currentStep >= 0 && isPlaying && tr.steps[currentStep]
+                  ? 'ring-1 ring-amber-500/30 border-amber-700/40'
+                  : ''
+              )}
+            >
+              <div className={cn(railW, 'shrink-0 flex flex-col gap-1.5 p-2 border-r border-neutral-800')}>
+                <div className="flex items-start gap-2">
                   <span
-                    className="h-3 w-3 rounded-full shrink-0 mt-0.5"
+                    className="h-3 w-3 rounded-full shrink-0 mt-1"
                     style={{ backgroundColor: TRACK_COLORS[ti] }}
                   />
                   <div className="min-w-0 flex-1">
-                    <span className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider leading-none">
+                    <span className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider leading-none block">
                       W{ti + 1}
                     </span>
-                    <p className="text-[13px] font-semibold text-neutral-200 leading-snug line-clamp-2">
+                    <p className="text-[13px] font-semibold text-neutral-100 leading-snug">
                       {clockTitles[ti]}
                     </p>
-                    <p className="text-[11px] text-neutral-500 leading-tight">
-                      {MM_DRONE_PLANET_LABELS[ti]}
+                    <p className="text-[11px] text-neutral-400 leading-tight truncate" title={tr.label}>
+                      {MM_DRONE_PLANET_LABELS[ti]} · {tr.label}
                     </p>
                   </div>
                 </div>
-                <div className="flex gap-0.5">
+                <div className="flex items-center gap-1">
                   <Button
                     type="button"
                     variant="ghost"
@@ -1051,46 +1059,43 @@ export default function StepSequencer() {
                   >
                     <RotateCcw className="h-4 w-4" />
                   </Button>
+                  <span className="text-[9px] uppercase tracking-widest text-neutral-500 ml-1">Sustain</span>
                 </div>
-                <div className="space-y-0.5">
-                  <span className="text-[10px] text-neutral-600 truncate block" title={tr.label}>
-                    {tr.label}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <Label className="text-[9px] uppercase tracking-wider text-neutral-500">Sustain</Label>
-                    <Slider
-                      value={[tr.sustainMs]}
-                      min={PAD_SUSTAIN_MIN_MS}
-                      max={PAD_SUSTAIN_MAX_MS}
-                      step={5}
-                      onValueChange={([v]) => setTrackSustainMs(ti, v)}
-                    />
-                    <span className="text-[10px] text-neutral-400 tabular-nums w-12">{tr.sustainMs}ms</span>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <Slider
+                    value={[tr.sustainMs]}
+                    min={PAD_SUSTAIN_MIN_MS}
+                    max={PAD_SUSTAIN_MAX_MS}
+                    step={5}
+                    onValueChange={([v]) => setTrackSustainMs(ti, v)}
+                  />
+                  <span className="text-[10px] text-neutral-300 tabular-nums w-12">{tr.sustainMs}ms</span>
                 </div>
               </div>
-              {tr.steps.map((on, si) => (
-                <button
-                  key={si}
-                  type="button"
-                  onClick={() => toggleStep(ti, si)}
-                  aria-pressed={on}
-                  className={cn(
-                    'w-7 h-9 rounded-md border transition-colors shrink-0',
-                    on
-                      ? 'border-transparent shadow-inner'
-                      : 'border-neutral-800 bg-neutral-900/80 hover:bg-neutral-800/80'
-                  )}
-                  style={
-                    on
-                      ? {
-                          backgroundColor: `${TRACK_COLORS[ti]}cc`,
-                          boxShadow: `inset 0 0 0 1px ${TRACK_COLORS[ti]}`,
-                        }
-                      : undefined
-                  }
-                />
-              ))}
+              <div className="flex items-center gap-1 px-2">
+                {tr.steps.map((on, si) => (
+                  <button
+                    key={si}
+                    type="button"
+                    onClick={() => toggleStep(ti, si)}
+                    aria-pressed={on}
+                    className={cn(
+                      'w-7 h-8 rounded-md border transition-colors shrink-0',
+                      on
+                        ? 'border-transparent shadow-inner'
+                        : 'border-neutral-800 bg-neutral-900/80 hover:bg-neutral-800/80'
+                    )}
+                    style={
+                      on
+                        ? {
+                            backgroundColor: `${TRACK_COLORS[ti]}cc`,
+                            boxShadow: `inset 0 0 0 1px ${TRACK_COLORS[ti]}`,
+                          }
+                        : undefined
+                    }
+                  />
+                ))}
+              </div>
             </div>
           ))}
         </div>
