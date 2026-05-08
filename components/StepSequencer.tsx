@@ -33,6 +33,16 @@ export const TRACKS = 9
 const PATTERN_KEY_V2 = 'mm-sequencer-pattern-v2'
 const PATTERN_KEY_V1 = 'mm-sequencer-pattern-v1'
 
+/**
+ * Each step is a keyed hit (attack + release only, no sustain).
+ * Long drone buffers are shaped so lanes behave like pads until curated short samples ship.
+ */
+const PAD_ATTACK_SEC = 0.007
+const PAD_RELEASE_PRESET_SEC = 0.14
+const PAD_RELEASE_USER_SEC = 0.2
+const PAD_PEAK_PRESET = 0.52
+const PAD_PEAK_USER = 0.82
+
 /** Rough chromatic alignment with planet drones / wheels */
 const TRACK_COLORS = [
   '#c5ab6e',
@@ -232,16 +242,29 @@ export default function StepSequencer() {
     const master = masterRef.current
     if (!ctx || !master) return
     const list = tracksRef.current
+    const now = ctx.currentTime
     for (let t = 0; t < TRACKS; t++) {
       const tr = list[t]
       if (!tr.steps[stepIdx] || !tr.buffer) continue
       const src = ctx.createBufferSource()
       src.buffer = tr.buffer
       const g = ctx.createGain()
-      g.gain.value = tr.sampleKind === 'preset' ? 0.42 : 0.72
+      const peak = tr.sampleKind === 'preset' ? PAD_PEAK_PRESET : PAD_PEAK_USER
+      const releaseSec =
+        tr.sampleKind === 'preset' ? PAD_RELEASE_PRESET_SEC : PAD_RELEASE_USER_SEC
+      const a = PAD_ATTACK_SEC
+      const releaseEnd = now + a + releaseSec
+
+      g.gain.setValueAtTime(0, now)
+      g.gain.linearRampToValueAtTime(peak, now + a)
+      g.gain.exponentialRampToValueAtTime(0.0001, releaseEnd)
+
       src.connect(g)
       g.connect(master)
-      src.start(0)
+
+      const stopAt = now + Math.min(tr.buffer.duration, releaseEnd + 0.04)
+      src.start(now)
+      src.stop(stopAt)
     }
   }, [])
 
@@ -482,8 +505,9 @@ export default function StepSequencer() {
         </div>
         <p className="text-[10px] text-neutral-500 leading-relaxed">
           Nine lanes match the nine wheels — each loads an MM planet drone preset so you can hit{' '}
-          <strong className="text-neutral-300">Play</strong> immediately. Replace any lane with your own sample (
-          synth export, field recording, etc.). Patterns persist; user samples still need re-import after refresh.
+          <strong className="text-neutral-300">Play</strong> immediately. Each step fires a short{' '}
+          <strong className="text-neutral-300">attack → release</strong> hit (no sustain), so long drones behave like keyed pads until
+          curated short-sample packs ship. Replace lanes with your own clips when you like; patterns persist.
         </p>
         <div className="flex flex-wrap items-center gap-2 text-[10px]">
           {presetsLoading && (

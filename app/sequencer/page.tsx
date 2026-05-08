@@ -50,6 +50,10 @@ export default function SequencerPage() {
                 Import audio per wheel (WAV, MP3, M4A, …). <strong className="text-gray-800 dark:text-gray-200">Rotate</strong>{' '}
                 restores that wheel&apos;s factory drone.
               </li>
+              <li>
+                Each triggered step uses a short <strong className="text-gray-800 dark:text-gray-200">attack → release</strong>{' '}
+                envelope only — full drone files are not left sustaining (better pads until shorter curated packs replace them).
+              </li>
               <li>BPM sets one bar of sixteen sixteenth-notes.</li>
               <li>
                 <strong className="text-gray-800 dark:text-gray-200">Arm record</strong> → Play → Stop to capture the stereo mix.
