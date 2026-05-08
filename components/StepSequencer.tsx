@@ -60,15 +60,15 @@ type PhrasePool = {
 
 /** Rough chromatic alignment with planet drones / wheels */
 const TRACK_COLORS = [
-  '#c5ab6e',
-  '#3f54ba',
-  '#ae4d28',
-  '#e3bb76',
-  '#888888',
-  '#b8e1e2',
-  '#d39c7e',
-  '#c99039',
-  '#2d5a27',
+  '#fd290a',
+  '#fba63b',
+  '#f7da5f',
+  '#6dc037',
+  '#156fde',
+  '#941952',
+  '#541b96',
+  '#ee5fa7',
+  '#56c1ff',
 ] as const
 
 export type SequencerTrack = {
@@ -198,6 +198,7 @@ export default function StepSequencer() {
     }))
   )
   const [recordedMs, setRecordedMs] = useState(0)
+  const [lanePreviewTrack, setLanePreviewTrack] = useState<number | null>(null)
 
   const ctxRef = useRef<AudioContext | null>(null)
   const masterRef = useRef<GainNode | null>(null)
@@ -438,6 +439,7 @@ export default function StepSequencer() {
       lanePreviewIntervalRef.current = null
     }
     lanePreviewTrackRef.current = null
+    setLanePreviewTrack(null)
   }, [])
 
   const startLanePreview = useCallback(
@@ -447,6 +449,7 @@ export default function StepSequencer() {
       if (lanePreviewTrackRef.current === trackIndex && lanePreviewIntervalRef.current) return
       stopLanePreview()
       lanePreviewTrackRef.current = trackIndex
+      setLanePreviewTrack(trackIndex)
       const stepMs = ((60 / bpm) / 4) * 1000
       let s = 0
       setCurrentStep(0)
@@ -1146,7 +1149,11 @@ export default function StepSequencer() {
                 </div>
               </div>
               <div className="flex items-center gap-1 px-2">
-                {tr.steps.map((on, si) => (
+                {tr.steps.map((on, si) => {
+                  const traveling =
+                    currentStep === si &&
+                    (isPlaying || lanePreviewTrack === ti)
+                  return (
                   <button
                     key={si}
                     type="button"
@@ -1154,6 +1161,8 @@ export default function StepSequencer() {
                     aria-pressed={on}
                     className={cn(
                       'w-7 h-8 rounded-md border transition-colors shrink-0',
+                      traveling && !on ? 'border-white/40 bg-white/10' : '',
+                      traveling && on ? 'ring-2 ring-white/45 ring-offset-0 brightness-125' : '',
                       on
                         ? 'border-transparent shadow-inner'
                         : 'border-neutral-800 bg-neutral-900/80 hover:bg-neutral-800/80'
@@ -1167,7 +1176,8 @@ export default function StepSequencer() {
                         : undefined
                     }
                   />
-                ))}
+                  )
+                })}
               </div>
             </div>
           ))}
