@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { decodeDroneSample } from '@/lib/droneSample'
 import { CLOCK_TONE_HZ, audibleHzFromClockTone } from '@/lib/clockToneHz'
 import { useSettings } from '@/lib/hooks/useSettings'
+import { buildLaneProcessor } from '@/lib/sequencer-lane-processors'
 import type { Sequence } from '@/lib/sequencer'
 
 const ATTACK_SEC = 0.01
@@ -12,6 +13,7 @@ const RELEASE_SEC = 0.05
 type ActiveNode = {
   source: AudioBufferSourceNode | OscillatorNode
   gain: GainNode
+  laneOutput?: AudioNode
 }
 
 export function useSequencerAudio(sequence: Sequence) {
@@ -35,7 +37,7 @@ export function useSequencerAudio(sequence: Sequence) {
   }, [sequence])
 
   const stopAllNodes = useCallback(() => {
-    activeNodesRef.current.forEach(({ source, gain }) => {
+    activeNodesRef.current.forEach(({ source, gain, laneOutput }) => {
       try {
         gain.gain.cancelScheduledValues(0)
         gain.gain.setValueAtTime(0.0001, ctxRef.current?.currentTime ?? 0)
@@ -50,6 +52,7 @@ export function useSequencerAudio(sequence: Sequence) {
       try {
         source.disconnect()
         gain.disconnect()
+        laneOutput?.disconnect()
       } catch {
         /* noop */
       }
@@ -95,11 +98,13 @@ export function useSequencerAudio(sequence: Sequence) {
       const holdFor = stepDurationSec * step.durationMultiplier
       const end = now + holdFor
       const g = ctx.createGain()
+      const laneProc = buildLaneProcessor(ctx, step.nodeIndex)
       g.gain.setValueAtTime(0.0001, now)
       g.gain.exponentialRampToValueAtTime(Math.max(0.0002, toneVolume), now + ATTACK_SEC)
       g.gain.setValueAtTime(Math.max(0.0002, toneVolume), Math.max(now + ATTACK_SEC, end - RELEASE_SEC))
       g.gain.exponentialRampToValueAtTime(0.0001, end)
-      g.connect(ctx.destination)
+      g.connect(laneProc.input)
+      laneProc.output.connect(ctx.destination)
 
       if (toneMode === 'drone') {
         await preloadDroneBuffers(ctx)
@@ -110,7 +115,14 @@ export function useSequencerAudio(sequence: Sequence) {
         source.connect(g)
         source.start(now)
         source.stop(end + 0.01)
-        activeNodesRef.current.push({ source, gain: g })
+        source.onended = () => {
+          try {
+            laneProc.output.disconnect()
+          } catch {
+            /* noop */
+          }
+        }
+        activeNodesRef.current.push({ source, gain: g, laneOutput: laneProc.output })
         return
       }
 
@@ -123,7 +135,14 @@ export function useSequencerAudio(sequence: Sequence) {
       osc.connect(g)
       osc.start(now)
       osc.stop(end + 0.01)
-      activeNodesRef.current.push({ source: osc, gain: g })
+      osc.onended = () => {
+        try {
+          laneProc.output.disconnect()
+        } catch {
+          /* noop */
+        }
+      }
+      activeNodesRef.current.push({ source: osc, gain: g, laneOutput: laneProc.output })
     },
     [ensureContext, preloadDroneBuffers, stepDurationSec, toneMode, toneVolume, tonesEnabled]
   )

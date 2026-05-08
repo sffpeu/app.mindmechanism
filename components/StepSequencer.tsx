@@ -38,6 +38,7 @@ import {
   type PhraseTranscriptWord,
 } from '@/lib/phraseAcousticAnalysis'
 import { transcribePhraseBlob } from '@/lib/phraseTranscribeClient'
+import { buildLaneProcessor } from '@/lib/sequencer-lane-processors'
 
 export const STEPS = 16
 /** One lane per mandala / wheel (0–8). */
@@ -364,7 +365,16 @@ export default function StepSequencer() {
       g.gain.exponentialRampToValueAtTime(0.0001, releaseEnd)
 
       src.connect(g)
-      g.connect(master)
+      const laneProc = buildLaneProcessor(ctx, t as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8)
+      g.connect(laneProc.input)
+      laneProc.output.connect(master)
+      src.onended = () => {
+        try {
+          laneProc.output.disconnect()
+        } catch {
+          /* noop */
+        }
+      }
 
       const stopAt = now + Math.min(tr.buffer.duration, releaseEnd + 0.04)
       src.start(now)
@@ -395,7 +405,16 @@ export default function StepSequencer() {
     g.gain.setValueAtTime(peak, releaseStart)
     g.gain.exponentialRampToValueAtTime(0.0001, releaseEnd)
     src.connect(g)
-    g.connect(master)
+    const laneProc = buildLaneProcessor(ctx, trackIndex as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8)
+    g.connect(laneProc.input)
+    laneProc.output.connect(master)
+    src.onended = () => {
+      try {
+        laneProc.output.disconnect()
+      } catch {
+        /* noop */
+      }
+    }
     src.start(now)
     src.stop(now + Math.min(tr.buffer.duration, a + sustainSec + releaseSec + 0.04))
   }, [])
