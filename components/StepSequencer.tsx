@@ -119,6 +119,67 @@ function waitPhrasePoolAudio(url: string, timeoutMs = 4000): Promise<void> {
   })
 }
 
+/** Decode phrase pool audio for Web Audio stacking (prefer Blob — avoids flaky fetch(blob:)). */
+async function decodePhrasePoolBuffer(
+  ctx: BaseAudioContext,
+  pool: { blob: Blob | null; url: string | null }
+): Promise<AudioBuffer | null> {
+  try {
+    let ab: ArrayBuffer
+    if (pool.blob && pool.blob.size > 0) {
+      ab = await pool.blob.arrayBuffer()
+    } else if (pool.url) {
+      const res = await fetch(pool.url)
+      if (!res.ok) return null
+      ab = await res.arrayBuffer()
+    } else {
+      return null
+    }
+    if (ab.byteLength < 64) return null
+    return await ctx.decodeAudioData(ab.slice(0))
+  } catch {
+    return null
+  }
+}
+
+async function waitAudioLoadedMetadata(el: HTMLAudioElement): Promise<void> {
+  if (el.readyState >= HTMLMediaElement.HAVE_METADATA) return
+  await new Promise<void>((resolve, reject) => {
+    const ok = () => {
+      el.removeEventListener('loadedmetadata', ok)
+      el.removeEventListener('error', bad)
+      resolve()
+    }
+    const bad = () => {
+      el.removeEventListener('loadedmetadata', ok)
+      el.removeEventListener('error', bad)
+      reject(new Error('metadata'))
+    }
+    el.addEventListener('loadedmetadata', ok, { once: true })
+    el.addEventListener('error', bad, { once: true })
+    try {
+      el.load()
+    } catch {
+      bad()
+    }
+  })
+}
+
+/** Same-gesture unlock so delayed stacked play still works when decodeAudioData rejects (e.g. WebM). */
+async function unlockPhraseHtmlAudio(url: string): Promise<HTMLAudioElement> {
+  const el = new Audio()
+  el.preload = 'auto'
+  el.src = url
+  el.setAttribute('playsinline', '')
+  await waitAudioLoadedMetadata(el)
+  el.muted = true
+  await el.play()
+  el.pause()
+  el.currentTime = 0
+  el.muted = false
+  return el
+}
+
 type PhrasePool = {
   blob: Blob | null
   url: string | null
@@ -314,6 +375,8 @@ export default function StepSequencer() {
   )
   const phraseStackDurationRef = useRef<number[]>(Array.from({ length: PRACTICE_POOLS }, () => 0))
   const phraseStackStartTimeRef = useRef(0)
+  /** Which engine is driving stacked phrase progress after countdown. */
+  const phraseStackDriverRef = useRef<'wa' | 'html' | null>(null)
 
   useEffect(() => {
     tracksRef.current = tracks
@@ -841,6 +904,7 @@ export default function StepSequencer() {
       phraseStackSourcesRef.current[idx] = null
     })
     phraseStackDurationRef.current = Array.from({ length: PRACTICE_POOLS }, () => 0)
+    phraseStackDriverRef.current = null
     allPoolsAudioRef.current.forEach((audio, idx) => {
       if (!audio) return
       audio.pause()
@@ -877,12 +941,28 @@ export default function StepSequencer() {
 
       const decoded = new Map<number, AudioBuffer>()
       for (const p of active) {
-        const url = p.url!
-        const res = await fetch(url)
-        if (!res.ok) throw new Error(`fetch ${res.status}`)
-        const ab = await res.arrayBuffer()
-        const buf = await ctx.decodeAudioData(ab.slice(0))
-        decoded.set(p.idx, buf)
+        const buf = await decodePhrasePoolBuffer(ctx, { blob: p.blob, url: p.url })
+        if (buf) decoded.set(p.idx, buf)
+      }
+      const useWebAudioStack = decoded.size === active.length
+
+      if (!useWebAudioStack) {
+        phraseStackDurationRef.current = Array.from({ length: PRACTICE_POOLS }, () => 0)
+        for (const p of active) {
+          if (!p.url) continue
+          try {
+            const el = await unlockPhraseHtmlAudio(p.url)
+            allPoolsAudioRef.current[p.idx] = el
+            phraseStackDurationRef.current[p.idx] =
+              Number.isFinite(el.duration) && el.duration > 0 ? el.duration : 0
+          } catch {
+            stopAllPoolsPlayback()
+            setPhraseError(
+              'Stacked playback could not prepare audio in this browser. Try a shorter take or another browser.'
+            )
+            return
+          }
+        }
       }
 
       const rateSnapshot = phraseRate
@@ -901,67 +981,111 @@ export default function StepSequencer() {
         }
         setStackCountdown(null)
 
-        const ctxNow = ctxRef.current
-        const master = masterRef.current
-        if (!ctxNow || !master) {
-          setPhraseError('Audio context not ready.')
-          return
-        }
-
-        void ctxNow.resume()
-        const startAt = ctxNow.currentTime
-        phraseStackStartTimeRef.current = startAt
-
-        phraseStackDurationRef.current = Array.from({ length: PRACTICE_POOLS }, () => 0)
-        let maxScaled = 0
-        let anyStarted = false
-
-        active.forEach((p, order) => {
-          const buf = decoded.get(p.idx)
-          if (!buf) return
-          const src = ctxNow.createBufferSource()
-          src.buffer = buf
-          src.playbackRate.value = rateSnapshot
-          const g = ctxNow.createGain()
-          const dominance = order === 0 ? 1 : 0.78
-          g.gain.value = Math.max(
-            0,
-            Math.min(1, (volSnapshot[p.idx] ?? 1) * dominance)
-          )
-          src.connect(g)
-          g.connect(master)
-          src.start(startAt)
-          phraseStackSourcesRef.current[p.idx] = src
-          phraseStackDurationRef.current[p.idx] = buf.duration
-          const scaled = buf.duration / Math.max(0.001, rateSnapshot)
-          if (scaled > maxScaled) maxScaled = scaled
-          anyStarted = true
-        })
-
-        if (!anyStarted) {
-          setPhraseError('Stacked play could not start after countdown.')
-          return
-        }
-
-        setPlayAllActive(true)
-        allPoolsTickerRef.current = setInterval(() => {
-          const cctx = ctxRef.current
-          if (!cctx) return
-          const elapsed = cctx.currentTime - phraseStackStartTimeRef.current
-          setPoolProgress((prev) =>
-            prev.map((_, i) => {
-              const dur = phraseStackDurationRef.current[i]
-              if (!dur || dur <= 0) return 0
-              return Math.min(1, elapsed / (dur / Math.max(0.001, rateSnapshot)))
-            })
-          )
-          if (elapsed >= maxScaled - 0.05) {
-            stopAllPoolsPlayback()
+        if (useWebAudioStack) {
+          const ctxNow = ctxRef.current
+          const master = masterRef.current
+          if (!ctxNow || !master) {
+            setPhraseError('Audio context not ready.')
+            return
           }
-        }, 80)
+
+          void ctxNow.resume()
+          const startAt = ctxNow.currentTime
+          phraseStackStartTimeRef.current = startAt
+          phraseStackDriverRef.current = 'wa'
+
+          phraseStackDurationRef.current = Array.from({ length: PRACTICE_POOLS }, () => 0)
+          let maxScaled = 0
+          let anyStarted = false
+
+          active.forEach((p, order) => {
+            const buf = decoded.get(p.idx)
+            if (!buf) return
+            const src = ctxNow.createBufferSource()
+            src.buffer = buf
+            src.playbackRate.value = rateSnapshot
+            const g = ctxNow.createGain()
+            const dominance = order === 0 ? 1 : 0.78
+            g.gain.value = Math.max(
+              0,
+              Math.min(1, (volSnapshot[p.idx] ?? 1) * dominance)
+            )
+            src.connect(g)
+            g.connect(master)
+            src.start(startAt)
+            phraseStackSourcesRef.current[p.idx] = src
+            phraseStackDurationRef.current[p.idx] = buf.duration
+            const scaled = buf.duration / Math.max(0.001, rateSnapshot)
+            if (scaled > maxScaled) maxScaled = scaled
+            anyStarted = true
+          })
+
+          if (!anyStarted) {
+            setPhraseError('Stacked play could not start after countdown.')
+            return
+          }
+
+          setPlayAllActive(true)
+          allPoolsTickerRef.current = setInterval(() => {
+            const cctx = ctxRef.current
+            if (!cctx) return
+            const elapsed = cctx.currentTime - phraseStackStartTimeRef.current
+            setPoolProgress((prev) =>
+              prev.map((_, i) => {
+                const dur = phraseStackDurationRef.current[i]
+                if (!dur || dur <= 0) return 0
+                return Math.min(1, elapsed / (dur / Math.max(0.001, rateSnapshot)))
+              })
+            )
+            if (elapsed >= maxScaled - 0.05) {
+              stopAllPoolsPlayback()
+            }
+          }, 80)
+          return
+        }
+
+        phraseStackDriverRef.current = 'html'
+        void (async () => {
+          const starts: Promise<void>[] = []
+          for (let order = 0; order < active.length; order++) {
+            const p = active[order]!
+            const el = allPoolsAudioRef.current[p.idx]
+            if (!el) continue
+            el.currentTime = 0
+            el.playbackRate = rateSnapshot
+            const dominance = order === 0 ? 1 : 0.78
+            el.volume = Math.max(0, Math.min(1, (volSnapshot[p.idx] ?? 1) * dominance))
+            starts.push(el.play().then(() => undefined))
+          }
+          const results = await Promise.allSettled(starts)
+          const started = results.filter((r) => r.status === 'fulfilled').length
+          if (started === 0) {
+            setPhraseError('Stacked play could not start after countdown.')
+            return
+          }
+          setPlayAllActive(true)
+          allPoolsTickerRef.current = setInterval(() => {
+            setPoolProgress((prev) =>
+              prev.map((_, i) => {
+                const el = allPoolsAudioRef.current[i]
+                if (!el || !Number.isFinite(el.duration) || el.duration <= 0) return 0
+                return Math.min(1, el.currentTime / el.duration)
+              })
+            )
+            const done = active.every((p) => {
+              const el = allPoolsAudioRef.current[p.idx]
+              if (!el) return true
+              return (
+                el.ended ||
+                (el.duration > 0 && el.currentTime >= el.duration - 0.05)
+              )
+            })
+            if (done) stopAllPoolsPlayback()
+          }, 80)
+        })()
       }, 1000)
     } catch {
-      setPhraseError('Could not decode pools for stacked playback. Try re-recording.')
+      setPhraseError('Stacked playback failed unexpectedly. Try Play stacked again.')
     }
   }, [
     activePool,
