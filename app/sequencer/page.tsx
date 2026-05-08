@@ -219,7 +219,7 @@ export default function SequencerPage() {
   if (!user) return null
 
   return (
-    <div className="min-h-full overflow-y-auto pl-16 pr-4 pb-12 pt-4 sm:pr-6">
+    <div className="min-h-full overflow-y-auto ml-16 px-4 pb-12 pt-4 sm:px-6">
 
       {/* Header — no card, just a clean strip */}
       <div className="mb-6 border-b border-black/8 pb-4 dark:border-white/8">

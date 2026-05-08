@@ -9,8 +9,8 @@ import SolarSystemResonance from '@/components/SolarSystemResonance'
 export default function SynthLabPage() {
   return (
     <ProtectedRoute>
-      <div className="h-full overflow-y-auto bg-transparent">
-        <div className="max-w-5xl mx-auto pl-16 pr-4 sm:pr-6 py-8 pb-16">
+      <div className="h-full overflow-y-auto bg-transparent ml-16">
+        <div className="max-w-5xl px-4 sm:px-6 py-8 pb-16">
           <header className="mb-8 space-y-3">
             <div className="flex items-center gap-2 text-violet-600 dark:text-violet-400">
               <Sparkles className="h-5 w-5 shrink-0" aria-hidden />
