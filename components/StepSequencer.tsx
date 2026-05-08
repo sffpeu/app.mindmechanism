@@ -50,6 +50,7 @@ const PAD_SUSTAIN_MAX_MS = 420
 const PAD_SUSTAIN_DEFAULT_MS = 85
 const POOL_RECORD_MS = 10000
 const PRACTICE_POOLS = 3
+const POOL_COLORS = ['#fd290a', '#156fde', '#ee5fa7'] as const
 
 type PhrasePool = {
   blob: Blob | null
@@ -199,6 +200,14 @@ export default function StepSequencer() {
   )
   const [recordedMs, setRecordedMs] = useState(0)
   const [lanePreviewTrack, setLanePreviewTrack] = useState<number | null>(null)
+  const [poolVolumes, setPoolVolumes] = useState<number[]>(
+    Array.from({ length: PRACTICE_POOLS }, () => 1)
+  )
+  const [volumePopoverPool, setVolumePopoverPool] = useState<number | null>(null)
+  const [playAllActive, setPlayAllActive] = useState(false)
+  const [poolProgress, setPoolProgress] = useState<number[]>(
+    Array.from({ length: PRACTICE_POOLS }, () => 0)
+  )
 
   const ctxRef = useRef<AudioContext | null>(null)
   const masterRef = useRef<GainNode | null>(null)
@@ -217,6 +226,11 @@ export default function StepSequencer() {
   const phraseAudioRef = useRef<HTMLAudioElement | null>(null)
   const phraseStopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const phraseTickRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const poolHoldTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const allPoolsAudioRef = useRef<(HTMLAudioElement | null)[]>(
+    Array.from({ length: PRACTICE_POOLS }, () => null)
+  )
+  const allPoolsTickerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     tracksRef.current = tracks
@@ -422,6 +436,13 @@ export default function StepSequencer() {
       if (lanePreviewIntervalRef.current) clearInterval(lanePreviewIntervalRef.current)
       if (phraseStopTimerRef.current) clearTimeout(phraseStopTimerRef.current)
       if (phraseTickRef.current) clearInterval(phraseTickRef.current)
+      if (poolHoldTimeoutRef.current) clearTimeout(poolHoldTimeoutRef.current)
+      if (allPoolsTickerRef.current) clearInterval(allPoolsTickerRef.current)
+      allPoolsAudioRef.current.forEach((audio) => {
+        if (!audio) return
+        audio.pause()
+        audio.src = ''
+      })
       if (phraseRecorderRef.current && phraseRecorderRef.current.state !== 'inactive') {
         phraseRecorderRef.current.stop()
       }
@@ -592,12 +613,13 @@ export default function StepSequencer() {
     }
     try {
       audio.playbackRate = phraseRate
+      audio.volume = poolVolumes[activePool] ?? 1
       await audio.play()
       setPhrasePlayActive(true)
     } catch {
       setPhrasePlayActive(false)
     }
-  }, [activePool, phrasePlayActive, phraseRate, pools])
+  }, [activePool, phrasePlayActive, phraseRate, poolVolumes, pools])
 
   const jogPhrase = useCallback((nextSec: number) => {
     const audio = phraseAudioRef.current
@@ -645,21 +667,76 @@ export default function StepSequencer() {
     audio.playbackRate = phraseRate
   }, [phraseRate])
 
+  useEffect(() => {
+    const audio = phraseAudioRef.current
+    if (audio) audio.volume = poolVolumes[activePool] ?? 1
+    allPoolsAudioRef.current.forEach((a, i) => {
+      if (a) a.volume = poolVolumes[i] ?? 1
+    })
+  }, [activePool, poolVolumes])
+
+  const stopAllPoolsPlayback = useCallback(() => {
+    if (allPoolsTickerRef.current) {
+      clearInterval(allPoolsTickerRef.current)
+      allPoolsTickerRef.current = null
+    }
+    allPoolsAudioRef.current.forEach((audio, idx) => {
+      if (!audio) return
+      audio.pause()
+      audio.src = ''
+      allPoolsAudioRef.current[idx] = null
+    })
+    setPlayAllActive(false)
+  }, [])
+
   const playAllPoolsTogether = useCallback(async () => {
-    const active = pools.filter((p) => p.url)
+    if (playAllActive) {
+      stopAllPoolsPlayback()
+      return
+    }
+    const active = pools
+      .map((p, i) => ({ ...p, idx: i }))
+      .filter((p) => p.url)
     if (!active.length) return
     try {
-      await Promise.all(
-        active.map(async (p) => {
-          const a = new Audio(p.url!)
-          a.playbackRate = phraseRate
-          await a.play()
-        })
-      )
+      stopAllPoolsPlayback()
+      setPoolProgress(Array.from({ length: PRACTICE_POOLS }, () => 0))
+      await Promise.all(active.map(async (p) => {
+        const a = new Audio(p.url!)
+        a.playbackRate = phraseRate
+        a.volume = poolVolumes[p.idx] ?? 1
+        allPoolsAudioRef.current[p.idx] = a
+        await a.play()
+      }))
+      setPlayAllActive(true)
+      allPoolsTickerRef.current = setInterval(() => {
+        setPoolProgress((prev) =>
+          prev.map((_, i) => {
+            const a = allPoolsAudioRef.current[i]
+            if (!a || !Number.isFinite(a.duration) || a.duration <= 0) return 0
+            return Math.max(0, Math.min(1, a.currentTime / a.duration))
+          })
+        )
+        const stillPlaying = allPoolsAudioRef.current.some((a) => a && !a.paused && !a.ended)
+        if (!stillPlaying) stopAllPoolsPlayback()
+      }, 80)
     } catch {
       setPhraseError('Could not play all pools at once on this browser.')
     }
-  }, [phraseRate, pools])
+  }, [playAllActive, phraseRate, poolVolumes, pools, stopAllPoolsPlayback])
+
+  const onPoolPressStart = (poolIndex: number) => {
+    if (poolHoldTimeoutRef.current) clearTimeout(poolHoldTimeoutRef.current)
+    poolHoldTimeoutRef.current = setTimeout(() => {
+      setVolumePopoverPool(poolIndex)
+    }, 320)
+  }
+
+  const onPoolPressEnd = () => {
+    if (!poolHoldTimeoutRef.current) return
+    clearTimeout(poolHoldTimeoutRef.current)
+    poolHoldTimeoutRef.current = null
+  }
 
   const resetActivePool = useCallback(() => {
     const pool = pools[activePool]
@@ -795,6 +872,7 @@ export default function StepSequencer() {
   }
 
   const railW = 'w-[16.5rem]'
+  const selectedPoolColor = POOL_COLORS[activePool] ?? '#56c1ff'
 
   return (
     <div className="space-y-6">
@@ -815,21 +893,64 @@ export default function StepSequencer() {
               Three practitioner pools. Each pool records up to <strong className="text-neutral-200">10 seconds</strong> with pause/resume fill, then compare for pronunciation precision.
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 relative">
             <div className="flex items-center gap-1 rounded-lg border border-neutral-700/80 bg-neutral-900/70 p-1">
               {pools.map((pool, i) => (
                 <Button
                   key={i}
                   type="button"
                   size="sm"
-                  variant={activePool === i ? 'secondary' : 'ghost'}
-                  className="h-7 px-2 text-[10px]"
+                  variant="ghost"
+                  className="h-7 px-2 text-[10px] border"
+                  style={{
+                    borderColor: activePool === i ? `${POOL_COLORS[i]}aa` : 'transparent',
+                    color: activePool === i ? POOL_COLORS[i] : '#a3a3a3',
+                    backgroundColor: activePool === i ? `${POOL_COLORS[i]}22` : 'transparent',
+                  }}
                   onClick={() => setActivePool(i)}
+                  onMouseDown={() => onPoolPressStart(i)}
+                  onMouseUp={onPoolPressEnd}
+                  onMouseLeave={onPoolPressEnd}
+                  onTouchStart={() => onPoolPressStart(i)}
+                  onTouchEnd={onPoolPressEnd}
                 >
                   P{i + 1} {pool.durationSec > 0 ? `${pool.durationSec.toFixed(1)}s` : ''}
                 </Button>
               ))}
             </div>
+            {volumePopoverPool != null && (
+              <div className="absolute left-0 top-10 z-20 rounded-md border border-neutral-700 bg-neutral-950/95 p-2 w-56">
+                <div className="flex items-center justify-between mb-1">
+                  <span
+                    className="text-[10px] uppercase tracking-wider font-semibold"
+                    style={{ color: POOL_COLORS[volumePopoverPool] }}
+                  >
+                    Pool {volumePopoverPool + 1} volume
+                  </span>
+                  <button
+                    type="button"
+                    className="text-[10px] text-neutral-500 hover:text-neutral-200"
+                    onClick={() => setVolumePopoverPool(null)}
+                  >
+                    Close
+                  </button>
+                </div>
+                <Slider
+                  value={[poolVolumes[volumePopoverPool] ?? 1]}
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  onValueChange={([v]) =>
+                    setPoolVolumes((prev) =>
+                      prev.map((p, idx) => (idx === volumePopoverPool ? v : p))
+                    )
+                  }
+                />
+                <p className="text-[10px] text-neutral-400 mt-1">
+                  {((poolVolumes[volumePopoverPool] ?? 1) * 100).toFixed(0)}%
+                </p>
+              </div>
+            )}
             <Button
               type="button"
               size="sm"
@@ -867,6 +988,11 @@ export default function StepSequencer() {
               size="sm"
               variant="outline"
               className="gap-1.5 border-neutral-700"
+              style={{
+                borderColor: `${selectedPoolColor}99`,
+                color: selectedPoolColor,
+                backgroundColor: `${selectedPoolColor}14`,
+              }}
               onClick={() => void togglePhrasePlayback()}
               disabled={!pools[activePool]?.blob}
             >
@@ -889,11 +1015,12 @@ export default function StepSequencer() {
               size="sm"
               variant="ghost"
               className="gap-1 text-neutral-300"
+              style={playAllActive ? { color: '#fff' } : undefined}
               onClick={playAllPoolsTogether}
               disabled={!pools.some((p) => p.blob)}
             >
               <Disc3 className="h-3.5 w-3.5" />
-              Play all 3
+              {playAllActive ? 'Stop all 3' : 'Play all 3'}
             </Button>
           </div>
         </div>
@@ -923,17 +1050,28 @@ export default function StepSequencer() {
               <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-neutral-500" />
             </div>
             <div className="flex-1">
-              <div className="mb-2 h-2 rounded-full bg-neutral-800 overflow-hidden">
-                <div
-                  className="h-full bg-amber-400/80"
-                  style={{
-                    width: `${Math.min(
-                      100,
-                      (phrasePos / Math.max(0.001, phraseDuration || POOL_RECORD_MS / 1000)) * 100
-                    )}%`,
-                  }}
-                />
-              </div>
+              {!playAllActive ? (
+                <div className="mb-2 h-2 rounded-full bg-neutral-800 overflow-hidden">
+                  <div
+                    className="h-full"
+                    style={{
+                      backgroundColor: selectedPoolColor,
+                      width: `${Math.min(
+                        100,
+                        (phrasePos / Math.max(0.001, phraseDuration || POOL_RECORD_MS / 1000)) * 100
+                      )}%`,
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="mb-2 space-y-1">
+                  {POOL_COLORS.map((c, i) => (
+                    <div key={c} className="h-1.5 rounded-full bg-neutral-800 overflow-hidden">
+                      <div className="h-full" style={{ backgroundColor: c, width: `${poolProgress[i] * 100}%` }} />
+                    </div>
+                  ))}
+                </div>
+              )}
               <Slider
                 value={[phrasePos]}
                 min={0}
