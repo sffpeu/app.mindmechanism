@@ -1170,8 +1170,12 @@ export default function StepSequencer() {
                     style={
                       on
                         ? {
-                            backgroundColor: `${TRACK_COLORS[ti]}cc`,
-                            boxShadow: `inset 0 0 0 1px ${TRACK_COLORS[ti]}`,
+                            backgroundColor: traveling
+                              ? TRACK_COLORS[ti]
+                              : `${TRACK_COLORS[ti]}59`,
+                            boxShadow: traveling
+                              ? `inset 0 0 0 1px ${TRACK_COLORS[ti]}, 0 0 12px ${TRACK_COLORS[ti]}aa`
+                              : `inset 0 0 0 1px ${TRACK_COLORS[ti]}99`,
                           }
                         : undefined
                     }
