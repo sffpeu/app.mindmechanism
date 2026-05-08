@@ -36,7 +36,7 @@ function LayoutContentInner({ children }: { children: React.ReactNode }) {
   return (
     <>
       <div className="h-screen overflow-hidden flex flex-col">
-        <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="flex-1 min-h-0 overflow-auto">
           {content}
         </div>
       </div>
