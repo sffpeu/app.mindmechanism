@@ -51,6 +51,7 @@ const PAD_SUSTAIN_DEFAULT_MS = 85
 const POOL_RECORD_MS = 10000
 const PRACTICE_POOLS = 3
 const POOL_COLORS = ['#fd290a', '#156fde', '#ee5fa7'] as const
+const STACK_COUNTDOWN_SEC = 3
 
 type PhrasePool = {
   blob: Blob | null
@@ -209,6 +210,8 @@ export default function StepSequencer() {
     Array.from({ length: PRACTICE_POOLS }, () => 0)
   )
   const [armedPools, setArmedPools] = useState<number[]>([0])
+  const [stackCountdown, setStackCountdown] = useState<number | null>(null)
+  const [stackArmedReady, setStackArmedReady] = useState(false)
 
   const ctxRef = useRef<AudioContext | null>(null)
   const masterRef = useRef<GainNode | null>(null)
@@ -232,6 +235,8 @@ export default function StepSequencer() {
     Array.from({ length: PRACTICE_POOLS }, () => null)
   )
   const allPoolsTickerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const stackCountdownRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const preloadedPoolsRef = useRef<Set<number>>(new Set())
 
   useEffect(() => {
     tracksRef.current = tracks
@@ -439,6 +444,7 @@ export default function StepSequencer() {
       if (phraseTickRef.current) clearInterval(phraseTickRef.current)
       if (poolHoldTimeoutRef.current) clearTimeout(poolHoldTimeoutRef.current)
       if (allPoolsTickerRef.current) clearInterval(allPoolsTickerRef.current)
+      if (stackCountdownRef.current) clearInterval(stackCountdownRef.current)
       allPoolsAudioRef.current.forEach((audio) => {
         if (!audio) return
         audio.pause()
@@ -454,6 +460,54 @@ export default function StepSequencer() {
       void ctxRef.current?.close()
     }
   }, [pools])
+
+  useEffect(() => {
+    // pre-arm loading check for stacked playback readiness
+    const armed = (armedPools.length ? armedPools : [activePool]).filter((i) => !!pools[i]?.url)
+    const ready = armed.length > 0 && armed.every((i) => preloadedPoolsRef.current.has(i))
+    setStackArmedReady(ready)
+  }, [activePool, armedPools, pools])
+
+  const preloadArmedPools = useCallback(async () => {
+    const order = armedPools.length ? armedPools : [activePool]
+    const targets = order.filter((i) => !!pools[i]?.url)
+    if (!targets.length) {
+      setStackArmedReady(false)
+      return false
+    }
+    for (const idx of targets) {
+      if (preloadedPoolsRef.current.has(idx)) continue
+      const pool = pools[idx]
+      if (!pool?.url) continue
+      try {
+        const a = new Audio()
+        a.preload = 'auto'
+        a.src = pool.url
+        await new Promise<void>((resolve, reject) => {
+          const ok = () => {
+            a.removeEventListener('canplaythrough', ok)
+            a.removeEventListener('loadeddata', ok)
+            a.removeEventListener('error', fail)
+            resolve()
+          }
+          const fail = () => {
+            a.removeEventListener('canplaythrough', ok)
+            a.removeEventListener('loadeddata', ok)
+            a.removeEventListener('error', fail)
+            reject(new Error('preload failed'))
+          }
+          a.addEventListener('canplaythrough', ok, { once: true })
+          a.addEventListener('loadeddata', ok, { once: true })
+          a.addEventListener('error', fail, { once: true })
+          a.load()
+        })
+        preloadedPoolsRef.current.add(idx)
+      } catch {
+        return false
+      }
+    }
+    return true
+  }, [activePool, armedPools, pools])
 
   const stopLanePreview = useCallback(() => {
     if (lanePreviewIntervalRef.current) {
@@ -681,12 +735,17 @@ export default function StepSequencer() {
       clearInterval(allPoolsTickerRef.current)
       allPoolsTickerRef.current = null
     }
+    if (stackCountdownRef.current) {
+      clearInterval(stackCountdownRef.current)
+      stackCountdownRef.current = null
+    }
     allPoolsAudioRef.current.forEach((audio, idx) => {
       if (!audio) return
       audio.pause()
       audio.src = ''
       allPoolsAudioRef.current[idx] = null
     })
+    setStackCountdown(null)
     setPlayAllActive(false)
   }, [])
 
@@ -695,57 +754,77 @@ export default function StepSequencer() {
       stopAllPoolsPlayback()
       return
     }
+    if (stackCountdownRef.current) {
+      clearInterval(stackCountdownRef.current)
+      stackCountdownRef.current = null
+      setStackCountdown(null)
+    }
     const poolOrder = armedPools.length ? armedPools : [activePool]
     const active = poolOrder
       .map((idx) => ({ ...pools[idx], idx }))
       .filter((p) => p.url)
     if (!active.length) return
     try {
-      stopAllPoolsPlayback()
-      setPoolProgress(Array.from({ length: PRACTICE_POOLS }, () => 0))
-      const starts: Promise<void>[] = []
-      const startedFlags: boolean[] = Array.from({ length: active.length }, () => false)
-      for (let order = 0; order < active.length; order++) {
-        const p = active[order]!
-        const a = new Audio(p.url!)
-        a.playbackRate = phraseRate
-        // first selected pool is dominant in stacked analysis playback
-        const dominance = order === 0 ? 1 : 0.78
-        a.volume = Math.max(0, Math.min(1, (poolVolumes[p.idx] ?? 1) * dominance))
-        allPoolsAudioRef.current[p.idx] = a
-        starts.push(
-          a
-            .play()
-            .then(() => {
-              startedFlags[order] = true
-            })
-            .catch(() => {
-              allPoolsAudioRef.current[p.idx] = null
-            })
-        )
-      }
-      await Promise.allSettled(starts)
-      const started = startedFlags.filter(Boolean).length
-      if (started === 0) {
-        setPhraseError('Multi-play could not start. Try tapping Play all again.')
+      const ok = await preloadArmedPools()
+      if (!ok) {
+        setPhraseError('Could not preload armed pools. Try again.')
         return
       }
-      setPlayAllActive(true)
-      allPoolsTickerRef.current = setInterval(() => {
-        setPoolProgress((prev) =>
-          prev.map((_, i) => {
-            const a = allPoolsAudioRef.current[i]
-            if (!a || !Number.isFinite(a.duration) || a.duration <= 0) return 0
-            return Math.max(0, Math.min(1, a.currentTime / a.duration))
-          })
-        )
-        const stillPlaying = allPoolsAudioRef.current.some((a) => a && !a.paused && !a.ended)
-        if (!stillPlaying) stopAllPoolsPlayback()
-      }, 80)
+      stopAllPoolsPlayback()
+      setPoolProgress(Array.from({ length: PRACTICE_POOLS }, () => 0))
+      let c = STACK_COUNTDOWN_SEC
+      setStackCountdown(c)
+      stackCountdownRef.current = setInterval(async () => {
+        c -= 1
+        setStackCountdown(c > 0 ? c : 0)
+        if (c > 0) return
+        if (stackCountdownRef.current) {
+          clearInterval(stackCountdownRef.current)
+          stackCountdownRef.current = null
+        }
+        setStackCountdown(null)
+
+        const starts: Promise<void>[] = []
+        const startedFlags: boolean[] = Array.from({ length: active.length }, () => false)
+        for (let order = 0; order < active.length; order++) {
+          const p = active[order]!
+          const a = new Audio(p.url!)
+          a.preload = 'auto'
+          a.playbackRate = phraseRate
+          const dominance = order === 0 ? 1 : 0.78
+          a.volume = Math.max(0, Math.min(1, (poolVolumes[p.idx] ?? 1) * dominance))
+          allPoolsAudioRef.current[p.idx] = a
+          starts.push(
+            a.play().then(() => {
+              startedFlags[order] = true
+            }).catch(() => {
+              allPoolsAudioRef.current[p.idx] = null
+            })
+          )
+        }
+        await Promise.allSettled(starts)
+        const started = startedFlags.filter(Boolean).length
+        if (started === 0) {
+          setPhraseError('Stacked play could not start after countdown.')
+          return
+        }
+        setPlayAllActive(true)
+        allPoolsTickerRef.current = setInterval(() => {
+          setPoolProgress((prev) =>
+            prev.map((_, i) => {
+              const a = allPoolsAudioRef.current[i]
+              if (!a || !Number.isFinite(a.duration) || a.duration <= 0) return 0
+              return Math.max(0, Math.min(1, a.currentTime / a.duration))
+            })
+          )
+          const stillPlaying = allPoolsAudioRef.current.some((a) => a && !a.paused && !a.ended)
+          if (!stillPlaying) stopAllPoolsPlayback()
+        }, 80)
+      }, 1000)
     } catch {
       setPhraseError('Could not play all pools at once on this browser.')
     }
-  }, [activePool, armedPools, playAllActive, phraseRate, poolVolumes, pools, stopAllPoolsPlayback])
+  }, [activePool, armedPools, playAllActive, phraseRate, poolVolumes, pools, preloadArmedPools, stopAllPoolsPlayback])
 
   const onPoolPressStart = (poolIndex: number) => {
     if (poolHoldTimeoutRef.current) clearTimeout(poolHoldTimeoutRef.current)
@@ -769,6 +848,11 @@ export default function StepSequencer() {
       }
       return [...prev, poolIndex]
     })
+    if (stackCountdownRef.current) {
+      clearInterval(stackCountdownRef.current)
+      stackCountdownRef.current = null
+      setStackCountdown(null)
+    }
   }
 
   const resetActivePool = useCallback(() => {
@@ -1065,6 +1149,15 @@ export default function StepSequencer() {
         </div>
         <p className="text-[10px] text-neutral-500 -mt-1">
           Click pools to arm layers for stacked playback. First armed pool (★) is dominant.
+          {' '}Status:{' '}
+          <span className={stackArmedReady ? 'text-emerald-400' : 'text-amber-400'}>
+            {stackArmedReady ? 'ARMED' : 'NOT ARMED'}
+          </span>
+          {stackCountdown != null ? (
+            <span className="ml-2 text-amber-300 font-semibold">
+              Stack starts in {stackCountdown}
+            </span>
+          ) : null}
         </p>
         <div className="flex items-center gap-3">
           <Label className="text-[10px] uppercase tracking-widest text-neutral-500 shrink-0">
