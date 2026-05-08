@@ -42,6 +42,11 @@ service cloud.firestore {
       allow read, write: if isUserAuthenticated(userId);
     }
 
+    // Phrase practice summaries + session history (sequencer phrase pools)
+    match /users/{userId}/phraseProgress/{document=**} {
+      allow read, write: if isUserAuthenticated(userId);
+    }
+
     // Time tracking
     match /timeTracking/{entryId} {
       allow write: if isAuthenticated();

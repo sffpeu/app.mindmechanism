@@ -17,7 +17,9 @@ import { MantraInput } from '@/components/sequencer/MantraInput'
 import { SequencerControls } from '@/components/sequencer/SequencerControls'
 import { analyzePhraseBlob, type PhraseAcousticReport } from '@/lib/phraseAcousticAnalysis'
 import { db } from '@/lib/firebase'
-import { doc, setDoc, type Firestore } from 'firebase/firestore'
+import { doc, setDoc, getDoc, increment, type Firestore } from 'firebase/firestore'
+import { phraseHash } from '@/lib/phraseProgress'
+import { PhraseProgressCurve } from '@/components/sequencer/PhraseProgressCurve'
 import { hasStudentAcademicPortal, tierDisplayName } from '@/lib/portalAccess'
 
 type StressKind = 'primary' | 'secondary' | 'unstressed'
@@ -122,15 +124,6 @@ function buildComparison(
   }
 }
 
-function phraseHash(phrase: string): string {
-  let h = 0
-  for (let i = 0; i < phrase.length; i++) {
-    h = (h << 5) - h + phrase.charCodeAt(i)
-    h |= 0
-  }
-  return `p_${Math.abs(h)}`
-}
-
 export default function SequencerPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -144,6 +137,7 @@ export default function SequencerPage() {
   const [stressSuggestion, setStressSuggestion] = useState<StressKind[] | null>(null)
   const [comparison, setComparison] = useState<CompareReport | null>(null)
   const [didApplyGlossaryPrefill, setDidApplyGlossaryPrefill] = useState(false)
+  const [progressRefreshKey, setProgressRefreshKey] = useState(0)
 
   useEffect(() => {
     document.title = 'Sequencer'
@@ -185,6 +179,12 @@ export default function SequencerPage() {
     setStressSuggestion(pattern.length > 0 ? pattern : null)
   }, [sequencer.sequence.ipaText, sequencer.syllables.length])
 
+  const currentPhraseHash = useMemo(() => {
+    const m = sequencer.sequence.mantraText.trim()
+    if (!m) return null
+    return phraseHash(`${m}|${sequencer.sequence.ipaText.trim()}`)
+  }, [sequencer.sequence.mantraText, sequencer.sequence.ipaText])
+
   const handlePoolFinished = async ({ blob }: { poolIndex: number; blob: Blob; durationSec: number }) => {
     const report = await analyzePhraseBlob(blob)
     const activeStepIndices = sequencer.sequence.steps
@@ -196,30 +196,47 @@ export default function SequencerPage() {
     if (user?.uid && db && sequencer.sequence.mantraText.trim()) {
       const ph = phraseHash(`${sequencer.sequence.mantraText.trim()}|${sequencer.sequence.ipaText.trim()}`)
       const sessionId = new Date().toISOString()
-      await setDoc(
-        doc(
-          db as Firestore,
-          'users',
-          user.uid,
-          'phraseProgress',
-          ph,
-          'sessions',
-          sessionId
-        ),
-        {
-          phrase: sequencer.sequence.mantraText,
-          ipaText: sequencer.sequence.ipaText,
-          consistencyScore: compare.consistencyScore,
-          rhythmMatchPct: compare.rhythmMatchPct,
-          stressHitCount: compare.stressHitCount,
-          stressMissCount: compare.stressMissCount,
-          targetPattern: compare.targetPattern,
-          userPattern: compare.userPattern,
-          prominencePeaks: report.prominencePeaks.map((p) => p.tSec),
-          speechSegments: report.speechSegments.map((s) => [s.startSec, s.endSec]),
-          createdAt: Date.now(),
-        }
-      ).catch(() => undefined)
+      try {
+        await setDoc(
+          doc(db as Firestore, 'users', user.uid, 'phraseProgress', ph, 'sessions', sessionId),
+          {
+            phrase: sequencer.sequence.mantraText,
+            ipaText: sequencer.sequence.ipaText,
+            consistencyScore: compare.consistencyScore,
+            rhythmMatchPct: compare.rhythmMatchPct,
+            stressHitCount: compare.stressHitCount,
+            stressMissCount: compare.stressMissCount,
+            targetPattern: compare.targetPattern,
+            userPattern: compare.userPattern,
+            prominencePeaks: report.prominencePeaks.map((p) => p.tSec),
+            speechSegments: report.speechSegments.map((s) => [s.startSec, s.endSec]),
+            createdAt: Date.now(),
+          }
+        )
+
+        const summaryRef = doc(db as Firestore, 'users', user.uid, 'phraseProgress', ph)
+        const summarySnap = await getDoc(summaryRef)
+        const prev = summarySnap.exists() ? summarySnap.data() : {}
+        const currentBest =
+          typeof prev.bestScore === 'number' && !Number.isNaN(prev.bestScore) ? prev.bestScore : 0
+
+        await setDoc(
+          summaryRef,
+          {
+            phrase: sequencer.sequence.mantraText.trim(),
+            ipaText: sequencer.sequence.ipaText.trim(),
+            latestScore: compare.consistencyScore,
+            latestSessionAt: Date.now(),
+            sessionCount: increment(1),
+            bestScore: Math.max(currentBest, compare.consistencyScore),
+            ...(summarySnap.exists() ? {} : { firstSessionAt: Date.now() }),
+          },
+          { merge: true }
+        )
+      } catch {
+        /* Firestore unavailable — comparison UI still works locally */
+      }
+      setProgressRefreshKey((k) => k + 1)
     }
   }
 
@@ -438,6 +455,15 @@ export default function SequencerPage() {
           </p>
         </div>
       )}
+
+      {comparison && user?.uid && currentPhraseHash ? (
+        <PhraseProgressCurve
+          uid={user.uid}
+          phraseHash={currentPhraseHash}
+          refreshKey={progressRefreshKey}
+          phraseText={sequencer.sequence.mantraText.trim()}
+        />
+      ) : null}
 
       {/* Phrase analyzer — full width, no extra wrapper */}
       <StepSequencer mantraText={sequencer.sequence.mantraText} onPoolFinished={handlePoolFinished} />
