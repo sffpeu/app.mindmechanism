@@ -20,16 +20,20 @@ export default function SequencerPage() {
               16-step sequencer
             </h1>
             <p className="text-sm text-gray-600 dark:text-gray-400 max-w-2xl leading-relaxed">
-              Eight pads × sixteen sixteenth-note steps. Import short samples, program a bar, play in time.
-              Arm record to capture the live mix as a loop — save it under{' '}
-              <span className="text-gray-800 dark:text-gray-200 font-medium">Settings → Sound → Your sequencer loops</span>,
-              or download the file.
+              Nine tracks align with the nine wheels — each ships with the matching planet drone from MM Foundations so
+              you can hear the grid immediately. Replace lanes with your own material when you are ready; record the mix
+              as a loop for{' '}
+              <span className="text-gray-800 dark:text-gray-200 font-medium">Settings → Sound → Your sequencer loops</span>.
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-500 max-w-2xl leading-relaxed">
+              This is the same frequency register map as practice — sequencing turns symbolic tone into compositional study:
+              polyrhythm, layering, and exportable artefacts you can return to in sessions.
             </p>
             <p className="text-xs text-violet-600 dark:text-violet-400">
               <Link href="/synth-lab" className="hover:underline font-medium">
                 Synth lab
               </Link>{' '}
-              — tonal layers; this page — rhythmic layers.
+              — sustained harmonic exploration; this page — temporal structuring.
             </p>
           </header>
 
@@ -38,11 +42,17 @@ export default function SequencerPage() {
               How it works
             </h2>
             <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1.5 leading-relaxed list-disc pl-5">
-              <li>Upload on each pad (WAV, MP3, M4A, etc.). Toggle steps where that sample should hit.</li>
-              <li>BPM sets the bar length; one full cycle is 16 steps.</li>
               <li>
-                <strong className="text-gray-800 dark:text-gray-200">Arm record</strong>, then Play. When you Stop, you
-                can save the take into the Sound panel library (browser storage, keep clips reasonably short).
+                Presets load automatically from <code className="text-[11px] px-1 rounded bg-black/5 dark:bg-white/10">/mm_tones</code>.
+                A starter pattern fires once per wheel across the bar — edit freely.
+              </li>
+              <li>
+                Import audio per wheel (WAV, MP3, M4A, …). <strong className="text-gray-800 dark:text-gray-200">Rotate</strong>{' '}
+                restores that wheel&apos;s factory drone.
+              </li>
+              <li>BPM sets one bar of sixteen sixteenth-notes.</li>
+              <li>
+                <strong className="text-gray-800 dark:text-gray-200">Arm record</strong> → Play → Stop to capture the stereo mix.
               </li>
             </ul>
           </Card>

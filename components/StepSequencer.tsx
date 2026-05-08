@@ -7,7 +7,7 @@ import {
   Square,
   Disc3,
   Upload,
-  Trash2,
+  RotateCcw,
   Circle,
   Download,
   Loader2,
@@ -23,51 +23,78 @@ import {
   loadCompositions,
   MAX_COMPOSITIONS,
 } from '@/lib/userCompositionsStorage'
+import { clockTitles } from '@/lib/clockTitles'
+import { MM_DRONE_PATH, MM_DRONE_PLANET_LABELS } from '@/lib/mmDroneTones'
 
 export const STEPS = 16
-export const TRACKS = 8
+/** One lane per mandala / wheel (0–8). */
+export const TRACKS = 9
 
-const PATTERN_KEY = 'mm-sequencer-pattern-v1'
+const PATTERN_KEY_V2 = 'mm-sequencer-pattern-v2'
+const PATTERN_KEY_V1 = 'mm-sequencer-pattern-v1'
 
+/** Rough chromatic alignment with planet drones / wheels */
 const TRACK_COLORS = [
   '#c5ab6e',
-  '#888888',
-  '#e3bb76',
-  '#2d5a27',
-  '#ae4d28',
-  '#d39c7e',
-  '#b8e1e2',
   '#3f54ba',
+  '#ae4d28',
+  '#e3bb76',
+  '#888888',
+  '#b8e1e2',
+  '#d39c7e',
+  '#c99039',
+  '#2d5a27',
 ] as const
 
 export type SequencerTrack = {
   steps: boolean[]
-  fileName: string | null
   buffer: AudioBuffer | null
+  /** User filename or preset description */
+  label: string
+  /** Factory drone vs imported sample */
+  sampleKind: 'preset' | 'user'
 }
 
-function emptyTrack(): SequencerTrack {
-  return {
-    steps: Array.from({ length: STEPS }, () => false),
-    fileName: null,
-    buffer: null,
-  }
+function emptySteps(): boolean[] {
+  return Array.from({ length: STEPS }, () => false)
+}
+
+/** One hit per wheel, spaced evenly across the bar — immediate audible demo */
+function defaultStarterSteps(): boolean[][] {
+  return Array.from({ length: TRACKS }, (_, ti) => {
+    const hit = Math.round(ti * ((STEPS - 1) / Math.max(1, TRACKS - 1)))
+    return Array.from({ length: STEPS }, (_, si) => si === hit)
+  })
+}
+
+function normalizePersistedTracks(rawTracks: unknown): boolean[][] | null {
+  if (!Array.isArray(rawTracks)) return null
+  const masks = rawTracks.map((t) => {
+    const steps = (t as { steps?: unknown })?.steps
+    if (!Array.isArray(steps)) return null
+    const row = steps.map(Boolean).slice(0, STEPS)
+    while (row.length < STEPS) row.push(false)
+    return row as boolean[]
+  })
+  if (masks.some((m) => !m)) return null
+  while (masks.length < TRACKS) masks.push(emptySteps())
+  if (masks.length > TRACKS) masks.length = TRACKS
+  return masks as boolean[][]
 }
 
 function loadPersistedPattern(): { bpm: number; stepMasks: boolean[][] | null } {
   if (typeof window === 'undefined') return { bpm: 118, stepMasks: null }
   try {
-    const raw = localStorage.getItem(PATTERN_KEY)
-    if (!raw) return { bpm: 118, stepMasks: null }
-    const o = JSON.parse(raw) as { bpm?: number; tracks?: { steps: boolean[] }[] }
-    const bpm =
-      typeof o.bpm === 'number' ? Math.max(60, Math.min(180, Math.round(o.bpm))) : 118
-    if (!o.tracks || !Array.isArray(o.tracks)) return { bpm, stepMasks: null }
-    const masks = o.tracks.map((t) =>
-      Array.isArray(t.steps) && t.steps.length === STEPS ? t.steps.map(Boolean) : null
-    )
-    const stepMasks = masks.every((m) => m) ? (masks as boolean[][]) : null
-    return { bpm, stepMasks }
+    for (const key of [PATTERN_KEY_V2, PATTERN_KEY_V1]) {
+      const raw = localStorage.getItem(key)
+      if (!raw) continue
+      const o = JSON.parse(raw) as { bpm?: number; tracks?: unknown }
+      const bpm =
+        typeof o.bpm === 'number' ? Math.max(60, Math.min(180, Math.round(o.bpm))) : 118
+      const stepMasks = normalizePersistedTracks(o.tracks)
+      if (stepMasks) return { bpm, stepMasks }
+    }
+    return { bpm: 118, stepMasks: null }
   } catch {
     return { bpm: 118, stepMasks: null }
   }
@@ -77,7 +104,7 @@ function savePersistedPattern(bpm: number, tracks: SequencerTrack[]) {
   if (typeof window === 'undefined') return
   try {
     localStorage.setItem(
-      PATTERN_KEY,
+      PATTERN_KEY_V2,
       JSON.stringify({
         bpm,
         tracks: tracks.map((t) => ({ steps: t.steps })),
@@ -88,15 +115,19 @@ function savePersistedPattern(bpm: number, tracks: SequencerTrack[]) {
   }
 }
 
+function initialTracks(): SequencerTrack[] {
+  const { stepMasks } = loadPersistedPattern()
+  const starter = stepMasks ?? defaultStarterSteps()
+  return Array.from({ length: TRACKS }, (_, i) => ({
+    steps: [...starter[i]!],
+    buffer: null,
+    label: `${MM_DRONE_PLANET_LABELS[i]} · preset`,
+    sampleKind: 'preset' as const,
+  }))
+}
+
 export default function StepSequencer() {
-  const [tracks, setTracks] = useState<SequencerTrack[]>(() => {
-    const { stepMasks } = loadPersistedPattern()
-    return Array.from({ length: TRACKS }, (_, i) => {
-      const t = emptyTrack()
-      if (stepMasks?.[i]) t.steps = [...stepMasks[i]!]
-      return t
-    })
-  })
+  const [tracks, setTracks] = useState<SequencerTrack[]>(() => initialTracks())
   const [bpm, setBpm] = useState(() => loadPersistedPattern().bpm)
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
@@ -107,6 +138,8 @@ export default function StepSequencer() {
   const [saveBusy, setSaveBusy] = useState(false)
   const [saveMsg, setSaveMsg] = useState<string | null>(null)
   const [libraryCount, setLibraryCount] = useState(0)
+  const [presetsLoading, setPresetsLoading] = useState(true)
+  const [presetError, setPresetError] = useState<string | null>(null)
 
   const ctxRef = useRef<AudioContext | null>(null)
   const masterRef = useRef<GainNode | null>(null)
@@ -148,6 +181,52 @@ export default function StepSequencer() {
     return ctxRef.current!
   }, [])
 
+  const decodePresetDrone = useCallback(
+    async (ctx: AudioContext, wheelIndex: number): Promise<AudioBuffer> => {
+      const url = MM_DRONE_PATH(wheelIndex)
+      const res = await fetch(url)
+      if (!res.ok) throw new Error(`${url} ${res.status}`)
+      const ab = await res.arrayBuffer()
+      return ctx.decodeAudioData(ab.slice(0))
+    },
+    []
+  )
+
+  /** Load nine MM preset drones from public /mm_tones */
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      setPresetError(null)
+      setPresetsLoading(true)
+      try {
+        const ctx = ensureCtx()
+        await ctx.resume()
+        const buffers = await Promise.all(
+          Array.from({ length: TRACKS }, (_, i) => decodePresetDrone(ctx, i))
+        )
+        if (cancelled) return
+        setTracks((prev) =>
+          prev.map((tr, ti) =>
+            tr.sampleKind === 'preset'
+              ? {
+                  ...tr,
+                  buffer: buffers[ti],
+                  label: `${MM_DRONE_PLANET_LABELS[ti]} · preset`,
+                }
+              : tr
+          )
+        )
+      } catch {
+        if (!cancelled) setPresetError('Could not load preset drones. Check network or refresh.')
+      } finally {
+        if (!cancelled) setPresetsLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [decodePresetDrone, ensureCtx])
+
   const playHitsAtStep = useCallback((stepIdx: number) => {
     const ctx = ctxRef.current
     const master = masterRef.current
@@ -159,7 +238,7 @@ export default function StepSequencer() {
       const src = ctx.createBufferSource()
       src.buffer = tr.buffer
       const g = ctx.createGain()
-      g.gain.value = 0.72
+      g.gain.value = tr.sampleKind === 'preset' ? 0.42 : 0.72
       src.connect(g)
       g.connect(master)
       src.start(0)
@@ -249,17 +328,33 @@ export default function StepSequencer() {
   const clearTrackSteps = (track: number) => {
     setTracks((prev) =>
       prev.map((tr, ti) =>
-        ti === track ? { ...tr, steps: Array.from({ length: STEPS }, () => false) } : tr
+        ti === track ? { ...tr, steps: emptySteps() } : tr
       )
     )
   }
 
-  const clearSample = (track: number) => {
-    setTracks((prev) =>
-      prev.map((tr, ti) =>
-        ti === track ? { ...tr, buffer: null, fileName: null } : tr
+  const restorePreset = async (trackIndex: number) => {
+    try {
+      const ctx = ensureCtx()
+      await ctx.resume()
+      const buf = await decodePresetDrone(ctx, trackIndex)
+      setTracks((prev) =>
+        prev.map((tr, ti) =>
+          ti === trackIndex
+            ? {
+                ...tr,
+                buffer: buf,
+                label: `${MM_DRONE_PLANET_LABELS[ti]} · preset`,
+                sampleKind: 'preset',
+              }
+            : tr
+        )
       )
-    )
+    } catch {
+      setPresetError(
+        `Could not reload preset for wheel ${trackIndex + 1}.`
+      )
+    }
   }
 
   const onPickFile = (trackIndex: number) => {
@@ -279,7 +374,7 @@ export default function StepSequencer() {
       const buf = await ctx.decodeAudioData(ab.slice(0))
       setTracks((prev) =>
         prev.map((tr, i) =>
-          i === ti ? { ...tr, buffer: buf, fileName: file.name } : tr
+          i === ti ? { ...tr, buffer: buf, label: file.name, sampleKind: 'user' } : tr
         )
       )
     } catch {
@@ -330,6 +425,8 @@ export default function StepSequencer() {
     URL.revokeObjectURL(u)
   }
 
+  const railW = 'w-[8.75rem]'
+
   return (
     <div className="space-y-6">
       <input
@@ -349,6 +446,7 @@ export default function StepSequencer() {
               size="sm"
               className="gap-1.5"
               onClick={() => void handlePlayPause()}
+              disabled={presetsLoading && !tracks.some((t) => t.buffer)}
             >
               {isPlaying ? <Square className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
               {isPlaying ? 'Stop' : 'Play'}
@@ -383,10 +481,19 @@ export default function StepSequencer() {
           </div>
         </div>
         <p className="text-[10px] text-neutral-500 leading-relaxed">
-          Sixteenth-note steps (one bar). Arm record → Play → Stop to capture a loop into{' '}
-          <strong className="text-neutral-300">Sound → Your sequencer loops</strong> ({libraryCount}/
-          {MAX_COMPOSITIONS}). Step patterns persist; re-import samples after refresh.
+          Nine lanes match the nine wheels — each loads an MM planet drone preset so you can hit{' '}
+          <strong className="text-neutral-300">Play</strong> immediately. Replace any lane with your own sample (
+          synth export, field recording, etc.). Patterns persist; user samples still need re-import after refresh.
         </p>
+        <div className="flex flex-wrap items-center gap-2 text-[10px]">
+          {presetsLoading && (
+            <span className="flex items-center gap-1.5 text-amber-200/90">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              Loading preset drones…
+            </span>
+          )}
+          {presetError && <span className="text-red-400">{presetError}</span>}
+        </div>
         {recordingActive && (
           <p className="text-xs text-red-400 flex items-center gap-2">
             <span className="inline-block h-2 w-2 rounded-full bg-red-500 animate-pulse" />
@@ -396,8 +503,8 @@ export default function StepSequencer() {
       </Card>
 
       <div className="overflow-x-auto rounded-xl border border-neutral-800 bg-neutral-950/80 p-3">
-        <div className="min-w-[720px] space-y-1.5">
-          <div className="flex gap-1 items-center pl-[7.5rem]">
+        <div className="min-w-[760px] space-y-1.5">
+          <div className={cn('flex gap-1 items-center', `pl-[8.75rem]`)}>
             {Array.from({ length: STEPS }, (_, s) => (
               <div
                 key={s}
@@ -414,15 +521,23 @@ export default function StepSequencer() {
           </div>
           {tracks.map((tr, ti) => (
             <div key={ti} className="flex gap-1.5 items-center">
-              <div className="w-[7rem] shrink-0 flex flex-col gap-1 pr-1">
-                <div className="flex items-center gap-1">
+              <div className={cn(railW, 'shrink-0 flex flex-col gap-1 pr-1')}>
+                <div className="flex items-start gap-1">
                   <span
-                    className="h-2.5 w-2.5 rounded-full shrink-0"
+                    className="h-2.5 w-2.5 rounded-full shrink-0 mt-0.5"
                     style={{ backgroundColor: TRACK_COLORS[ti] }}
                   />
-                  <span className="text-[10px] font-semibold text-neutral-300 truncate max-w-[4.5rem]">
-                    P{ti + 1}
-                  </span>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[8px] font-semibold text-neutral-400 uppercase tracking-wider leading-none">
+                      W{ti + 1}
+                    </span>
+                    <p className="text-[9px] font-semibold text-neutral-200 leading-snug line-clamp-2">
+                      {clockTitles[ti]}
+                    </p>
+                    <p className="text-[8px] text-neutral-500 leading-tight">
+                      {MM_DRONE_PLANET_LABELS[ti]}
+                    </p>
+                  </div>
                 </div>
                 <div className="flex gap-0.5">
                   <Button
@@ -431,7 +546,7 @@ export default function StepSequencer() {
                     size="icon"
                     className="h-7 w-7 text-neutral-400 hover:text-amber-200"
                     onClick={() => onPickFile(ti)}
-                    aria-label={`Import sample track ${ti + 1}`}
+                    aria-label={`Import sample wheel ${ti + 1}`}
                   >
                     <Upload className="h-3.5 w-3.5" />
                   </Button>
@@ -441,7 +556,7 @@ export default function StepSequencer() {
                     size="icon"
                     className="h-7 w-7 text-neutral-500 hover:text-amber-300"
                     onClick={() => clearTrackSteps(ti)}
-                    aria-label={`Clear steps track ${ti + 1}`}
+                    aria-label={`Clear steps wheel ${ti + 1}`}
                   >
                     <Disc3 className="h-3.5 w-3.5" />
                   </Button>
@@ -449,16 +564,15 @@ export default function StepSequencer() {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 text-neutral-500 hover:text-red-400"
-                    onClick={() => clearSample(ti)}
-                    disabled={!tr.buffer}
-                    aria-label={`Remove sample track ${ti + 1}`}
+                    className="h-7 w-7 text-neutral-500 hover:text-emerald-400"
+                    onClick={() => void restorePreset(ti)}
+                    aria-label={`Restore preset drone wheel ${ti + 1}`}
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <RotateCcw className="h-3.5 w-3.5" />
                   </Button>
                 </div>
-                <span className="text-[8px] text-neutral-600 truncate" title={tr.fileName || ''}>
-                  {tr.fileName || '—'}
+                <span className="text-[8px] text-neutral-600 truncate" title={tr.label}>
+                  {tr.label}
                 </span>
               </div>
               {tr.steps.map((on, si) => (
@@ -527,11 +641,12 @@ export default function StepSequencer() {
       )}
 
       <p className="text-[11px] text-neutral-500">
-        Design sounds in{' '}
+        Design sustained tones in{' '}
         <Link href="/synth-lab" className="text-violet-400 hover:underline">
           Synth lab
         </Link>
-        ; capture to file externally if needed, then import samples on any pad here.
+        ; bounce or capture audio, then import on the matching wheel. These layers sit under the same symbolic map as
+        timed practice — rhythm here is composition homework, not distraction.
       </p>
     </div>
   )
