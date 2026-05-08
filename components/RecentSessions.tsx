@@ -1,0 +1,240 @@
+import { useEffect, useState } from 'react';
+import { Session, getUserSessions } from '@/lib/sessions';
+import { useAuth } from '@/lib/FirebaseAuthContext';
+import { RefreshCw, Play } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
+import { useRouter } from 'next/navigation';
+
+import { clockTitles } from '@/lib/clockTitles';
+
+// Clock colors (text + fill for mini clock)
+const clockColors = [
+  'text-red-500',
+  'text-orange-500',
+  'text-yellow-500',
+  'text-green-500',
+  'text-blue-500',
+  'text-pink-500',
+  'text-purple-500',
+  'text-indigo-500',
+  'text-cyan-500'
+];
+
+const clockStrokeColors = [
+  'stroke-red-500',
+  'stroke-orange-500',
+  'stroke-yellow-500',
+  'stroke-green-500',
+  'stroke-blue-500',
+  'stroke-pink-500',
+  'stroke-purple-500',
+  'stroke-indigo-500',
+  'stroke-cyan-500'
+];
+
+// Helper function to format time in MM:SS
+const formatTime = (ms: number) => {
+  if (ms === 0) return '∞';
+  const totalSeconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+};
+
+function MiniClock({ progress, strokeColor }: { progress: number; strokeColor: string }) {
+  const size = 40;
+  const strokeWidth = 3;
+  const r = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * r;
+  const dash = (progress / 100) * circumference;
+  return (
+    <svg width={size} height={size} className="flex-shrink-0" viewBox={`0 0 ${size} ${size}`}>
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={strokeWidth}
+        className="text-gray-200 dark:text-white/10"
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill="none"
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        className={strokeColor}
+        strokeDasharray={circumference}
+        strokeDashoffset={circumference - dash}
+        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+      />
+    </svg>
+  );
+}
+
+export function RecentSessions() {
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showAllSessions, setShowAllSessions] = useState(false);
+  const { user } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    async function loadSessions() {
+      if (!user?.uid) return;
+      try {
+        const userSessions = await getUserSessions(user.uid);
+        setSessions(userSessions);
+      } catch (error) {
+        console.error('Error loading sessions:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadSessions();
+  }, [user?.uid]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-6">
+        <LoadingSpinner size="md" />
+      </div>
+    );
+  }
+
+  if (sessions.length === 0) {
+    return (
+      <div className="text-center p-6">
+        <p className="text-sm text-gray-600 dark:text-gray-400">No sessions found. Start a new session to see your history here.</p>
+      </div>
+    );
+  }
+
+  const handleRestartSession = (session: Session) => {
+    const encodedWords = encodeURIComponent(JSON.stringify(session.words || []));
+    router.push(`/${session.clock_id}?duration=${session.duration}&words=${encodedWords}&sessionId=${session.id}`);
+  };
+
+  const handleContinueSession = (session: Session) => {
+    if (session.status !== 'in_progress' && session.status !== 'aborted') return;
+
+    const now = new Date().getTime();
+    const lastActiveTime = session.last_active_time?.toDate().getTime() ?? session.start_time.toDate().getTime();
+    const sessionAge = now - lastActiveTime;
+    const encodedWords = encodeURIComponent(JSON.stringify(session.words || []));
+
+    // Prefer saved remaining_time_ms (set when user left) so Continue starts where they left off
+    const savedRemaining = session.remaining_time_ms;
+    const useSaved = savedRemaining != null && savedRemaining > 0 && sessionAge < 24 * 60 * 60 * 1000;
+
+    const durationToUse = useSaved
+      ? savedRemaining
+      : (() => {
+          const startTime = session.start_time.toDate().getTime();
+          const pausedDuration = session.paused_duration || 0;
+          const timeSpent = session.status === 'aborted'
+            ? (session.actual_duration ?? 0)
+            : (session.actual_duration ?? (lastActiveTime - startTime - pausedDuration));
+          return Math.max(0, session.duration - timeSpent);
+        })();
+
+    if (durationToUse > 0) {
+      router.push(`/${session.clock_id}?duration=${durationToUse}&sessionId=${session.id}&words=${encodedWords}&originalDuration=${session.duration}`);
+      localStorage.removeItem('pendingSession');
+    } else {
+      router.push(`/${session.clock_id}?duration=${session.duration}&words=${encodedWords}`);
+    }
+  };
+
+  const displayedSessions = showAllSessions ? sessions : sessions.slice(0, 6);
+
+  const SessionMini = ({ session }: { session: Session }) => {
+    const clockType = clockTitles[session.clock_id] || 'Unknown Clock';
+    const textColor = clockColors[session.clock_id] || 'text-gray-500';
+    const strokeColor = clockStrokeColors[session.clock_id] || 'stroke-gray-500';
+    const startTime = session.start_time.toDate();
+    const lastActiveTime = session.last_active_time?.toDate() || startTime;
+    const pausedDuration = session.paused_duration || 0;
+
+    // Prefer remaining_time_ms (saved when user left) for accurate "time left" and progress
+    const timeLeft = session.status === 'completed'
+      ? 0
+      : (session.remaining_time_ms != null && session.remaining_time_ms > 0)
+        ? session.remaining_time_ms
+        : (() => {
+            const timeSpent = session.status === 'aborted'
+              ? (session.actual_duration ?? 0)
+              : (session.actual_duration ?? (lastActiveTime.getTime() - startTime.getTime() - pausedDuration));
+            return Math.max(0, session.duration - timeSpent);
+          })();
+    const timeSpent = session.duration - timeLeft;
+    const progress = session.status === 'completed' ? 100 :
+      Math.min((timeSpent / session.duration) * 100, 100);
+    const isCompleted = session.status === 'completed';
+    const timeLabel = isCompleted
+      ? `${formatTime(session.actual_duration ?? 0)} completed`
+      : `${formatTime(timeLeft)} left`;
+
+    const canContinue = session.status === 'in_progress' || session.status === 'aborted';
+
+    return (
+      <div className="flex flex-col items-center p-3 rounded-xl bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 min-w-[120px] max-w-[160px]">
+        <MiniClock progress={progress} strokeColor={strokeColor} />
+        <h3 className={`text-xs font-medium mt-2 text-center line-clamp-2 ${textColor}`}>
+          {clockType}
+        </h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 tabular-nums">
+          {timeLabel}
+        </p>
+        <div className="flex gap-1.5 mt-2 w-full justify-center flex-wrap">
+          {canContinue && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() => handleContinueSession(session)}
+            >
+              <Play className="h-3 w-3 mr-1" />
+              Continue
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={() => handleRestartSession(session)}
+          >
+            <RefreshCw className="h-3 w-3 mr-1" />
+            Restart
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+        {displayedSessions.map((session) => (
+          <SessionMini key={session.id} session={session} />
+        ))}
+      </div>
+
+      {sessions.length > 6 && (
+        <div className="text-center mt-4">
+          <Button
+            variant="ghost"
+            onClick={() => setShowAllSessions(!showAllSessions)}
+            className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10"
+          >
+            {showAllSessions ? 'Show Less' : 'Show More'}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}

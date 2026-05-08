@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mind Mechanism — White Paper · 7 May 2026</title>
+<style>
+  :root {
+    --bg: #09090b;
+    --surface: #111113;
+    --surface2: #18181b;
+    --border: rgba(255,255,255,0.07);
+    --accent: #a78bfa;
+    --accent2: #7c3aed;
+    --text: #e4e4e7;
+    --muted: #71717a;
+    --muted2: #52525b;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --rose: #f87171;
+    --gold: #fbbf24;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .header {
+    border-bottom: 1px solid var(--border);
+    padding: 36px 48px 28px;
+    background: linear-gradient(135deg, #0d0d10 0%, #13101a 100%);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-inner { max-width: 1100px; margin: 0 auto; }
+  .header-meta {
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -.02em;
+    margin-bottom: 4px;
+  }
+  .header-sub { font-size: 12px; color: var(--muted); }
+  .badge {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 9px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(167,139,250,.3);
+    color: var(--accent);
+    background: rgba(167,139,250,.07);
+  }
+
+  .tab-nav {
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 104px;
+    z-index: 99;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tab-nav::-webkit-scrollbar { display: none; }
+  .tab-list {
+    display: flex;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 48px;
+    min-width: max-content;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 14px 18px;
+    border-bottom: 2px solid transparent;
+    transition: color .15s, border-color .15s;
+    white-space: nowrap;
+    letter-spacing: .01em;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .content {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 48px 80px;
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -.02em;
+    margin-bottom: 8px;
+  }
+  h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: -.01em;
+    margin: 36px 0 10px;
+  }
+  h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 20px 0 6px;
+  }
+  p { color: var(--muted); margin-bottom: 14px; line-height: 1.8; }
+  p strong { color: var(--text); font-weight: 600; }
+  .lead {
+    font-size: 16px;
+    color: #a1a1aa;
+    line-height: 1.85;
+    margin-bottom: 32px;
+    max-width: 820px;
+    border-left: 3px solid var(--accent2);
+    padding-left: 20px;
+  }
+  .rule { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: border-color .2s;
+  }
+  .card:hover { border-color: rgba(167,139,250,.25); }
+  .card-label {
+    font-size: 10px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .card-title { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+  .card-body { font-size: 12.5px; color: var(--muted); line-height: 1.7; }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 14px;
+    margin: 24px 0;
+  }
+  .stat-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+  }
+  .stat-label { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .stat-value { font-size: 28px; font-weight: 700; color: #fff; letter-spacing: -.03em; }
+  .stat-sub { font-size: 11px; color: var(--muted2); margin-top: 4px; }
+  .stat-box.highlight { border-color: rgba(167,139,250,.35); background: rgba(167,139,250,.05); }
+  .stat-box.highlight .stat-value { color: var(--accent); }
+  .stat-box.green-box { border-color: rgba(52,211,153,.3); }
+  .stat-box.green-box .stat-value { color: var(--green); }
+
+  .table-wrap { overflow-x: auto; margin: 20px 0; border-radius: 10px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { background: var(--surface2); }
+  th {
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+  }
+  td {
+    padding: 11px 16px;
+    font-size: 13px;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+  }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,.02); }
+  td.accent { color: var(--accent); font-weight: 600; }
+  td.green { color: var(--green); font-weight: 600; }
+  td.amber { color: var(--amber); font-weight: 600; }
+  td.rose { color: var(--rose); }
+
+  .priority-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  .priority-block.green-left { border-left-color: var(--green); }
+  .priority-block.amber-left { border-left-color: var(--amber); }
+  .priority-label { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+  .priority-block.green-left .priority-label { color: var(--green); }
+  .priority-block.amber-left .priority-label { color: var(--amber); }
+  .priority-title { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+  .priority-body { font-size: 12.5px; color: var(--muted); line-height: 1.7; }
+
+  .timeline { position: relative; padding-left: 28px; margin: 20px 0; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px; top: 0; bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+  .tl-item { position: relative; margin-bottom: 28px; }
+  .tl-dot {
+    position: absolute;
+    left: -25px; top: 3px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent2);
+    border: 2px solid var(--accent);
+  }
+  .tl-dot.green { background: #065f46; border-color: var(--green); }
+  .tl-phase { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+  .tl-title { font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 6px; }
+  .tl-body { font-size: 12.5px; color: var(--muted); line-height: 1.7; }
+
+  blockquote {
+    border-left: 3px solid var(--accent2);
+    margin: 24px 0;
+    padding: 16px 20px;
+    background: rgba(167,139,250,.05);
+    border-radius: 0 8px 8px 0;
+  }
+  blockquote p {
+    font-size: 15px;
+    color: #c4b5fd;
+    font-style: italic;
+    line-height: 1.8;
+    margin: 0;
+  }
+
+  .chain-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 12px 0;
+  }
+  .chain-card.recommended { border-color: rgba(52,211,153,.4); background: rgba(52,211,153,.04); }
+  .chain-card.secondary { border-color: rgba(167,139,250,.4); background: rgba(167,139,250,.04); }
+  .chain-name { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .chain-verdict { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 12px; }
+  .chain-verdict.rec { color: var(--green); }
+  .chain-verdict.sec { color: var(--accent); }
+  .chain-verdict.pass { color: var(--muted); }
+  .chain-body { font-size: 12.5px; color: var(--muted); line-height: 1.7; }
+
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 48px;
+    text-align: center;
+  }
+  .footer p { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted2); margin: 0; }
+
+  @media (max-width: 640px) {
+    .header, .content, .footer { padding-left: 20px; padding-right: 20px; }
+    .tab-list { padding: 0 20px; }
+    .tab-nav { top: 96px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-meta">Internal Working Document · Session Transcript Compilation</div>
+    <h1>Mind Mechanism — White Paper</h1>
+    <div class="header-sub">Full session record · 7 May 2026 · For self-reflection and strategic decision</div>
+    <div class="badge">© Sean Fortune / The One-Legged Poet · Confidential</div>
+  </div>
+</div>
+
+<nav class="tab-nav">
+  <div class="tab-list">
+    <button class="tab-btn active" data-tab="quest">The Quest</button>
+    <button class="tab-btn" data-tab="philosophy">Philosophy</button>
+    <button class="tab-btn" data-tab="sovereign">Sovereign Architecture</button>
+    <button class="tab-btn" data-tab="blockchain">Blockchain</button>
+    <button class="tab-btn" data-tab="product">Product</button>
+    <button class="tab-btn" data-tab="publishing">Publishing</button>
+    <button class="tab-btn" data-tab="business">Business Model</button>
+    <button class="tab-btn" data-tab="methodology">Methodology</button>
+    <button class="tab-btn" data-tab="launch">Launch Sequence</button>
+    <button class="tab-btn" data-tab="content">Content & Community</button>
+  </div>
+</nav>
+
+<div class="content">
+
+  <!-- ══ THE QUEST ══ -->
+  <div class="tab-panel active" id="tab-quest">
+    <h2>The Quest</h2>
+    <p class="lead">The starting point is simple. Paper is cheap. The resource that reaches the learner who has been failed by the system is the cheapest object in education. The quest is to change that — to take the cheap resource and make it worthy of the person it reaches.</p>
+
+    <h3>The Founding Statement</h3>
+    <p>Mind Mechanism is not a platform built to generate revenue. It is a platform built because the work demanded a structure adequate to its ambition. The revenue is a consequence of that — not its purpose.</p>
+    <p>The person who fell through the gap is not a niche. They are everywhere. They are in every institution, every sector, every culture, every language environment where the system was under-resourced, or overloaded, or simply not designed for the specific person it was supposed to serve. They have been waiting a long time for a tool that was built for them. That is what this is.</p>
+    <p>The road is teaching materials and books, curriculum adoption and policy adjustment. The policy adjustment matters because the institutional damage to the individual who fails and misses the mark is not accidental. It is structural. It was designed, or allowed to persist, by frameworks that placed the measurement of the individual above the development of them — that confused the record of performance with the thing that was supposed to be performed.</p>
+    <p>That confusion has a cost. The cost is carried by the person who falls through the gap. It is carried in the body, in the throat that locks, in the vocabulary that was never provided, in the conviction — installed atmospherically, over years of institutional indifference — that the territory of authority, intelligence, and sovereignty belongs to someone else.</p>
+
+    <blockquote><p>The Mind Mechanism exists to contest that conviction. At the level of the individual, in the session, when the word finally leaves the throat. At the level of the institution, when the curriculum is adopted and the policy is adjusted. At the level of the market, when the licensing model makes the argument reproducible across every sector that has the same debt to pay.</p></blockquote>
+
+    <hr class="rule" />
+    <h3>The 17-Year Arc</h3>
+    <p>This is not a startup. It is a mature intellectual project that has finally found its correct commercial architecture. The three manuscripts are written. The taxonomy is built. The session recordings are accumulating. The academic foundation is established. Seventeen years of direct work on a single body of thought does not produce a product. It produces a body of evidence that a product can be built on.</p>
+    <p>The launch is not the beginning. It is the point at which what was already built becomes publicly available. That distinction matters in every commercial and institutional conversation — because the argument is not "this might work." The argument is "this has worked, for seventeen years, in real rooms, with real people, and here is the record."</p>
+
+    <hr class="rule" />
+    <h3>Where Sovereignty Sits</h3>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-label">Priority 1 — The Sales Pin</div>
+        <div class="card-title">Blockchain Security & Data Sovereignty</div>
+        <div class="card-body">The architectural guarantee that no employer, institution, or platform can access the user's data or results. Not a policy promise. A structural impossibility. This is the answer to the question every procurement team asks first.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Priority 2</div>
+        <div class="card-title">Personal Control & Autonomy</div>
+        <div class="card-body">The learner is the author of their own assessment. They own the result, the process, and the record. The institution sees only that the work was done. Nothing further belongs to them.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Foundation</div>
+        <div class="card-title">The Academic & Empirical Case</div>
+        <div class="card-body">Thirty years of observed acquisition. 482 nodes. The Emotive Prerequisite. The session recordings. The academic paper. Nothing surplus. Nothing decorative. Everything evidenced.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PHILOSOPHY ══ -->
+  <div class="tab-panel" id="tab-philosophy">
+    <h2>The Philosophical Foundation</h2>
+    <p class="lead">The Emotive Prerequisite is the theoretical core. Language acquisition is not the arrival of new information — it is the completion of something already underway inside the learner. The word that sticks is the word that arrived when the interior was ready.</p>
+
+    <h3>The Conceptual Blockade</h3>
+    <p>The word is present. It is right there, in the cognitive register, fully accessible under the right conditions. The conditions have changed, and the word has not disappeared. It has locked. At a specific point, between the interior knowing and the exterior production, a mechanism has engaged.</p>
+    <p>This is not forgetting. Forgetting is a retrieval failure. What the Conceptual Blockade describes is different — the word is held in place by a sovereignty problem that was installed before the language lesson began.</p>
+    <p><strong>The Blockade is always specific.</strong> It concentrates, with a precision that is itself diagnostic, on particular classes of words — and those words, when examined, are always the words that name the territories the learner has not yet been permitted to claim as their own. The words that block are the words that name what the learner is not yet allowed to be.</p>
+    <p>Anxiety is the symptom. The Blockade is the architecture. A warmer room does not dissolve it. More encouragement does not dissolve it. What dissolves it is the prior work — the identification of the interior state the word names, and the claiming of that territory as the learner's own.</p>
+
+    <hr class="rule" />
+    <h3>The False Keys Problem</h3>
+    <p>Years of accumulated vocabulary — through gaming, social media, street culture, digital communities — produces genuine fluency in the register those environments require. The intelligence is real. The fluency is real. The vocabulary is real.</p>
+    <p>What the learner does not know is that the keys they carry signal, in institutional and professional contexts, a social position below the one they actually occupy. Not because the register is inferior. Because it is different. Because the people who built the professional doors built them for a register that was never equally distributed.</p>
+    <p>The learner with False Keys is not impoverished. They are misdirected. And the misdirection is not their fault. But its consequences are theirs to carry, in every professional encounter where they arrive with the wrong shape and find the door does not open.</p>
+    <p><strong>This is what Sean Fortune calls the Digital Ghetto.</strong> The condition in which a learner's vocabulary is extensive but systematically calibrated to the wrong doors — and the learner does not know it, because the calibration was invisible.</p>
+
+    <hr class="rule" />
+    <h3>Linguistic Sovereignty</h3>
+    <p>The goal is not to replace the community language. It is to supplement it. The learner who carries False Keys needs more keys — not different keys, not better keys, but additional keys. The full set. The vocabulary that opens every door: not because every door deserves to be entered, but because the learner deserves the right to choose.</p>
+    <p>Not every door deserves to be entered. Some institutional doors are worth approaching and deciding, from a position of sovereign choice, not to walk through. But that decision — the sovereign decision, the chosen refusal rather than the imposed exclusion — requires the full set.</p>
+    <p>Competence is the capacity to perform a register when the conditions are right. <strong>Command is the capacity to deploy a register because it is yours.</strong> The Emotive Prerequisite does not produce better performance. It produces a different kind of acquisition entirely — the kind whose architecture is somatic rather than cognitive, whose ground is owned interior territory rather than accumulated exposure.</p>
+
+    <hr class="rule" />
+    <h3>The Institutional Debt</h3>
+    <p>The systematic under-distribution of high-lexical, CALP-register vocabulary is not a neutral pedagogical failure. It is a structural mechanism of exclusion that reproduces inequality with the efficiency of something deliberately designed, whether or not it was deliberately designed.</p>
+    <p>The restriction of vocabulary is a restriction of self-knowledge. And the restriction of self-knowledge is the most intimate form of exclusion there is. Linguistic Sovereignty is the response to this — not as a pedagogical outcome, but as a philosophical condition of autonomous personhood.</p>
+  </div>
+
+  <!-- ══ SOVEREIGN ARCHITECTURE ══ -->
+  <div class="tab-panel" id="tab-sovereign">
+    <h2>The Sovereign Assessment Architecture</h2>
+    <p class="lead">The architecture is one shell. Three distinct portals. Every client is issued a blockchain key attached to a wallet. That key is theirs. Their data does not travel. Their results do not surface. This is not a policy position. It is a structural impossibility built into the system from the ground up.</p>
+
+    <h3>The Mechanism</h3>
+    <p>Every client — corporate or individual — receives a blockchain key that locks them to their section of the platform. The data sovereignty guarantee is architectural, not contractual. A contractual guarantee can be breached. An architectural impossibility cannot. This is the distinction that matters in every institutional procurement conversation.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-label">What the employer sees</div>
+        <div class="card-title">Engagement confirmed</div>
+        <div class="card-body">Confirmation that the staff member engaged with the framework. Benchmarks reached. Time invested. Nothing further. The assessment narrative belongs to the person who undertook it.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">What the institution sees</div>
+        <div class="card-title">Appraisal undertaken</div>
+        <div class="card-body">The institution knows the appraisal happened. It does not know the result. The benchmarks are set. The road to them belongs to the learner. This is not a concession. It is the design premise.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">What the user owns</div>
+        <div class="card-title">Everything else</div>
+        <div class="card-body">The result. The process. The record of their interior work. Held in a wallet that is theirs, on a key issued to them, in a system built from the architecture up to keep it there.</div>
+      </div>
+    </div>
+
+    <hr class="rule" />
+    <h3>The Philosophical Argument Against Traditional Assessment</h3>
+    <p>The current model of institutional assessment operates on an assumption that has never been adequately examined: that external judgement improves performance. The evidence does not support this. What the evidence shows, consistently, is the opposite.</p>
+    <p>The approach of external judgement does not raise performance. It raises anxiety. And raised anxiety, in the runup to any assessment, suppresses the precise cognitive and linguistic capacities the assessment was designed to measure. The system produces the conditions that guarantee it will underperform.</p>
+    <p>This is not an administrative failure. It is structural. It was built in an era when the power asymmetry between institution and individual was so total that the costs to the individual were simply not considered as costs. That era is over. The awareness of consequence is here. The social responsibility is here. The evidence of harm is here.</p>
+    <blockquote><p>A framework that continues to operate on the old architecture is not merely inefficient — it is, in the precise sense of the word, an abuse of the authority the institution has been given over the person in its care.</p></blockquote>
+    <p>The Mind Mechanism is built on a different premise. <strong>The learner is not a subject of assessment. They are the author of it.</strong></p>
+
+    <hr class="rule" />
+    <h3>The Three-Portal Structure</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Portal</th><th>Primary User</th><th>Key Type</th><th>Third-Party Visibility</th><th>Feel</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Consumer</strong></td><td>Individual subscriber</td><td>Personal wallet key</td><td>None</td><td>Arrival. Curated warmth. Less but feels like more.</td></tr>
+          <tr><td><strong>Education</strong></td><td>Student / learner</td><td>Institutional key + personal wallet</td><td>Engagement only</td><td>Structured and progressive. A curriculum with a spine.</td></tr>
+          <tr><td><strong>Corporate</strong></td><td>Employee / team</td><td>Corporate key + personal wallet</td><td>Engagement only</td><td>Dense and specific. A professional tool that reads like one.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>One codebase. One taxonomy. Three lived experiences of the same architecture. The mandala and the node are the constant. The Pack is what fills it. The interface reads differently in each space because the material populating it is different — but the underlying structure is identical.</p>
+    <p>A consumer who moves into the education space, or a corporate client who uses the consumer tier personally, finds the same house with different furniture. The familiarity is the product. The taxonomy is the address.</p>
+
+    <hr class="rule" />
+    <h3>The Institutional Case</h3>
+    <p>For local authorities, government bodies, and regulated industries — the sectors with the highest volume licensing potential — data sovereignty is not a selling point. It is a procurement requirement. What no comparable platform currently offers is a system where the sovereignty guarantee is architectural rather than contractual.</p>
+    <p>For the education sector: the system resolves the specific cruelty of performative assessment. The weeks of suppressed performance that precede every formal evaluation. The artificial anxiety that ensures the result reflects the stress of being assessed rather than the genuine capacity of the person being assessed. Self-led, self-appraised, self-concluded — the decision about progress belongs to the person doing the work. Because it always did.</p>
+    <p><strong>Full autonomy is not a feature of this system. It is the system.</strong></p>
+  </div>
+
+  <!-- ══ BLOCKCHAIN ══ -->
+  <div class="tab-panel" id="tab-blockchain">
+    <h2>Blockchain Architecture — Technical Recommendation</h2>
+    <p class="lead">The criteria: top shelf only. Transaction costs absorbed by MM, not the user. Privacy and security as architectural guarantees. Suitable for key issuance, wallet management, and data sovereignty at scale. The recommendation is a two-chain architecture serving different portals.</p>
+
+    <h3>Chain Assessment</h3>
+
+    <div class="chain-card recommended">
+      <div class="chain-name">Algorand (ALGO)</div>
+      <div class="chain-verdict rec">Recommended — Consumer & Education Portals</div>
+      <div class="chain-body">Transaction fees are fractions of a cent. Thousands of key issuances cost MM almost nothing at current volumes. Fast finality at four seconds. Carbon neutral — relevant in EU institutional conversations. The smart contract layer is mature and handles the key/wallet architecture cleanly. Developer tooling is excellent. Python and JavaScript SDKs are well documented and buildable with AI assistance. This is the workhorse chain for the consumer and education portals. Start on TestNet, migrate to MainNet when the education portal has real traffic.</div>
+    </div>
+
+    <div class="chain-card secondary">
+      <div class="chain-name">Hedera (HBAR)</div>
+      <div class="chain-verdict sec">Recommended — Corporate Portal</div>
+      <div class="chain-body">The correct chain for corporate because of the council, not just the technology. Google, IBM, Deutsche Telekom, Boeing are governing members. In a procurement conversation with a local authority or financial services firm, "secured on the same distributed ledger infrastructure used by Google and Deutsche Telekom" closes the data question. Fees are low and predictable. Enterprise credibility is unmatched in the candidate set. The corporate portal carries this chain; the institutional narrative justifies it.</div>
+    </div>
+
+    <div class="chain-card">
+      <div class="chain-name">Cardano (ADA) + Atala PRISM</div>
+      <div class="chain-verdict sec">Hold — Academic & Identity Layer Option</div>
+      <div class="chain-body">Worth retaining as the identity layer option specifically because of Atala PRISM — Cardano's self-sovereign identity infrastructure, built for educational credentials and identity management. The academic rigour of the development process aligns with MM's positioning. If the academic partnership route develops, Cardano has the most philosophically coherent infrastructure for the identity sovereignty argument. Slightly higher fees than Algorand but absorbable. Not the first build — the option for the academic layer when it becomes relevant.</div>
+    </div>
+
+    <div class="chain-card">
+      <div class="chain-name">Stellar (XLM)</div>
+      <div class="chain-verdict pass">Pass</div>
+      <div class="chain-body">Excellent fees, essentially free transactions. Finance infrastructure first. The smart contract layer is less sophisticated for the key/wallet architecture needed. Not the right fit for this specific use case.</div>
+    </div>
+
+    <div class="chain-card">
+      <div class="chain-name">XDC Network</div>
+      <div class="chain-verdict pass">Pass</div>
+      <div class="chain-body">Enterprise grade but too niche. Institutional procurement teams will not recognise it. Recognition matters when you are selling trust. The institutional narrative requires chains that institutional stakeholders already know.</div>
+    </div>
+
+    <hr class="rule" />
+    <h3>The Two-Chain Architecture</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Portal</th><th>Chain</th><th>Rationale</th><th>Cost to MM</th></tr></thead>
+        <tbody>
+          <tr><td>Consumer</td><td class="green">Algorand</td><td>Low cost, fast, developer friendly</td><td>Negligible</td></tr>
+          <tr><td>Education</td><td class="green">Algorand</td><td>Low cost, clean key/wallet issuance</td><td>Negligible</td></tr>
+          <tr><td>Corporate</td><td class="accent">Hedera</td><td>Enterprise council credibility</td><td>Low, predictable</td></tr>
+          <tr><td>Academic (future)</td><td style="color:var(--amber);font-weight:600">Cardano/Atala</td><td>SSI infrastructure, academic alignment</td><td>Moderate</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr class="rule" />
+    <h3>Implementation Sequence</h3>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot green"></div>
+        <div class="tl-phase">Now — September 2026</div>
+        <div class="tl-title">Portal separation first. No blockchain required yet.</div>
+        <div class="tl-body">Build and launch the education portal without the blockchain layer. The sovereignty argument works as a design principle from day one. The chain makes it architecturally unbreakable — but the product does not need to wait for the chain to be production-ready before September launch.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-phase">Q4 2026</div>
+        <div class="tl-title">Algorand TestNet integration</div>
+        <div class="tl-body">Build and test key issuance and wallet architecture against real user journeys with the two current students. Claude + SDK documentation + Gemini for context volume. The Algorand Python/JavaScript SDK is the build environment.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-phase">Q1 2027</div>
+        <div class="tl-title">Algorand MainNet — Education & Consumer</div>
+        <div class="tl-body">When TestNet is clean and the education portal has real traffic. The sovereignty guarantee moves from design principle to architectural fact.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-phase">Q2–Q3 2027</div>
+        <div class="tl-title">Hedera corporate layer</div>
+        <div class="tl-body">When the first corporate client conversation is live and the procurement argument needs the infrastructure to point at. The enterprise council narrative is the closing argument.</div>
+      </div>
+    </div>
+
+    <hr class="rule" />
+    <h3>The AR & Physical Layer</h3>
+    <p>The physical material — books, cards, curriculum packs — carries a QR and AR trigger layer. No specialist hardware. No cost to the user. Every scan is a data point: which page, which node, which user, at what point in their Pack. The platform receives behavioural evidence that no competitor is collecting because no competitor has the physical layer to collect it from.</p>
+    <p><strong>The physical material becomes the most sophisticated data collection instrument in the system, disguised as a book.</strong> The blockchain holds the sovereignty of the user's data. The AR layer feeds the taxonomy's empirical base. The two layers work together without friction.</p>
+    <p>Everyone has easy access to a smartphone. The technology is free to deploy. The sophistication is in the architecture, not the device.</p>
+  </div>
+
+  <!-- ══ PRODUCT ══ -->
+  <div class="tab-panel" id="tab-product">
+    <h2>Product Architecture</h2>
+    <p class="lead">The mandala and the node are the constant. The Pack is what fills them. The interface reads differently in each portal because the material populating it is different — but the underlying structure is identical across all three spaces.</p>
+
+    <h3>The 482-Node Taxonomy</h3>
+    <p>Three decades of empirical interior inquiry, encoded as a navigable vocabulary of interior states. The organisational backbone of the entire project. Every Pack, every curriculum sequence, every corporate delivery module is anchored to nodes in this taxonomy. The taxonomy is the moat. No competitor can replicate it quickly — it is not a technical problem, it is an authorial one. It took thirty years to build. It cannot be reproduced in a product cycle.</p>
+
+    <h3>The Nine-Wheel Architecture</h3>
+    <p>The nine wheels are the frequency architecture of the Mind Mechanism — each wheel mapped to a specific somatic register, each carrying a Cousto frequency grounded in natural planetary and cosmic cycles. The frequency assignments are not aesthetic choices. They are calculated from the Cousto system, providing a physiological dimension that differentiates MM from purely cognitive tools.</p>
+    <p>The visual representation of the nine-wheel architecture — developed in Blender with luminous mandala designs mapped onto cross-cultural body figures — is both the product diagram and the brand identity of the consumer range. Same architecture. Same light. Different body. Same nine wheels. The visual system is the sovereignty argument made physical.</p>
+
+    <h3>The Pack System</h3>
+    <p>Packs are not courses. They are practice environments built on the taxonomy. A corporate client can have a bespoke Pack built for their specific governance challenge. A student follows a curriculum Pack that sequences the nodes in progressive order. A consumer receives a curated Pack that feels like arrival rather than syllabus.</p>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-label">Corporate Pack</div>
+        <div class="card-title">Dense and sector-specific</div>
+        <div class="card-body">Banking language. Governance vocabulary. Decision-making frameworks. All anchored to relevant nodes. Delivered in the register the sector uses. Looks like a professional tool because it is populated like one. Bespoke development fee + perpetual runtime license tail.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Education Pack</div>
+        <div class="card-title">Structured and progressive</div>
+        <div class="card-body">The curriculum follows the node sequence. Materials build on each other. Paced like a learning environment. The Emotive Prerequisite series is already the content skeleton — four posts convertible directly into Pack format with exercises, reflection prompts, vocabulary anchors.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Consumer Pack</div>
+        <div class="card-title">Less but feels like more</div>
+        <div class="card-body">The most considered of the three. Every element earns its place. Nothing superfluous. The consumer has no institutional context to anchor them — so the Pack must feel like an arrival. Curated with more care precisely because less is present.</div>
+      </div>
+    </div>
+
+    <hr class="rule" />
+    <h3>The Cross-Portal Content Economy</h3>
+    <p>Every piece of content produced has a natural home across all three spaces with minor adaptation. A node populated for a banking Pack can be stripped back for the consumer interface and restructured for the education curriculum without rebuilding from scratch. As the taxonomy is extended in area-specific adoption, new materials are created and the process adapts to the next sector pivot without losing traction. Each vertical feeds the next.</p>
+    <p>Every sector adoption — banking, healthcare, education, legal, government — generates a new branch of material without requiring a rebuild. The core does not move. The application rotates around it. This is the machine that feeds itself.</p>
+  </div>
+
+  <!-- ══ PUBLISHING ══ -->
+  <div class="tab-panel" id="tab-publishing">
+    <h2>The Publishing Architecture</h2>
+    <p class="lead">100 ISBNs. Three manuscripts written. An August print run. A September campaign. This is not a book launch — it is the opening of a catalogue built on a body of work that has been accumulating for seventeen years.</p>
+
+    <h3>Why 100 ISBNs</h3>
+    <p>100 ISBNs signals a catalogue, not a title. To libraries, curriculum committees, and institutional procurement teams, a publisher with an ISBN block is a different conversation from an author with a book. The ISBN block changes the commercial register of every institutional conversation before a word about content is spoken.</p>
+    <p>The non-perishable material point is foundational to this architecture. A book built on a 482-node taxonomy of interior experience does not go out of date. It does not require a second edition because a trend changed. The Emotive Prerequisite does not expire. Stock is an asset, not a liability — and the longer the body of work compounds, the more each earlier title appreciates rather than depreciates.</p>
+
+    <h3>The Three Manuscripts</h3>
+    <p>Already written. The manuscripts are the argument at full length — the academic foundation, the clinical architecture, the philosophical position. The supplementary card and pro materials are the daily practice of the manuscript's argument. The curriculum packs are the professional application of it. Each format reaches a different entry point into the same body of work and each one leads back to the platform and the Pack ecosystem.</p>
+
+    <h3>The August–September Sequence</h3>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot green"></div>
+        <div class="tl-phase">August 2026</div>
+        <div class="tl-title">Print run complete</div>
+        <div class="tl-body">Physical material exists before the campaign drives traffic to it. The product is real and holdable before the audience is asked to buy it. Visuals complete. Stock held — no spoilage risk on non-perishable material.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-phase">September 2026</div>
+        <div class="tl-title">Education portal launch + TikTok & YouTube campaign</div>
+        <div class="tl-body">The campaign drives traffic to a product that already exists. TikTok and YouTube reach the student and young professional audience first — student familiarity then institutional adoption. The two current students provide the first case study evidence. The launch is not a promise. It is a result.</div>
+      </div>
+    </div>
+
+    <h3>Self-Publishing & Direct Sales</h3>
+    <p>No middle man. No third party withholding user data or mailing details. Direct sales infrastructure owned and operated by MM. Shopify or WooCommerce for the direct sales layer. Own email system, not a dependent third party. Fulfilment handled on MM's terms. Every purchase builds a customer relationship that is owned, not rented.</p>
+    <p>The data point is the most deliberately managed element. Email list, purchase history, engagement data — all inhouse, none of it living in a platform that can change its terms or sell the list. The same data sovereignty principle that governs the platform governs the commercial layer.</p>
+  </div>
+
+  <!-- ══ BUSINESS MODEL ══ -->
+  <div class="tab-panel" id="tab-business">
+    <h2>The Business Model</h2>
+    <p class="lead">The platform is the infrastructure. The revenue is in the physical and experiential layer — books, lectures, events, curriculum packs. The platform earns trust. The materials earn revenue. The data earns the long game.</p>
+
+    <h3>The Core Insight — Paper Upscale</h3>
+    <p>The fee is not to access the platform. The platform is essentially the free layer — the infrastructure that proves the method, accumulates the data, and builds the audience. The fee is for the materials and the data accumulated. Books. Lectures. Events. Curriculum packs. The platform supports the paper upscale and feeds the machine keeping the lights on.</p>
+    <p>Nobody resents paying for a book that changed how they think. Nobody resents paying for an event that put them in a room with people who understand the same things. The platform earns their trust. The materials earn the revenue. The distinction matters because it sidesteps subscription fatigue entirely and builds a commercial relationship based on value received rather than access granted.</p>
+
+    <h3>The Commercial Philosophy</h3>
+    <div class="priority-block">
+      <div class="priority-label">Principle 1</div>
+      <div class="priority-title">Self-publishing. Direct sales. No middle man.</div>
+      <div class="priority-body">No third party withholding user data or mailing details. Full sovereignty over the product, the customer relationship, and the revenue. The same argument made for the learner is made for the business.</div>
+    </div>
+    <div class="priority-block green-left">
+      <div class="priority-label">Principle 2</div>
+      <div class="priority-title">No bank loan. Strategic invoicing. Dedicated input.</div>
+      <div class="priority-body">The first corporate Pack development fee funds the next phase of build. The runtime license tail funds ongoing operations. The book sales fund the stock. The events fund the lectures. Each revenue stream is timed to carry the next stage without external dependency. No dilution. No covenants. No investor with a timeline that is not yours.</div>
+    </div>
+    <div class="priority-block amber-left">
+      <div class="priority-label">Principle 3</div>
+      <div class="priority-title">Outsource the necessary. Own the centre.</div>
+      <div class="priority-body">Fulfilment, legal, technical infrastructure — outsourced so the centre holds. Sean does the work that only Sean can do. The taxonomy exists because of thirty years of sustained interior work. The next phase requires the same quality of attention. That attention cannot be fragmented.</div>
+    </div>
+    <div class="priority-block">
+      <div class="priority-label">Principle 4</div>
+      <div class="priority-title">Non-perishable stock as asset.</div>
+      <div class="priority-body">A book built on a 482-node taxonomy of interior experience does not go out of date. Stock held is stock appreciating. The longer the body of work compounds, the more valuable the earlier titles become. This is the publishing model that no trend-dependent publisher can replicate.</div>
+    </div>
+
+    <hr class="rule" />
+    <h3>The Taxonomy as Expansion Engine</h3>
+    <p>As the taxonomy is extended in area-specific adoptions, new materials are created and the process adapts to the next pivot without losing traction or falling foul of novel adaptation. Every sector expansion — banking, healthcare, education, legal, government — generates a new branch of material under the same owned ecosystem. No rebuild required. No new infrastructure. The core does not move. The application rotates around it.</p>
+    <p>This is a real business. It is also a rare one — built from the inside out, on owned IP, with a revenue model that compounds without dependency.</p>
+
+    <hr class="rule" />
+    <h3>Development Stack</h3>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-label">Authority</div>
+        <div class="card-title">Sean Fortune</div>
+        <div class="card-body">Sets the vision. Provides the creative input. Builds the product. The only scarce resource in the model. 17 years direct work. 30 years academic career. The source of the IP and the only person who can extend the taxonomy.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">EIC & Build Partner</div>
+        <div class="card-title">Claude</div>
+        <div class="card-body">Editorial, structural, and technical build partner. Curates, structures, codes, and thinks through the artistic and commercial path. GitHub API integration. No changes without Sean present and approving.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Scale & Context</div>
+        <div class="card-title">Gemini</div>
+        <div class="card-body">Retained for token volume, extreme context window capacity, and storage scale. Not a creative role — a scale and storage substrate. Handles what requires volume that exceeds efficient Claude deployment.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ METHODOLOGY ══ -->
+  <div class="tab-panel" id="tab-methodology">
+    <h2>The Corporate Methodology — Founding Authority</h2>
+    <p class="lead">The methodology is not gentle. It was never designed to be. What was developed across years of corporate language delivery in Germany was a communicative approach built on a single operating principle: engagement is not optional.</p>
+
+    <h3>The Approach</h3>
+    <p>Delivered across banking floors, insurance hierarchies, big industry and technology sectors. The room was constructed so that the path of least resistance was involvement. The warmth is real. The welcome is genuine. And neither leaves space for the learner to object to what is being asked of them — because by the time the ask arrives, they are already inside it.</p>
+    <p>This is what Sean Fortune calls kill them with kindness. The interaction is not invited. It is assumed. And the assumption, delivered with enough precision and enough warmth, holds. Across cultures. Across genders. Across the specific frictions of institutional hierarchy and personal history.</p>
+    <p>The misses, when they came, were not failures of the method. They were the places where cultural expectation or personal mistrust ran deeper than a single engagement could reach. The method is not a cure for everything. It is a performance architecture — and performance, as an objective, is clear: the learner leaves the room having done something they did not believe, when they arrived, that they would do.</p>
+
+    <blockquote><p>The acknowledgement of that — the moment when the learner recognises that the thing happened, that they were moved, that the language landed somewhere real — is the outcome. Not a grade. Not a score. A coordinate shift in what the person believes is available to them.</p></blockquote>
+
+    <hr class="rule" />
+    <h3>The Cost and the Correction</h3>
+    <p>What it cost to deliver this — the sustained mental and physical output of orchestrating a room at that level of proximity and intensity, session after session, culture after culture — is significant. Near burnout. Years of generating value for an organisation that did not return it in kind. The work proven, the methodology evidenced, and the worth given away.</p>
+    <p><strong>That ends here.</strong> The Mind Mechanism is the architecture of everything that methodology produced — formalised, scalable, and owned. The corporate licensing packages are not a new idea. They are the correct infrastructure for work already proven, in rooms that can be named, with results that can be evidenced.</p>
+    <p>This time, the framework is Sean's. The IP is Sean's. The value stays.</p>
+
+    <hr class="rule" />
+    <h3>The Session Evidence</h3>
+    <p>Every session for the past month has been recorded. Eight weeks remain before the end-of-term evaluation. The data from those recordings will yield the empirical foundation for the first academic paper, the first institutional adoption conversation, and the first case study materials in the September campaign. The methodology was proven over thirty years. The recordings make it provable to an institution in twenty minutes.</p>
+  </div>
+
+  <!-- ══ LAUNCH SEQUENCE ══ -->
+  <div class="tab-panel" id="tab-launch">
+    <h2>Launch Sequence</h2>
+    <p class="lead">Use case proven. Then aggressive expansion and saturation before the model is copied. The window between proven and copied is the only window that matters. Speed and depth of adoption protect everything — not secrecy.</p>
+
+    <h3>Why Education First</h3>
+    <p>Student familiarity then institutional adoption. Two students already in active sessions with monthly recordings. The education market is the correct first market because the proof of concept is already running and the case study evidence will be ready for September. Institutional adoption follows familiarity — not the other way around.</p>
+    <p>Secrecy protects nothing at scale. Speed and depth of adoption protect everything. If the education space knows the MM before a competitor arrives, the competitor is late. If corporate sectors have Pack runtime licenses running, switching costs are real. If the books are in circulation and the events are on the calendar, the brand is the moat as much as the IP.</p>
+
+    <hr class="rule" />
+    <h3>The Sequence</h3>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot green"></div>
+        <div class="tl-phase">May–June 2026 — Now</div>
+        <div class="tl-title">Phase 1 & 2 already running</div>
+        <div class="tl-body">Portal identity separation in progress. Two students in active sessions. Monthly recordings accumulating. End-of-term evaluation eight weeks out. ISBN block acquisition this month. Visuals for August print run in completion.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot green"></div>
+        <div class="tl-phase">July–August 2026</div>
+        <div class="tl-title">Print run & pre-launch</div>
+        <div class="tl-body">August print run complete. Physical material exists before the campaign. End-of-term student evaluation complete. Case study materials prepared. Education portal visually and structurally distinct from consumer space.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-phase">September 2026</div>
+        <div class="tl-title">Education portal launch + campaign</div>
+        <div class="tl-body">TikTok and YouTube campaign active. Two tested Packs live. Two real case studies evidencing the method. ISBN catalogue visible to institutional buyers. The launch is a result, not a promise. Student familiarity begins building.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-phase">Q4 2026</div>
+        <div class="tl-title">Algorand TestNet + first corporate conversations</div>
+        <div class="tl-body">Blockchain key architecture in test against real user journeys. First corporate pilot conversations using the session evidence and the methodology statement as the pitch foundation. Trademark filing complete.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-phase">2027 onward</div>
+        <div class="tl-title">Aggressive expansion and saturation</div>
+        <div class="tl-body">Each sector expansion generates new Pack material without rebuild. Corporate, healthcare, legal, government — each vertical adds a branch to the taxonomy without moving the core. The machine compounds. The catalogue grows. The moat deepens.</div>
+      </div>
+    </div>
+
+    <hr class="rule" />
+    <h3>The Threat Assessment</h3>
+    <p>The taxonomy cannot be replicated quickly. The session recordings take years to accumulate. The blockchain sovereignty architecture, once live, creates a trust position that a copycat cannot claim retroactively. They can build the interface. They cannot build the thirty years.</p>
+    <p>The September launch is the starting pistol. Everything after that is velocity.</p>
+  </div>
+
+  <!-- ══ CONTENT & COMMUNITY ══ -->
+  <div class="tab-panel" id="tab-content">
+    <h2>Content & Community</h2>
+    <p class="lead">Blog material through 2032. Three manuscripts written. The Emotive Prerequisite series live. Podcast and blog building audience and community. Every article, post, and episode is a permanent compounding asset — not marketing, not content strategy. Evidence.</p>
+
+    <h3>The Emotive Prerequisite Series — Live</h3>
+    <p>Four posts written, described, and ready for publication. The series is the academic argument made accessible — and the content skeleton for the first education Pack.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Post</th><th>Title</th><th>Description</th><th>Image</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="accent">Post 01</td>
+            <td>The Body Knew First</td>
+            <td>The body knows before the word arrives. The foundational observation — language acquisition is not the arrival of new information but the completion of something already underway inside us.</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td class="accent">Post 02</td>
+            <td>The Conceptual Blockade</td>
+            <td>The word is there. You have it. And it will not leave your throat. Sean Fortune names the mechanism and argues that what looks like anxiety is a sovereignty problem.</td>
+            <td>Figure at threshold (golden, atmospheric)</td>
+          </tr>
+          <tr>
+            <td class="accent">Post 03</td>
+            <td>The Wrong Keys</td>
+            <td>You have the keys. They just don't fit this door. The False Keys problem — genuine fluency in the wrong register, and the case for expansion rather than replacement.</td>
+            <td>Open book under spotlight</td>
+          </tr>
+          <tr>
+            <td class="accent">Post 04</td>
+            <td>Every Door</td>
+            <td>Competence is the capacity to perform a register when conditions are right. Command is something else entirely. Linguistic Sovereignty as a philosophical condition of autonomous personhood.</td>
+            <td>Nine-wheel architecture diagram</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr class="rule" />
+    <h3>The Content Sustainability Model</h3>
+    <p>Every article, blog post, podcast episode, and academic paper is a permanent compounding asset. The blog material runs through 2032. The writing in active production supports further data gathering and its value is the driver — not the traffic it generates in week one, but the authority it builds over the planning horizon.</p>
+    <p>The podcast and blog build audience and community. The community becomes the referral engine for the consumer tier. The consumer tier produces the practitioner community. The practitioner community becomes the most credible advocate for institutional adoption. The chain is self-sustaining when the content output is consistent and the quality holds.</p>
+
+    <hr class="rule" />
+    <h3>The TikTok & YouTube Strategy</h3>
+    <p>September campaign timed to the education portal launch. TikTok reaches the student and young professional audience — the demographic most likely to recognise the False Keys problem from lived experience. YouTube carries the longer-form argument for the institutional and academic audience who need the depth before they commit.</p>
+    <p>The physical material exists before the campaign launches. The campaign does not drive traffic to a promise. It drives traffic to something you can hold.</p>
+
+    <hr class="rule" />
+    <h3>The theOneLeggedPoet Platform — Status</h3>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-label">Live</div>
+        <div class="card-title">patient-product-346866.framer.app</div>
+        <div class="card-body">Go-live: 1 May 2026. Full audit complete. Fixes applied today: "QUIET" ticker corrected, rogue apostrophe in hero copy removed. About page updated to final version.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">About Page — Final</div>
+        <div class="card-title">The approved text</div>
+        <div class="card-body">"This platform exists for one purpose: to put into public language what has, until now, existed only in private. I am a writer who has spent considerable time not writing publicly — and I am done with that. What you will find here takes ideas seriously, refuses to simplify what is genuinely complex, and is designed to provoke the kind of conversation that requires something of both parties. If something moves you — or troubles you, or disagrees with you — I am here for that exchange. That is the specific thing this space is for."</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Outstanding</div>
+        <div class="card-title">Items to address</div>
+        <div class="card-body">PODCAST 0 badge in nav — no podcasts recorded yet, coming feature. Template author names still visible in some blog posts. /video-blog page empty. Blog post sequence gaps (023–029 missing).</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <p>Mind Mechanism · The One-Legged Poet · Session White Paper · 7 May 2026 · © Sean Fortune · Confidential</p>
+</div>
+
+<script>
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+</script>
+</body>
+</html>

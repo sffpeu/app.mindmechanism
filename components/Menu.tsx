@@ -1,0 +1,337 @@
+'use client'
+
+import { useState } from 'react'
+import { X, Settings, Sun, Moon, BookOpen, ClipboardList, LogOut, LayoutDashboard, Clock, Home, Volume2, VolumeX, ExternalLink, Users, FlaskConical, LifeBuoy } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
+import { useRouter, usePathname } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
+import Link from 'next/link'
+import { useTheme } from '@/app/ThemeContext'
+import { useAuth } from '@/lib/FirebaseAuthContext'
+import { SettingsDialog } from './settings/SettingsDialog'
+import { useSettings } from '@/lib/hooks/useSettings'
+import { useMenu } from '@/app/MenuContext'
+
+interface MenuProps {
+  showElements?: boolean
+  onToggleShow?: () => void
+  showSatellites?: boolean
+  onSatellitesChange?: (value: boolean) => void
+  showInfoCards?: boolean
+  onInfoCardsChange?: (checked: boolean) => void
+  /** Position of the menu trigger (home icon). Default 'right' for top-right on all pages. */
+  position?: 'left' | 'right'
+}
+
+const MenuItem = ({ 
+  href, 
+  icon: Icon, 
+  children, 
+  isActive = false,
+  onClick,
+  external = false 
+}: { 
+  href?: string; 
+  icon: any; 
+  children: React.ReactNode; 
+  isActive?: boolean;
+  onClick?: () => void;
+  external?: boolean;
+}) => {
+  const className = `group flex items-center justify-between w-full px-4 py-3 text-left transition-all duration-200 ${
+    isActive 
+      ? 'bg-black text-white dark:bg-white dark:text-black' 
+      : 'text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black'
+  }`
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className={className}
+        onClick={onClick}
+      >
+        <div className="flex items-center gap-3">
+          <Icon className={`h-4 w-4 ${isActive ? 'text-current' : 'text-black dark:text-white'} group-hover:text-current transition-colors`} />
+          <span className="text-sm font-medium">{children}</span>
+        </div>
+        {external && <ExternalLink className="h-3 w-3 opacity-60" />}
+      </Link>
+    )
+  }
+
+  return (
+    <button
+      onClick={onClick}
+      type="button"
+      className={className}
+    >
+      <div className="flex items-center gap-3">
+        <Icon className={`h-4 w-4 ${isActive ? 'text-current' : 'text-black dark:text-white'} group-hover:text-current transition-colors`} />
+        <span className="text-sm font-medium">{children}</span>
+      </div>
+      {external && <ExternalLink className="h-3 w-3 opacity-60" />}
+    </button>
+  )
+}
+
+const MenuSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
+  <div className="border-b border-black/10 dark:border-white/10">
+    <div className="px-4 py-2">
+      <h3 className="text-xs font-bold text-black/60 dark:text-white/60 uppercase tracking-widest">
+        {title}
+      </h3>
+    </div>
+    {children}
+  </div>
+)
+
+export function Menu({
+  showElements = true,
+  onToggleShow = () => {},
+  showSatellites = false,
+  onSatellitesChange = () => {},
+  showInfoCards = true,
+  onInfoCardsChange,
+  position = 'right',
+}: MenuProps) {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const router = useRouter()
+  const pathname = usePathname()
+  const { isDarkMode, setIsDarkMode } = useTheme()
+  const { soundEnabled, setSoundEnabled } = useSettings()
+  const { user, signOut } = useAuth()
+  const { isMenuOpen, setIsMenuOpen } = useMenu()
+
+  const handleSignOut = async () => {
+    await signOut()
+    setIsMenuOpen(false)
+  }
+
+  const handleNavigation = (href: string) => {
+    setIsMenuOpen(false)
+    // Use setTimeout to ensure menu closes before navigation
+    setTimeout(() => {
+      router.push(href)
+    }, 100)
+  }
+
+  const isActive = (href: string) => pathname === href
+
+  return (
+    <>
+      {/* Menu trigger (home icon) – top right on all pages */}
+      <button
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+        className={`fixed top-4 z-[999] w-10 h-10 flex items-center justify-center text-black dark:text-white hover:opacity-80 transition-opacity ${position === 'left' ? 'left-4' : 'right-4'}`}
+        aria-label="Open menu"
+      >
+        <Home className="h-5 w-5" />
+      </button>
+
+      {/* Backdrop overlay */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/30 dark:bg-black/60 z-[998]"
+            onClick={() => setIsMenuOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Slide-out panel from left */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ x: '-100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '-100%' }}
+            transition={{
+              type: 'spring',
+              stiffness: 400,
+              damping: 40,
+            }}
+            className="fixed top-0 left-0 bottom-0 w-[min(320px,85vw)] z-[999] bg-white dark:bg-black border-r border-black/10 dark:border-white/10 shadow-xl flex flex-col"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-4 border-b border-black/10 dark:border-white/10 shrink-0">
+              <h1 className="text-lg font-bold text-black dark:text-white normal-case">
+                1M3 Mindmechanism
+              </h1>
+              <button
+                onClick={() => setIsMenuOpen(false)}
+                className="p-1 text-black dark:text-white hover:opacity-70 transition-opacity"
+                aria-label="Close menu"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Vertical menu content – scrollable */}
+            <div className="flex-1 overflow-y-auto">
+              <MenuSection title="Navigation">
+                <MenuItem
+                  href="/layers"
+                  icon={Home}
+                  isActive={isActive('/layers')}
+                  onClick={() => handleNavigation('/layers')}
+                >
+                  Home
+                </MenuItem>
+                <MenuItem
+                  href="/dashboard"
+                  icon={LayoutDashboard}
+                  isActive={isActive('/dashboard')}
+                  onClick={() => handleNavigation('/dashboard')}
+                >
+                  Dashboard
+                </MenuItem>
+                <MenuItem
+                  href="/sessions"
+                  icon={Clock}
+                  isActive={isActive('/sessions')}
+                  onClick={() => handleNavigation('/sessions')}
+                >
+                  Sessions
+                </MenuItem>
+                <MenuItem
+                  href="/lobby"
+                  icon={Users}
+                  isActive={isActive('/lobby')}
+                  onClick={() => handleNavigation('/lobby')}
+                >
+                  Lobby
+                </MenuItem>
+                <MenuItem
+                  href="/notes"
+                  icon={ClipboardList}
+                  isActive={isActive('/notes')}
+                  onClick={() => handleNavigation('/notes')}
+                >
+                  Notes
+                </MenuItem>
+                <MenuItem
+                  href="/glossary"
+                  icon={BookOpen}
+                  isActive={isActive('/glossary')}
+                  onClick={() => handleNavigation('/glossary')}
+                >
+                  Glossary
+                </MenuItem>
+                <MenuItem
+                  href="/research"
+                  icon={FlaskConical}
+                  isActive={isActive('/research')}
+                  onClick={() => handleNavigation('/research')}
+                >
+                  Research Hub
+                </MenuItem>
+                <MenuItem
+                  href="/support"
+                  icon={LifeBuoy}
+                  isActive={isActive('/support')}
+                  onClick={() => handleNavigation('/support')}
+                >
+                  Support
+                </MenuItem>
+              </MenuSection>
+
+              <MenuSection title="Settings">
+                <div className="px-4 py-3 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                      <span className="text-sm font-medium text-black dark:text-white">
+                        {isDarkMode ? 'Dark Mode' : 'Light Mode'}
+                      </span>
+                    </div>
+                    <Switch
+                      checked={isDarkMode}
+                      onCheckedChange={setIsDarkMode}
+                      className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-white"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+                      <span className="text-sm font-medium text-black dark:text-white">
+                        Sound
+                      </span>
+                    </div>
+                    <Switch
+                      checked={soundEnabled}
+                      onCheckedChange={setSoundEnabled}
+                      className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-white"
+                    />
+                  </div>
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false)
+                      setIsSettingsOpen(true)
+                    }}
+                    className="flex items-center gap-3 w-full text-left hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-200 px-0 py-2"
+                  >
+                    <Settings className="h-4 w-4" />
+                    <span className="text-sm font-medium">Profile Settings</span>
+                  </button>
+                </div>
+              </MenuSection>
+
+              <MenuSection title="Account & Legal">
+                {user ? (
+                  <MenuItem icon={LogOut} onClick={handleSignOut}>
+                    Sign Out
+                  </MenuItem>
+                ) : (
+                  <MenuItem
+                    href="/home"
+                    icon={LogOut}
+                    isActive={isActive('/home')}
+                    onClick={() => handleNavigation('/home')}
+                  >
+                    Sign In
+                  </MenuItem>
+                )}
+                <div className="px-4 py-3 space-y-2">
+                  <Link
+                    href="/privacy"
+                    className="block text-xs text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white transition-colors"
+                  >
+                    Privacy Policy
+                  </Link>
+                  <Link
+                    href="/terms"
+                    className="block text-xs text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white transition-colors"
+                  >
+                    Terms & Conditions
+                  </Link>
+                  <Link
+                    href="/impressum"
+                    className="block text-xs text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white transition-colors"
+                  >
+                    Impressum
+                  </Link>
+                </div>
+              </MenuSection>
+            </div>
+
+            {/* Footer */}
+            <div className="px-4 py-3 border-t border-black/10 dark:border-white/10 shrink-0">
+              <p className="text-xs font-medium text-black dark:text-white">Mindmechanism 2025</p>
+              <p className="text-xs text-black/60 dark:text-white/60">All rights reserved</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <SettingsDialog 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+      />
+    </>
+  )
+} 

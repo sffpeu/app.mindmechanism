@@ -1,0 +1,475 @@
+word,definition,grade,phonetic_spelling,rating,source,version
+Achievement,A successful result gained through effort.,5,/əˈtʃiːvmənt/,+,System,Default
+Willingness,The quality of being prepared to do something.,4,/ˈwɪlɪŋnəs/,+,System,Default
+Vitality,The state of being strong and active.,5,/vaɪˈtælɪti/,+,System,Default
+Boldness,"The quality of having a strong, vivid, or daring appearance.",4,/ˈboʊldnəs/,+,System,Default
+Insight,The capacity to gain an accurate and deep understanding.,5,/ˈɪnˌsaɪt/,+,System,Default
+Command,The ability to use or control something.,4,/kəˈmænd/,+,System,Default
+Reflection,Serious thought or consideration.,3,/rɪˈflɛkʃən/,~,System,Default
+Illusion,A false idea or belief.,2,/ɪˈluːʒən/,-,System,Default
+Union,The action of joining together.,4,/ˈjuːnjən/,+,System,Default
+Sturdiness,The quality of being strong and solid.,4,/ˈstɜːdinəs/,+,System,Default
+Insightful,Having or showing an accurate and deep understanding.,5,/ɪnˈsaɪtfəl/,+,System,Default
+Modesty,The quality of not being too proud or confident.,4,/ˈmɒdɪsti/,+,System,Default
+Surprise,An unexpected or astonishing event.,3,/sərˈpraɪz/,~,System,Default
+Joyless,Lacking joy or happiness.,1,/ˈdʒɔɪləs/,-,System,Default
+Rampant,Flourishing or spreading unchecked.,2,/ˈræmpənt/,-,System,Default
+Causing,The act of making something happen.,3,/ˈkɔːzɪŋ/,~,System,Default
+Salvage,The act of saving something from danger or destruction.,4,/ˈsælvɪdʒ/,+,System,Default
+Roaring,"Making a loud, deep sound.",3,/ˈrɔːrɪŋ/,~,System,Default
+Pretentions,Attempting to impress by affecting greater importance.,2,/prɪˈtɛnʃənz/,-,System,Default
+Salaciousness,The quality of being obscene or indecent.,1,/səˈleɪʃəsnəs/,-,System,Default
+Aim,A purpose or intention.,4,/eɪm/,+,System,Default
+Rebirth,The process of being born again.,5,/riːˈbɜːrθ/,+,System,Default
+Exuberance,The quality of being full of energy and excitement.,5,/ɪɡˈzjuːbərəns/,+,System,Default
+Urge,A strong desire or impulse.,3,/ɜːrdʒ/,~,System,Default
+Balancing,The act of keeping or putting something in a steady position.,4,/ˈbælənsɪŋ/,+,System,Default
+Submerging,The act of sinking below the surface.,3,/səbˈmɜːrdʒɪŋ/,~,System,Default
+Attracting,The act of drawing attention or interest.,4,/əˈtræktɪŋ/,+,System,Default
+Curiosity,A strong desire to know or learn something.,4,/ˌkjʊriˈɒsɪti/,+,System,Default
+Colliding,The act of coming into conflict or striking together.,3,/kəˈlaɪdɪŋ/,~,System,Default
+Concern,A matter of interest or importance.,3,/kənˈsɜːrn/,~,System,Default
+Fate,The development of events beyond a person's control.,3,/feɪt/,~,System,Default
+Overbearing,Unpleasantly or arrogantly domineering.,2,/ˌoʊvərˈbɛrɪŋ/,-,System,Default
+Life force,The energy that gives life to living beings.,4,/laɪf fɔːrs/,+,System,Default
+Protecting,The act of keeping someone or something safe.,4,/prəˈtɛktɪŋ/,+,System,Default
+Triumphing,Achieving a victory or success.,4,/ˈtraɪəmfɪŋ/,+,System,Default
+Preening,The act of making oneself look attractive.,2,/ˈpriːnɪŋ/,-,System,Default
+Resonating,"Producing or being filled with a deep, full sound.",4,/ˈrɛzəˌneɪtɪŋ/,+,System,Default
+Immersing,The act of deeply involving oneself in an activity.,4,/ɪˈmɜːrsɪŋ/,+,System,Default
+Righteous,Morally right or justifiable.,3,/ˈraɪtʃəs/,~,System,Default
+Compulsion,The action or state of forcing or being forced to do something.,2,/kəmˈpʌlʃən/,-,System,Default
+Yearning,A feeling of intense longing for something.,3,/ˈjɜːrnɪŋ/,~,System,Default
+Adapting,The act of making something suitable for a new use or purpose.,4,/əˈdæptɪŋ/,+,System,Default
+Fostering,Encouraging the development of something.,4,/ˈfɒstərɪŋ/,+,System,Default
+Flaunting,Displaying something ostentatiously.,2,/ˈflɔːntɪŋ/,-,System,Default
+Advocating,Publicly recommending or supporting something.,4,/ˈædvəˌkeɪtɪŋ/,+,System,Default
+Beguiling,"Charming or enchanting, often in a deceptive way.",2,/bɪˈɡaɪlɪŋ/,-,System,Default
+Crippling,Causing severe damage or harm.,1,/ˈkrɪplɪŋ/,-,System,Default
+Repairing,The act of fixing or mending something.,4,/rɪˈpɛrɪŋ/,+,System,Default
+Transforming,Making a thorough or dramatic change.,5,/trænsˈfɔːrmɪŋ/,+,System,Default
+Suspension,The temporary prevention of something.,3,/səˈspɛnʃən/,~,System,Default
+Replanting,The act of planting something again.,4,/riˈplæntɪŋ/,+,System,Default
+Reprocessing,The act of processing something again.,4,/riˈprɑːsɛsɪŋ/,+,System,Default
+Child-like,Having qualities associated with a child.,4,/tʃaɪld laɪk/,+,System,Default
+Unveiling,The act of revealing something.,4,/ˌʌnˈveɪlɪŋ/,+,System,Default
+Flight,The act of flying or moving through the air.,3,/flaɪt/,~,System,Default
+Premonition,A strong feeling that something is about to happen.,3,/ˌprɛməˈnɪʃən/,~,System,Default
+Seeking,The act of looking for or trying to find something.,4,/ˈsiːkɪŋ/,+,System,Default
+Idealism,The practice of forming or pursuing ideals.,4,/aɪˈdiːəlɪzəm/,+,System,Default
+Surrendering,The act of giving up or yielding.,3,/səˈrɛndərɪŋ/,~,System,Default
+Bliss,Perfect happiness or joy.,5,/blɪs/,+,System,Default
+Spontaneity,The quality of being spontaneous.,4,/ˌspɒntəˈneɪɪti/,+,System,Default
+Discourse,Written or spoken communication or debate.,3,/ˈdɪskɔːrs/,~,System,Default
+Empathy,The ability to understand and share the feelings of another.,5,/ˈɛmpəθi/,+,System,Default
+Righteousness,The quality of being morally right or justifiable.,3,/ˈraɪtʃəsnəs/,~,System,Default
+Prayer,A solemn request for help or expression of thanks addressed to God.,4,/prɛr/,+,System,Default
+Majesty,Impressive beauty or scale.,4,/ˈmædʒəsti/,+,System,Default
+Praise,The expression of approval or admiration.,5,/preɪz/,+,System,Default
+Libation,A drink poured out as an offering to a deity.,3,/laɪˈbeɪʃən/,~,System,Default
+Atonement,The action of making amends for a wrong.,4,/əˈtoʊnmənt/,+,System,Default
+Ceremony,A formal event held on a special occasion.,4,/ˈsɛrəˌmoʊni/,+,System,Default
+Temperance,Moderation or self-restraint.,4,/ˈtɛmpərəns/,+,System,Default
+Release,The act of setting someone or something free.,4,/rɪˈliːs/,+,System,Default
+Infinity,The state of being infinite.,3,/ɪnˈfɪnɪti/,~,System,Default
+Weaving love,The act of creating love through interlacing.,4,/ˈwiːvɪŋ lʌv/,+,System,Default
+Vibrating,Moving continuously and rapidly to and fro.,4,/ˈvaɪbreɪtɪŋ/,+,System,Default
+Core centring,The act of focusing on one's central or most important part.,4,/kɔːr ˈsɛntərɪŋ/,+,System,Default
+Purification,The act of making something pure.,4,/ˌpjʊrɪfɪˈkeɪʃən/,+,System,Default
+Stability,The state of being stable.,4,/stəˈbɪlɪti/,+,System,Default
+Kindness,"The quality of being friendly, generous, and considerate.",5,/ˈkaɪndnəs/,+,System,Default
+Transformation,A thorough or dramatic change in form or appearance.,5,/ˌtrænsfərˈmeɪʃən/,+,System,Default
+Self love,Regard for one's own well-being and happiness.,5,/sɛlf lʌv/,+,System,Default
+Pure being,The state of existing in a pure and untainted form.,5,/pjʊr ˈbiːɪŋ/,+,System,Default
+Limitlessness,The state of having no limits.,3,/ˈlɪmɪtlɪsnəs/,~,System,Default
+Contingency,A future event or circumstance that is possible but cannot be predicted with certainty.,3,/kənˈtɪndʒənsi/,~,System,Default
+Sensual,Relating to or involving gratification of the senses.,4,/ˈsɛnʃuəl/,+,System,Default
+Effort,A vigorous or determined attempt.,3,/ˈɛfərt/,~,System,Default
+Innovating,The act of introducing new ideas or methods.,4,/ˈɪnəˌveɪtɪŋ/,+,System,Default
+Heritage,Property that is or may be inherited.,3,/ˈhɛrɪtɪdʒ/,~,System,Default
+Father,A male parent.,3,/ˈfɑːðər/,~,System,Default
+Son,A male child in relation to his parents.,3,/sʌn/,~,System,Default
+Spirit,The non-physical part of a person regarded as their true self.,3,/ˈspɪrɪt/,~,System,Default
+Brother,A male sibling.,3,/ˈbrʌðər/,~,System,Default
+Mother,A female parent.,3,/ˈmʌðər/,~,System,Default
+Daughter,A female child in relation to her parents.,3,/ˈdɔːtər/,~,System,Default
+Sister,A female sibling.,3,/ˈsɪstər/,~,System,Default
+Source,"A place, person, or thing from which something originates.",3,/sɔːrs/,~,System,Default
+A cut above,Significantly better than others.,5,/ə kʌt əˈbʌv/,+,System,V01
+Absolute,Not qualified or diminished in any way; total.,5,/ˈæbsəˌlut/,+,System,V01
+Absurdity,The quality or state of being ridiculous or wildly unreasonable.,2,/əbˈsɜːrdɪti/,-,System,V01
+Abuse,The improper use of something.,1,/əˈbjuːs/,-,System,V01
+Abusiveness,The bad quality of being abusive towards someone or something.,1,/əˈbjuːsɪvnəs/,-,System,V01
+Acceptance,The action of consenting to receive or undertake something offered.,5,/əkˈsɛptəns/,+,System,V01
+Accurate,Correct in all details; exact.,5,/ˈækjərɪt/,+,System,V01
+Adaptability,The quality of being able to adjust to new conditions.,4,/əˌdæptəˈbɪlɪti/,+,System,V01
+Adequacy,The state of being sufficient for the purpose concerned.,4,/ˈædɪkwəsi/,+,System,V01
+Advantage,A condition or circumstance that puts one in a favorable or superior position.,5,/ədˈvæntɪdʒ/,+,System,V01
+Advocacy,Public support for or recommendation of a particular cause or policy.,5,/ˈædvəkəsi/,+,System,V01
+Aggravation,The state of becoming worse or more serious.,2,/ˌæɡrəˈveɪʃən/,-,System,V01
+Aggression,Hostile or violent behavior or attitudes.,2,/əˈɡrɛʃən/,-,System,V01
+Agitation,A state of anxiety or nervous excitement.,2,/ˌædʒɪˈteɪʃən/,-,System,V01
+Agony,Extreme physical or mental suffering.,1,/ˈæɡəni/,-,System,V01
+Agoraphobia,Extreme or irrational fear of open or public places.,1,/ˌæɡərəˈfoʊbiə/,-,System,V01
+Alarm,An anxious awareness of danger.,2,/əˈlɑrm/,-,System,V01
+Alienation,The state or experience of being isolated from a group or an activity to which one should belong or in which one should be involved.,2,/ˌeɪliəˈneɪʃən/,-,System,V01
+Animated,Full of life or excitement; lively.,4,/ˈænɪˌmeɪtɪd/,+,System,V01
+Antagonism,Active hostility or opposition.,2,/ænˈtæɡənɪzəm/,-,System,V01
+Anxiousness,The state of being anxious or worried.,2,/ˈæŋkʃəsnəs/,-,System,V01
+Apathetic,"Lack of interest, enthusiasm, or concern for feelings toward something or someone.",2,/ˈæpəθi/,-,System,V01
+Apathy,"Lack of interest, enthusiasm, or concern.",2,/ˈæpəθi/,-,System,V01
+Appal,To greatly dismay or horrify.,2,/əˈpɔːl/,-,System,V01
+Apprehension,Anxiety or fear that something bad or unpleasant will happen.,2,/ˌæprɪˈhɛnʃən/,-,System,V01
+Approval,The belief that someone or something is good or acceptable.,5,/əˈpruvəl/,+,System,V01
+Argumentativeness,The quality of being prone to argue.,2,/ˌɑrɡjəˈmɛntətɪvnəs/,-,System,V01
+Assuredness,Confidence in oneself or one's abilities.,4,/əˈʃʊrdnəs/,+,System,V01
+Astonishment,Great surprise.,5,/əˈstɑnɪʃmənt/,+,System,V01
+Astoundedment,The state of being greatly surprised or amazed.,5,/əˈstaʊndɪdmənt/,+,System,V01
+At ease,Feeling relaxed and comfortable.,5,/æt iz/,+,System,V01
+Atrociousness,The quality of being shockingly bad or wicked.,1,/əˈtroʊʃəsnəs/,-,System,V01
+Authentic,Of undisputed origin; genuine.,5,/ɔˈθɛntɪk/,+,System,V01
+Authenticity,The quality of being authentic or genuine.,5,/ˌɔːθɛnˈtɪsɪti/,+,System,V01
+Authoritative,Commanding and self-confident; likely to be respected and obeyed.,4,/əˈθɔrɪˌteɪtɪv/,+,System,V01
+Awareness,Knowledge or perception of a situation or fact.,4,/əˈwɛrnəs/,+,System,V01
+Awkwardness,The quality of being clumsy or uncomfortable.,2,/ˈɔkwərdnəs/,-,System,V01
+Balanced,Being in a state of equilibrium.,4,/ˈbælənst/,+,System,V01
+Bargaining,The negotiation of the terms and conditions of a transaction.,3,/ˈbɑrɡənɪŋ/,~,System,V01
+Beaming,Smiling broadly; radiating happiness.,5,/ˈbimɪŋ/,+,System,V01
+Being,Existence.,4,/ˈbiːɪŋ/,+,System,V01
+Blacklisted,Being put on a list of people or things regarded as unacceptable or untrustworthy.,1,/ˈblæklɪstɪd/,-,System,V01
+Blemished,Having a mark or flaw that spoils the appearance of something.,2,/ˈblɛmɪʃt/,-,System,V01
+Blessed,Made holy; consecrated.,5,/blɛst/,+,System,V01
+Blessing,God's favor and protection.,5,/ˈblɛsɪŋ/,+,System,V01
+Blissfulness,The state of being extremely happy.,5,/ˈblɪsfəlnəs/,+,System,V01
+Blushing,Developing a pink tinge in the face from embarrassment or shame.,4,/ˈblʌʃɪŋ/,+,System,V01
+Brave,Ready to face and endure danger or pain; showing courage.,5,/breɪv/,+,System,V01
+Brightness,The quality or state of giving out or reflecting light.,5,/ˈbraɪtnəs/,+,System,V01
+Brilliance,Exceptional talent or intelligence.,5,/ˈbrɪljəns/,+,System,V01
+Calm,"Not showing or feeling nervousness, anger, or other strong emotions.",5,/kɑm/,+,System,V01
+Carefreeness,The state of being free from anxiety or responsibility.,5,/ˈkɛrˌfrinəs/,+,System,V01
+Causality,The relationship between cause and effect.,3,/kɔˈzælɪti/,~,System,V01
+Caution,Care taken to avoid danger or mistakes.,3,/ˈkɔːʃən/,~,System,V01
+Censorship,"The suppression or prohibition of any parts of books, films, news, etc. that are considered obscene, politically unacceptable, or a threat to security.",2,/ˈsɛnsərˌʃɪp/,-,System,V01
+Centred,Placed or situated in the center.,4,/ˈsɛntərd/,+,System,V01
+Certainty,Firm conviction that something is the case.,5,/ˈsɜrtnti/,+,System,V01
+Cheerfulness,The quality or state of being noticeably happy and optimistic.,5,/ˈtʃɪrflnəs/,+,System,V01
+Clarity,"The quality of being clear, in particular.",5,/ˈklærɪti/,+,System,V01
+Claustrophobia,Extreme or irrational fear of confined places.,1,/ˌklɔːstrəˈfoʊbiə/,-,System,V01
+Coercion,The practice of persuading someone to do something by using force or threats.,1,/koʊˈɜːrʒən/,-,System,V01
+Collision,An instance of one moving object or person striking violently against another.,2,/kəˈlɪʒən/,-,System,V01
+Comfort,A state of physical ease and freedom from pain or constraint.,5,/ˈkʌmfərt/,+,System,V01
+Comfortability,The quality of being comfortable.,5,/ˌkʌmfərtəˈbɪlɪti/,+,System,V01
+Compulsiveness,The quality of being driven by an irresistible urge.,2,/kəmˈpʌlsɪvnəs/,-,System,V01
+Condemning,Expressing complete disapproval of something.,2,/kənˈdɛmɪŋ/,-,System,V01
+Condescendence,An attitude of patronizing superiority.,2,/ˌkɒndɪˈsɛndəns/,-,System,V01
+Confidence,The feeling or belief that one can rely on someone or something; firm trust.,5,/ˈkɒnfɪdəns/,+,System,V01
+Confiding,Trusting someone enough to tell them secrets or private matters.,4,/kənˈfaɪdɪŋ/,+,System,V01
+Conscientiousness,The quality of wishing to do one's work or duty well and thoroughly.,5,/ˌkɒnʃiˈɛnʃəsnəs/,+,System,V01
+Constructivism,A philosophy of learning based on the premise that people construct their own understanding and knowledge of the world through experiences and reflecting on those experiences.,4,/kənˈstrʌktɪˌvɪzəm/,+,System,V01
+Contentment,A state of happiness and satisfaction.,5,/kənˈtɛntmənt/,+,System,V01
+Contrariness,The quality of being contrary or perverse.,2,/kənˈtrɛrɪnəs/,-,System,V01
+Controlling,Exercising control over something or someone.,2,/kənˈtroʊlɪŋ/,-,System,V01
+Controversial,Giving rise or likely to give rise to public disagreement.,2,/ˌkɒntrəˈvɜrʃəl/,-,System,V01
+Convenience,The state of being able to proceed with something with little effort or difficulty.,4,/kənˈvinjəns/,+,System,V01
+Conversion,The process of changing or causing something to change from one form to another.,4,/kənˈvɜrʒən/,+,System,V01
+Cooperation,The process of working together to the same end.,5,/koʊˌɒpəˈreɪʃən/,+,System,V01
+Cooperativeness,The quality of being willing to work together.,5,/koʊˈɒpərətɪvnəs/,+,System,V01
+Core cantering,Focusing on the central or most important part.,4,/kɔr ˈkæntərɪŋ/,+,System,V01
+Corruption,"Dishonest or fraudulent conduct by those in power, typically involving bribery.",1,/kəˈrʌpʃən/,-,System,V01
+Courageousness,The quality of being brave.,5,/kəˈreɪdʒəsnəs/,+,System,V01
+Cover-up,An attempt to prevent people from discovering the truth about a serious mistake or crime.,1,/ˈkʌvərˌʌp/,-,System,V01
+Cowardliness,Lack of bravery.,1,/ˈkaʊərdlɪnəs/,-,System,V01
+Craving,A powerful desire for something.,3,/ˈkreɪvɪŋ/,~,System,V01
+Creativity,The use of imagination or original ideas to create something.,5,/ˌkriːeɪˈtɪvɪti/,+,System,V01
+Criticality,"The quality of being critical, especially in a negative sense.",3,/ˌkrɪtɪˈkælɪti/,~,System,V01
+Damage,Physical harm caused to something.,1,/ˈdæmɪdʒ/,-,System,V01
+Daring,Adventurous or audaciously bold.,4,/ˈdɛərɪŋ/,+,System,V01
+Deadline,The latest time or date by which something should be completed.,3,/ˈdɛdˌlaɪn/,~,System,V01
+Definite,Clearly stated or decided; not vague or doubtful.,4,/ˈdɛfɪnɪt/,+,System,V01
+Delightfulness,The quality of being delightful.,5,/dɪˈlaɪtfəlnəs/,+,System,V01
+Deplorability,The quality of being deserving strong condemnation.,1,/dɪˌplɔːrəˈbɪlɪti/,-,System,V01
+Despair,The complete loss or absence of hope.,1,/dɪˈspɛər/,-,System,V01
+Devastation,Great destruction or damage.,1,/ˌdɛvəˈsteɪʃən/,-,System,V01
+Disadvantage,An unfavorable circumstance or condition that reduces the chances of success or effectiveness.,2,/ˌdɪsədˈvæntɪdʒ/,-,System,V01
+Disappointment,Sadness or displeasure caused by the non-fulfillment of one's hopes or expectations.,1,/ˌdɪsəˈpɔɪntmənt/,-,System,V01
+Disastrousness,The quality of being disastrous.,1,/dɪˈzæstrəsnəs/,-,System,V01
+Discounting,The action of reducing the price of something.,3,/dɪsˈkaʊntɪŋ/,~,System,V01
+Disdain,The feeling that someone or something is unworthy of one's consideration or respect.,1,/dɪsˈdeɪn/,-,System,V01
+Disdainfulness,The quality of showing disdain.,1,/dɪsˈdeɪnfəlnəs/,-,System,V01
+Disgust,A strong feeling of dislike or disapproval.,1,/dɪsˈɡʌst/,-,System,V01
+Dishonesty,Deceitfulness shown in someone's character or behavior.,1,/dɪsˈɒnɪsti/,-,System,V01
+Disillusionment,A feeling of disappointment resulting from the discovery that something is not as good as one believed it to be.,2,/ˌdɪsɪˈluːʒənmənt/,-,System,V01
+Disorientation,The condition of having lost one's sense of direction.,2,/dɪsˌɔːriənˈteɪʃən/,-,System,V01
+Distraction,A thing that prevents someone from giving full attention to something else.,2,/dɪˈstrækʃən/,-,System,V01
+Distress,"Extreme anxiety, sorrow, or pain.",2,/dɪˈstrɛs/,-,System,V01
+Distrustfulness,The quality of being distrustful.,2,/dɪsˈtrʌstfʊlnəs/,-,System,V01
+Doom,"Death, destruction, or some other terrible fate.",1,/duːm/,-,System,V01
+Doubt,A feeling of uncertainty or lack of conviction.,2,/daʊt/,-,System,V01
+Dread,Great fear or apprehension.,2,/drɛd/,-,System,V01
+Dreadfulness,The quality of being dreadful.,1,/ˈdrɛdfəlnəs/,-,System,V01
+Duality,The quality or condition of being dual.,3,/djuˈælɪti/,~,System,V01
+Dynamics,"The forces or properties that stimulate growth, development, or change within a system or process.",3,/daɪˈnæmɪks/,~,System,V01
+Eagerness,Enthusiasm to do or to have something.,4,/ˈiːɡərnəs/,+,System,V01
+Earnestness,Sincere and intense conviction.,4,/ˈɜrnɪstnəs/,+,System,V01
+Ease,Absence of difficulty or effort.,5,/iːz/,+,System,V01
+Ecstatic,Feeling or expressing overwhelming happiness or joyful excitement.,5,/ɪkˈstætɪk/,+,System,V01
+Effective,Successful in producing a desired or intended result.,5,/ɪˈfɛktɪv/,+,System,V01
+Efficiency,The state or quality of being efficient.,5,/ɪˈfɪʃənsi/,+,System,V01
+Ego,A person's sense of self-esteem or self-importance.,3,/ˈiːɡoʊ/,~,System,V01
+Egotism,The practice of talking and thinking about oneself excessively because of an undue sense of self-importance.,2,/ˈiːɡəˌtɪzəm/,-,System,V01
+Elation,Great happiness and exhilaration.,5,/ɪˈleɪʃən/,+,System,V01
+Elimination,The complete removal or destruction of something.,3,/ɪˌlɪmɪˈneɪʃən/,~,System,V01
+Embarrassment,"A feeling of self-consciousness, shame, or awkwardness.",2,/ɪmˈbærəsmənt/,-,System,V01
+Emphasis,"Special importance, value, or prominence given to something.",4,/ˈɛmfəsɪs/,+,System,V01
+Encouragement,"The action of giving someone support, confidence, or hope.",5,/ɪnˈkɜrɪdʒmənt/,+,System,V01
+Endurance,The ability to endure an unpleasant or difficult process or situation without giving way.,4,/ɪnˈdjʊərəns/,+,System,V01
+Enigmatic,Difficult to interpret or understand; mysterious.,3,/ˌɛnɪɡˈmætɪk/,~,System,V01
+Enraged,Very angry; furious.,2,/ɪnˈreɪdʒd/,-,System,V01
+Enthusiasm,"Intense and eager enjoyment, interest, or approval.",5,/ɪnˈθjuːziæzəm/,+,System,V01
+Envy,"A feeling of discontented or resentful longing aroused by someone else's possessions, qualities, or luck.",2,/ˈɛnvi/,-,System,V01
+Euphoria,A feeling or state of intense excitement and happiness.,5,/juːˈfɔːriə/,+,System,V01
+Exasperation,A feeling of intense irritation or annoyance.,2,/ɪɡˌzæspəˈreɪʃən/,-,System,V01
+Excellence,The quality of being outstanding or extremely good.,5,/ˈɛksələns/,+,System,V01
+Exhilaration,"A feeling of excitement, happiness, or elation.",5,/ɪɡˌzɪləˈreɪʃən/,+,System,V01
+Explosion,A violent and destructive shattering or blowing apart of something.,3,/ɪkˈsploʊʒən/,~,System,V01
+Extra,Added to an existing or usual amount or number.,3,/ˈɛkstrə/,~,System,V01
+Extreme,Reaching a high or the highest degree; very great.,3,/ɪkˈstriːm/,~,System,V01
+Family,A group consisting of parents and their children living together in a household.,5,/ˈfæmɪli/,+,System,V01
+Fatigue,Extreme tiredness resulting from mental or physical exertion or illness.,2,/fəˈtiːɡ/,-,System,V01
+Fear,"An unpleasant emotion caused by the belief that someone or something is dangerous, likely to cause pain, or a threat.",2,/fɪər/,-,System,V01
+Festivity,The celebration of something in a joyful and exuberant way.,5,/fɛˈstɪvɪti/,+,System,V01
+Finery,Expensive or ostentatious clothes or decoration.,3,/ˈfaɪnəri/,~,System,V01
+Fluidity,The quality of being smooth and graceful.,4,/fluːˈɪdɪti/,+,System,V01
+Forbidden,Not allowed; banned.,2,/fərˈbɪdən/,-,System,V01
+Forgiving,Ready and willing to forgive.,5,/fərˈɡɪvɪŋ/,+,System,V01
+Fortune,"Chance or luck as an external, arbitrary force affecting human affairs.",5,/ˈfɔːrtʃən/,+,System,V01
+Fraudulence,"The action or quality of cheating, lying, or deceiving someone.",1,/ˈfrɔːdjʊləns/,-,System,V01
+Freedom,"The power or right to act, speak, or think as one wants without hindrance or restraint.",5,/ˈfriːdəm/,+,System,V01
+Frenzied,Wildly excited or uncontrolled.,2,/ˈfrɛnziːd/,-,System,V01
+Frisky,Playful and full of energy.,4,/ˈfrɪski/,+,System,V01
+Frivolity,Lack of seriousness; lightheartedness.,3,/frɪˈvɒlɪti/,~,System,V01
+Frugality,The quality of being economical with money or food; thriftiness.,4,/fruːˈɡælɪti/,+,System,V01
+Frustrated,Feeling or expressing distress and annoyance resulting from an inability to change or achieve something.,2,/ˈfrʌstreɪtɪd/,-,System,V01
+Fulfilled,Satisfied or happy because of fully developing one's abilities or character.,5,/fʊlˈfɪld/,+,System,V01
+Fun-loving,"Enjoying the good things in life, especially parties and social activities.",5,/ˈfʌnˌlʌvɪŋ/,+,System,V01
+Funny,Causing laughter or amusement; humorous.,5,/ˈfʌni/,+,System,V01
+Furious,Extremely angry.,2,/ˈfjʊriəs/,-,System,V01
+Genuine,Truly what something is said to be; authentic.,5,/ˈdʒɛnjʊɪn/,+,System,V01
+Gifted,Having exceptional talent or natural ability.,5,/ˈɡɪftɪd/,+,System,V01
+Gleefulness,The quality of being gleeful; joy.,5,/ˈɡliːfʊlnəs/,+,System,V01
+Glory,High renown or honor won by notable achievements.,5,/ˈɡlɔːri/,+,System,V01
+Glow,A steady radiance of light or heat.,4,/ɡloʊ/,+,System,V01
+Gracefulness,The quality of being graceful; elegance.,5,/ˈɡreɪsfʊlnəs/,+,System,V01
+Grateful,Feeling or showing an appreciation of kindness; thankful.,5,/ˈɡreɪtfʊl/,+,System,V01
+Gratification,"Pleasure, especially when gained from the satisfaction of a desire.",5,/ˌɡrætɪfɪˈkeɪʃən/,+,System,V01
+Gratitude,The quality of being thankful; readiness to show appreciation for and to return kindness.,5,/ˈɡrætɪˌtjuːd/,+,System,V01
+Greed,"Intense and selfish desire for something, especially wealth, power, or food.",1,/ɡriːd/,-,System,V01
+Grief,"Deep sorrow, especially that caused by someone's death.",2,/ɡriːf/,-,System,V01
+Grounded,Well balanced and sensible.,4,/ˈɡraʊndɪd/,+,System,V01
+Guarantee,A formal assurance that certain conditions will be fulfilled.,4,/ˌɡærənˈtiː/,+,System,V01
+Harm,"Physical injury, especially that which is deliberately inflicted.",1,/hɑːrm/,-,System,V01
+Harmfulness,The quality of causing harm.,1,/ˈhɑːrmfʊlnəs/,-,System,V01
+Harshness,The quality of being unpleasantly rough or jarring to the senses.,2,/ˈhɑːrʃnəs/,-,System,V01
+Hate,Intense dislike or ill will.,1,/heɪt/,-,System,V01
+Health,The state of being free from illness or injury.,5,/hɛlθ/,+,System,V01
+Heartache,"Emotional anguish or grief, typically caused by the loss or absence of someone loved.",2,/ˈhɑːrteɪk/,-,System,V01
+Hedonism,The pursuit of pleasure; sensual self-indulgence.,3,/ˈhiːdənɪzəm/,~,System,V01
+Helpfulness,The quality of providing useful assistance.,5,/ˈhɛlpfʊlnəs/,+,System,V01
+Hesitation,The action of pausing or hesitating before saying or doing something.,2,/ˌhɛzɪˈteɪʃən/,-,System,V01
+Honesty,The quality of being honest.,5,/ˈɒnɪsti/,+,System,V01
+Honour,High respect; esteem.,5,/ˈɒnər/,+,System,V01
+Honourability,The quality of being honourable.,5,/ˌɒnərəˈbɪlɪti/,+,System,V01
+Hopefulness,The feeling or state of being hopeful.,5,/ˈhoʊpfʊlnəs/,+,System,V01
+Immersion,The action of immersing someone or something in a liquid.,4,/ɪˈmɜːrʃən/,+,System,V01
+Impatience,The tendency to be impatient; irritability or restlessness.,2,/ɪmˈpeɪʃəns/,-,System,V01
+Imprisonment,The state of being imprisoned; captivity.,1,/ɪmˈprɪzənmənt/,-,System,V01
+In the zone,In a state of focused attention or energy so that one's performance is enhanced.,5,/ɪn ðə zoʊn/,+,System,V01
+Incapability,The quality of being incapable.,2,/ˌɪnkəˈpeɪbɪlɪti/,-,System,V01
+Incapacitated,Deprived of strength or power; debilitated.,2,/ˌɪnkəˈpæsɪteɪtɪd/,-,System,V01
+Insurance,"A practice or arrangement by which a company or government agency provides a guarantee of compensation for specified loss, damage, illness, or death in return for payment of a premium.",3,/ɪnˈʃʊərəns/,~,System,V01
+Intensity,The quality of being intense.,3,/ɪnˈtɛnsɪti/,~,System,V01
+Intoxication,"The state of being intoxicated, especially by alcohol.",2,/ɪnˌtɒksɪˈkeɪʃən/,-,System,V01
+Intrusion,The action of intruding.,1,/ɪnˈtruːʒən/,-,System,V01
+Isolation,The process or fact of isolating or being isolated.,2,/ˌaɪsəˈleɪʃən/,-,System,V01
+Jackpot,A large cash prize in a game or lottery.,5,/ˈdʒækˌpɒt/,+,System,V01
+Jealousy,The state or feeling of being jealous.,2,/ˈdʒɛləsi/,-,System,V01
+Jitteriness,The state of being nervous or unable to relax.,2,/ˈdʒɪtərɪnəs/,-,System,V01
+Joviality,The quality of being cheerful and friendly.,5,/ˌdʒoʊviˈælɪti/,+,System,V01
+Joylessness,The state of being without joy.,2,/ˈdʒɔɪlɪsnəs/,-,System,V01
+Joyousness,The state of being full of joy.,5,/ˈdʒɔɪəsnəs/,+,System,V01
+Jubilance,The state of feeling or expressing great happiness and triumph.,5,/ˈdʒuːbɪləns/,+,System,V01
+Judgmentalism,The tendency to judge people too quickly and critically.,2,/dʒʌdʒˈmɛntəlɪzəm/,-,System,V01
+Keenness,The quality of being eager or enthusiastic.,4,/ˈkiːnnəs/,+,System,V01
+Laughter,The action or sound of laughing.,5,/ˈlæftər/,+,System,V01
+Left behind,The state of being abandoned or forgotten.,2,/lɛft bɪˈhaɪnd/,-,System,V01
+Liberation,"The act of setting someone free from imprisonment, slavery, or oppression.",5,/ˌlɪbəˈreɪʃən/,+,System,V01
+Light,The natural agent that stimulates sight and makes things visible.,5,/laɪt/,+,System,V01
+Light-heartedness,The quality of being cheerful and carefree.,5,/ˌlaɪtˈhɑrtɪdnəs/,+,System,V01
+Limitation,A restriction or boundary.,2,/ˌlɪmɪˈteɪʃən/,-,System,V01
+Maliciousness,The quality of being malicious; intending to do harm.,1,/məˈlɪʃəsnəs/,-,System,V01
+Manipulation,The action of controlling or influencing someone or something in a skillful but often unfair or deceitful way.,2,/məˌnɪpjʊˈleɪʃən/,-,System,V01
+Meditative,Involving or absorbed in meditation or considered thought.,4,/ˈmɛdɪˌteɪtɪv/,+,System,V01
+Mindfulness,The quality or state of being conscious or aware of something.,5,/ˈmaɪndfʊlnəs/,+,System,V01
+Misgivings,Feelings of doubt or apprehension about the outcome or consequences of something.,2,/ˌmɪsˈɡɪvɪŋz/,-,System,V01
+Missing Out,The feeling of regret or sadness about not being able to participate in something.,2,/ˈmɪsɪŋ aʊt/,-,System,V01
+Mobbing,The act of a group of people crowding around someone in an aggressive or excited way.,1,/ˈmɒbɪŋ/,-,System,V01
+Mocking,Making fun of someone or something in a cruel way; derisive.,1,/ˈmɒkɪŋ/,-,System,V01
+Motivation,The reason or reasons one has for acting or behaving in a particular way.,5,/ˌmoʊtɪˈveɪʃən/,+,System,V01
+Natural,Existing in or caused by nature; not made or caused by humankind.,5,/ˈnætʃərəl/,+,System,V01
+Nihilism,"The rejection of all religious and moral principles, often in the belief that life is meaningless.",2,/ˈnaɪɪˌlɪzəm/,-,System,V01
+Non-controlling,Not exercising control over others.,4,/nɒn kənˈtroʊlɪŋ/,+,System,V01
+Obsession,The state of being obsessed with someone or something.,2,/əbˈsɛʃən/,-,System,V01
+Off-kilter,Unbalanced or eccentric.,3,/ɔf ˈkɪltər/,~,System,V01
+Offensiveness,"The quality of causing someone to feel deeply hurt, upset, or angry.",2,/əˈfɛnsɪvnəs/,-,System,V01
+Okay,Satisfactory but not exceptionally or especially good.,4,/oʊˈkeɪ/,+,System,V01
+On top of the world,Feeling very happy or elated.,5,/ɒn tɒp ʌv ðə wɜrld/,+,System,V01
+Open-mindedness,The quality of being willing to consider new ideas; unprejudiced.,5,/ˌoʊpənˈmaɪndɪdnəs/,+,System,V01
+Optimism,Hopefulness and confidence about the future or the successful outcome of something.,5,/ˈɒptɪˌmɪzəm/,+,System,V01
+Ordeal,"A painful or horrific experience, especially a protracted one.",2,/ɔrˈdil/,-,System,V01
+Outrageousness,The quality of being shockingly bad or excessive.,2,/aʊtˈreɪdʒəsnəs/,-,System,V01
+Overwhelming,Very great in amount.,2,/ˌoʊvərˈwɛlmɪŋ/,-,System,V01
+Panicked,Feeling or showing sudden uncontrollable fear or anxiety.,2,/ˈpænɪkt/,-,System,V01
+Paralyzed,Unable to move or act.,2,/ˈpærəˌlaɪzd/,-,System,V01
+Pathetic,"Arousing pity, especially through vulnerability or sadness.",2,/pəˈθɛtɪk/,-,System,V01
+Performance,The action or process of performing a task or function.,4,/pərˈfɔːrməns/,+,System,V01
+Perplexed,Completely baffled; very puzzled.,2,/pərˈplɛkst/,-,System,V01
+Pessimism,A tendency to see the worst aspect of things or believe that the worst will happen.,2,/ˈpɛsɪˌmɪzəm/,-,System,V01
+Phobias,Extreme or irrational fears of or aversions to something.,1,/ˈfoʊbiəz/,-,System,V01
+Placid,Not easily upset or excited.,4,/ˈplæsɪd/,+,System,V01
+Playfulness,The quality of being light-hearted or full of fun.,5,/ˈpleɪfʊlnəs/,+,System,V01
+Pleasing,Satisfying or appealing.,5,/ˈpliːzɪŋ/,+,System,V01
+Plotting,Secretly making plans to carry out an illegal or harmful action.,2,/ˈplɒtɪŋ/,-,System,V01
+Poisonous,Causing or capable of causing death or illness if taken into the body.,1,/ˈpɔɪzənəs/,-,System,V01
+Privilege,"A special right, advantage, or immunity granted or available only to a particular person or group.",4,/ˈprɪvəlɪdʒ/,+,System,V01
+Process,A series of actions or steps taken in order to achieve a particular end.,3,/ˈprɑːsɛs/,~,System,V01
+Procrastination,The action of delaying or postponing something.,2,/proʊˌkræstɪˈneɪʃən/,-,System,V01
+Productivity,"The state or quality of producing something, especially crops.",5,/ˌproʊdʌkˈtɪvɪti/,+,System,V01
+Protection,The action of protecting someone or something.,5,/prəˈtɛkʃən/,+,System,V01
+Provision,The action of providing or supplying something for use.,4,/prəˈvɪʒən/,+,System,V01
+Provocation,"Action or speech that makes someone annoyed or angry, especially deliberately.",2,/ˌprɒvəˈkeɪʃən/,-,System,V01
+Prudence,The quality of being prudent; cautiousness.,4,/ˈpruːdəns/,+,System,V01
+Quarrelsomeness,The quality of being prone to argue or disagree.,2,/ˈkwɒrəlsəmnəs/,-,System,V01
+Quiet,Making little or no noise.,4,/ˈkwaɪət/,+,System,V01
+Radiance,Light or heat as emitted or reflected by something.,5,/ˈreɪdiəns/,+,System,V01
+Rampancy,The quality of being rampant; uncontrolled.,2,/ˈræmpənsi/,-,System,V01
+Rebelliousness,The quality of being rebellious.,2,/rɪˈbɛljəsnəs/,-,System,V01
+Reduction,"The action or fact of making something smaller or less in amount, degree, or size.",3,/rɪˈdʌkʃən/,~,System,V01
+Reflective,Providing a reflection; capable of reflecting light or other radiation.,4,/rɪˈflɛktɪv/,+,System,V01
+Relaxation,The state of being free from tension and anxiety.,5,/ˌrɪˌlækˈseɪʃən/,+,System,V01
+Reliability,The quality of being trustworthy or of performing consistently well.,5,/rɪˌlaɪəˈbɪlɪti/,+,System,V01
+Repetition,The action of repeating something that has already been said or written.,3,/ˌrɛpɪˈtɪʃən/,~,System,V01
+Repulsion,A feeling of intense distaste or disgust.,2,/rɪˈpʌlʃən/,-,System,V01
+Repulsiveness,The quality of being repulsive.,2,/rɪˈpʌlsɪvnəs/,-,System,V01
+Resentfulness,The quality of feeling or expressing bitterness or indignation at having been treated unfairly.,2,/rɪˈzɛntfʊlnəs/,-,System,V01
+Resilience,The capacity to recover quickly from difficulties; toughness.,5,/rɪˈzɪliəns/,+,System,V01
+Resolve,Firm determination to do something.,4,/rɪˈzɒlv/,+,System,V01
+Resourcefulness,The ability to find quick and clever ways to overcome difficulties.,5,/rɪˈsɔrsfʊlnəs/,+,System,V01
+Responsibility,The state or fact of having a duty to deal with something or of having control over someone.,5,/rɪˌspɒnsəˈbɪlɪti/,+,System,V01
+Responsiveness,The quality of reacting quickly and positively.,5,/rɪˈspɒnsɪvnəs/,+,System,V01
+Rest,"Cease work or movement in order to relax, refresh oneself, or recover strength.",5,/rɛst/,+,System,V01
+Restlessness,The inability to rest or relax as a result of anxiety or boredom.,2,/ˈrɛstləsnəs/,-,System,V01
+Romance,A feeling of excitement and mystery associated with love.,5,/roʊˈmæns/,+,System,V01
+Sadism,"The tendency to derive pleasure, especially sexual gratification, from inflicting pain, suffering, or humiliation on others.",1,/ˈseɪdɪzəm/,-,System,V01
+Safety,"The condition of being protected from or unlikely to cause danger, risk, or injury.",5,/ˈseɪfti/,+,System,V01
+Sarcasm,The use of irony to mock or convey contempt.,2,/ˈsɑrkæzəm/,-,System,V01
+Satisfaction,"The fulfillment of one's wishes, expectations, or needs.",5,/ˌsætɪsˈfækʃən/,+,System,V01
+Save,To keep safe or rescue from harm or danger.,5,/seɪv/,+,System,V01
+Savings,"The money one has saved, especially through a bank or official scheme.",5,/ˈseɪvɪŋz/,+,System,V01
+Scandal,An action or event regarded as morally or legally wrong and causing general public outrage.,2,/ˈskændəl/,-,System,V01
+Scornfulness,The quality of showing scorn or contempt.,2,/ˈskɔːrnfʊlnəs/,-,System,V01
+Screen,"A flat panel or area on an electronic device such as a television, computer, or smartphone, on which images and data are displayed.",3,/skriːn/,~,System,V01
+Screening,"The testing or examining of a large number of people or things for disease, defects, etc.",3,/ˈskriːnɪŋ/,~,System,V01
+Secret,Something that is kept or meant to be kept unknown or unseen by others.,3,/ˈsiːkrɪt/,~,System,V01
+Security,The state of being free from danger or threat.,5,/sɪˈkjʊrɪti/,+,System,V01
+Seething,Filled with or characterized by intense but unexpressed anger.,2,/ˈsiːðɪŋ/,-,System,V01
+Seizure,"A sudden attack of illness, especially a stroke or an epileptic fit.",2,/ˈsiːʒər/,-,System,V01
+Self-love,Regard for one's own well-being and happiness.,5,/sɛlf lʌv/,+,System,V01
+Self-reliance,Reliance on one's own powers and resources rather than those of others.,5,/sɛlf rɪˈlaɪəns/,+,System,V01
+Self-sufficiency,The quality or condition of being self-sufficient.,5,/sɛlf səˈfɪʃənsi/,+,System,V01
+Sensationalism,"The use of exciting or shocking stories or language at the expense of accuracy, in order to provoke public interest or excitement.",2,/sɛnˈseɪʃənəlɪzəm/,-,System,V01
+Sensuality,"The enjoyment, expression, or pursuit of physical, especially sexual, pleasure.",4,/ˌsɛnʃuˈælɪti/,+,System,V01
+Serenity,"The state of being calm, peaceful, and untroubled.",5,/səˈrɛnɪti/,+,System,V01
+Severity,The fact or condition of being severe.,2,/sɪˈvɛrɪti/,-,System,V01
+Shamefulness,The quality of being shameful.,2,/ˈʃeɪmfʊlnəs/,-,System,V01
+Shielding,"Protecting someone or something from a danger, risk, or unpleasant experience.",3,/ˈʃiːldɪŋ/,~,System,V01
+Shock,A sudden upsetting or surprising event or experience.,2,/ʃɒk/,-,System,V01
+Signaling,"The action of conveying information or instructions by means of a gesture, action, or sound.",3,/ˈsɪɡnəlɪŋ/,~,System,V01
+Sincere,Free from pretense or deceit; proceeding from genuine feelings.,5,/sɪnˈsɪər/,+,System,V01
+Sincerity,"The quality of being free from pretense, deceit, or hypocrisy.",5,/sɪnˈsɪərɪti/,+,System,V01
+Smiling,"Forming one's features into a pleased, kind, or amused expression, typically with the corners of the mouth turned up and the front teeth exposed.",5,/ˈsmaɪlɪŋ/,+,System,V01
+Social,Relating to society or its organization.,4,/ˈsoʊʃəl/,+,System,V01
+Solid,Firm and stable in shape; not liquid or fluid.,4,/ˈsɒlɪd/,+,System,V01
+Solidarity,"Unity or agreement of feeling or action, especially among individuals with a common interest; mutual support within a group.",5,/ˌsɒlɪˈdærɪti/,+,System,V01
+Song,A short poem or other set of words set to music or meant to be sung.,5,/sɒŋ/,+,System,V01
+Soul,"The spiritual or immaterial part of a human being or animal, regarded as immortal.",5,/soʊl/,+,System,V01
+Spiralling,Moving in a spiral course.,3,/ˈspaɪrəlɪŋ/,~,System,V01
+Spire,"A tapering conical or pyramidal structure on the top of a building, typically a church tower.",3,/spaɪər/,~,System,V01
+Spirited,"Full of energy, enthusiasm, and determination.",5,/ˈspɪrɪtɪd/,+,System,V01
+Spiteful,Showing or caused by malice.,2,/ˈspaɪtfʊl/,-,System,V01
+Spontaneous,Performed or occurring as a result of a sudden inner impulse or inclination and without premeditation or external stimulus.,4,/spɒnˈteɪniəs/,+,System,V01
+Spunky,Courageous and determined.,4,/ˈspʌŋki/,+,System,V01
+Stable,Not likely to change or fail; firmly established.,5,/ˈsteɪbəl/,+,System,V01
+Stalking,"The act of following or harassing another person, causing them to fear for their safety.",1,/ˈstɔːkɪŋ/,-,System,V01
+Stand,An attitude toward a particular issue; a position taken in an argument.,3,/stænd/,~,System,V01
+Startling,"Very surprising, astonishing, or remarkable.",2,/ˈstɑrtəlɪŋ/,-,System,V01
+Steady,"Firmly fixed, supported, or balanced; not shaking or moving.",4,/ˈstɛdi/,+,System,V01
+Still,Not moving or making a sound.,4,/stɪl/,+,System,V01
+Stressed,Experiencing mental or emotional strain or tension.,2,/strɛst/,-,System,V01
+Suggestion,An idea or plan put forward for consideration.,4,/səˈdʒɛstʃən/,+,System,V01
+Sunny,Bright with sunlight.,5,/ˈsʌni/,+,System,V01
+Superb,Excellent; very good.,5,/suːˈpɜrb/,+,System,V01
+Superior,"Higher in rank, status, or quality.",5,/suːˈpɪriər/,+,System,V01
+Supported,Given assistance or backing.,5,/səˈpɔrtɪd/,+,System,V01
+Supportive,Providing encouragement or emotional help.,5,/səˈpɔrtɪv/,+,System,V01
+Supportiveness,The quality of being supportive.,5,/səˈpɔrtɪvnəs/,+,System,V01
+Surety,The state of being sure or certain of something.,5,/ˈʃʊrɪti/,+,System,V01
+Surrender,Cease resistance to an enemy or opponent and submit to their authority.,3,/səˈrɛndər/,~,System,V01
+Suspiciousness,The quality of being suspicious or distrustful.,2,/səˈspɪʃəsnəs/,-,System,V01
+Swaddling,"Wrapping (someone, especially a baby) in garments or cloth.",3,/ˈswɒdlɪŋ/,~,System,V01
+Tenacity,The quality or fact of being able to grip something firmly; grip.,5,/təˈnæsɪti/,+,System,V01
+Tenderness,Gentleness and kindness.,5,/ˈtɛndərnəs/,+,System,V01
+Tense,"Unable to relax because of nervousness, anxiety, or stimulation.",2,/tɛns/,-,System,V01
+Terrible,Extremely or distressingly bad or serious.,1,/ˈtɛrɪbəl/,-,System,V01
+Terrified,Extremely frightened.,2,/ˈtɛrɪfaɪd/,-,System,V01
+Thankful,Pleased and relieved.,5,/ˈθæŋkfəl/,+,System,V01
+Threatening,Having a hostile or deliberately frightening quality or manner.,2,/ˈθrɛtənɪŋ/,-,System,V01
+Thrilling,Causing excitement and pleasure; exhilarating.,5,/ˈθrɪlɪŋ/,+,System,V01
+Tickled,Lightly touch or prod (a person or a part of the body) in a way that causes itching and often laughter.,4,/ˈtɪkəld/,+,System,V01
+Tragic,Causing or characterized by extreme distress or sorrow.,2,/ˈtrædʒɪk/,-,System,V01
+Trapped,Caught in a place or situation from which it is difficult or impossible to escape.,2,/træpt/,-,System,V01
+Trauma,A deeply distressing or disturbing experience.,1,/ˈtrɔːmə/,-,System,V01
+Tremendous,"Very great in amount, scale, or intensity.",5,/trɪˈmɛndəs/,+,System,V01
+Tribalism,The state or fact of being organized in a tribe or tribes.,2,/ˈtraɪbəlɪzəm/,-,System,V01
+Trusting,Showing or tending to have a belief in a person's honesty or sincerity; not suspicious.,5,/ˈtrʌstɪŋ/,+,System,V01
+Trustworthiness,The ability to be relied on as honest or truthful.,5,/ˈtrʌstwɜːrðɪnəs/,+,System,V01
+Trustworthy,Able to be relied on as honest or truthful.,5,/ˈtrʌstwɜːrði/,+,System,V01
+Truth,The quality or state of being true.,5,/truːθ/,+,System,V01
+Unassuming,Not pretentious or arrogant; modest.,4,/ˌʌnəˈsuːmɪŋ/,+,System,V01
+Unburdened,Free from or relieved of a burden.,4,/ˌʌnˈbɜrdənd/,+,System,V01
+Uncaring,Not displaying sympathy or concern for others.,2,/ˌʌnˈkɛrɪŋ/,-,System,V01
+Uncertain,Not able to be relied on; not known or definite.,2,/ʌnˈsɜrtən/,-,System,V01
+Uncomfortable,Causing or feeling slight pain or physical discomfort.,2,/ʌnˈkʌmftərbəl/,-,System,V01
+Unhurried,"Moving, acting, or taking place without haste or urgency.",4,/ʌnˈhɜrid/,+,System,V01
+Uninterested,Not interested in or concerned about something or someone.,2,/ʌnˈɪntrəstɪd/,-,System,V01
+Unique,Being the only one of its kind; unlike anything else.,5,/juˈnik/,+,System,V01
+Unreliable,Not able to be relied upon.,2,/ˌʌnrɪˈlaɪəbəl/,-,System,V01
+Unresponsive,Not responsive.,2,/ˌʌnrɪˈspɒnsɪv/,-,System,V01
+Unstable,"Prone to change, fail, or give way; not stable.",2,/ʌnˈsteɪbəl/,-,System,V01
+Unsure,"Not feeling, showing, or done with confidence and certainty.",2,/ʌnˈʃʊr/,-,System,V01
+Upbeat,Cheerful and optimistic.,5,/ˈʌpˌbit/,+,System,V01
+Uplifted,Raised to a higher position or level; elevated.,5,/ʌpˈlɪftɪd/,+,System,V01
+Uplifting,Morally or spiritually elevating; inspiring happiness or hope.,5,/ʌpˈlɪftɪŋ/,+,System,V01
+Urgency,Importance requiring swift action.,3,/ˈɜrdʒənsi/,~,System,V01
+Venomousness,The quality of being venomous; capable of injecting venom by means of a bite or sting.,2,/ˈvɛnəməsnəs/,-,System,V01
+Vibration,An instance of vibrating.,3,/vaɪˈbreɪʃən/,~,System,V01
+Vigor,Physical strength and good health.,5,/ˈvɪɡər/,+,System,V01
+Vindictiveness,The quality of having or showing a strong or unreasoning desire for revenge.,2,/vɪnˈdɪktɪvnəs/,-,System,V01
+Violence,"Behavior involving physical force intended to hurt, damage, or kill someone or something.",1,/ˈvaɪələns/,-,System,V01
+Vulnerability,"The quality or state of being exposed to the possibility of being attacked or harmed, either physically or emotionally.",2,/ˌvʌlnərəˈbɪlɪti/,-,System,V01
+Waiting,The action of staying where one is or delaying action until a particular time or event.,3,/ˈweɪtɪŋ/,~,System,V01
+Whimsy,Playfully quaint or fanciful behavior or humor.,3,/ˈwɪmzi/,~,System,V01
+Wickedness,The quality of being evil or morally wrong.,2,/ˈwɪkɪdnəs/,-,System,V01
+Wonderfulness,The quality of being wonderful.,5,/ˈwʌndərfʊlnəs/,+,System,V01
+Worth,The value equivalent to that of someone or something under consideration; the level at which someone or something deserves to be valued or rated.,5,/wɜrθ/,+,System,V01
+Youthfulness,The quality of being young and energetic.,5,/ˈjuθfʊlnəs/,+,System,V01
+Zeal,Great energy or enthusiasm in pursuit of a cause or an objective.,5,/zil/,+,System,V01

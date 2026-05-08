@@ -1,0 +1,128 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isUserAuthenticated(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Per-user root doc (e.g. profile banner URL). Subcollections: notes/…
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isUserAuthenticated(userId);
+    }
+
+    // Glossary
+    match /glossary/{wordId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.source == 'user' && request.resource.data.user_id == request.auth.uid;
+      allow update, delete: if isAuthenticated() && (
+        resource.data.source == 'user' &&
+        resource.data.user_id == request.auth.uid
+      );
+    }
+
+    // Notes
+    match /users/{userId}/notes/{noteId} {
+      allow write: if isUserAuthenticated(userId);
+    }
+
+    // Focus Deck sessions — per-user, full CRUD, private
+    match /users/{userId}/deckSessions/{sessionId} {
+      allow read, write: if isUserAuthenticated(userId);
+    }
+
+    // User preferences (notes background, etc.) — per-user, private
+    match /users/{userId}/preferences/{prefId} {
+      allow read, write: if isUserAuthenticated(userId);
+    }
+
+    // Time tracking
+    match /timeTracking/{entryId} {
+      allow write: if isAuthenticated();
+    }
+
+    // Sessions
+    match /sessions/{sessionId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && request.auth.uid == resource.data.user_id;
+    }
+
+    // Symbolic lobby: anonymous presence only (no messaging). Others may only increment symbolic_alignments by +1.
+    match /symbolic_lobby/{entryId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && request.resource.data.owner_uid == request.auth.uid
+        && request.resource.data.symbolic_alignments == 0
+        && request.resource.data.created_at is timestamp;
+      allow delete: if isAuthenticated() && resource.data.owner_uid == request.auth.uid;
+      allow update: if isAuthenticated()
+        && resource.data.owner_uid != request.auth.uid
+        && request.resource.data.owner_uid == resource.data.owner_uid
+        && request.resource.data.created_at == resource.data.created_at
+        && request.resource.data.symbolic_alignments == resource.data.symbolic_alignments + 1;
+    }
+
+    // Open Field: anonymous wheel presence. Doc ID = uid.
+    // Owner creates/deletes their own doc. Others may add themselves to joined_uids only.
+    match /lobby_presence/{uid} {
+      allow read: if isAuthenticated();
+      allow create: if isUserAuthenticated(uid)
+        && request.resource.data.clock_id is int
+        && request.resource.data.clock_id >= 0
+        && request.resource.data.clock_id <= 8;
+      allow update: if isAuthenticated() && (
+        isUserAuthenticated(uid) ||
+        (
+          request.resource.data.uid == resource.data.uid &&
+          request.resource.data.clock_id == resource.data.clock_id &&
+          request.resource.data.joined_at == resource.data.joined_at
+        )
+      );
+      allow delete: if isUserAuthenticated(uid);
+    }
+
+    // Lobby groups: symbolic lobby only. Any signed-in user may read/write this collection
+    // (app enforces max 12 members in code). Simpler rules avoid hard-to-debug permission denials.
+    // Deploy: Firebase Console → Firestore → Rules → Publish, or `firebase deploy --only firestore:rules`.
+    match /lobby_groups/{groupId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Extended profile (banner, preferences, etc.) — document id matches auth uid
+    match /user_profiles/{userId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isUserAuthenticated(userId);
+    }
+
+    // Research Hub: access list (admin-managed). Only allowed UIDs may read papers.
+    match /research_access/{uid} {
+      allow read: if isUserAuthenticated(uid);
+      allow write: if false; // admin SDK only
+    }
+
+    // Academic papers: readable only by users in research_access.
+    match /research_papers/{paperId} {
+      allow read: if isAuthenticated()
+        && exists(/databases/$(database)/documents/research_access/$(request.auth.uid));
+      allow write: if false; // admin SDK only
+    }
+
+    // Blog cross-links from TOLP (synced by Vercel cron). All authenticated users may read.
+    match /blog_crosslinks/{postId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // cron writes via admin SDK
+    }
+
+    // Default rule - require authentication for all other reads
+    match /{document=**} {
+      allow read: if isAuthenticated();
+    }
+  }
+}

@@ -1,0 +1,45 @@
+.clockVisualization {
+  perspective: 2000px;
+  transform-style: preserve-3d;
+}
+
+.clockContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease;
+  transform: rotateX(25deg) rotateY(25deg);
+}
+
+.clockContainer:hover {
+  transform: rotateX(0deg) rotateY(0deg);
+}
+
+.clockLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: all 0.5s ease;
+}
+
+.clockLayer img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.1));
+}
+
+.clockLayer img path,
+.clockLayer img circle,
+.clockLayer img rect,
+.clockLayer img polygon {
+  fill: none !important;
+  stroke: currentColor;
+} 

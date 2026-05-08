@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mind Mechanism — Licensing & Market Report 2026</title>
+<style>
+  :root {
+    --bg: #09090b;
+    --surface: #111113;
+    --surface2: #18181b;
+    --border: rgba(255,255,255,0.07);
+    --accent: #a78bfa;
+    --accent2: #7c3aed;
+    --text: #e4e4e7;
+    --muted: #71717a;
+    --muted2: #52525b;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --rose: #f87171;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── Header ── */
+  .header {
+    border-bottom: 1px solid var(--border);
+    padding: 28px 48px 24px;
+    background: linear-gradient(135deg, #0d0d10 0%, #13101a 100%);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .header-meta {
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .header h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -.02em;
+    margin-bottom: 4px;
+  }
+  .header-sub {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .confidential-badge {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 9px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(167,139,250,.3);
+    color: var(--accent);
+    background: rgba(167,139,250,.07);
+  }
+
+  /* ── Tab nav ── */
+  .tab-nav {
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 97px;
+    z-index: 99;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tab-nav::-webkit-scrollbar { display: none; }
+  .tab-list {
+    display: flex;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 48px;
+    min-width: max-content;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 14px 20px;
+    border-bottom: 2px solid transparent;
+    transition: color .15s, border-color .15s;
+    white-space: nowrap;
+    letter-spacing: .01em;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* ── Content ── */
+  .content {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 48px 80px;
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── Typography ── */
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -.02em;
+    margin-bottom: 6px;
+  }
+  h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: -.01em;
+    margin: 32px 0 10px;
+  }
+  h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 20px 0 6px;
+  }
+  p { color: var(--muted); margin-bottom: 14px; line-height: 1.75; }
+  p strong { color: var(--text); font-weight: 600; }
+  .lead {
+    font-size: 15px;
+    color: #a1a1aa;
+    line-height: 1.8;
+    margin-bottom: 32px;
+    max-width: 800px;
+  }
+  .section-rule {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 36px 0;
+  }
+
+  /* ── Cards ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: border-color .2s;
+  }
+  .card:hover { border-color: rgba(167,139,250,.25); }
+  .card-label {
+    font-size: 10px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .card-body { font-size: 12.5px; color: var(--muted); line-height: 1.65; }
+
+  /* ── Tables ── */
+  .table-wrap { overflow-x: auto; margin: 20px 0; border-radius: 10px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { background: var(--surface2); }
+  th {
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+  }
+  td {
+    padding: 11px 16px;
+    font-size: 13px;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+  }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,.02); }
+  td.accent { color: var(--accent); font-weight: 600; }
+  td.green { color: var(--green); font-weight: 600; }
+  td.total-row { font-weight: 700; color: #fff; background: rgba(167,139,250,.06); }
+  tr.total-row td { font-weight: 700; color: #fff; background: rgba(167,139,250,.06); }
+
+  /* ── Stats ── */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 14px;
+    margin: 24px 0;
+  }
+  .stat-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+  }
+  .stat-label { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .stat-value { font-size: 26px; font-weight: 700; color: #fff; letter-spacing: -.03em; }
+  .stat-sub { font-size: 11px; color: var(--muted2); margin-top: 4px; }
+  .stat-box.highlight { border-color: rgba(167,139,250,.35); background: rgba(167,139,250,.05); }
+  .stat-box.highlight .stat-value { color: var(--accent); }
+
+  /* ── Year accordions ── */
+  .year-block {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .year-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    cursor: pointer;
+    background: var(--surface2);
+    transition: background .15s;
+    user-select: none;
+  }
+  .year-header:hover { background: #1e1e22; }
+  .year-title { font-size: 15px; font-weight: 600; color: #fff; }
+  .year-total { font-size: 18px; font-weight: 700; color: var(--green); letter-spacing: -.02em; }
+  .year-chevron { color: var(--muted); font-size: 11px; transition: transform .2s; }
+  .year-header.open .year-chevron { transform: rotate(180deg); }
+  .year-body { display: none; padding: 0 22px 20px; }
+  .year-body.open { display: block; }
+
+  /* ── Scenario bars ── */
+  .scenario-bar-wrap { margin: 8px 0 4px; }
+  .scenario-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+  .scenario-label span:first-child { color: var(--muted); }
+  .scenario-label span:last-child { color: var(--text); font-weight: 600; }
+  .bar-track {
+    height: 7px;
+    background: rgba(255,255,255,.07);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s ease;
+  }
+  .bar-fill.floor { background: var(--muted2); }
+  .bar-fill.base { background: var(--accent); }
+  .bar-fill.optimistic { background: var(--green); }
+
+  /* ── Differentiator list ── */
+  .diff-list { list-style: none; margin: 16px 0; }
+  .diff-list li {
+    display: flex;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+  }
+  .diff-list li:last-child { border-bottom: none; }
+  .diff-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: rgba(167,139,250,.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .diff-content-title { font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 3px; }
+  .diff-content-body { font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+
+  /* ── Priority timeline ── */
+  .timeline { position: relative; padding-left: 28px; margin: 20px 0; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+  .tl-item { position: relative; margin-bottom: 22px; }
+  .tl-dot {
+    position: absolute;
+    left: -25px;
+    top: 3px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent2);
+    border: 2px solid var(--accent);
+  }
+  .tl-phase { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+  .tl-title { font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+  .tl-body { font-size: 12.5px; color: var(--muted); }
+
+  /* ── Footer ── */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 48px;
+    text-align: center;
+  }
+  .footer p { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted2); margin: 0; }
+
+  @media (max-width: 640px) {
+    .header, .content, .footer { padding-left: 20px; padding-right: 20px; }
+    .tab-list { padding: 0 20px; }
+    .header { top: 0; }
+    .tab-nav { top: 90px; }
+    h2 { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <div class="header-meta">Confidential Strategic Document</div>
+    <h1>Mind Mechanism — Licensing Architecture &amp; Market Report</h1>
+    <div class="header-sub">Five-Year Revenue Projections · Competitive Analysis · Licensing Framework</div>
+    <div class="confidential-badge">© Sean Fortune / The One-Legged Poet · 1 May 2026</div>
+  </div>
+</div>
+
+<!-- Tab nav -->
+<nav class="tab-nav">
+  <div class="tab-list">
+    <button class="tab-btn active" data-tab="summary">Executive Summary</button>
+    <button class="tab-btn" data-tab="market">Market Landscape</button>
+    <button class="tab-btn" data-tab="differentiation">Differentiation</button>
+    <button class="tab-btn" data-tab="sovereign">Sovereign Architecture</button>
+    <button class="tab-btn" data-tab="licenses">License Types</button>
+    <button class="tab-btn" data-tab="pricing">Pricing</button>
+    <button class="tab-btn" data-tab="projections">5-Year Projections</button>
+    <button class="tab-btn" data-tab="packsystem">Pack Multiplier</button>
+    <button class="tab-btn" data-tab="strategy">Strategy &amp; Priorities</button>
+  </div>
+</nav>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- ══ EXECUTIVE SUMMARY ══ -->
+  <div class="tab-panel active" id="tab-summary">
+    <h2>Executive Summary</h2>
+    <p class="lead">Mind Mechanism occupies a position in the market that no existing product holds. It is a practice operating system built on original intellectual property — a 482-node taxonomy of interior experience, a proprietary emotional vocabulary, a frequency substrate, and a content delivery architecture with direct corporate application.</p>
+
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="stat-label">Year 1 Revenue</div>
+        <div class="stat-value">€178K</div>
+        <div class="stat-sub">Establishment phase</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Year 3 Revenue</div>
+        <div class="stat-value">€2.9M</div>
+        <div class="stat-sub">Scale phase</div>
+      </div>
+      <div class="stat-box highlight">
+        <div class="stat-label">Year 5 Revenue (Base)</div>
+        <div class="stat-value">€18.3M</div>
+        <div class="stat-sub">Annual recurring</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">5-Year Cumulative</div>
+        <div class="stat-value">€30M+</div>
+        <div class="stat-sub">Base case total</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">License Types</div>
+        <div class="stat-value">7</div>
+        <div class="stat-sub">Distinct instruments</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Year 5 Valuation</div>
+        <div class="stat-value">€91–220M</div>
+        <div class="stat-sub">5–12× ARR range</div>
+      </div>
+    </div>
+
+    <hr class="section-rule" />
+    <h3>What This Document Contains</h3>
+    <p>This report maps the competitive landscape across five adjacent markets, defines the licensing architecture across seven distinct instrument types, and projects revenue across all segments over five years. Three scenarios are modelled: a conservative floor (€9.5M Year 5), a base case (€18.3M Year 5), and an optimistic upside (€31.2M Year 5).</p>
+
+    <h3>The Structural Differentiator</h3>
+    <p>The Pack System — a bespoke content delivery mechanism tied to the MM taxonomy — is the primary revenue multiplier. Every corporate Pack sold generates a recurring runtime license tail. By Year 5, with 130 active runtime licenses at €3,000 each, the Pack runtime line alone generates €390,000 per year in near-pure margin revenue, from infrastructure already built.</p>
+    <p>No competitor has built this. No competitor can build it quickly — it is not a technical problem, it is an authorial one. The taxonomy is the moat.</p>
+
+    <hr class="section-rule" />
+    <h3>Founding Authority</h3>
+    <p>Mind Mechanism is not a product that was designed and then tested. It is a theory that was observed first — in real rooms, with real learners, across real cultures — and then formalised into the architecture this document describes.</p>
+    <p>The methodology was developed over decades of corporate language delivery in Germany: banking, insurance, big industry, technology. The approach built there was communicative, immersive, and deliberately engineered so that engagement was not optional — not through mandate but through design. The room was constructed so that the path of least resistance was involvement. That approach was delivered across cultures, across genders, across the specific frictions of institutional hierarchy and personal history. The results are evidenced. The misses, when they came, were not failures of the method — they were the places where cultural expectation or personal history ran deeper than a single engagement could reach.</p>
+    <p>What that work produced — at considerable personal cost, and without adequate recognition or return — was thirty years of observed acquisition compressed into a 482-node taxonomy of interior states, a named pedagogical principle, and a clinical protocol that replicates the results reliably. <strong>The IP is the record of that work. The licensing model is how it finally receives its value.</strong></p>
+    <p>This is not a platform built to generate revenue. It is a platform built because the work demanded a structure adequate to its ambition. The revenue is a consequence of that — not its purpose.</p>
+
+    <hr class="section-rule" />
+    <h3>Year 5 Scenario Comparison</h3>
+    <div class="scenario-bar-wrap">
+      <div class="scenario-label"><span>Conservative Floor</span><span>€9.5M</span></div>
+      <div class="bar-track"><div class="bar-fill floor" style="width:30%"></div></div>
+      <div class="scenario-label"><span>Base Case</span><span>€18.3M</span></div>
+      <div class="bar-track"><div class="bar-fill base" style="width:59%"></div></div>
+      <div class="scenario-label"><span>Optimistic</span><span>€31.2M</span></div>
+      <div class="bar-track"><div class="bar-fill optimistic" style="width:100%"></div></div>
+    </div>
+  </div>
+
+  <!-- ══ MARKET LANDSCAPE ══ -->
+  <div class="tab-panel" id="tab-market">
+    <h2>Market Landscape</h2>
+    <p class="lead">Mind Mechanism does not sit cleanly inside a single market category. This is both its challenge and its primary commercial advantage — it can be positioned differently for each buyer segment without misrepresenting what it is.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-label">Primary Market</div>
+        <div class="card-title">Mindfulness &amp; Meditation Apps</div>
+        <div class="card-body">$4.2B global market, growing 10.4% annually. Dominant players: Calm ($2B+ valuation), Headspace, Insight Timer, Waking Up (~$13M ARR — closest in intellectual register to MM).<br/><br/>What they sell: guided content, sound, breathing. What they don't sell: a proprietary language for interior states or a structured taxonomy.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Primary Corporate Market</div>
+        <div class="card-title">Corporate Wellness &amp; EAP</div>
+        <div class="card-body">$61.2B market (2023), projected $82B by 2030. Includes EAP, stress management, resilience, and mental health benefits. Calm for Business: ~€12–15/user/month. BetterUp: ~€300–500/user/year.<br/><br/>MM targets the premium decision-making segment, above generic wellness — and prices accordingly.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Major Adjacent</div>
+        <div class="card-title">Learning &amp; Development</div>
+        <div class="card-body">$370B global market. Corporate training spend averages $1,220/employee/year. Platforms: Coursera, LinkedIn Learning, custom LMS.<br/><br/>The Pack System positions MM directly in this market. Unlike a generic LMS, Packs deliver content through a proprietary practice framework.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Practitioner Market</div>
+        <div class="card-title">Executive Coaching</div>
+        <div class="card-body">$4.5B market, growing 6.7% annually. Trend moving toward scalable digital platforms (BetterUp raised $300M at $4.7B valuation).<br/><br/>The Practitioner License positions MM as infrastructure for coaches — capturing value without competing with them.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Strategic Adjacent</div>
+        <div class="card-title">Corporate Language Training</div>
+        <div class="card-body">$20B global market. Dominant vendors: Berlitz, Rosetta Stone for Enterprise, Babbel for Business.<br/><br/>MM's ESL (Emotional Spectrum Language) is differentiated by its foundational premise: language acquired through emotional connection, not repetition. No competitor makes this claim.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Adjacent (Non-Clinical)</div>
+        <div class="card-title">Mental Health Technology</div>
+        <div class="card-body">$5.1B market, growing 23.5% annually. MM does not position here (not therapy, does not diagnose). However, it will attract users from this space and must maintain precise positioning to avoid regulatory risk and category dilution.</div>
+      </div>
+    </div>
+
+    <hr class="section-rule" />
+    <h3>Competitive Pricing Benchmarks</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Platform</th><th>Market</th><th>Consumer Price</th><th>Corporate Price</th></tr></thead>
+        <tbody>
+          <tr><td>Calm</td><td>Meditation</td><td>~€69/year</td><td>~€180/user/year</td></tr>
+          <tr><td>Headspace</td><td>Meditation/EAP</td><td>~€70/year</td><td>~€156/user/year</td></tr>
+          <tr><td>BetterUp</td><td>Executive coaching</td><td>N/A</td><td>€300–500/user/year</td></tr>
+          <tr><td>Waking Up</td><td>Philosophy/practice</td><td>~€100/year</td><td>Limited B2B</td></tr>
+          <tr><td>Babbel Business</td><td>Language</td><td>~€84/year</td><td>~€120/user/year</td></tr>
+          <tr style="background:rgba(167,139,250,.05)"><td><strong>Mind Mechanism (Standard)</strong></td><td><strong>Practice OS</strong></td><td class="accent"><strong>€99/year</strong></td><td class="accent"><strong>€140–22,000+/year</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>MM Standard at €99/year is competitively priced against the premium meditation tier. The corporate range (€140/seat at Entry to unlimited at Enterprise) is below BetterUp while offering a more specialised product.</p>
+  </div>
+
+  <!-- ══ DIFFERENTIATION ══ -->
+  <div class="tab-panel" id="tab-differentiation">
+    <h2>What Mind Mechanism Has That No Competitor Has</h2>
+    <p class="lead">This is not a comparative feature list. It is a statement of structural differentiation — the assets that cannot be replicated quickly or cheaply, and that constitute the commercial moat.</p>
+
+    <ul class="diff-list">
+      <li>
+        <div class="diff-icon">🗺</div>
+        <div>
+          <div class="diff-content-title">The 482-Node Taxonomy</div>
+          <div class="diff-content-body">Three decades of empirical interior inquiry, encoded as a navigable vocabulary of interior states. No competitor has built this. No competitor can build it quickly — it is not a technical problem, it is an authorial one. The taxonomy is the asset; everything else is delivery infrastructure for it.</div>
+        </div>
+      </li>
+      <li>
+        <div class="diff-icon">⚡</div>
+        <div>
+          <div class="diff-content-title">The Emotive Prerequisite</div>
+          <div class="diff-content-body">A named pedagogical principle with a defensible empirical basis: durable change requires genuine emotional engagement before intellectual recognition. This is the theoretical foundation and the basis for academic partnership claims. No competitor has an equivalent foundational principle.</div>
+        </div>
+      </li>
+      <li>
+        <div class="diff-icon">📦</div>
+        <div>
+          <div class="diff-content-title">The Pack System</div>
+          <div class="diff-content-body">A bespoke content delivery mechanism tied to the MM practice framework. Packs are not courses — they are practice environments built on the taxonomy. A corporate client can have a custom Pack built for their specific governance challenge and delivered through the MM interface. No other platform offers this, because no other platform has the taxonomy to anchor it.</div>
+        </div>
+      </li>
+      <li>
+        <div class="diff-icon">🔵</div>
+        <div>
+          <div class="diff-content-title">Dual Audience Architecture</div>
+          <div class="diff-content-body">The system serves language learners and practitioners of self-governance simultaneously, without contradiction. This is not a positioning decision — it is a structural truth about the system. It means MM can be sold into language education and corporate leadership simultaneously from a single product base.</div>
+        </div>
+      </li>
+      <li>
+        <div class="diff-icon">🎵</div>
+        <div>
+          <div class="diff-content-title">Cousto Frequency Substrate</div>
+          <div class="diff-content-body">The frequency assignments applied to the Nine Wheels are grounded in the Cousto system — calculated from natural planetary and cosmic cycles, not invented for aesthetics. This provides a physiological dimension that differentiates MM from purely cognitive tools, increasingly significant as nervous system regulation enters mainstream corporate wellbeing discourse.</div>
+        </div>
+      </li>
+      <li>
+        <div class="diff-icon">🧠</div>
+        <div>
+          <div class="diff-content-title">Neurodivergent-Accessible Design</div>
+          <div class="diff-content-body">Designed by a neurodivergent author with a 24,000-word working vocabulary and synesthetic cognition. The system is precise, not simplified. This is an increasingly valued design quality in corporate contexts where neurodivergent talent is being actively retained.</div>
+        </div>
+      </li>
+      <li>
+        <div class="diff-icon">🔐</div>
+        <div>
+          <div class="diff-content-title">The Sovereign Assessment Architecture</div>
+          <div class="diff-content-body">Every corporate and education client is issued a blockchain key attached to a wallet, locking them to their portal and to nothing else. Their data does not travel. Their results are held in an architecture that no employer, no institution, and no platform administrator can access — not as a policy position, but as a structural impossibility built into the system. This resolves the single largest institutional objection to deploying a development tool at scale: who controls the data, and who owns the assessment narrative. In an EU regulatory environment where data sovereignty is a legal and reputational obligation, this is not a feature. It is the answer to the question every procurement team asks before the conversation begins.</div>
+        </div>
+      </li>
+    </ul>
+
+    <hr class="section-rule" />
+    <h3>The Moat in Plain Terms</h3>
+    <p>When large platforms (Calm, Headspace, BetterUp) perceive MM as a threat, they will attempt to build adjacent products. Their disadvantage: they cannot replicate the taxonomy. They can replicate the interface and the delivery mechanism, but not the three decades of interior work that produced the 482 nodes. The IP is the moat.</p>
+  </div>
+
+  <!-- ══ SOVEREIGN ARCHITECTURE ══ -->
+  <div class="tab-panel" id="tab-sovereign">
+    <h2>The Sovereign Assessment Architecture</h2>
+    <p class="lead">The architecture is one shell. Three distinct portals. A single framework, accessed through differentiated entry points calibrated to the specific needs of the corporate client, the student, and the consumer. Each portal is sovereign. Each is sealed.</p>
+
+    <hr class="section-rule" />
+    <h3>The Mechanism</h3>
+    <p>Every client — corporate or individual — is issued a blockchain key attached to a wallet. That key is theirs. It locks them to their section of the platform and to nothing else. Their data does not travel. Their results do not surface. Their progress is held in an architecture that no employer, no teacher, and no platform administrator can penetrate — because the system was not built to permit that penetration. Not as a policy. As a structural impossibility.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-label">What the employer knows</div>
+        <div class="card-title">Engagement confirmed</div>
+        <div class="card-body">The organisation receives confirmation that the staff member has engaged with the framework. Benchmarks reached. Time invested. Nothing further. The assessment narrative belongs to the person who undertook it.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">What the institution knows</div>
+        <div class="card-title">Appraisal undertaken</div>
+        <div class="card-body">The institution knows the appraisal happened. It does not know the result. The benchmarks are set. The road to them is the learner's own. This is not a privacy concession — it is the design premise.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">What the user owns</div>
+        <div class="card-title">Everything else</div>
+        <div class="card-body">The result. The process. The record of their interior work. Held in a wallet that is theirs, on a key that was issued to them, in a system that was built — from the architecture up — to keep it there.</div>
+      </div>
+    </div>
+
+    <hr class="section-rule" />
+    <h3>The Philosophical Position</h3>
+    <p>The current model of institutional assessment operates on an assumption that has never been adequately examined: that external judgement improves performance. The evidence does not support this. What the evidence shows, consistently, is the opposite. The approach of external judgement does not raise performance. It raises anxiety. And raised anxiety, in the runup to any assessment, suppresses the precise cognitive and linguistic capacities the assessment was designed to measure. The system produces the conditions that guarantee it will underperform.</p>
+    <p>This is not an administrative failure. It is structural. It was built in an era when the power asymmetry between institution and individual was so total that the costs to the individual were simply not considered as costs. That era is over. The awareness of consequence is here. The social responsibility is here. The evidence of harm is here. And a framework that continues to operate on the old architecture is not merely inefficient — it is, in the precise sense of the word, an abuse of the authority the institution has been given over the person in its care.</p>
+    <p><strong>The Mind Mechanism is built on a different premise. The learner is not a subject of assessment. They are the author of it.</strong></p>
+
+    <hr class="section-rule" />
+    <h3>The Three-Portal Structure</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Portal</th><th>Primary User</th><th>Key Type</th><th>Visibility to Third Party</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Consumer</strong></td><td>Individual subscriber</td><td>Personal wallet key</td><td>None</td></tr>
+          <tr><td><strong>Education</strong></td><td>Student / learner</td><td>Institutional key, personal wallet</td><td>Engagement only — no results</td></tr>
+          <tr><td><strong>Corporate</strong></td><td>Employee / team</td><td>Corporate key, personal wallet</td><td>Engagement only — no results</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The single codebase serves all three. The register configuration layer differentiates the experience without fragmenting the infrastructure. One product. Three sovereign environments. The taxonomy is the constant. The portal is the context.</p>
+
+    <hr class="section-rule" />
+    <h3>The Institutional Case</h3>
+    <p>For local authorities, government bodies, and regulated industries — the sectors with the highest volume licensing potential and the longest procurement cycles — data sovereignty is not a selling point. It is a procurement requirement. GDPR compliance is assumed. What is not assumed, and what no comparable platform currently offers, is a system where the data sovereignty guarantee is architectural rather than contractual. A contractual guarantee can be breached. An architectural impossibility cannot.</p>
+    <p>This is the answer to the question every procurement team asks before the conversation begins. It does not need to be argued. It needs to be demonstrated — and the blockchain key architecture demonstrates it at the level of the system's design, not at the level of the vendor's assurances.</p>
+    <p>For the education sector specifically: the system resolves the specific cruelty of performative assessment — the weeks of suppressed performance that precede every formal evaluation, the artificial anxiety that ensures the result reflects the stress of being assessed rather than the genuine capacity of the person being assessed. Self-led, self-appraised, self-concluded: the decision about what constitutes progress belongs to the person doing the work. Because it always did.</p>
+
+    <hr class="section-rule" />
+    <h3>Integration with the Licensing Model</h3>
+    <p>The Sovereign Assessment Architecture is not a separate product. It is the delivery environment of every corporate and education license. It does not add cost to the license. It adds the argument that justifies the price. Every Corporate Master License Agreement includes the sovereignty guarantee as a contractual and architectural commitment. Every education Pack is delivered through a sealed portal that the institution cannot penetrate. The blockchain key infrastructure is the reason the Pack System is trusted at enterprise scale — and the reason it cannot be replicated by a platform that does not hold the same philosophical position on assessment and data.</p>
+    <p>Full autonomy is not a feature of this system. It is the system.</p>
+  </div>
+
+  <!-- ══ LICENSE TYPES ══ -->
+  <div class="tab-panel" id="tab-licenses">
+    <h2>The Seven License Types</h2>
+    <p class="lead">Seven distinct instruments govern the full licensing structure. Each addresses a different buyer relationship and different commercial logic. All underlying IP remains with Sean Fortune in every instrument type.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-label">License 1</div>
+        <div class="card-title">Consumer EULA</div>
+        <div class="card-body"><strong>Who:</strong> Individual subscribers (Open, Standard, Sovereign).<br/><br/><strong>Logic:</strong> Non-transferable personal use. Subscription is a license, not a purchase.<br/><br/><strong>Key restrictions:</strong> No reproduction or redistribution of taxonomy content; no commercial use; no reverse engineering; no scraping.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">License 2</div>
+        <div class="card-title">Practitioner License</div>
+        <div class="card-body"><strong>Who:</strong> Coaches, therapists, facilitators deploying MM professionally with paying clients.<br/><br/><strong>Logic:</strong> Practitioners generate revenue using MM IP. This captures that value without competing with them.<br/><br/><strong>Key restrictions:</strong> Clients receive no independent taxonomy rights; mandatory attribution in client-facing materials.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">License 3</div>
+        <div class="card-title">Academic Research License</div>
+        <div class="card-body"><strong>Who:</strong> Universities, research institutions, doctoral researchers.<br/><br/><strong>Logic:</strong> Below-market pricing in exchange for citation and findings sharing. Academic validation compounds the commercial value of the IP over time.<br/><br/><strong>Key restrictions:</strong> Mandatory citation; no commercial application without separate agreement.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">License 4</div>
+        <div class="card-title">Corporate Master License Agreement</div>
+        <div class="card-body"><strong>Who:</strong> Organisations accessing MM for employee or client use.<br/><br/><strong>Logic:</strong> Seat-based or organisation-wide access. Premium pricing justified by specificity and originality of IP.<br/><br/><strong>Key restrictions:</strong> Named organisation only; no sub-licensing; German governing law; annual renewal.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">License 5</div>
+        <div class="card-title">Pack License</div>
+        <div class="card-body"><strong>Who:</strong> Corporate clients purchasing pre-built or bespoke content Packs.<br/><br/><strong>Logic:</strong> Packs are discrete IP objects. The runtime license creates perpetual recurring revenue from each Pack deployed.<br/><br/><strong>Key restrictions:</strong> Named organisation only; no redistribution; Pack license terminates with MLA unless separately agreed.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">License 6</div>
+        <div class="card-title">White Label Agreement</div>
+        <div class="card-body"><strong>Who:</strong> Organisations deploying a fully branded MM instance under their own name.<br/><br/><strong>Logic:</strong> Highest-value single instrument. Branding rights licensed, not assigned. IP and authorship remain with Sean Fortune.<br/><br/><strong>Key restrictions:</strong> IP acknowledgement clause mandatory; sector exclusivity available at premium; 5-year maximum term.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">License 7</div>
+        <div class="card-title">Third-Party IP License</div>
+        <div class="card-body"><strong>Who:</strong> Publishers, application developers, content producers using the taxonomy or ESL in their own products.<br/><br/><strong>Logic:</strong> The taxonomy has value beyond the MM application. Royalty-bearing with annual accounting and audit right.<br/><br/><strong>Floor:</strong> €10,000/year minimum against 3–5% royalty on attributable revenue.</div>
+      </div>
+    </div>
+
+    <hr class="section-rule" />
+    <h3>Immediate IP Actions Required</h3>
+    <p>Before any license instruments are commercially deployed, two actions are foundational:</p>
+    <p><strong>1. EUIPO Trademark Registration</strong> — File "Mind Mechanism" and "Emotional Spectrum Language" at the EU Intellectual Property Office. Single filing covers all 27 member states. Class 41 (education/training) and Class 42 (software/SaaS). Budget approximately €850–1,200 per mark. This is the highest-priority action — everything else depends on the marks being protected.</p>
+    <p><strong>2. IP Declaration Document</strong> — A formal written record of authorship with creation timeline. German Urheberrecht (copyright law) protects original works automatically from creation; the declaration establishes the timeline and strengthens the ownership position. All published materials should carry: <em>© Sean Fortune / The One-Legged Poet. All rights reserved.</em></p>
+  </div>
+
+  <!-- ══ PRICING ══ -->
+  <div class="tab-panel" id="tab-pricing">
+    <h2>Pricing Structure</h2>
+    <p class="lead">Pricing is set to reflect the genuine originality of the IP and the premium positioning of the product across all segments. Consumer pricing is competitive with the upper tier of the meditation market. Corporate pricing is below BetterUp but above generic wellness platforms — justified by specificity.</p>
+
+    <h3>Consumer Subscriptions</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tier</th><th>Monthly</th><th>Annual</th><th>Saving</th><th>Target</th></tr></thead>
+        <tbody>
+          <tr><td>Open</td><td>Free</td><td>Free</td><td>—</td><td>Acquisition and trial</td></tr>
+          <tr><td>Standard</td><td>€12/month</td><td class="accent">€99/year</td><td>31%</td><td>Entry commitment; full access</td></tr>
+          <tr><td>Sovereign</td><td>€24/month</td><td class="accent">€199/year</td><td>31%</td><td>Default recommendation at 30 days</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Annual pricing is the commercial target. Standard at €99 is below the psychological resistance point for committed users. Sovereign at €199 is the premium tier and should be the default recommendation once a user has completed their first thirty days.</p>
+
+    <h3>Practitioner Subscriptions</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tier</th><th>Monthly</th><th>Annual</th><th>Client Seats</th></tr></thead>
+        <tbody>
+          <tr><td>Solo</td><td>€79/month</td><td class="accent">€749/year</td><td>Up to 20 active clients</td></tr>
+          <tr><td>Practice</td><td>€199/month</td><td class="accent">€1,899/year</td><td>Unlimited clients</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>A Solo practitioner charging €80 per session recovers this cost in a single client session. The price is appropriate to professional use, not welfare-priced.</p>
+
+    <h3>Academic Licenses</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Type</th><th>Annual Fee</th><th>Conditions</th></tr></thead>
+        <tbody>
+          <tr><td>Individual researcher</td><td class="accent">€299/year</td><td>Citation + findings sharing</td></tr>
+          <tr><td>Institutional (up to 50 users)</td><td class="accent">€1,500/year</td><td>Citation + co-authorship discussion</td></tr>
+          <tr><td>Institutional (unlimited)</td><td class="accent">€3,500/year</td><td>Full research partnership terms</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Corporate Master License</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tier</th><th>Annual Fee</th><th>Seats</th><th>Per-Seat Cost</th><th>Includes</th></tr></thead>
+        <tbody>
+          <tr><td>Entry</td><td class="accent">€3,500/year</td><td>Up to 25</td><td>€140/seat</td><td>Platform access, standard portal</td></tr>
+          <tr><td>Professional</td><td class="accent">€8,500/year</td><td>Up to 100</td><td>€85/seat</td><td>Platform + custom portal branding</td></tr>
+          <tr><td>Enterprise</td><td class="accent">€22,000/year</td><td>Unlimited</td><td>€44/seat @ 500 users</td><td>Custom portal, onboarding, account management</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>At the Enterprise tier, the per-seat cost for a 500-person organisation is €44/year — a negligible line item against the value delivered. Comparable: Calm for Business at ~€180/user/year; BetterUp at €350–500/user/year.</p>
+
+    <h3>Pack System</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Type</th><th>Fee</th><th>Structure</th></tr></thead>
+        <tbody>
+          <tr><td>Pre-built Pack (library)</td><td class="accent">€1,500</td><td>One-time license; annual renewal €500</td></tr>
+          <tr><td>Pack library subscription</td><td class="accent">€4,500/year</td><td>All current and future library Packs</td></tr>
+          <tr><td>Bespoke Pack development</td><td class="accent">€8,000–15,000</td><td>Development fee, scope-dependent</td></tr>
+          <tr><td>Bespoke Pack runtime license</td><td class="accent">€3,000/year</td><td>Ongoing infrastructure and delivery access</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>White Label</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tier</th><th>Setup Fee</th><th>Annual License</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Standard white label</td><td class="accent">€15,000</td><td class="accent">€18,000/year</td><td>Non-exclusive by default</td></tr>
+          <tr><td>Exclusive white label (sector)</td><td class="accent">€25,000</td><td class="accent">€30,000/year</td><td>No competitors in defined sector for term</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Sector exclusivity — no other organisation in the client's defined industry receives a white label for the term — is a meaningful premium. A first-mover financial services firm will pay significantly for the assurance that direct competitors cannot access the same branded tool.</p>
+  </div>
+
+  <!-- ══ PROJECTIONS ══ -->
+  <div class="tab-panel" id="tab-projections">
+    <h2>Five-Year Revenue Projections</h2>
+    <p class="lead">Base case projects €18.3M annual recurring revenue by Year 5, with a five-year cumulative total above €30M. Three scenarios are modelled throughout.</p>
+
+    <div class="stat-row">
+      <div class="stat-box"><div class="stat-label">Year 1</div><div class="stat-value">€178K</div><div class="stat-sub">Establishment</div></div>
+      <div class="stat-box"><div class="stat-label">Year 2</div><div class="stat-value">€822K</div><div class="stat-sub">Growth activation</div></div>
+      <div class="stat-box"><div class="stat-label">Year 3</div><div class="stat-value">€2.9M</div><div class="stat-sub">Scale</div></div>
+      <div class="stat-box"><div class="stat-label">Year 4</div><div class="stat-value">€7.9M</div><div class="stat-sub">Establishment</div></div>
+      <div class="stat-box highlight"><div class="stat-label">Year 5</div><div class="stat-value">€18.3M</div><div class="stat-sub">Maturity</div></div>
+      <div class="stat-box"><div class="stat-label">5-Year Total</div><div class="stat-value">€30M+</div><div class="stat-sub">Cumulative base</div></div>
+    </div>
+
+    <!-- Year accordions -->
+    <h3>Annual Breakdown</h3>
+
+    <div class="year-block">
+      <div class="year-header" onclick="toggleYear(this)">
+        <div><div class="year-title">Year 1 — May 2026 to April 2027</div><div style="font-size:11px;color:#71717a;margin-top:3px">Establishment phase</div></div>
+        <div style="display:flex;align-items:center;gap:16px"><div class="year-total">€178,000</div><div class="year-chevron">▼</div></div>
+      </div>
+      <div class="year-body">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Revenue Stream</th><th>Volume</th><th>Unit Value</th><th>Revenue</th></tr></thead>
+            <tbody>
+              <tr><td>Consumer (paid)</td><td>800 users</td><td>€150 avg blended</td><td class="accent">€120,000</td></tr>
+              <tr><td>Practitioner</td><td>15 accounts</td><td>€800 avg blended</td><td class="accent">€12,000</td></tr>
+              <tr><td>Corporate MLA</td><td>4 accounts</td><td>€5,000 avg</td><td class="accent">€20,000</td></tr>
+              <tr><td>Pack System (bespoke)</td><td>2 developments</td><td>€10k dev + €3k runtime</td><td class="accent">€26,000</td></tr>
+              <tr class="total-row"><td colspan="3"><strong>Year 1 Total</strong></td><td><strong>€178,000</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin-top:12px;font-size:12px">Year 1 is brand establishment, not revenue maximisation. The first corporate pilots are being run; the Pack System is proving the model.</p>
+      </div>
+    </div>
+
+    <div class="year-block">
+      <div class="year-header" onclick="toggleYear(this)">
+        <div><div class="year-title">Year 2 — May 2027 to April 2028</div><div style="font-size:11px;color:#71717a;margin-top:3px">Growth activation</div></div>
+        <div style="display:flex;align-items:center;gap:16px"><div class="year-total">€821,500</div><div class="year-chevron">▼</div></div>
+      </div>
+      <div class="year-body">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Revenue Stream</th><th>Volume</th><th>Unit Value</th><th>Revenue</th></tr></thead>
+            <tbody>
+              <tr><td>Consumer (paid)</td><td>3,500 users</td><td>€155 avg</td><td class="accent">€542,500</td></tr>
+              <tr><td>Practitioner</td><td>60 accounts</td><td>€850 avg</td><td class="accent">€51,000</td></tr>
+              <tr><td>Corporate MLA</td><td>18 accounts</td><td>€7,000 avg</td><td class="accent">€126,000</td></tr>
+              <tr><td>Pack — bespoke development</td><td>6 Packs</td><td>€10,000 avg</td><td class="accent">€60,000</td></tr>
+              <tr><td>Pack — runtime licenses</td><td>8 active</td><td>€3,000</td><td class="accent">€24,000</td></tr>
+              <tr><td>Pack — library licenses</td><td>3</td><td>€4,500</td><td class="accent">€13,500</td></tr>
+              <tr><td>Academic</td><td>3 institutions</td><td>€1,500 avg</td><td class="accent">€4,500</td></tr>
+              <tr class="total-row"><td colspan="3"><strong>Year 2 Total</strong></td><td><strong>€821,500</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin-top:12px;font-size:12px">Corporate clients acquired in Year 1 converting to Pack products. The Pack runtime tail begins compounding.</p>
+      </div>
+    </div>
+
+    <div class="year-block">
+      <div class="year-header" onclick="toggleYear(this)">
+        <div><div class="year-title">Year 3 — May 2028 to April 2029</div><div style="font-size:11px;color:#71717a;margin-top:3px">Scale — crossing €2M</div></div>
+        <div style="display:flex;align-items:center;gap:16px"><div class="year-total">€2,895,000</div><div class="year-chevron">▼</div></div>
+      </div>
+      <div class="year-body">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Revenue Stream</th><th>Volume</th><th>Unit Value</th><th>Revenue</th></tr></thead>
+            <tbody>
+              <tr><td>Consumer (paid)</td><td>12,000 users</td><td>€160 avg</td><td class="accent">€1,920,000</td></tr>
+              <tr><td>Practitioner</td><td>180 accounts</td><td>€900 avg</td><td class="accent">€162,000</td></tr>
+              <tr><td>Corporate MLA</td><td>50 accounts</td><td>€9,000 avg</td><td class="accent">€450,000</td></tr>
+              <tr><td>Pack — bespoke development</td><td>15 Packs</td><td>€11,000 avg</td><td class="accent">€165,000</td></tr>
+              <tr><td>Pack — runtime licenses</td><td>25 active</td><td>€3,000</td><td class="accent">€75,000</td></tr>
+              <tr><td>Pack — library licenses</td><td>10</td><td>€4,500</td><td class="accent">€45,000</td></tr>
+              <tr><td>White Label</td><td>2 accounts</td><td>€15k setup + €18k annual</td><td class="accent">€66,000</td></tr>
+              <tr><td>Academic</td><td>8 institutions</td><td>€1,500 avg</td><td class="accent">€12,000</td></tr>
+              <tr class="total-row"><td colspan="3"><strong>Year 3 Total</strong></td><td><strong>€2,895,000</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin-top:12px;font-size:12px">White Label enters the market for the first time. The corporate portfolio is now a meaningful revenue segment in its own right.</p>
+      </div>
+    </div>
+
+    <div class="year-block">
+      <div class="year-header" onclick="toggleYear(this)">
+        <div><div class="year-title">Year 4 — May 2029 to April 2030</div><div style="font-size:11px;color:#71717a;margin-top:3px">Market establishment</div></div>
+        <div style="display:flex;align-items:center;gap:16px"><div class="year-total">€7,910,000</div><div class="year-chevron">▼</div></div>
+      </div>
+      <div class="year-body">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Revenue Stream</th><th>Volume</th><th>Unit Value</th><th>Revenue</th></tr></thead>
+            <tbody>
+              <tr><td>Consumer (paid)</td><td>32,000 users</td><td>€165 avg</td><td class="accent">€5,280,000</td></tr>
+              <tr><td>Practitioner</td><td>450 accounts</td><td>€950 avg</td><td class="accent">€427,500</td></tr>
+              <tr><td>Corporate MLA</td><td>120 accounts</td><td>€11,000 avg</td><td class="accent">€1,320,000</td></tr>
+              <tr><td>Pack — bespoke development</td><td>30 Packs</td><td>€12,000 avg</td><td class="accent">€360,000</td></tr>
+              <tr><td>Pack — runtime licenses</td><td>60 active</td><td>€3,000</td><td class="accent">€180,000</td></tr>
+              <tr><td>Pack — library licenses</td><td>25</td><td>€4,500</td><td class="accent">€112,500</td></tr>
+              <tr><td>White Label</td><td>5 accounts</td><td>€18,000 avg annual</td><td class="accent">€165,000</td></tr>
+              <tr><td>Academic</td><td>20 institutions</td><td>€1,750 avg</td><td class="accent">€35,000</td></tr>
+              <tr><td>IP Licensing</td><td>1 agreement</td><td>€10,000 minimum</td><td class="accent">€10,000</td></tr>
+              <tr class="total-row"><td colspan="3"><strong>Year 4 Total</strong></td><td><strong>€7,910,000</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin-top:12px;font-size:12px">Consumer revenue now dominates. Corporate and Pack revenues together exceed €2M. IP licensing segment opens — small now, significant in Years 5–7.</p>
+      </div>
+    </div>
+
+    <div class="year-block">
+      <div class="year-header" onclick="toggleYear(this)">
+        <div><div class="year-title">Year 5 — May 2030 to April 2031</div><div style="font-size:11px;color:#71717a;margin-top:3px">Maturity and expansion</div></div>
+        <div style="display:flex;align-items:center;gap:16px"><div class="year-total" style="color:#34d399">€18,282,000</div><div class="year-chevron">▼</div></div>
+      </div>
+      <div class="year-body">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Revenue Stream</th><th>Volume</th><th>Unit Value</th><th>Revenue</th></tr></thead>
+            <tbody>
+              <tr><td>Consumer (paid)</td><td>70,000 users</td><td>€170 avg</td><td class="accent">€11,900,000</td></tr>
+              <tr><td>Practitioner</td><td>900 accounts</td><td>€1,000 avg</td><td class="accent">€900,000</td></tr>
+              <tr><td>Corporate MLA</td><td>280 accounts</td><td>€13,000 avg</td><td class="accent">€3,640,000</td></tr>
+              <tr><td>Pack — bespoke development</td><td>50 Packs</td><td>€13,000 avg</td><td class="accent">€650,000</td></tr>
+              <tr><td>Pack — runtime licenses</td><td>130 active</td><td>€3,000</td><td class="accent">€390,000</td></tr>
+              <tr><td>Pack — library licenses</td><td>60</td><td>€4,500</td><td class="accent">€270,000</td></tr>
+              <tr><td>White Label</td><td>12 accounts</td><td>€18,000 avg annual</td><td class="accent">€432,000</td></tr>
+              <tr><td>Academic</td><td>40 institutions</td><td>€1,750 avg</td><td class="accent">€70,000</td></tr>
+              <tr><td>IP Licensing</td><td>3 agreements</td><td>€10,000 minimum</td><td class="accent">€30,000</td></tr>
+              <tr class="total-row"><td colspan="3"><strong>Year 5 Total</strong></td><td><strong>€18,282,000</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <hr class="section-rule" />
+    <h3>Five-Year Summary</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Year</th><th>Consumer</th><th>Corporate &amp; Pack</th><th>Practitioner</th><th>Other</th><th>Total</th></tr></thead>
+        <tbody>
+          <tr><td>2026–27</td><td>€120,000</td><td>€46,000</td><td>€12,000</td><td>—</td><td class="green">€178,000</td></tr>
+          <tr><td>2027–28</td><td>€542,500</td><td>€223,500</td><td>€51,000</td><td>€4,500</td><td class="green">€821,500</td></tr>
+          <tr><td>2028–29</td><td>€1,920,000</td><td>€801,000</td><td>€162,000</td><td>€12,000</td><td class="green">€2,895,000</td></tr>
+          <tr><td>2029–30</td><td>€5,280,000</td><td>€2,147,500</td><td>€427,500</td><td>€55,000</td><td class="green">€7,910,000</td></tr>
+          <tr><td>2030–31</td><td>€11,900,000</td><td>€5,382,000</td><td>€900,000</td><td>€100,000</td><td class="green">€18,282,000</td></tr>
+          <tr class="total-row"><td><strong>Cumulative</strong></td><td></td><td></td><td></td><td></td><td><strong>€30,086,500</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr class="section-rule" />
+    <h3>Valuation Context (Year 5)</h3>
+    <p>Comparable SaaS businesses in wellness and L&D trade at 8–15× ARR at growth stage, 5–8× at maturity. At Year 5 Base Case revenue of €18.3M:</p>
+    <div class="stat-row">
+      <div class="stat-box"><div class="stat-label">Conservative (5× ARR)</div><div class="stat-value">€91M</div></div>
+      <div class="stat-box"><div class="stat-label">Midpoint (8× ARR)</div><div class="stat-value">€146M</div></div>
+      <div class="stat-box highlight"><div class="stat-label">Growth Stage (12× ARR)</div><div class="stat-value">€220M</div></div>
+    </div>
+  </div>
+
+  <!-- ══ PACK MULTIPLIER ══ -->
+  <div class="tab-panel" id="tab-packsystem">
+    <h2>The Pack System as the Revenue Multiplier</h2>
+    <p class="lead">The Pack System changes the economics of every corporate relationship. A standard corporate MLA client is worth €3,500–22,000 per year. A corporate client who also purchases a bespoke Pack is worth significantly more — and the margin profile improves every year.</p>
+
+    <h3>Lifetime Value Comparison: Corporate Client</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Client Type</th><th>Year 1</th><th>Year 2</th><th>Year 3</th><th>Year 4</th><th>4-Year Total</th></tr></thead>
+        <tbody>
+          <tr><td>Entry MLA only</td><td>€3,500</td><td>€3,500</td><td>€3,500</td><td>€3,500</td><td class="accent">€14,000</td></tr>
+          <tr><td>Entry MLA + bespoke Pack</td><td>€16,500</td><td>€6,500</td><td>€6,500</td><td>€6,500</td><td class="green">€36,000</td></tr>
+          <tr><td>Professional MLA + bespoke Pack</td><td>€21,500</td><td>€11,500</td><td>€11,500</td><td>€11,500</td><td class="green">€56,000</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The Pack System doubles the lifetime value of every corporate client who engages with it. The development fee is sunk in Year 1; the runtime license is near-pure margin from Year 2 onward.</p>
+
+    <h3>The Compounding Runtime Tail</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Year</th><th>Active Runtime Licenses</th><th>@ €3,000/year</th><th>Margin Profile</th></tr></thead>
+        <tbody>
+          <tr><td>Year 1</td><td>2</td><td>€6,000</td><td>~85%</td></tr>
+          <tr><td>Year 2</td><td>8</td><td>€24,000</td><td>~88%</td></tr>
+          <tr><td>Year 3</td><td>25</td><td>€75,000</td><td>~90%</td></tr>
+          <tr><td>Year 4</td><td>60</td><td>€180,000</td><td>~92%</td></tr>
+          <tr><td>Year 5</td><td>130</td><td class="green">€390,000</td><td>~93%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>By Year 5, the Pack runtime line alone generates €390,000 per year in near-pure margin revenue — from infrastructure already built. This is the compounding mechanism. Each Pack sold today is a permanent revenue asset.</p>
+
+    <hr class="section-rule" />
+    <h3>The Pack System in Context</h3>
+    <p>No competitor has built this. Generic LMS platforms (Coursera for Business, LinkedIn Learning, custom deployments) are content containers. The Pack System delivers content through a proprietary practice framework tied to a unique taxonomy. This is the distinction that justifies the development fee and the perpetual runtime license. The client is not buying a course — they are buying a practice environment built on IP that no one else owns.</p>
+    <p>The sector-specific Pack opportunity — financial services, healthcare administration, education leadership, legal governance — represents an entirely separate commercial motion. Each vertical Pack library, once built, can be licensed to multiple clients in that sector at the library subscription price of €4,500/year. A library of ten sector-specific Packs, licensed to twenty organisations each, generates €900,000/year from a catalogue asset built once.</p>
+  </div>
+
+  <!-- ══ STRATEGY ══ -->
+  <div class="tab-panel" id="tab-strategy">
+    <h2>Strategic Priorities &amp; Implementation</h2>
+    <p class="lead">Revenue maximisation requires sequenced execution across four time horizons. The instruments must be in place before the commercial conversations happen. Trademark protection must precede everything.</p>
+
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-phase">Immediate — Q2 2026</div>
+        <div class="tl-title">Trademark Filing + Consumer EULA</div>
+        <div class="tl-body">File "Mind Mechanism" and "Emotional Spectrum Language" at EUIPO. Class 41 + 42. Budget €850–1,200 per mark. Simultaneously publish the Consumer EULA on the live platform — it is overdue. These two actions are foundational; everything else depends on them.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-phase">Q3 2026</div>
+        <div class="tl-title">Corporate MLA + Pack License + First Pilot</div>
+        <div class="tl-body">Complete the Corporate Master License Agreement and Pack License instruments with a German IP lawyer. Identify and onboard the first corporate pilot client under the Entry tier. Begin the first bespoke Pack development — this is the proof-of-concept for the entire commercial model.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-phase">Q3–Q4 2026</div>
+        <div class="tl-title">Practitioner License Launch</div>
+        <div class="tl-body">Launch the Practitioner License with 20–30 founding practitioners at a modest founding rate. This community becomes the primary referral engine for the consumer tier. Coaches and facilitators who use the system with clients are the most credible advocates.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-phase">Q4 2026 – Q2 2027</div>
+        <div class="tl-title">Academic Partnerships + Content Sustainability</div>
+        <div class="tl-body">Offer the Academic Research License to two to three institutions. Academic validation generates credibility that accelerates corporate sales cycles. Simultaneously, activate the content sustainability model — articles, papers, and podcast content generate organic consumer acquisition that compounds permanently.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-phase">2027 – 2028</div>
+        <div class="tl-title">White Label + Pack Library</div>
+        <div class="tl-body">Complete the White Label Agreement instrument and onboard the first white label client. Build the first five pre-built Packs for the library. At this point, two revenue motions are running simultaneously: bespoke corporate Pack development and library licensing to smaller corporate clients.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-phase">2028 onward</div>
+        <div class="tl-title">Sector Verticals + IP Licensing + Investor Consideration</div>
+        <div class="tl-body">Develop sector-specific Pack collections for financial services, healthcare, education leadership, and legal governance. Begin receiving inbound IP licensing enquiries as the taxonomy's reputation grows through academic validation. Consider a seed or Series A raise — the unit economics at this stage make the equity story compelling to specialist investors in human performance or EdTech.</div>
+      </div>
+    </div>
+
+    <hr class="section-rule" />
+    <h3>Key Risk Factors</h3>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-label">Variable</div>
+        <div class="card-title">Consumer Growth Rate</div>
+        <div class="card-body">The largest variable. Projections assume organic growth supplemented by content output and practitioner referrals. Paid acquisition is not modelled — if a marketing budget is deployed, Year 3–5 consumer numbers are materially higher.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Variable</div>
+        <div class="card-title">Corporate Sales Cycle</div>
+        <div class="card-body">Enterprise software sales cycles average 3–9 months. The Entry tier at €3,500 can be closed quickly; the Enterprise tier requires procurement process. Year 1–2 projections are conservative on this basis.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Variable</div>
+        <div class="card-title">Pack System Adoption</div>
+        <div class="card-body">The commercial model is built; the infrastructure is built. The risk is whether the first 5–10 corporate clients are successfully converted to Pack purchasers. The Year 2–3 transition depends heavily on this conversion rate.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Low Risk</div>
+        <div class="card-title">Regulatory Environment</div>
+        <div class="card-body">GDPR compliance is in place. TTDSG cookie consent handled. DSA obligations are minimal for a platform of this scale in the early years. No foreseeable regulatory risk to the model.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Medium-Term</div>
+        <div class="card-title">Competitive Response</div>
+        <div class="card-body">Large platforms (Calm, BetterUp) may attempt adjacent products once MM achieves visibility. Their disadvantage: they cannot replicate the taxonomy. They can copy the interface, not the three decades of interior work that produced the 482 nodes. The IP is the moat.</div>
+      </div>
+    </div>
+
+    <hr class="section-rule" />
+    <p style="font-size:11px;color:#52525b;line-height:1.7">
+      This document represents strategic and commercial analysis prepared for internal planning purposes. It does not constitute legal advice. All licensing instruments referenced herein require review and execution by a qualified German IP and technology lawyer before commercial deployment. Trademark registration requires a qualified IP practitioner filing with EUIPO. Financial projections are indicative and based on market comparables and reasonable growth assumptions; actual results will differ.<br/><br/>
+      © Sean Fortune / The One-Legged Poet, 2026. All rights reserved.
+    </p>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>Mind Mechanism · The One-Legged Poet · SFFP · Confidential · May 2026</p>
+</div>
+
+<script>
+  // Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+
+  // Year accordions
+  function toggleYear(header) {
+    const body = header.nextElementSibling;
+    const isOpen = body.classList.contains('open');
+    header.classList.toggle('open', !isOpen);
+    body.classList.toggle('open', !isOpen);
+  }
+
+  // Animate bars on load
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.querySelectorAll('.bar-fill').forEach(bar => {
+        const w = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(() => { bar.style.width = w; }, 100);
+      });
+    }, 300);
+  });
+</script>
+</body>
+</html>

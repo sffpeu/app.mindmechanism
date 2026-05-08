@@ -1,0 +1,418 @@
+import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import { Session, getUserSessions, deleteSession } from '@/lib/sessions';
+import { useAuth } from '@/lib/FirebaseAuthContext';
+import { RefreshCw, Play, X, FolderOpen } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { useRouter } from 'next/navigation';
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
+import { toast } from 'react-hot-toast';
+
+import { clockTitles } from '@/lib/clockTitles';
+import { clockSettings } from '@/lib/clockSettings';
+
+const clockColors = [
+  'text-red-500',
+  'text-orange-500',
+  'text-yellow-500',
+  'text-green-500',
+  'text-blue-500',
+  'text-pink-500',
+  'text-purple-500',
+  'text-indigo-500',
+  'text-cyan-500'
+];
+
+const clockStrokeColors = [
+  'stroke-red-500',
+  'stroke-orange-500',
+  'stroke-yellow-500',
+  'stroke-green-500',
+  'stroke-blue-500',
+  'stroke-pink-500',
+  'stroke-purple-500',
+  'stroke-indigo-500',
+  'stroke-cyan-500'
+];
+
+const clockBgColors = [
+  'bg-red-500',
+  'bg-orange-500',
+  'bg-yellow-500',
+  'bg-green-500',
+  'bg-blue-500',
+  'bg-pink-500',
+  'bg-purple-500',
+  'bg-indigo-500',
+  'bg-cyan-500'
+];
+
+const formatTime = (ms: number) => {
+  if (ms === 0) return '∞';
+  const totalSeconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+};
+
+function MiniClock({ progress, strokeColor }: { progress: number; strokeColor: string }) {
+  const size = 40;
+  const strokeWidth = 3;
+  const r = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * r;
+  const dash = (progress / 100) * circumference;
+  return (
+    <svg width={size} height={size} className="flex-shrink-0" viewBox={`0 0 ${size} ${size}`}>
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={strokeWidth}
+        className="text-gray-200 dark:text-white/10"
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill="none"
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        className={strokeColor}
+        strokeDasharray={circumference}
+        strokeDashoffset={circumference - dash}
+        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+      />
+    </svg>
+  );
+}
+
+function MiniClockWithNodes({
+  progress,
+  strokeColor,
+  nodeColor,
+  focusNodes,
+}: {
+  progress: number;
+  strokeColor: string;
+  nodeColor: string;
+  focusNodes: number;
+}) {
+  const size = 48;
+  const center = size / 2;
+  const nodeRadius = 20;
+  return (
+    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <MiniClock progress={progress} strokeColor={strokeColor} />
+      </div>
+      {/* Clock nodes like session cards */}
+      {focusNodes > 0 && (
+        <div className="absolute inset-0" style={{ width: size, height: size }}>
+          {Array.from({ length: focusNodes }).map((_, index) => {
+            const angle = (index * 360) / focusNodes;
+            const radians = ((angle - 90) * Math.PI) / 180;
+            const x = center + nodeRadius * Math.cos(radians);
+            const y = center + nodeRadius * Math.sin(radians);
+            return (
+              <div
+                key={index}
+                className={`absolute w-1.5 h-1.5 rounded-full ${nodeColor}`}
+                style={{
+                  left: `${x}px`,
+                  top: `${y}px`,
+                  transform: 'translate(-50%, -50%)',
+                }}
+              />
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface DashboardRecentSessionsProps {
+  sessions?: Session[];
+}
+
+export type OpenSessionsDialogFilter = 'all' | 'waiting';
+
+export type DashboardRecentSessionsHandle = {
+  openOpenSessionsDialog: (filter?: OpenSessionsDialogFilter) => void;
+};
+
+function isOpenOrIncomplete(s: Session): boolean {
+  return s.status === 'in_progress' || s.status === 'aborted' || s.status === 'waiting';
+}
+
+export const DashboardRecentSessions = forwardRef<
+  DashboardRecentSessionsHandle,
+  DashboardRecentSessionsProps
+>(function DashboardRecentSessions({ sessions: propSessions }, ref) {
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [loading, setLoading] = useState(!propSessions);
+  const [openSessionsDialogOpen, setOpenSessionsDialogOpen] = useState(false);
+  const [dialogFilter, setDialogFilter] = useState<OpenSessionsDialogFilter>('all');
+  const { user } = useAuth();
+  const router = useRouter();
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      openOpenSessionsDialog: (filter = 'all') => {
+        setDialogFilter(filter);
+        setOpenSessionsDialogOpen(true);
+      },
+    }),
+    []
+  );
+
+  useEffect(() => {
+    if (propSessions) {
+      setSessions(propSessions);
+      return;
+    }
+
+    async function loadSessions() {
+      if (!user?.uid) return;
+      try {
+        const userSessions = await getUserSessions(user.uid);
+        setSessions(userSessions);
+      } catch (error) {
+        console.error('Error loading sessions:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadSessions();
+  }, [user?.uid, propSessions]);
+
+  const handleRestartSession = (session: Session) => {
+    const encodedWords = encodeURIComponent(JSON.stringify(session.words || []));
+    router.push(`/${session.clock_id}?duration=${session.duration}&words=${encodedWords}&sessionId=${session.id}`);
+  };
+
+  const handleRemoveSession = async (session: Session, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await deleteSession(session.id);
+      setSessions((prev) => prev.filter((s) => s.id !== session.id));
+      toast.success('Session removed');
+    } catch (error) {
+      console.error('Error removing session:', error);
+      toast.error('Could not remove session');
+    }
+  };
+
+  const handleContinueSession = (session: Session) => {
+    if (session.status !== 'in_progress' && session.status !== 'aborted') return;
+
+    const now = new Date().getTime();
+    const lastActiveTime = session.last_active_time?.toDate().getTime() ?? session.start_time.toDate().getTime();
+    const sessionAge = now - lastActiveTime;
+    const encodedWords = encodeURIComponent(JSON.stringify(session.words || []));
+
+    // Prefer saved remaining_time_ms (set when user left) so Continue starts where they left off
+    const savedRemaining = session.remaining_time_ms;
+    const useSaved = savedRemaining != null && savedRemaining > 0 && sessionAge < 24 * 60 * 60 * 1000;
+
+    const durationToUse = useSaved
+      ? savedRemaining
+      : (() => {
+          const startTime = session.start_time.toDate().getTime();
+          const pausedDuration = session.paused_duration || 0;
+          const timeSpent = session.status === 'aborted'
+            ? (session.actual_duration ?? 0)
+            : (session.actual_duration ?? (lastActiveTime - startTime - pausedDuration));
+          return Math.max(0, session.duration - timeSpent);
+        })();
+
+    if (durationToUse > 0) {
+      router.push(`/${session.clock_id}?duration=${durationToUse}&words=${encodedWords}&sessionId=${session.id}`);
+      localStorage.removeItem('pendingSession');
+    } else {
+      router.push(`/${session.clock_id}?duration=${session.duration}&words=${encodedWords}`);
+    }
+  };
+
+  const openSessions = sessions
+    .filter(isOpenOrIncomplete)
+    .sort((a, b) => {
+      const tb = (b.last_active_time ?? b.start_time).toMillis();
+      const ta = (a.last_active_time ?? a.start_time).toMillis();
+      return tb - ta;
+    });
+
+  const dialogSessions =
+    dialogFilter === 'waiting'
+      ? openSessions.filter((s) => s.status === 'waiting')
+      : openSessions;
+
+  const SessionMini = ({ session }: { session: Session }) => {
+    const clockType = clockTitles[session.clock_id] ?? 'Unknown Clock';
+    const textColor = clockColors[session.clock_id] ?? 'text-gray-500';
+    const strokeColor = clockStrokeColors[session.clock_id] ?? 'stroke-gray-500';
+    const nodeColor = clockBgColors[session.clock_id] ?? 'bg-gray-500';
+    const focusNodes = clockSettings[session.clock_id]?.focusNodes ?? 8;
+    const startTime = session.start_time.toDate();
+    const lastActiveTime = session.last_active_time?.toDate() || startTime;
+    const pausedDuration = session.paused_duration ?? 0;
+
+    // Prefer remaining_time_ms (saved when user left) for accurate "time left" and progress
+    const timeLeft = session.status === 'completed'
+      ? 0
+      : (session.remaining_time_ms != null && session.remaining_time_ms > 0)
+        ? session.remaining_time_ms
+        : (() => {
+            const timeSpent = session.status === 'aborted'
+              ? (session.actual_duration ?? 0)
+              : (session.actual_duration ?? (lastActiveTime.getTime() - startTime.getTime() - pausedDuration));
+            return Math.max(0, session.duration - timeSpent);
+          })();
+    const timeSpent = session.duration - timeLeft;
+    const progress = session.status === 'completed' ? 100 :
+      Math.min((timeSpent / session.duration) * 100, 100);
+
+    const canContinue = session.status === 'in_progress' || session.status === 'aborted';
+    const isCompleted = session.status === 'completed';
+    const timeLabel = isCompleted
+      ? `${formatTime(session.actual_duration ?? 0)} completed`
+      : `${formatTime(timeLeft)} left`;
+
+    return (
+      <div className="relative flex flex-col items-center p-4 rounded-2xl bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-black/5 dark:border-white/10 min-w-[128px] max-w-[168px] shadow-sm hover:shadow-md transition-shadow">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-2 right-2 h-7 w-7 rounded-full opacity-70 hover:opacity-100 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          onClick={(e) => handleRemoveSession(session, e)}
+          aria-label="Remove session"
+        >
+          <X className="h-3.5 w-3.5" />
+        </Button>
+        <MiniClockWithNodes
+          progress={progress}
+          strokeColor={strokeColor}
+          nodeColor={nodeColor}
+          focusNodes={focusNodes}
+        />
+        <h3 className={`text-xs font-semibold mt-3 text-center line-clamp-2 ${textColor}`}>
+          {clockType}
+        </h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 tabular-nums">
+          {timeLabel}
+        </p>
+        <div className="flex gap-2 mt-3 w-full justify-center flex-wrap">
+          {canContinue && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 text-xs rounded-full px-3"
+              onClick={() => handleContinueSession(session)}
+            >
+              <Play className="h-3 w-3 mr-1" />
+              Continue
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 text-xs rounded-full px-3"
+            onClick={() => handleRestartSession(session)}
+          >
+            <RefreshCw className="h-3 w-3 mr-1" />
+            {isCompleted ? 'Start again' : 'Restart'}
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <>
+      <div className="flex justify-end mb-4">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={loading}
+          className="gap-2 rounded-full px-4"
+          onClick={() => {
+            setDialogFilter('all');
+            setOpenSessionsDialogOpen(true);
+          }}
+        >
+          <FolderOpen className="h-4 w-4" />
+          Open, incomplete &amp; waiting sessions
+          <span className="tabular-nums rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-white/10 dark:text-gray-300">
+            {openSessions.length}
+          </span>
+        </Button>
+      </div>
+
+      <Dialog
+        open={openSessionsDialogOpen}
+        onOpenChange={(open) => {
+          setOpenSessionsDialogOpen(open);
+          if (!open) setDialogFilter('all');
+        }}
+      >
+        <DialogContent className="max-w-2xl max-h-[min(90vh,720px)] flex flex-col gap-0 overflow-hidden p-0 sm:rounded-2xl">
+          <DialogHeader className="px-6 pt-6 pb-2 text-left">
+            <DialogTitle>
+              {dialogFilter === 'waiting'
+                ? 'Waiting lobby sessions'
+                : 'Open, incomplete &amp; waiting sessions'}
+            </DialogTitle>
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-normal leading-relaxed pt-1">
+              {dialogFilter === 'waiting'
+                ? 'Scheduled sessions in the waiting state. Use Restart to open the clock, or remove if you no longer need them.'
+                : 'Continue from where you left off. Same actions as the cards above: Continue, Restart, or remove.'}
+            </p>
+          </DialogHeader>
+          <div className="px-6 pb-6 flex-1 min-h-0 overflow-y-auto">
+            {dialogSessions.length === 0 ? (
+              <p className="text-sm text-gray-600 dark:text-gray-400 text-center py-8 px-2">
+                {dialogFilter === 'waiting'
+                  ? 'You don&apos;t have any sessions in the waiting lobby right now.'
+                  : 'You don&apos;t have any open or incomplete sessions right now. Start one from Sessions, or finish a session to see it marked complete here.'}
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-4 justify-center sm:justify-start pt-2">
+                {dialogSessions.map((session) => (
+                  <SessionMini key={session.id} session={session} />
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {loading ? (
+        <div className="flex items-center justify-center p-6">
+          <LoadingSpinner size="md" isLoading={loading} />
+        </div>
+      ) : sessions.length === 0 ? (
+        <div className="text-center p-6">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            No sessions found. Start a new session to see your history here.
+          </p>
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-4 justify-center sm:justify-start">
+          {sessions.slice(0, 6).map((session) => (
+            <SessionMini key={session.id} session={session} />
+          ))}
+        </div>
+      )}
+    </>
+  );
+});

@@ -1,0 +1,475 @@
+id,word,definition,grade,phonetic_spelling,rating,source,version,user_id,created_at
+00a64dd9-5121-400f-8525-eca2df049d42,Furious,Extremely angry.,2,/ˈfjʊriəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+0120853a-0fc5-4dcb-b4c7-0eb1c689eb40,Misgivings,Feelings of doubt or apprehension about the outcome or consequences of something.,2,/ˌmɪsˈɡɪvɪŋz/,-,System,V01,,2025-01-25 13:58:03.096089+00
+01a239f2-0e8c-40e1-892a-3885530ecf64,Corruption,"Dishonest or fraudulent conduct by those in power, typically involving bribery.",1,/kəˈrʌpʃən/,-,System,V01,,2025-01-25 13:58:03.096089+00
+02e1b09a-6516-4eb6-90e1-c73c953bc65c,Uplifted,Raised to a higher position or level; elevated.,5,/ʌpˈlɪftɪd/,+,System,V01,,2025-01-25 13:58:03.096089+00
+040159be-c8a2-48fa-a3d3-cf74cbb3e276,Motivation,The reason or reasons one has for acting or behaving in a particular way.,5,/ˌmoʊtɪˈveɪʃən/,+,System,V01,,2025-01-25 13:58:03.096089+00
+04260454-7dda-41ff-b2b7-35f242d9590a,Harmfulness,The quality of causing harm.,1,/ˈhɑːrmfʊlnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+043d4c85-690e-4479-aec6-6641b25bc6a6,Discourse,Written or spoken communication or debate.,3,/ˈdɪskɔːrs/,~,System,Default,,2025-01-25 13:58:03.096089+00
+04670516-1862-4e8d-90df-4df85ec34082,Responsiveness,The quality of reacting quickly and positively.,5,/rɪˈspɒnsɪvnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+05794a9f-8604-4aaa-bc92-5669202db011,Innovating,The act of introducing new ideas or methods.,4,/ˈɪnəˌveɪtɪŋ/,+,System,Default,,2025-01-25 13:58:03.096089+00
+05821384-f791-4bcb-b2b6-e9a6910cbdf8,Terrified,Extremely frightened.,2,/ˈtɛrɪfaɪd/,-,System,V01,,2025-01-25 13:58:03.096089+00
+0605c63d-cc12-4534-8ce3-b9f65da41773,Surprise,An unexpected or astonishing event.,3,/sərˈpraɪz/,~,System,Default,,2025-01-25 13:58:03.096089+00
+06cae5cf-a71f-4b42-b550-5bd1377d6fe6,Pleasing,Satisfying or appealing.,5,/ˈpliːzɪŋ/,+,System,V01,,2025-01-25 13:58:03.096089+00
+07196baa-2199-4c10-b608-e88cdf7697db,Waiting,The action of staying where one is or delaying action until a particular time or event.,3,/ˈweɪtɪŋ/,~,System,V01,,2025-01-25 13:58:03.096089+00
+0732c730-173a-4ca9-8da9-511fd0022f71,Trapped,Caught in a place or situation from which it is difficult or impossible to escape.,2,/træpt/,-,System,V01,,2025-01-25 13:58:03.096089+00
+07b78f68-9982-4bb9-b131-5127f0c9bc06,Startling,"Very surprising, astonishing, or remarkable.",2,/ˈstɑrtəlɪŋ/,-,System,V01,,2025-01-25 13:58:03.096089+00
+089d4cd3-ed40-43ac-a482-808076d138e7,Resentfulness,The quality of feeling or expressing bitterness or indignation at having been treated unfairly.,2,/rɪˈzɛntfʊlnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+08eb5c2f-8978-42ac-a6a9-088760e920f9,Elimination,The complete removal or destruction of something.,3,/ɪˌlɪmɪˈneɪʃən/,~,System,V01,,2025-01-25 13:58:03.096089+00
+08f87f6f-703b-42b0-9fe4-8ae65396a073,Trustworthiness,The ability to be relied on as honest or truthful.,5,/ˈtrʌstwɜːrðɪnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+098ce7e2-602e-4726-bc47-d4c5e274664f,Devastation,Great destruction or damage.,1,/ˌdɛvəˈsteɪʃən/,-,System,V01,,2025-01-25 13:58:03.096089+00
+0c52ac38-65de-4b37-9964-52648435647e,Intoxication,"The state of being intoxicated, especially by alcohol.",2,/ɪnˌtɒksɪˈkeɪʃən/,-,System,V01,,2025-01-25 13:58:03.096089+00
+0c5d0c8c-490b-4e17-92f0-e1fcadfa24d9,Blessed,Made holy; consecrated.,5,/blɛst/,+,System,V01,,2025-01-25 13:58:03.096089+00
+0d157747-fbdc-4894-88fd-134fdd68dbb4,Antagonism,Active hostility or opposition.,2,/ænˈtæɡənɪzəm/,-,System,V01,,2025-01-25 13:58:03.096089+00
+0d5ca138-8d4c-479b-bfc3-5499259cf2f3,Resilience,The capacity to recover quickly from difficulties; toughness.,5,/rɪˈzɪliəns/,+,System,V01,,2025-01-25 13:58:03.096089+00
+0d62feea-3d79-4d27-8bd4-240599e73dfd,Thankful,Pleased and relieved.,5,/ˈθæŋkfəl/,+,System,V01,,2025-01-25 13:58:03.096089+00
+0dce8ca2-a60d-4d29-b142-e8507f64b7f9,Coercion,The practice of persuading someone to do something by using force or threats.,1,/koʊˈɜːrʒən/,-,System,V01,,2025-01-25 13:58:03.096089+00
+0eb4134e-0557-4fde-b516-2498577c84a9,Confidence,The feeling or belief that one can rely on someone or something; firm trust.,5,/ˈkɒnfɪdəns/,+,System,V01,,2025-01-25 13:58:03.096089+00
+0fb9dd25-aac2-4460-85c9-692976aa031b,Vibration,An instance of vibrating.,3,/vaɪˈbreɪʃən/,~,System,V01,,2025-01-25 13:58:03.096089+00
+1015eb47-e5c3-40b7-b49e-4514a146b06b,Disgust,A strong feeling of dislike or disapproval.,1,/dɪsˈɡʌst/,-,System,V01,,2025-01-25 13:58:03.096089+00
+1021fdec-98bd-41ce-b7c7-1cfcee09cc7d,Insurance,"A practice or arrangement by which a company or government agency provides a guarantee of compensation for specified loss, damage, illness, or death in return for payment of a premium.",3,/ɪnˈʃʊərəns/,~,System,V01,,2025-01-25 13:58:03.096089+00
+11355ac3-51f9-49c5-8b11-d1b2b20d3f9d,Trauma,A deeply distressing or disturbing experience.,1,/ˈtrɔːmə/,-,System,V01,,2025-01-25 13:58:03.096089+00
+11773779-517b-40a0-9cbe-51a52cfecc33,Protection,The action of protecting someone or something.,5,/prəˈtɛkʃən/,+,System,V01,,2025-01-25 13:58:03.096089+00
+119f69af-84f5-45a7-aefa-884af1daa189,Causing,The act of making something happen.,3,/ˈkɔːzɪŋ/,~,System,Default,,2025-01-25 13:58:03.096089+00
+11bf907d-3cd1-474b-92cd-37ad1e4e54b1,Signaling,"The action of conveying information or instructions by means of a gesture, action, or sound.",3,/ˈsɪɡnəlɪŋ/,~,System,V01,,2025-01-25 13:58:03.096089+00
+1221af85-ff00-494f-bf2e-e7295fb860f2,Boldness,"The quality of having a strong, vivid, or daring appearance.",4,/ˈboʊldnəs/,+,System,Default,,2025-01-25 13:58:03.096089+00
+122afb13-7822-4837-be87-8d999b2724e2,Temperance,Moderation or self-restraint.,4,/ˈtɛmpərəns/,+,System,Default,,2025-01-25 13:58:03.096089+00
+135ee66f-4704-4e1a-a760-3b86bc2ab304,Grounded,Well balanced and sensible.,4,/ˈɡraʊndɪd/,+,System,V01,,2025-01-25 13:58:03.096089+00
+141e59bf-2f2f-48b9-876c-d77e575eb2bb,Quiet,Making little or no noise.,4,/ˈkwaɪət/,+,System,V01,,2025-01-25 13:58:03.096089+00
+143c9041-a150-4c59-a3b4-3836387028b7,Resonating,"Producing or being filled with a deep, full sound.",4,/ˈrɛzəˌneɪtɪŋ/,+,System,Default,,2025-01-25 13:58:03.096089+00
+1570d97b-e193-4f15-b2d4-863818ae10d0,Censorship,"The suppression or prohibition of any parts of books, films, news, etc. that are considered obscene, politically unacceptable, or a threat to security.",2,/ˈsɛnsərˌʃɪp/,-,System,V01,,2025-01-25 13:58:03.096089+00
+1596edc6-528b-4fc3-ad28-a43df35ba996,Repulsiveness,The quality of being repulsive.,2,/rɪˈpʌlsɪvnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+15a95ee0-5dc6-42fc-883e-2e0d53a00201,Genuine,Truly what something is said to be; authentic.,5,/ˈdʒɛnjʊɪn/,+,System,V01,,2025-01-25 13:58:03.096089+00
+161593fc-ee71-4685-99eb-695adc7a8f99,Extreme,Reaching a high or the highest degree; very great.,3,/ɪkˈstriːm/,~,System,V01,,2025-01-25 13:58:03.096089+00
+162df996-755e-4332-9671-69190a8591ec,Astoundedment,The state of being greatly surprised or amazed.,5,/əˈstaʊndɪdmənt/,+,System,V01,,2025-01-25 13:58:03.096089+00
+16305900-b759-4c37-a551-f353795ca295,Uplifting,Morally or spiritually elevating; inspiring happiness or hope.,5,/ʌpˈlɪftɪŋ/,+,System,V01,,2025-01-25 13:58:03.096089+00
+16caba5b-4dc6-4622-86b1-93189b755687,Thrilling,Causing excitement and pleasure; exhilarating.,5,/ˈθrɪlɪŋ/,+,System,V01,,2025-01-25 13:58:03.096089+00
+18d7c35b-3b4b-4371-a83a-4d91169bf086,Relaxation,The state of being free from tension and anxiety.,5,/ˌrɪˌlækˈseɪʃən/,+,System,V01,,2025-01-25 13:58:03.096089+00
+1ab4f904-95fb-4ecf-bc4d-b824dab68fcb,Calm,"Not showing or feeling nervousness, anger, or other strong emotions.",5,/kɑm/,+,System,V01,,2025-01-25 13:58:03.096089+00
+1b142de5-4749-4e15-97fb-d2aa0c1ad616,Child-like,Having qualities associated with a child.,4,/tʃaɪld laɪk/,+,System,Default,,2025-01-25 13:58:03.096089+00
+1b410eef-3f74-4831-9128-f4a32394646e,Glory,High renown or honor won by notable achievements.,5,/ˈɡlɔːri/,+,System,V01,,2025-01-25 13:58:03.096089+00
+1c69a383-ef63-4bf8-add5-ddf4ea6819ad,Yearning,A feeling of intense longing for something.,3,/ˈjɜːrnɪŋ/,~,System,Default,,2025-01-25 13:58:03.096089+00
+1d2efb64-e7e2-4537-a292-8731bb1b92ae,Exasperation,A feeling of intense irritation or annoyance.,2,/ɪɡˌzæspəˈreɪʃən/,-,System,V01,,2025-01-25 13:58:03.096089+00
+1e613c58-30ff-4347-98b1-85755df9bf87,Uncaring,Not displaying sympathy or concern for others.,2,/ˌʌnˈkɛrɪŋ/,-,System,V01,,2025-01-25 13:58:03.096089+00
+210968b0-30ce-4feb-9c9d-ac3b683044f1,Mocking,Making fun of someone or something in a cruel way; derisive.,1,/ˈmɒkɪŋ/,-,System,V01,,2025-01-25 13:58:03.096089+00
+2166d24a-3d4c-4384-814e-fe2c3216ebe0,A cut above,Significantly better than others.,5,/ə kʌt əˈbʌv/,+,System,V01,,2025-01-25 13:58:03.096089+00
+222dada4-0d59-469c-84c1-d844494b77e0,Fear,"An unpleasant emotion caused by the belief that someone or something is dangerous, likely to cause pain, or a threat.",2,/fɪər/,-,System,V01,,2025-01-25 13:58:03.096089+00
+227e77eb-65ae-4427-9da7-f9e1e372eb56,Forgiving,Ready and willing to forgive.,5,/fərˈɡɪvɪŋ/,+,System,V01,,2025-01-25 13:58:03.096089+00
+228432ab-489d-444a-95d1-46553ad848c0,Superb,Excellent; very good.,5,/suːˈpɜrb/,+,System,V01,,2025-01-25 13:58:03.096089+00
+22bc7c49-dc28-4708-a44e-c15c5ce68e9e,Vindictiveness,The quality of having or showing a strong or unreasoning desire for revenge.,2,/vɪnˈdɪktɪvnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+22e75136-fcc0-4536-be09-8ed3260ca341,Distress,"Extreme anxiety, sorrow, or pain.",2,/dɪˈstrɛs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+2366ec12-c723-4699-b095-f48aa7c79981,On top of the world,Feeling very happy or elated.,5,/ɒn tɒp ʌv ðə wɜrld/,+,System,V01,,2025-01-25 13:58:03.096089+00
+23ce85e8-b0ec-4bb4-a513-2f3f7605dc09,Condemning,Expressing complete disapproval of something.,2,/kənˈdɛmɪŋ/,-,System,V01,,2025-01-25 13:58:03.096089+00
+23e39e23-8f56-4ec9-8e10-24f3d54f8836,Dread,Great fear or apprehension.,2,/drɛd/,-,System,V01,,2025-01-25 13:58:03.096089+00
+24655ccb-067e-4eb7-ab2d-d7c3217b157b,Disillusionment,A feeling of disappointment resulting from the discovery that something is not as good as one believed it to be.,2,/ˌdɪsɪˈluːʒənmənt/,-,System,V01,,2025-01-25 13:58:03.096089+00
+2511a8c6-0bea-4b91-a59c-03493cc1076c,Seeking,The act of looking for or trying to find something.,4,/ˈsiːkɪŋ/,+,System,Default,,2025-01-25 13:58:03.096089+00
+266dd5b6-0b43-4243-acfd-15a9374e7788,Convenience,The state of being able to proceed with something with little effort or difficulty.,4,/kənˈvinjəns/,+,System,V01,,2025-01-25 13:58:03.096089+00
+269f7a3d-ac7b-4ae7-9164-9ff59b38e217,Joyousness,The state of being full of joy.,5,/ˈdʒɔɪəsnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+26d16b31-bad3-407d-b8e8-dc9b9a194056,Hedonism,The pursuit of pleasure; sensual self-indulgence.,3,/ˈhiːdənɪzəm/,~,System,V01,,2025-01-25 13:58:03.096089+00
+270bcecc-fe93-4983-998a-4f06677de03d,Courageousness,The quality of being brave.,5,/kəˈreɪdʒəsnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+2719a830-be1e-433e-aafc-013f7f3ce01d,Enthusiasm,"Intense and eager enjoyment, interest, or approval.",5,/ɪnˈθjuːziæzəm/,+,System,V01,,2025-01-25 13:58:03.096089+00
+2790a8c3-beff-468a-8ad1-3be38fea08dc,Stressed,Experiencing mental or emotional strain or tension.,2,/strɛst/,-,System,V01,,2025-01-25 13:58:03.096089+00
+27ab07bd-7921-44e9-8279-498acea9e092,Gratitude,The quality of being thankful; readiness to show appreciation for and to return kindness.,5,/ˈɡrætɪˌtjuːd/,+,System,V01,,2025-01-25 13:58:03.096089+00
+284c7c7b-1da2-4b2a-9536-3b0f07df6cbb,Premonition,A strong feeling that something is about to happen.,3,/ˌprɛməˈnɪʃən/,~,System,Default,,2025-01-25 13:58:03.096089+00
+2863f9f0-64e6-41a5-9237-17e8e8a6d391,Eagerness,Enthusiasm to do or to have something.,4,/ˈiːɡərnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+2871b23a-770e-4bdb-abd8-0a1237ab5a89,Keenness,The quality of being eager or enthusiastic.,4,/ˈkiːnnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+29641938-ee8c-41e0-a8f2-6176dbcc772c,Disappointment,Sadness or displeasure caused by the non-fulfillment of one's hopes or expectations.,1,/ˌdɪsəˈpɔɪntmənt/,-,System,V01,,2025-01-25 13:58:03.096089+00
+2a139153-c0d6-470c-9d5a-354341fb79be,Hesitation,The action of pausing or hesitating before saying or doing something.,2,/ˌhɛzɪˈteɪʃən/,-,System,V01,,2025-01-25 13:58:03.096089+00
+2b1eed1a-0961-402a-9518-07b107fc7a21,Prayer,A solemn request for help or expression of thanks addressed to God.,4,/prɛr/,+,System,Default,,2025-01-25 13:58:03.096089+00
+2c034b1c-3b67-4b8b-bc45-f33934521d2d,Pure being,The state of existing in a pure and untainted form.,5,/pjʊr ˈbiːɪŋ/,+,System,Default,,2025-01-25 13:58:03.096089+00
+2cbb210c-2902-48ef-ae38-a64e3f433ffe,Collision,An instance of one moving object or person striking violently against another.,2,/kəˈlɪʒən/,-,System,V01,,2025-01-25 13:58:03.096089+00
+2d46223f-4076-4c36-a578-36e8db2d850b,Blushing,Developing a pink tinge in the face from embarrassment or shame.,4,/ˈblʌʃɪŋ/,+,System,V01,,2025-01-25 13:58:03.096089+00
+2d84f886-0484-40ff-af64-f4674d9fbaa0,Comfortability,The quality of being comfortable.,5,/ˌkʌmfərtəˈbɪlɪti/,+,System,V01,,2025-01-25 13:58:03.096089+00
+2e17e98f-2b69-4dff-85dd-57a799c7c4ed,Supportive,Providing encouragement or emotional help.,5,/səˈpɔrtɪv/,+,System,V01,,2025-01-25 13:58:03.096089+00
+2f051cbf-5663-48ef-a516-94e2681bfe97,Unassuming,Not pretentious or arrogant; modest.,4,/ˌʌnəˈsuːmɪŋ/,+,System,V01,,2025-01-25 13:58:03.096089+00
+2f3b8668-2350-43be-bb7f-d4c47a29d0f6,Alienation,The state or experience of being isolated from a group or an activity to which one should belong or in which one should be involved.,2,/ˌeɪliəˈneɪʃən/,-,System,V01,,2025-01-25 13:58:03.096089+00
+2fa75774-a4d0-410b-bddf-72a75e74fa3c,Protecting,The act of keeping someone or something safe.,4,/prəˈtɛktɪŋ/,+,System,Default,,2025-01-25 13:58:03.096089+00
+301069a5-d460-43b0-9a53-ba3c549b4d26,Safety,"The condition of being protected from or unlikely to cause danger, risk, or injury.",5,/ˈseɪfti/,+,System,V01,,2025-01-25 13:58:03.096089+00
+302c6095-8c48-4326-a9e1-787b674377e3,Nihilism,"The rejection of all religious and moral principles, often in the belief that life is meaningless.",2,/ˈnaɪɪˌlɪzəm/,-,System,V01,,2025-01-25 13:58:03.096089+00
+3039af76-932b-4199-bca5-932ffb38b1b4,Solidarity,"Unity or agreement of feeling or action, especially among individuals with a common interest; mutual support within a group.",5,/ˌsɒlɪˈdærɪti/,+,System,V01,,2025-01-25 13:58:03.096089+00
+31418646-0773-4299-abf9-6d33b8f48c49,Frugality,The quality of being economical with money or food; thriftiness.,4,/fruːˈɡælɪti/,+,System,V01,,2025-01-25 13:58:03.096089+00
+314bbf42-d2fd-4d68-a7f5-2ad4218ed655,Disastrousness,The quality of being disastrous.,1,/dɪˈzæstrəsnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+31a1d2ea-243f-4e7e-9dc1-380f933da621,Transforming,Making a thorough or dramatic change.,5,/trænsˈfɔːrmɪŋ/,+,System,Default,,2025-01-25 13:58:03.096089+00
+31e6cff0-ed55-4e0d-b21e-cb54ce7519d2,Balanced,Being in a state of equilibrium.,4,/ˈbælənst/,+,System,V01,,2025-01-25 13:58:03.096089+00
+320e20ff-dae2-4036-bdf4-422f825e55e8,Poisonous,Causing or capable of causing death or illness if taken into the body.,1,/ˈpɔɪzənəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+3230a9d4-a85b-4af8-a7fe-a406e0cebd04,Blessing,God's favor and protection.,5,/ˈblɛsɪŋ/,+,System,V01,,2025-01-25 13:58:03.096089+00
+33a529dc-0815-4c73-ada7-be19b244c35a,Righteous,Morally right or justifiable.,3,/ˈraɪtʃəs/,~,System,Default,,2025-01-25 13:58:03.096089+00
+362068f0-3748-4050-aa11-947a0831f37e,Whimsy,Playfully quaint or fanciful behavior or humor.,3,/ˈwɪmzi/,~,System,V01,,2025-01-25 13:58:03.096089+00
+362fa60a-3aab-451a-ada0-2cd0201444a0,Soul,"The spiritual or immaterial part of a human being or animal, regarded as immortal.",5,/soʊl/,+,System,V01,,2025-01-25 13:58:03.096089+00
+3649846f-321b-4f58-993e-8636102797b4,Zeal,Great energy or enthusiasm in pursuit of a cause or an objective.,5,/zil/,+,System,V01,,2025-01-25 13:58:03.096089+00
+372aa8dd-6c46-424c-a8a4-e1378181f935,Roaring,"Making a loud, deep sound.",3,/ˈrɔːrɪŋ/,~,System,Default,,2025-01-25 13:58:03.096089+00
+3757c38f-ee64-4acf-98f2-31fe78718c3f,Limitlessness,The state of having no limits.,3,/ˈlɪmɪtlɪsnəs/,~,System,Default,,2025-01-25 13:58:03.096089+00
+3869b86d-0c3b-4f36-9942-4206dd379114,Romance,A feeling of excitement and mystery associated with love.,5,/roʊˈmæns/,+,System,V01,,2025-01-25 13:58:03.096089+00
+392355fc-d137-46be-aca6-401fd5155d1d,Outrageousness,The quality of being shockingly bad or excessive.,2,/aʊtˈreɪdʒəsnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+3926ca0c-44a5-4eb8-82df-147949244b8a,Extra,Added to an existing or usual amount or number.,3,/ˈɛkstrə/,~,System,V01,,2025-01-25 13:58:03.096089+00
+39906c34-f472-42a4-b357-ba00db952f2d,Worth,The value equivalent to that of someone or something under consideration; the level at which someone or something deserves to be valued or rated.,5,/wɜrθ/,+,System,V01,,2025-01-25 13:58:03.096089+00
+39d63ff2-1676-4bae-9fa3-1a93edd56f0b,Replanting,The act of planting something again.,4,/riˈplæntɪŋ/,+,System,Default,,2025-01-25 13:58:03.096089+00
+3a46c330-293b-4e7f-af8b-dd6a1510c7c6,Unstable,"Prone to change, fail, or give way; not stable.",2,/ʌnˈsteɪbəl/,-,System,V01,,2025-01-25 13:58:03.096089+00
+3abb5d38-e2fc-41af-ad29-b8cd4e1579ad,Earnestness,Sincere and intense conviction.,4,/ˈɜrnɪstnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+3bd1a300-e05f-4643-94fb-218c1fefd396,Adequacy,The state of being sufficient for the purpose concerned.,4,/ˈædɪkwəsi/,+,System,V01,,2025-01-25 13:58:03.096089+00
+3cd813d0-7175-43fd-a3d3-216a05aa9645,Placid,Not easily upset or excited.,4,/ˈplæsɪd/,+,System,V01,,2025-01-25 13:58:03.096089+00
+3d3bb6ff-883e-4cfc-8404-7abe21fd691c,Sincere,Free from pretense or deceit; proceeding from genuine feelings.,5,/sɪnˈsɪər/,+,System,V01,,2025-01-25 13:58:03.096089+00
+3e49b98f-54aa-49cf-8d1a-28a5d1a00ab6,Caution,Care taken to avoid danger or mistakes.,3,/ˈkɔːʃən/,~,System,V01,,2025-01-25 13:58:03.096089+00
+3e950269-c4d4-4880-8b8c-1ca674f36363,Discounting,The action of reducing the price of something.,3,/dɪsˈkaʊntɪŋ/,~,System,V01,,2025-01-25 13:58:03.096089+00
+3ec8674b-5a8b-45c8-843b-d31480ec5591,Save,To keep safe or rescue from harm or danger.,5,/seɪv/,+,System,V01,,2025-01-25 13:58:03.096089+00
+3eece981-35c2-4452-b503-d9e088315020,Embarrassment,"A feeling of self-consciousness, shame, or awkwardness.",2,/ɪmˈbærəsmənt/,-,System,V01,,2025-01-25 13:58:03.096089+00
+3f0daadc-74d1-46ba-83b1-11d9e43d7b59,Spiteful,Showing or caused by malice.,2,/ˈspaɪtfʊl/,-,System,V01,,2025-01-25 13:58:03.096089+00
+3f2296c9-265f-4da0-adaa-072ae8a0fa3e,Quarrelsomeness,The quality of being prone to argue or disagree.,2,/ˈkwɒrəlsəmnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+3f9b203e-fd4c-4063-a64c-a87a0754fe98,Fatigue,Extreme tiredness resulting from mental or physical exertion or illness.,2,/fəˈtiːɡ/,-,System,V01,,2025-01-25 13:58:03.096089+00
+41cbe248-9dbe-4144-9e6c-b52e3b14378f,Pathetic,"Arousing pity, especially through vulnerability or sadness.",2,/pəˈθɛtɪk/,-,System,V01,,2025-01-25 13:58:03.096089+00
+41e8d301-f1d4-4d5f-b759-93e60eea9e47,Contentment,A state of happiness and satisfaction.,5,/kənˈtɛntmənt/,+,System,V01,,2025-01-25 13:58:03.096089+00
+43763c9f-4e51-4a26-8e40-8e1802de1eb3,Light-heartedness,The quality of being cheerful and carefree.,5,/ˌlaɪtˈhɑrtɪdnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+448778f0-ca18-4377-9820-5e05f353d28d,Encouragement,"The action of giving someone support, confidence, or hope.",5,/ɪnˈkɜrɪdʒmənt/,+,System,V01,,2025-01-25 13:58:03.096089+00
+44d08b5d-4092-450c-a87f-06752ed529ae,Radiance,Light or heat as emitted or reflected by something.,5,/ˈreɪdiəns/,+,System,V01,,2025-01-25 13:58:03.096089+00
+44fd6afb-1602-4d9a-9d15-d0a0f97fca8c,Panicked,Feeling or showing sudden uncontrollable fear or anxiety.,2,/ˈpænɪkt/,-,System,V01,,2025-01-25 13:58:03.096089+00
+45123316-0827-45d9-b418-2aaef81bfe5e,Cowardliness,Lack of bravery.,1,/ˈkaʊərdlɪnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+451b9c0b-7b96-4442-85c8-310d71d84da8,Tribalism,The state or fact of being organized in a tribe or tribes.,2,/ˈtraɪbəlɪzəm/,-,System,V01,,2025-01-25 13:58:03.096089+00
+45c7ee56-8f6e-4d9e-bb7e-49198a5f49cf,Adapting,The act of making something suitable for a new use or purpose.,4,/əˈdæptɪŋ/,+,System,Default,,2025-01-25 13:58:03.096089+00
+45e0ef7d-111e-4738-a076-382b7af86006,Attracting,The act of drawing attention or interest.,4,/əˈtræktɪŋ/,+,System,Default,,2025-01-25 13:58:03.096089+00
+46321c23-f449-4a1a-ac8c-e69042dde0c1,Gratification,"Pleasure, especially when gained from the satisfaction of a desire.",5,/ˌɡrætɪfɪˈkeɪʃən/,+,System,V01,,2025-01-25 13:58:03.096089+00
+464c4fcd-a773-4a56-8ecd-df96e696612d,Seizure,"A sudden attack of illness, especially a stroke or an epileptic fit.",2,/ˈsiːʒər/,-,System,V01,,2025-01-25 13:58:03.096089+00
+46b8ea1e-6491-432b-a4c1-a54784889b3c,Sister,A female sibling.,3,/ˈsɪstər/,~,System,Default,,2025-01-25 13:58:03.096089+00
+47ddbd79-e41f-48c3-af53-dbf2faaab220,Argumentativeness,The quality of being prone to argue.,2,/ˌɑrɡjəˈmɛntətɪvnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+480c55d4-cec3-48fb-a2fe-5a7113153626,Supported,Given assistance or backing.,5,/səˈpɔrtɪd/,+,System,V01,,2025-01-25 13:58:03.096089+00
+48229c00-4898-46e7-9fa9-b24d50cf45e3,Cooperation,The process of working together to the same end.,5,/koʊˌɒpəˈreɪʃən/,+,System,V01,,2025-01-25 13:58:03.096089+00
+4872c0f4-25ce-4573-b988-fc69f829b1ed,Spirit,The non-physical part of a person regarded as their true self.,3,/ˈspɪrɪt/,~,System,Default,,2025-01-25 13:58:03.096089+00
+49277c5e-2ece-4478-8494-85e602fd6bd2,Apathetic,"Lack of interest, enthusiasm, or concern for feelings toward something or someone.",2,/ˈæpəθi/,-,System,V01,,2025-01-25 13:58:03.096089+00
+49f54aaa-7e8f-4add-8582-34086551d0b5,Self love,Regard for one's own well-being and happiness.,5,/sɛlf lʌv/,+,System,Default,,2025-01-25 13:58:03.096089+00
+4af1d4b9-fc6d-49f8-a5f4-82aeb51bbf9f,Frisky,Playful and full of energy.,4,/ˈfrɪski/,+,System,V01,,2025-01-25 13:58:03.096089+00
+4bb0c239-f8ed-4fdb-9803-9495de9a3c6a,Screen,"A flat panel or area on an electronic device such as a television, computer, or smartphone, on which images and data are displayed.",3,/skriːn/,~,System,V01,,2025-01-25 13:58:03.096089+00
+4c074a68-d331-4a58-8f61-87c4e4ce24bc,Uncomfortable,Causing or feeling slight pain or physical discomfort.,2,/ʌnˈkʌmftərbəl/,-,System,V01,,2025-01-25 13:58:03.096089+00
+4cb1b8fe-324d-407b-a23b-fda6971833fc,Efficiency,The state or quality of being efficient.,5,/ɪˈfɪʃənsi/,+,System,V01,,2025-01-25 13:58:03.096089+00
+4cbf9129-4f2e-4af2-94be-dfca3a9d24ea,Repetition,The action of repeating something that has already been said or written.,3,/ˌrɛpɪˈtɪʃən/,~,System,V01,,2025-01-25 13:58:03.096089+00
+4cd86993-a3e8-4cd4-8f16-44664e395199,Heritage,Property that is or may be inherited.,3,/ˈhɛrɪtɪdʒ/,~,System,Default,,2025-01-25 13:58:03.096089+00
+4d670a61-ddc4-4749-a593-7e16d7684b8f,Mobbing,The act of a group of people crowding around someone in an aggressive or excited way.,1,/ˈmɒbɪŋ/,-,System,V01,,2025-01-25 13:58:03.096089+00
+4e2c284d-15bf-48f4-89ff-2fa2f173a699,Enraged,Very angry; furious.,2,/ɪnˈreɪdʒd/,-,System,V01,,2025-01-25 13:58:03.096089+00
+4ef8a38b-7015-4c2a-a275-79336895b265,Isolation,The process or fact of isolating or being isolated.,2,/ˌaɪsəˈleɪʃən/,-,System,V01,,2025-01-25 13:58:03.096089+00
+503f2394-6b6a-49eb-b20b-9a030a459fb2,Definite,Clearly stated or decided; not vague or doubtful.,4,/ˈdɛfɪnɪt/,+,System,V01,,2025-01-25 13:58:03.096089+00
+5044f8a6-beb5-4ec4-89d9-4980d88627b8,Deplorability,The quality of being deserving strong condemnation.,1,/dɪˌplɔːrəˈbɪlɪti/,-,System,V01,,2025-01-25 13:58:03.096089+00
+50fcd3a3-bdbe-4e3d-b27b-fe4ced7c4441,Exhilaration,"A feeling of excitement, happiness, or elation.",5,/ɪɡˌzɪləˈreɪʃən/,+,System,V01,,2025-01-25 13:58:03.096089+00
+5226ecb1-e4a2-485f-8fcc-5c0664f94593,Suspiciousness,The quality of being suspicious or distrustful.,2,/səˈspɪʃəsnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+52b5a37d-f6da-44d5-bba0-694ddbea33ad,Source,"A place, person, or thing from which something originates.",3,/sɔːrs/,~,System,Default,,2025-01-25 13:58:03.096089+00
+52be81c3-037c-4a54-af47-6c8727e9ff26,Joviality,The quality of being cheerful and friendly.,5,/ˌdʒoʊviˈælɪti/,+,System,V01,,2025-01-25 13:58:03.096089+00
+542339b8-796b-4d44-919f-e59874948ea1,Condescendence,An attitude of patronizing superiority.,2,/ˌkɒndɪˈsɛndəns/,-,System,V01,,2025-01-25 13:58:03.096089+00
+558d2bb1-25cd-4ebf-b6a6-46136afb9e06,Core centring,The act of focusing on one's central or most important part.,4,/kɔːr ˈsɛntərɪŋ/,+,System,Default,,2025-01-25 13:58:03.096089+00
+559b4159-d9e2-4c9f-b003-cb4087962c43,Urge,A strong desire or impulse.,3,/ɜːrdʒ/,~,System,Default,,2025-01-25 13:58:03.096089+00
+560a3a00-f702-44fa-b448-995ca31f353a,Frustrated,Feeling or expressing distress and annoyance resulting from an inability to change or achieve something.,2,/ˈfrʌstreɪtɪd/,-,System,V01,,2025-01-25 13:58:03.096089+00
+5704c32a-286a-4fe8-a359-86db76dd74f1,Effective,Successful in producing a desired or intended result.,5,/ɪˈfɛktɪv/,+,System,V01,,2025-01-25 13:58:03.096089+00
+57acf3b5-d911-4a0e-b504-7f1aa76de430,Rest,"Cease work or movement in order to relax, refresh oneself, or recover strength.",5,/rɛst/,+,System,V01,,2025-01-25 13:58:03.096089+00
+57f950a6-fbbb-43a2-ab68-93e1907fc4a8,Balancing,The act of keeping or putting something in a steady position.,4,/ˈbælənsɪŋ/,+,System,Default,,2025-01-25 13:58:03.096089+00
+58825ed7-540d-436b-9006-b099ac7b76db,Health,The state of being free from illness or injury.,5,/hɛlθ/,+,System,V01,,2025-01-25 13:58:03.096089+00
+588e27fe-d1f5-4a9f-a4d2-c9aee6348ff6,Apathy,"Lack of interest, enthusiasm, or concern.",2,/ˈæpəθi/,-,System,V01,,2025-01-25 13:58:03.096089+00
+59323820-7730-4631-b693-7d60156c8486,Repulsion,A feeling of intense distaste or disgust.,2,/rɪˈpʌlʃən/,-,System,V01,,2025-01-25 13:58:03.096089+00
+5a66ada1-943f-4705-aff9-f55e1126973c,Rebelliousness,The quality of being rebellious.,2,/rɪˈbɛljəsnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+5a9730eb-dc72-4236-abf4-79ce4db2a49e,Sensuality,"The enjoyment, expression, or pursuit of physical, especially sexual, pleasure.",4,/ˌsɛnʃuˈælɪti/,+,System,V01,,2025-01-25 13:58:03.096089+00
+5b5105fa-eca1-45b9-84e2-f320d043386e,Shielding,"Protecting someone or something from a danger, risk, or unpleasant experience.",3,/ˈʃiːldɪŋ/,~,System,V01,,2025-01-25 13:58:03.096089+00
+5c00741c-ccc0-427d-afcd-96691c91686a,Accurate,Correct in all details; exact.,5,/ˈækjərɪt/,+,System,V01,,2025-01-25 13:58:03.096089+00
+5c400d8c-7c1d-4e82-8ae1-dc3a6ef5c30a,Brave,Ready to face and endure danger or pain; showing courage.,5,/breɪv/,+,System,V01,,2025-01-25 13:58:03.096089+00
+5c586c56-d6b2-4bc1-ba5f-17878632997b,Kindness,"The quality of being friendly, generous, and considerate.",5,/ˈkaɪndnəs/,+,System,Default,,2025-01-25 13:58:03.096089+00
+5ce953b6-d356-40ec-bcba-81b8971e0ef1,Authentic,Of undisputed origin; genuine.,5,/ɔˈθɛntɪk/,+,System,V01,,2025-01-25 13:58:03.096089+00
+5cff5deb-cc01-4318-bba5-d00b9a1859f3,Jitteriness,The state of being nervous or unable to relax.,2,/ˈdʒɪtərɪnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+5da51029-e923-4fc9-9368-14eb314f7979,Daring,Adventurous or audaciously bold.,4,/ˈdɛərɪŋ/,+,System,V01,,2025-01-25 13:58:03.096089+00
+5eea8e28-f3d5-4d0c-a1c5-5fd6c44aaa5f,Gleefulness,The quality of being gleeful; joy.,5,/ˈɡliːfʊlnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+5efa3317-e9d0-4ea5-ac6a-fd2691883a2e,Rebirth,The process of being born again.,5,/riːˈbɜːrθ/,+,System,Default,,2025-01-25 13:58:03.096089+00
+5f057de4-443a-4bbc-a222-3ec2acb41bd5,Reprocessing,The act of processing something again.,4,/riˈprɑːsɛsɪŋ/,+,System,Default,,2025-01-25 13:58:03.096089+00
+60aa8880-32be-41b8-bd58-c68541c43227,Fun-loving,"Enjoying the good things in life, especially parties and social activities.",5,/ˈfʌnˌlʌvɪŋ/,+,System,V01,,2025-01-25 13:58:03.096089+00
+61609d81-e949-4281-ac21-8c9237598a51,Brilliance,Exceptional talent or intelligence.,5,/ˈbrɪljəns/,+,System,V01,,2025-01-25 13:58:03.096089+00
+6204d082-0087-431f-a277-5ac397df6216,Overwhelming,Very great in amount.,2,/ˌoʊvərˈwɛlmɪŋ/,-,System,V01,,2025-01-25 13:58:03.096089+00
+6217685f-3c13-4920-90bf-19c3876bada7,Damage,Physical harm caused to something.,1,/ˈdæmɪdʒ/,-,System,V01,,2025-01-25 13:58:03.096089+00
+623f1013-500c-45a3-8a17-eee43b816970,Glow,A steady radiance of light or heat.,4,/ɡloʊ/,+,System,V01,,2025-01-25 13:58:03.096089+00
+62878c7c-03a8-40a2-8c91-8e705d3c3007,Disadvantage,An unfavorable circumstance or condition that reduces the chances of success or effectiveness.,2,/ˌdɪsədˈvæntɪdʒ/,-,System,V01,,2025-01-25 13:58:03.096089+00
+6292f43d-a9e3-4d18-bfd3-6b2f10be53d8,Envy,"A feeling of discontented or resentful longing aroused by someone else's possessions, qualities, or luck.",2,/ˈɛnvi/,-,System,V01,,2025-01-25 13:58:03.096089+00
+638c6549-1c0d-4bf7-8068-d03aa6d6fc4a,Release,The act of setting someone or something free.,4,/rɪˈliːs/,+,System,Default,,2025-01-25 13:58:03.096089+00
+6454c18a-7ccf-4051-b1ec-a4e8d13e7da2,Criticality,"The quality of being critical, especially in a negative sense.",3,/ˌkrɪtɪˈkælɪti/,~,System,V01,,2025-01-25 13:58:03.096089+00
+66e7e095-35c8-4506-ab58-539244d1739b,Spunky,Courageous and determined.,4,/ˈspʌŋki/,+,System,V01,,2025-01-25 13:58:03.096089+00
+6720477d-2efd-4b16-80c4-b81a414454e9,Judgmentalism,The tendency to judge people too quickly and critically.,2,/dʒʌdʒˈmɛntəlɪzəm/,-,System,V01,,2025-01-25 13:58:03.096089+00
+67bc682c-ca2c-4bee-9883-aa1f0235283d,Cheerfulness,The quality or state of being noticeably happy and optimistic.,5,/ˈtʃɪrflnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+68223b61-0458-44e8-b7f6-efd94c6f5741,Incapacitated,Deprived of strength or power; debilitated.,2,/ˌɪnkəˈpæsɪteɪtɪd/,-,System,V01,,2025-01-25 13:58:03.096089+00
+68aab2a2-1af7-4698-ab4b-24f44cd45b80,Smiling,"Forming one's features into a pleased, kind, or amused expression, typically with the corners of the mouth turned up and the front teeth exposed.",5,/ˈsmaɪlɪŋ/,+,System,V01,,2025-01-25 13:58:03.096089+00
+68d551cb-1f66-404f-bc5b-af3f6bd753e7,Song,A short poem or other set of words set to music or meant to be sung.,5,/sɒŋ/,+,System,V01,,2025-01-25 13:58:03.096089+00
+69e20256-7b5a-4402-b635-c6b7cc7c0906,Advocacy,Public support for or recommendation of a particular cause or policy.,5,/ˈædvəkəsi/,+,System,V01,,2025-01-25 13:58:03.096089+00
+6a2f886c-c8e1-4c31-a380-97b142940402,Reflective,Providing a reflection; capable of reflecting light or other radiation.,4,/rɪˈflɛktɪv/,+,System,V01,,2025-01-25 13:58:03.096089+00
+6a5f9428-b004-45f4-9726-164246fc6333,Fraudulence,"The action or quality of cheating, lying, or deceiving someone.",1,/ˈfrɔːdjʊləns/,-,System,V01,,2025-01-25 13:58:03.096089+00
+6c03bd82-4b2b-41bd-9fc5-dd5677b54c8c,Self-sufficiency,The quality or condition of being self-sufficient.,5,/sɛlf səˈfɪʃənsi/,+,System,V01,,2025-01-25 13:58:03.096089+00
+6c9f5f88-1b04-4964-9c59-610cf9305673,Youthfulness,The quality of being young and energetic.,5,/ˈjuθfʊlnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+6d05d207-2fc6-4ce5-85f4-4e2b30aeef8e,Light,The natural agent that stimulates sight and makes things visible.,5,/laɪt/,+,System,V01,,2025-01-25 13:58:03.096089+00
+6e95b3d5-76d8-4d0e-96b4-195c69ccbae3,Venomousness,The quality of being venomous; capable of injecting venom by means of a bite or sting.,2,/ˈvɛnəməsnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+6ea4426d-7ae8-4cf5-b982-dd751c72888e,Savings,"The money one has saved, especially through a bank or official scheme.",5,/ˈseɪvɪŋz/,+,System,V01,,2025-01-25 13:58:03.096089+00
+6ecb5425-dd75-4484-8de3-2938fca3a805,Superior,"Higher in rank, status, or quality.",5,/suːˈpɪriər/,+,System,V01,,2025-01-25 13:58:03.096089+00
+6f2a8794-fd78-4aff-bc2d-84c053357747,Vulnerability,"The quality or state of being exposed to the possibility of being attacked or harmed, either physically or emotionally.",2,/ˌvʌlnərəˈbɪlɪti/,-,System,V01,,2025-01-25 13:58:03.096089+00
+700c1002-b027-486d-a523-3abaac13902b,Maliciousness,The quality of being malicious; intending to do harm.,1,/məˈlɪʃəsnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+70519c03-7447-4100-b283-3727d42dc722,Mother,A female parent.,3,/ˈmʌðər/,~,System,Default,,2025-01-25 13:58:03.096089+00
+71c4000c-9b9d-435f-bd54-b7aa1ff01c5d,Absolute,Not qualified or diminished in any way; total.,5,/ˈæbsəˌlut/,+,System,V01,,2025-01-25 13:58:03.096089+00
+71f635eb-fcec-496c-b7ab-396b18591e5b,Unresponsive,Not responsive.,2,/ˌʌnrɪˈspɒnsɪv/,-,System,V01,,2025-01-25 13:58:03.096089+00
+728b9dd9-db40-4110-8451-667359a2679b,Hate,Intense dislike or ill will.,1,/heɪt/,-,System,V01,,2025-01-25 13:58:03.096089+00
+74585d47-6d6f-4eee-9cef-7fb151a97943,Surety,The state of being sure or certain of something.,5,/ˈʃʊrɪti/,+,System,V01,,2025-01-25 13:58:03.096089+00
+74ae9eb2-6595-41aa-bbd3-ecfb16e41c7c,Truth,The quality or state of being true.,5,/truːθ/,+,System,V01,,2025-01-25 13:58:03.096089+00
+75d7f9ef-1009-4917-b747-28f014db7ea3,Stable,Not likely to change or fail; firmly established.,5,/ˈsteɪbəl/,+,System,V01,,2025-01-25 13:58:03.096089+00
+75ee1d46-2d2e-42a2-954b-817bbc7a9e45,Duality,The quality or condition of being dual.,3,/djuˈælɪti/,~,System,V01,,2025-01-25 13:58:03.096089+00
+761dab20-be88-46ad-b8cc-d54b9349bfa2,Fate,The development of events beyond a person's control.,3,/feɪt/,~,System,Default,,2025-01-25 13:58:03.096089+00
+76eb3eac-4de9-4e37-8cdb-5d765879b696,Impatience,The tendency to be impatient; irritability or restlessness.,2,/ɪmˈpeɪʃəns/,-,System,V01,,2025-01-25 13:58:03.096089+00
+77105be6-fd70-47c3-9f39-b3d6eee5bdc1,Contrariness,The quality of being contrary or perverse.,2,/kənˈtrɛrɪnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+7770e23e-c278-47c2-a8c8-ac48c91ebbbf,Rampant,Flourishing or spreading unchecked.,2,/ˈræmpənt/,-,System,Default,,2025-01-25 13:58:03.096089+00
+788216ee-c011-4df8-86db-af928146d333,Unsure,"Not feeling, showing, or done with confidence and certainty.",2,/ʌnˈʃʊr/,-,System,V01,,2025-01-25 13:58:03.096089+00
+7a14e0cf-c07f-4dc0-886a-6fb07ec5b383,At ease,Feeling relaxed and comfortable.,5,/æt iz/,+,System,V01,,2025-01-25 13:58:03.096089+00
+7a2536aa-2f18-4286-bd6e-e11cb769f1a4,Aggravation,The state of becoming worse or more serious.,2,/ˌæɡrəˈveɪʃən/,-,System,V01,,2025-01-25 13:58:03.096089+00
+7adefa4b-f0fb-4071-a09e-880bfd611ae6,Unreliable,Not able to be relied upon.,2,/ˌʌnrɪˈlaɪəbəl/,-,System,V01,,2025-01-25 13:58:03.096089+00
+7b0fbf93-1eed-464a-b548-9a5d8401f2c5,Prudence,The quality of being prudent; cautiousness.,4,/ˈpruːdəns/,+,System,V01,,2025-01-25 13:58:03.096089+00
+7b4d544c-a413-4949-b249-99976cdf28c9,Ordeal,"A painful or horrific experience, especially a protracted one.",2,/ɔrˈdil/,-,System,V01,,2025-01-25 13:58:03.096089+00
+7baac1f0-10ec-42b4-b4da-64dae896d43d,Despair,The complete loss or absence of hope.,1,/dɪˈspɛər/,-,System,V01,,2025-01-25 13:58:03.096089+00
+7cd275bd-893e-4d2d-b95f-aba6d01ac809,Elation,Great happiness and exhilaration.,5,/ɪˈleɪʃən/,+,System,V01,,2025-01-25 13:58:03.096089+00
+7d11399b-c4ef-4afb-9810-4c7503b8af6d,Curiosity,A strong desire to know or learn something.,4,/ˌkjʊriˈɒsɪti/,+,System,Default,,2025-01-25 13:58:03.096089+00
+7d570178-84d6-4e71-8316-27b8231673a8,Intrusion,The action of intruding.,1,/ɪnˈtruːʒən/,-,System,V01,,2025-01-25 13:58:03.096089+00
+7e5c20e4-3286-4b98-a0c7-35cb5a98d7c1,Procrastination,The action of delaying or postponing something.,2,/proʊˌkræstɪˈneɪʃən/,-,System,V01,,2025-01-25 13:58:03.096089+00
+7e9eb7b6-3d71-43a8-bd86-66200413f5fd,Sincerity,"The quality of being free from pretense, deceit, or hypocrisy.",5,/sɪnˈsɪərɪti/,+,System,V01,,2025-01-25 13:58:03.096089+00
+7fc11263-7ade-4821-ac7d-89aa53e94ce3,Sarcasm,The use of irony to mock or convey contempt.,2,/ˈsɑrkæzəm/,-,System,V01,,2025-01-25 13:58:03.096089+00
+7fca06b5-06ac-4336-9c3a-8b650cee91ca,Endurance,The ability to endure an unpleasant or difficult process or situation without giving way.,4,/ɪnˈdjʊərəns/,+,System,V01,,2025-01-25 13:58:03.096089+00
+800b3acc-663d-4782-9818-d66313dd14e3,Abusiveness,The bad quality of being abusive towards someone or something.,1,/əˈbjuːsɪvnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+802d5e36-e69d-4253-b29c-95c5b4121abb,Spirited,"Full of energy, enthusiasm, and determination.",5,/ˈspɪrɪtɪd/,+,System,V01,,2025-01-25 13:58:03.096089+00
+812f5b6a-41b0-41d7-8657-1a48cb26dd77,Satisfaction,"The fulfillment of one's wishes, expectations, or needs.",5,/ˌsætɪsˈfækʃən/,+,System,V01,,2025-01-25 13:58:03.096089+00
+81a4e70c-f2d8-4e0a-a883-0b15f2a9a8a3,Appal,To greatly dismay or horrify.,2,/əˈpɔːl/,-,System,V01,,2025-01-25 13:58:03.096089+00
+81e98c22-e9b2-4d40-ade2-2e6a4ccf8fb9,Spontaneous,Performed or occurring as a result of a sudden inner impulse or inclination and without premeditation or external stimulus.,4,/spɒnˈteɪniəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+82843881-d7e6-4ba0-82dc-533b9f8d83e4,Approval,The belief that someone or something is good or acceptable.,5,/əˈpruvəl/,+,System,V01,,2025-01-25 13:58:03.096089+00
+83648641-ce74-4d8d-8ccf-de745c582605,Distrustfulness,The quality of being distrustful.,2,/dɪsˈtrʌstfʊlnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+84b8b802-c86b-4d7e-9866-9cbc903ce880,Freedom,"The power or right to act, speak, or think as one wants without hindrance or restraint.",5,/ˈfriːdəm/,+,System,V01,,2025-01-25 13:58:03.096089+00
+8576da47-05e8-45b2-9477-455c0272c792,Rampancy,The quality of being rampant; uncontrolled.,2,/ˈræmpənsi/,-,System,V01,,2025-01-25 13:58:03.096089+00
+864b6dc2-ea89-4b64-b7d2-a63c395f1261,Modesty,The quality of not being too proud or confident.,4,/ˈmɒdɪsti/,+,System,Default,,2025-01-25 13:58:03.096089+00
+87323785-e297-4f12-bc1b-6470b78e2993,Wonderfulness,The quality of being wonderful.,5,/ˈwʌndərfʊlnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+87ad5066-f552-404e-abc9-30932392e658,Emphasis,"Special importance, value, or prominence given to something.",4,/ˈɛmfəsɪs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+882e5d2e-cbfb-47b1-813c-2d94a88a446c,Limitation,A restriction or boundary.,2,/ˌlɪmɪˈteɪʃən/,-,System,V01,,2025-01-25 13:58:03.096089+00
+88926336-92b0-46d7-be9e-88119741a87b,Life force,The energy that gives life to living beings.,4,/laɪf fɔːrs/,+,System,Default,,2025-01-25 13:58:03.096089+00
+88e32108-ec69-4a2a-9904-9497a268b426,Upbeat,Cheerful and optimistic.,5,/ˈʌpˌbit/,+,System,V01,,2025-01-25 13:58:03.096089+00
+89aa44da-3ba8-4189-8610-065ca27b7d88,Plotting,Secretly making plans to carry out an illegal or harmful action.,2,/ˈplɒtɪŋ/,-,System,V01,,2025-01-25 13:58:03.096089+00
+89b37eea-ca63-4560-99d7-558380539eb5,Uncertain,Not able to be relied on; not known or definite.,2,/ʌnˈsɜrtən/,-,System,V01,,2025-01-25 13:58:03.096089+00
+89bb779d-a8eb-40f1-8339-91af7d761bf9,Willingness,The quality of being prepared to do something.,4,/ˈwɪlɪŋnəs/,+,System,Default,,2025-01-25 13:58:03.096089+00
+8a8102bc-4e77-4b8b-b584-06bd3c170bf6,Jealousy,The state or feeling of being jealous.,2,/ˈdʒɛləsi/,-,System,V01,,2025-01-25 13:58:03.096089+00
+8c2b762d-ee26-464c-bf93-e584ce361b50,Honour,High respect; esteem.,5,/ˈɒnər/,+,System,V01,,2025-01-25 13:58:03.096089+00
+8c6d5e8f-2b85-4839-803d-0410db6bf184,Confiding,Trusting someone enough to tell them secrets or private matters.,4,/kənˈfaɪdɪŋ/,+,System,V01,,2025-01-25 13:58:03.096089+00
+8cfe6911-4bcf-4d55-a1d1-38525836cad9,Alarm,An anxious awareness of danger.,2,/əˈlɑrm/,-,System,V01,,2025-01-25 13:58:03.096089+00
+8e807bab-66f4-4934-9a8c-ff977cf47774,Severity,The fact or condition of being severe.,2,/sɪˈvɛrɪti/,-,System,V01,,2025-01-25 13:58:03.096089+00
+8e830d26-7bda-4320-aedc-4e7d4aec5ae9,Grief,"Deep sorrow, especially that caused by someone's death.",2,/ɡriːf/,-,System,V01,,2025-01-25 13:58:03.096089+00
+8e9e18d5-15c6-41cc-a12b-9eca3008b712,Astonishment,Great surprise.,5,/əˈstɑnɪʃmənt/,+,System,V01,,2025-01-25 13:58:03.096089+00
+8ef3964e-6f2c-416b-9d1f-9a33423b15c2,Conscientiousness,The quality of wishing to do one's work or duty well and thoroughly.,5,/ˌkɒnʃiˈɛnʃəsnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+8f16268c-d7fd-44d8-ba0f-181096ed2dcc,Creativity,The use of imagination or original ideas to create something.,5,/ˌkriːeɪˈtɪvɪti/,+,System,V01,,2025-01-25 13:58:03.096089+00
+8f823dab-753e-4661-906b-099edd9f01b8,Stand,An attitude toward a particular issue; a position taken in an argument.,3,/stænd/,~,System,V01,,2025-01-25 13:58:03.096089+00
+90248e76-dc73-4ef7-a2c7-b268ee032328,Causality,The relationship between cause and effect.,3,/kɔˈzælɪti/,~,System,V01,,2025-01-25 13:58:03.096089+00
+91094b85-ad5d-4f90-9b12-6a5db6b8f337,Cover-up,An attempt to prevent people from discovering the truth about a serious mistake or crime.,1,/ˈkʌvərˌʌp/,-,System,V01,,2025-01-25 13:58:03.096089+00
+91527df6-a1cb-4d97-880a-2c8279b4ea53,Assuredness,Confidence in oneself or one's abilities.,4,/əˈʃʊrdnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+9161303e-cbec-4c2c-9502-7b5f46bfeb63,Blissfulness,The state of being extremely happy.,5,/ˈblɪsfəlnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+917f6341-61e2-4665-ba56-6e165625e014,Suspension,The temporary prevention of something.,3,/səˈspɛnʃən/,~,System,Default,,2025-01-25 13:58:03.096089+00
+9187a714-af61-4a0e-b427-127a2e7e3340,Stalking,"The act of following or harassing another person, causing them to fear for their safety.",1,/ˈstɔːkɪŋ/,-,System,V01,,2025-01-25 13:58:03.096089+00
+925918af-6218-4ba4-a8b6-e439ccf6d910,Wickedness,The quality of being evil or morally wrong.,2,/ˈwɪkɪdnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+9290ebfc-2253-42b7-8b24-f9563e79a9c9,Certainty,Firm conviction that something is the case.,5,/ˈsɜrtnti/,+,System,V01,,2025-01-25 13:58:03.096089+00
+933cf6dc-b006-433e-98f5-0a81d1a8a689,Constructivism,A philosophy of learning based on the premise that people construct their own understanding and knowledge of the world through experiences and reflecting on those experiences.,4,/kənˈstrʌktɪˌvɪzəm/,+,System,V01,,2025-01-25 13:58:03.096089+00
+934aec27-d1c7-4086-b8bd-fc0c66a2d66e,Purification,The act of making something pure.,4,/ˌpjʊrɪfɪˈkeɪʃən/,+,System,Default,,2025-01-25 13:58:03.096089+00
+9350c4d3-4f25-4da3-9a53-f73b18dc898a,Awareness,Knowledge or perception of a situation or fact.,4,/əˈwɛrnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+941c4be2-cfd9-42b1-a5ce-030a79f8dd6a,Privilege,"A special right, advantage, or immunity granted or available only to a particular person or group.",4,/ˈprɪvəlɪdʒ/,+,System,V01,,2025-01-25 13:58:03.096089+00
+95538e85-f021-4ce6-933c-14a23805aa83,Phobias,Extreme or irrational fears of or aversions to something.,1,/ˈfoʊbiəz/,-,System,V01,,2025-01-25 13:58:03.096089+00
+957a9024-5367-4331-b826-2cb805855efb,Blacklisted,Being put on a list of people or things regarded as unacceptable or untrustworthy.,1,/ˈblæklɪstɪd/,-,System,V01,,2025-01-25 13:58:03.096089+00
+96c3a07f-bddf-4945-9a43-b73e56ba64ee,Tragic,Causing or characterized by extreme distress or sorrow.,2,/ˈtrædʒɪk/,-,System,V01,,2025-01-25 13:58:03.096089+00
+97428272-c05d-471a-8e7c-ca3c97b755b7,Security,The state of being free from danger or threat.,5,/sɪˈkjʊrɪti/,+,System,V01,,2025-01-25 13:58:03.096089+00
+975d06d6-48a3-4f69-b4af-c6997a1e01ee,Hopefulness,The feeling or state of being hopeful.,5,/ˈhoʊpfʊlnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+9858caf1-7a32-4f25-abbe-a9d7e83d17ea,Fortune,"Chance or luck as an external, arbitrary force affecting human affairs.",5,/ˈfɔːrtʃən/,+,System,V01,,2025-01-25 13:58:03.096089+00
+99086c34-18e4-4039-ba31-a4cceb78a79d,Submerging,The act of sinking below the surface.,3,/səbˈmɜːrdʒɪŋ/,~,System,Default,,2025-01-25 13:58:03.096089+00
+9951d0fb-be3f-4c88-bf2b-affcdf597f9e,Colliding,The act of coming into conflict or striking together.,3,/kəˈlaɪdɪŋ/,~,System,Default,,2025-01-25 13:58:03.096089+00
+9a2e8129-cd88-4038-8319-4cfe01588734,Forbidden,Not allowed; banned.,2,/fərˈbɪdən/,-,System,V01,,2025-01-25 13:58:03.096089+00
+9a3e8ce6-ce5c-4db0-b9f2-45c2bf515db4,Okay,Satisfactory but not exceptionally or especially good.,4,/oʊˈkeɪ/,+,System,V01,,2025-01-25 13:58:03.096089+00
+9a45e4d9-ef06-445c-a413-0b508c76cd8f,Reduction,"The action or fact of making something smaller or less in amount, degree, or size.",3,/rɪˈdʌkʃən/,~,System,V01,,2025-01-25 13:58:03.096089+00
+9ae991ec-d9ec-4426-b664-20d2ba014348,Joyless,Lacking joy or happiness.,1,/ˈdʒɔɪləs/,-,System,Default,,2025-01-25 13:58:03.096089+00
+9afa89e8-4a2a-467d-b831-8ea06337caf3,Urgency,Importance requiring swift action.,3,/ˈɜrdʒənsi/,~,System,V01,,2025-01-25 13:58:03.096089+00
+9b7178eb-56ee-4440-9e6e-1fd796de2388,Stability,The state of being stable.,4,/stəˈbɪlɪti/,+,System,Default,,2025-01-25 13:58:03.096089+00
+9ca51aa2-2176-4bc6-82ce-62ada8c7dc9d,Infinity,The state of being infinite.,3,/ɪnˈfɪnɪti/,~,System,Default,,2025-01-25 13:58:03.096089+00
+9d5f8577-602b-4147-adf5-3a18eb109286,Doubt,A feeling of uncertainty or lack of conviction.,2,/daʊt/,-,System,V01,,2025-01-25 13:58:03.096089+00
+9e428117-9300-4ad1-bbb8-6ea5992cd9bf,Advocating,Publicly recommending or supporting something.,4,/ˈædvəˌkeɪtɪŋ/,+,System,Default,,2025-01-25 13:58:03.096089+00
+9e79c0b9-6a88-48d9-9a13-77679d2e5055,Off-kilter,Unbalanced or eccentric.,3,/ɔf ˈkɪltər/,~,System,V01,,2025-01-25 13:58:03.096089+00
+9f31e74f-3641-461e-8b94-536a11e089b0,Terrible,Extremely or distressingly bad or serious.,1,/ˈtɛrɪbəl/,-,System,V01,,2025-01-25 13:58:03.096089+00
+a10360aa-cf17-420b-82f9-71351743a564,Uninterested,Not interested in or concerned about something or someone.,2,/ʌnˈɪntrəstɪd/,-,System,V01,,2025-01-25 13:58:03.096089+00
+a14983f4-d041-4949-a0c0-b7c4b1b5f60a,Disdainfulness,The quality of showing disdain.,1,/dɪsˈdeɪnfəlnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+a14a1fab-c3ff-4306-9503-c54ad128874e,Explosion,A violent and destructive shattering or blowing apart of something.,3,/ɪkˈsploʊʒən/,~,System,V01,,2025-01-25 13:58:03.096089+00
+a1514145-5917-48c7-81ef-b3542a34dab3,Reliability,The quality of being trustworthy or of performing consistently well.,5,/rɪˌlaɪəˈbɪlɪti/,+,System,V01,,2025-01-25 13:58:03.096089+00
+a2d79450-9ffe-494a-b774-09662dd953a5,Provocation,"Action or speech that makes someone annoyed or angry, especially deliberately.",2,/ˌprɒvəˈkeɪʃən/,-,System,V01,,2025-01-25 13:58:03.096089+00
+a2da0cb3-9963-4563-82db-ec234d2772fe,Unhurried,"Moving, acting, or taking place without haste or urgency.",4,/ʌnˈhɜrid/,+,System,V01,,2025-01-25 13:58:03.096089+00
+a2db45e6-0cee-4069-9d4e-a4a39c78b209,Dishonesty,Deceitfulness shown in someone's character or behavior.,1,/dɪsˈɒnɪsti/,-,System,V01,,2025-01-25 13:58:03.096089+00
+a31202c3-c158-4743-a3f8-eb4911a03085,Shamefulness,The quality of being shameful.,2,/ˈʃeɪmfʊlnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+a57975d2-8f0f-4cee-b8b5-4066d76f231b,Illusion,A false idea or belief.,2,/ɪˈluːʒən/,-,System,Default,,2025-01-25 13:58:03.096089+00
+a5f01b21-410b-467d-b44a-ebbe8e37f96b,Conversion,The process of changing or causing something to change from one form to another.,4,/kənˈvɜrʒən/,+,System,V01,,2025-01-25 13:58:03.096089+00
+a6236c19-87cb-4445-83f6-fddda4dbb62a,Flaunting,Displaying something ostentatiously.,2,/ˈflɔːntɪŋ/,-,System,Default,,2025-01-25 13:58:03.096089+00
+a69e81c5-c0b7-4d70-b02a-ddec798c304e,Vitality,The state of being strong and active.,5,/vaɪˈtælɪti/,+,System,Default,,2025-01-25 13:58:03.096089+00
+a6a9c072-0fff-4b4f-a48f-c681f1da1c12,Apprehension,Anxiety or fear that something bad or unpleasant will happen.,2,/ˌæprɪˈhɛnʃən/,-,System,V01,,2025-01-25 13:58:03.096089+00
+a6df09f0-62a0-4566-9c4b-231ce4525598,Authoritative,Commanding and self-confident; likely to be respected and obeyed.,4,/əˈθɔrɪˌteɪtɪv/,+,System,V01,,2025-01-25 13:58:03.096089+00
+a89ddd4b-526e-467c-8dbb-fcd94a698e4b,Distraction,A thing that prevents someone from giving full attention to something else.,2,/dɪˈstrækʃən/,-,System,V01,,2025-01-25 13:58:03.096089+00
+a8f66472-ad1c-4605-8ceb-89041d1b9c54,Triumphing,Achieving a victory or success.,4,/ˈtraɪəmfɪŋ/,+,System,Default,,2025-01-25 13:58:03.096089+00
+a9204417-ee99-4dc0-9e47-9d73fb60f601,Daughter,A female child in relation to her parents.,3,/ˈdɔːtər/,~,System,Default,,2025-01-25 13:58:03.096089+00
+a9c54ec6-fde1-4f41-a911-b72cd3073a26,Euphoria,A feeling or state of intense excitement and happiness.,5,/juːˈfɔːriə/,+,System,V01,,2025-01-25 13:58:03.096089+00
+aa056e09-bdc6-4404-9b42-e5b098c937bb,Beguiling,"Charming or enchanting, often in a deceptive way.",2,/bɪˈɡaɪlɪŋ/,-,System,Default,,2025-01-25 13:58:03.096089+00
+aaa7ace3-afc0-4ac5-aaf1-540b15b8c565,Tenacity,The quality or fact of being able to grip something firmly; grip.,5,/təˈnæsɪti/,+,System,V01,,2025-01-25 13:58:03.096089+00
+aab5a084-d1ec-4a73-8e25-c8838c92d06f,Violence,"Behavior involving physical force intended to hurt, damage, or kill someone or something.",1,/ˈvaɪələns/,-,System,V01,,2025-01-25 13:58:03.096089+00
+aacf12e4-7afa-4165-9db7-c1e2fcb7fa3d,Union,The action of joining together.,4,/ˈjuːnjən/,+,System,Default,,2025-01-25 13:58:03.096089+00
+ab52472f-ddef-4a85-86a1-46601cc16ace,Immersing,The act of deeply involving oneself in an activity.,4,/ɪˈmɜːrsɪŋ/,+,System,Default,,2025-01-25 13:58:03.096089+00
+abbd3eb9-fe3a-4c5a-81dc-16716f502769,Agony,Extreme physical or mental suffering.,1,/ˈæɡəni/,-,System,V01,,2025-01-25 13:58:03.096089+00
+ac91f252-416b-47cb-b1a2-64ecb5e52753,Still,Not moving or making a sound.,4,/stɪl/,+,System,V01,,2025-01-25 13:58:03.096089+00
+acc0b93b-a659-4e01-9be7-f6fb87204f2e,Concern,A matter of interest or importance.,3,/kənˈsɜːrn/,~,System,Default,,2025-01-25 13:58:03.096089+00
+ad75e532-c60a-44c7-9c82-9331141e3f4b,Meditative,Involving or absorbed in meditation or considered thought.,4,/ˈmɛdɪˌteɪtɪv/,+,System,V01,,2025-01-25 13:58:03.096089+00
+adbb0938-77e3-48c9-a86b-f6dbe1511158,Guarantee,A formal assurance that certain conditions will be fulfilled.,4,/ˌɡærənˈtiː/,+,System,V01,,2025-01-25 13:58:03.096089+00
+ae4a3898-efd7-4496-8c0f-316da19216aa,Dreadfulness,The quality of being dreadful.,1,/ˈdrɛdfəlnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+ae51c14f-0f27-4e2d-989f-8c5e1c5036a3,Fluidity,The quality of being smooth and graceful.,4,/fluːˈɪdɪti/,+,System,V01,,2025-01-25 13:58:03.096089+00
+ae681e37-dcd2-4564-b357-e41e3eca1d00,Productivity,"The state or quality of producing something, especially crops.",5,/ˌproʊdʌkˈtɪvɪti/,+,System,V01,,2025-01-25 13:58:03.096089+00
+b00be7c8-b1c8-41c3-a605-59758ae295ec,Obsession,The state of being obsessed with someone or something.,2,/əbˈsɛʃən/,-,System,V01,,2025-01-25 13:58:03.096089+00
+b2ca71d3-2473-4512-80fb-62c30b4f6278,Fostering,Encouraging the development of something.,4,/ˈfɒstərɪŋ/,+,System,Default,,2025-01-25 13:58:03.096089+00
+b46dcf99-98e0-4932-82d9-b4ce5fbead04,Family,A group consisting of parents and their children living together in a household.,5,/ˈfæmɪli/,+,System,V01,,2025-01-25 13:58:03.096089+00
+b49fb561-f7b5-4be7-9040-6175b3b9f5d5,Comfort,A state of physical ease and freedom from pain or constraint.,5,/ˈkʌmfərt/,+,System,V01,,2025-01-25 13:58:03.096089+00
+b4fce48b-e81a-44d8-8162-b16c4fdeed82,Performance,The action or process of performing a task or function.,4,/pərˈfɔːrməns/,+,System,V01,,2025-01-25 13:58:03.096089+00
+b512927d-6c38-4ce7-957a-9039f00c25a8,Weaving love,The act of creating love through interlacing.,4,/ˈwiːvɪŋ lʌv/,+,System,Default,,2025-01-25 13:58:03.096089+00
+b51f9b8d-b0cc-4e0f-8dde-658f76e61293,Compulsion,The action or state of forcing or being forced to do something.,2,/kəmˈpʌlʃən/,-,System,Default,,2025-01-25 13:58:03.096089+00
+b52571ad-1683-43fd-9970-d035b0572755,Vibrating,Moving continuously and rapidly to and fro.,4,/ˈvaɪbreɪtɪŋ/,+,System,Default,,2025-01-25 13:58:03.096089+00
+b54dd2a8-5bf4-4f58-bafc-d53d12688e1f,Secret,Something that is kept or meant to be kept unknown or unseen by others.,3,/ˈsiːkrɪt/,~,System,V01,,2025-01-25 13:58:03.096089+00
+b5685f36-b584-4b32-8a5d-04f7eda091d0,Fulfilled,Satisfied or happy because of fully developing one's abilities or character.,5,/fʊlˈfɪld/,+,System,V01,,2025-01-25 13:58:03.096089+00
+b5bededc-91b2-4bd6-9dcb-3b65eb8b4ed2,Abuse,The improper use of something.,1,/əˈbjuːs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+b5f57ad3-23ab-493b-ad62-4b1092e44fd8,Agoraphobia,Extreme or irrational fear of open or public places.,1,/ˌæɡərəˈfoʊbiə/,-,System,V01,,2025-01-25 13:58:03.096089+00
+b5fd0dcd-cd01-4afc-9d6d-f4473c421c3d,Righteousness,The quality of being morally right or justifiable.,3,/ˈraɪtʃəsnəs/,~,System,Default,,2025-01-25 13:58:03.096089+00
+b66c2135-781e-495d-ae5e-68addc52abc5,Shock,A sudden upsetting or surprising event or experience.,2,/ʃɒk/,-,System,V01,,2025-01-25 13:58:03.096089+00
+b6c7b479-c988-4d4e-a044-a0292f02a175,Clarity,"The quality of being clear, in particular.",5,/ˈklærɪti/,+,System,V01,,2025-01-25 13:58:03.096089+00
+b6f8640a-f9f3-4dc4-87c3-a70cfe0c5ec8,Resolve,Firm determination to do something.,4,/rɪˈzɒlv/,+,System,V01,,2025-01-25 13:58:03.096089+00
+b712b91a-fa75-4164-99d8-7a04ccb85fa6,Immersion,The action of immersing someone or something in a liquid.,4,/ɪˈmɜːrʃən/,+,System,V01,,2025-01-25 13:58:03.096089+00
+b774be8d-fbb3-41dc-8988-6778d3ee3d3b,Unique,Being the only one of its kind; unlike anything else.,5,/juˈnik/,+,System,V01,,2025-01-25 13:58:03.096089+00
+b781a088-da6a-427a-b1e7-cbf77afefbf0,Tense,"Unable to relax because of nervousness, anxiety, or stimulation.",2,/tɛns/,-,System,V01,,2025-01-25 13:58:03.096089+00
+b8d20a43-4ce0-469f-9d77-9f0051292297,Optimism,Hopefulness and confidence about the future or the successful outcome of something.,5,/ˈɒptɪˌmɪzəm/,+,System,V01,,2025-01-25 13:58:03.096089+00
+b9afa455-c274-42a6-854e-a0d126c65a6b,Honesty,The quality of being honest.,5,/ˈɒnɪsti/,+,System,V01,,2025-01-25 13:58:03.096089+00
+ba0df8e1-2389-40e1-bf93-707165559964,Agitation,A state of anxiety or nervous excitement.,2,/ˌædʒɪˈteɪʃən/,-,System,V01,,2025-01-25 13:58:03.096089+00
+bae45395-6ab2-4bfd-bae1-70cb73d3cf64,Paralyzed,Unable to move or act.,2,/ˈpærəˌlaɪzd/,-,System,V01,,2025-01-25 13:58:03.096089+00
+bbb56787-732d-4f06-a3a0-58af9ea173f1,Frenzied,Wildly excited or uncontrolled.,2,/ˈfrɛnziːd/,-,System,V01,,2025-01-25 13:58:03.096089+00
+bbfcfd78-558d-4b1a-bf36-81f378dccc26,Ease,Absence of difficulty or effort.,5,/iːz/,+,System,V01,,2025-01-25 13:58:03.096089+00
+bc8e258d-1d1d-43ee-b119-d39d53c42b0d,Festivity,The celebration of something in a joyful and exuberant way.,5,/fɛˈstɪvɪti/,+,System,V01,,2025-01-25 13:58:03.096089+00
+bd0f2183-4f62-4072-8b92-29731bb54d3d,Preening,The act of making oneself look attractive.,2,/ˈpriːnɪŋ/,-,System,Default,,2025-01-25 13:58:03.096089+00
+bd615f6f-dec1-4ce9-8573-f9d0171cb758,Surrendering,The act of giving up or yielding.,3,/səˈrɛndərɪŋ/,~,System,Default,,2025-01-25 13:58:03.096089+00
+be5cb38a-f8d4-43d8-85fe-bdcc204f9d00,Repairing,The act of fixing or mending something.,4,/rɪˈpɛrɪŋ/,+,System,Default,,2025-01-25 13:58:03.096089+00
+befb471b-364c-4679-bf90-b15309b1c622,Deadline,The latest time or date by which something should be completed.,3,/ˈdɛdˌlaɪn/,~,System,V01,,2025-01-25 13:58:03.096089+00
+c019eafd-88fc-47c6-8e73-fe9ae6bce043,Libation,A drink poured out as an offering to a deity.,3,/laɪˈbeɪʃən/,~,System,Default,,2025-01-25 13:58:03.096089+00
+c0b236af-f88f-450a-a90b-2cb5b8ca7486,Animated,Full of life or excitement; lively.,4,/ˈænɪˌmeɪtɪd/,+,System,V01,,2025-01-25 13:58:03.096089+00
+c0fd95f8-66b3-48b9-8f14-c10476408c65,Brightness,The quality or state of giving out or reflecting light.,5,/ˈbraɪtnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+c132fdbb-61a8-45c6-a2ad-6bafdc5590c5,Provision,The action of providing or supplying something for use.,4,/prəˈvɪʒən/,+,System,V01,,2025-01-25 13:58:03.096089+00
+c1d8f801-947a-4e22-8e2d-f9aca1088c5b,Trustworthy,Able to be relied on as honest or truthful.,5,/ˈtrʌstwɜːrði/,+,System,V01,,2025-01-25 13:58:03.096089+00
+c1f02103-0c38-4b58-afca-8933b02cfc14,Praise,The expression of approval or admiration.,5,/preɪz/,+,System,Default,,2025-01-25 13:58:03.096089+00
+c25245da-178c-47e6-a49d-1976d981ecc7,Unveiling,The act of revealing something.,4,/ˌʌnˈveɪlɪŋ/,+,System,Default,,2025-01-25 13:58:03.096089+00
+c3721b99-b77a-4a18-bbf7-1a5bf1b3ed49,Greed,"Intense and selfish desire for something, especially wealth, power, or food.",1,/ɡriːd/,-,System,V01,,2025-01-25 13:58:03.096089+00
+c3c436ee-652f-4375-981d-3566edd4b63a,Funny,Causing laughter or amusement; humorous.,5,/ˈfʌni/,+,System,V01,,2025-01-25 13:58:03.096089+00
+c3c6476b-04bf-4af3-acde-3de861e00575,Restlessness,The inability to rest or relax as a result of anxiety or boredom.,2,/ˈrɛstləsnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+c3ec2167-91cd-4f84-8871-a37f6ebf0b2a,Resourcefulness,The ability to find quick and clever ways to overcome difficulties.,5,/rɪˈsɔrsfʊlnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+c42346dc-f9c2-4cda-a000-570ff45ca657,Ceremony,A formal event held on a special occasion.,4,/ˈsɛrəˌmoʊni/,+,System,Default,,2025-01-25 13:58:03.096089+00
+c440e60d-eed0-42ff-9637-b4a64b262614,Joylessness,The state of being without joy.,2,/ˈdʒɔɪlɪsnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+c4bcc31a-3cd7-4094-8c9f-383bb17012ed,Spiralling,Moving in a spiral course.,3,/ˈspaɪrəlɪŋ/,~,System,V01,,2025-01-25 13:58:03.096089+00
+c4d6bd35-9e23-4065-ab06-f9c89f0f5e5a,Missing Out,The feeling of regret or sadness about not being able to participate in something.,2,/ˈmɪsɪŋ aʊt/,-,System,V01,,2025-01-25 13:58:03.096089+00
+c67e6cd7-b43c-4640-bd2e-2f1dd3644b31,Sensationalism,"The use of exciting or shocking stories or language at the expense of accuracy, in order to provoke public interest or excitement.",2,/sɛnˈseɪʃənəlɪzəm/,-,System,V01,,2025-01-25 13:58:03.096089+00
+c69f45cf-e76e-45f8-948b-95845d269709,Swaddling,"Wrapping (someone, especially a baby) in garments or cloth.",3,/ˈswɒdlɪŋ/,~,System,V01,,2025-01-25 13:58:03.096089+00
+c6dae806-23ed-4369-87ee-ebf36e21b1cd,Gifted,Having exceptional talent or natural ability.,5,/ˈɡɪftɪd/,+,System,V01,,2025-01-25 13:58:03.096089+00
+c702d3b0-9af6-4fb4-8f37-acbadce55e75,Advantage,A condition or circumstance that puts one in a favorable or superior position.,5,/ədˈvæntɪdʒ/,+,System,V01,,2025-01-25 13:58:03.096089+00
+c773d63c-eeba-4764-b970-f40fee9ef339,Exuberance,The quality of being full of energy and excitement.,5,/ɪɡˈzjuːbərəns/,+,System,Default,,2025-01-25 13:58:03.096089+00
+c77addcc-55eb-4e5c-985b-832123e64483,Gracefulness,The quality of being graceful; elegance.,5,/ˈɡreɪsfʊlnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+c7ea915d-c8db-490e-8cc6-f161e218e248,Achievement,A successful result gained through effort.,5,/əˈtʃiːvmənt/,+,System,Default,,2025-01-25 13:58:03.096089+00
+c837bbf2-f912-4af3-9ab3-713b2324b160,Blemished,Having a mark or flaw that spoils the appearance of something.,2,/ˈblɛmɪʃt/,-,System,V01,,2025-01-25 13:58:03.096089+00
+c89d94c6-3e06-405b-958b-4b3baa3c6d70,Ecstatic,Feeling or expressing overwhelming happiness or joyful excitement.,5,/ɪkˈstætɪk/,+,System,V01,,2025-01-25 13:58:03.096089+00
+c9522350-616d-4364-b628-b1f92814566c,Enigmatic,Difficult to interpret or understand; mysterious.,3,/ˌɛnɪɡˈmætɪk/,~,System,V01,,2025-01-25 13:58:03.096089+00
+c98f02e5-cc6a-437d-966c-90c39fff3b40,Harshness,The quality of being unpleasantly rough or jarring to the senses.,2,/ˈhɑːrʃnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+cacf6335-8d78-48df-aad9-93f72340884a,Brother,A male sibling.,3,/ˈbrʌðər/,~,System,Default,,2025-01-25 13:58:03.096089+00
+cb3dc111-5b39-4617-b22e-6bdc7bc8482e,Delightfulness,The quality of being delightful.,5,/dɪˈlaɪtfəlnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+cb6e36be-a7a5-421c-8ef0-2c83b5f4677b,Jackpot,A large cash prize in a game or lottery.,5,/ˈdʒækˌpɒt/,+,System,V01,,2025-01-25 13:58:03.096089+00
+cb92fc38-870b-48fb-a5bf-8d20eec5180a,Vigor,Physical strength and good health.,5,/ˈvɪɡər/,+,System,V01,,2025-01-25 13:58:03.096089+00
+cba68460-7818-4521-8df7-c34b267c2599,Trusting,Showing or tending to have a belief in a person's honesty or sincerity; not suspicious.,5,/ˈtrʌstɪŋ/,+,System,V01,,2025-01-25 13:58:03.096089+00
+cbde2697-35bf-4f3a-889b-6a8e9bdf1b38,Spontaneity,The quality of being spontaneous.,4,/ˌspɒntəˈneɪɪti/,+,System,Default,,2025-01-25 13:58:03.096089+00
+cc4ab648-90fd-47ce-ac88-5ff516e94848,Scornfulness,The quality of showing scorn or contempt.,2,/ˈskɔːrnfʊlnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+cc60df04-95dd-4f47-828c-68aa69907d66,Social,Relating to society or its organization.,4,/ˈsoʊʃəl/,+,System,V01,,2025-01-25 13:58:03.096089+00
+cce7e980-034e-4015-a76d-8336d655d4d9,Intensity,The quality of being intense.,3,/ɪnˈtɛnsɪti/,~,System,V01,,2025-01-25 13:58:03.096089+00
+ccee1573-2c77-4540-b021-65d078c378eb,Pretentions,Attempting to impress by affecting greater importance.,2,/prɪˈtɛnʃənz/,-,System,Default,,2025-01-25 13:58:03.096089+00
+cd24eead-8b22-41fb-9283-1909c496350d,Sunny,Bright with sunlight.,5,/ˈsʌni/,+,System,V01,,2025-01-25 13:58:03.096089+00
+cd64a7f1-7236-4abb-af1b-0bf6810caa21,Spire,"A tapering conical or pyramidal structure on the top of a building, typically a church tower.",3,/spaɪər/,~,System,V01,,2025-01-25 13:58:03.096089+00
+ce072ba7-e72a-460e-842e-ccbfed67bf1b,Controversial,Giving rise or likely to give rise to public disagreement.,2,/ˌkɒntrəˈvɜrʃəl/,-,System,V01,,2025-01-25 13:58:03.096089+00
+ce3cd421-24fd-459f-9a0a-af78937439f9,Suggestion,An idea or plan put forward for consideration.,4,/səˈdʒɛstʃən/,+,System,V01,,2025-01-25 13:58:03.096089+00
+cf479110-03e1-46f1-9c5c-b808b710fc7f,Non-controlling,Not exercising control over others.,4,/nɒn kənˈtroʊlɪŋ/,+,System,V01,,2025-01-25 13:58:03.096089+00
+cfd0a580-4886-48bc-a1e9-670414d24677,Acceptance,The action of consenting to receive or undertake something offered.,5,/əkˈsɛptəns/,+,System,V01,,2025-01-25 13:58:03.096089+00
+d03a8a47-45cb-444f-bd3f-cc66ea736f35,Laughter,The action or sound of laughing.,5,/ˈlæftər/,+,System,V01,,2025-01-25 13:58:03.096089+00
+d0a018e6-a98c-445a-86bb-b68914a94d38,Process,A series of actions or steps taken in order to achieve a particular end.,3,/ˈprɑːsɛs/,~,System,V01,,2025-01-25 13:58:03.096089+00
+d0ba3c51-cb8f-48ee-9de5-2569477dc478,In the zone,In a state of focused attention or energy so that one's performance is enhanced.,5,/ɪn ðə zoʊn/,+,System,V01,,2025-01-25 13:58:03.096089+00
+d153ce84-89e9-4088-81a0-f26c65dd8fdf,Serenity,"The state of being calm, peaceful, and untroubled.",5,/səˈrɛnɪti/,+,System,V01,,2025-01-25 13:58:03.096089+00
+d29e3b8c-d106-4d70-be0a-d233e0edaac8,Compulsiveness,The quality of being driven by an irresistible urge.,2,/kəmˈpʌlsɪvnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+d2a7e7a8-8a32-4ccf-b657-0e18decae864,Screening,"The testing or examining of a large number of people or things for disease, defects, etc.",3,/ˈskriːnɪŋ/,~,System,V01,,2025-01-25 13:58:03.096089+00
+d2d0f5c5-791a-4066-bae1-3073e19a060c,Doom,"Death, destruction, or some other terrible fate.",1,/duːm/,-,System,V01,,2025-01-25 13:58:03.096089+00
+d34a73ba-af68-4eb3-84a6-f947afd041eb,Father,A male parent.,3,/ˈfɑːðər/,~,System,Default,,2025-01-25 13:58:03.096089+00
+d406d735-ed8d-45c9-87e4-e3604093eccd,Centred,Placed or situated in the center.,4,/ˈsɛntərd/,+,System,V01,,2025-01-25 13:58:03.096089+00
+d4e862bf-c8d3-46f5-bfcb-2505bf46079d,Command,The ability to use or control something.,4,/kəˈmænd/,+,System,Default,,2025-01-25 13:58:03.096089+00
+d506b015-dfb0-46c0-b0c1-29f2873bc2ec,Unburdened,Free from or relieved of a burden.,4,/ˌʌnˈbɜrdənd/,+,System,V01,,2025-01-25 13:58:03.096089+00
+d57330c8-f638-4eb1-b7d1-f258ab3ea1ef,Responsibility,The state or fact of having a duty to deal with something or of having control over someone.,5,/rɪˌspɒnsəˈbɪlɪti/,+,System,V01,,2025-01-25 13:58:03.096089+00
+d57bd309-5b52-4bb9-a768-6a5f644de72c,Sensual,Relating to or involving gratification of the senses.,4,/ˈsɛnʃuəl/,+,System,Default,,2025-01-25 13:58:03.096089+00
+d5cc24db-c224-4af3-8e75-841483eba432,Helpfulness,The quality of providing useful assistance.,5,/ˈhɛlpfʊlnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+d64baf0b-1cdb-470e-a573-7d96318b1c34,Pessimism,A tendency to see the worst aspect of things or believe that the worst will happen.,2,/ˈpɛsɪˌmɪzəm/,-,System,V01,,2025-01-25 13:58:03.096089+00
+d77bc7a7-952b-488d-b07f-b3a9152b54be,Majesty,Impressive beauty or scale.,4,/ˈmædʒəsti/,+,System,Default,,2025-01-25 13:58:03.096089+00
+d8b61898-35f5-4264-9803-2d2316ae5779,Awkwardness,The quality of being clumsy or uncomfortable.,2,/ˈɔkwərdnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+d96415e5-70a4-4313-9024-be85d1ed66a2,Tenderness,Gentleness and kindness.,5,/ˈtɛndərnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+d975a46b-c65f-4bd7-b97b-4493a79c2d91,Reflection,Serious thought or consideration.,3,/rɪˈflɛkʃən/,~,System,Default,,2025-01-25 13:58:03.096089+00
+d9dc060a-8d06-404e-bb85-d933097b9a6c,Claustrophobia,Extreme or irrational fear of confined places.,1,/ˌklɔːstrəˈfoʊbiə/,-,System,V01,,2025-01-25 13:58:03.096089+00
+da963e38-19e4-4a15-8f45-415e7cc7da98,Idealism,The practice of forming or pursuing ideals.,4,/aɪˈdiːəlɪzəm/,+,System,Default,,2025-01-25 13:58:03.096089+00
+db2233a3-3105-4ece-a91b-7412210ed9db,Harm,"Physical injury, especially that which is deliberately inflicted.",1,/hɑːrm/,-,System,V01,,2025-01-25 13:58:03.096089+00
+dba12240-2952-4d16-b6f3-c22a7308cd2c,Aggression,Hostile or violent behavior or attitudes.,2,/əˈɡrɛʃən/,-,System,V01,,2025-01-25 13:58:03.096089+00
+dbb6d403-a20a-428b-8353-da218b556c58,Solid,Firm and stable in shape; not liquid or fluid.,4,/ˈsɒlɪd/,+,System,V01,,2025-01-25 13:58:03.096089+00
+dd66cd8b-cce6-4964-b1d2-fde418686bf5,Disdain,The feeling that someone or something is unworthy of one's consideration or respect.,1,/dɪsˈdeɪn/,-,System,V01,,2025-01-25 13:58:03.096089+00
+dd74827e-257d-4853-9d5d-f3a641761624,Anxiousness,The state of being anxious or worried.,2,/ˈæŋkʃəsnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+ddc6a759-0f80-418b-abfa-4eeff11e6a4e,Perplexed,Completely baffled; very puzzled.,2,/pərˈplɛkst/,-,System,V01,,2025-01-25 13:58:03.096089+00
+de84f87c-208c-4a89-a0a6-9413d4e34b1d,Adaptability,The quality of being able to adjust to new conditions.,4,/əˌdæptəˈbɪlɪti/,+,System,V01,,2025-01-25 13:58:03.096089+00
+df265828-0fc1-423f-bd0d-4c87b6358656,Left behind,The state of being abandoned or forgotten.,2,/lɛft bɪˈhaɪnd/,-,System,V01,,2025-01-25 13:58:03.096089+00
+e011dbde-308d-44db-89dd-844039b1f9b3,Cooperativeness,The quality of being willing to work together.,5,/koʊˈɒpərətɪvnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+e0404cdd-c62d-40d2-99d5-17b5a60c7bb0,Tickled,Lightly touch or prod (a person or a part of the body) in a way that causes itching and often laughter.,4,/ˈtɪkəld/,+,System,V01,,2025-01-25 13:58:03.096089+00
+e089271d-4d3a-4ae2-9204-bea0a356eb71,Liberation,"The act of setting someone free from imprisonment, slavery, or oppression.",5,/ˌlɪbəˈreɪʃən/,+,System,V01,,2025-01-25 13:58:03.096089+00
+e09ec5c4-e251-47ba-9503-0a73d05742fb,Ego,A person's sense of self-esteem or self-importance.,3,/ˈiːɡoʊ/,~,System,V01,,2025-01-25 13:58:03.096089+00
+e222c427-58c4-4268-9779-e0a48612653d,Dynamics,"The forces or properties that stimulate growth, development, or change within a system or process.",3,/daɪˈnæmɪks/,~,System,V01,,2025-01-25 13:58:03.096089+00
+e2293b8e-a076-45db-9f9b-c02c304f42ba,Playfulness,The quality of being light-hearted or full of fun.,5,/ˈpleɪfʊlnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+e278b91e-b608-48fa-8893-d1487896ccd5,Atrociousness,The quality of being shockingly bad or wicked.,1,/əˈtroʊʃəsnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+e2998150-63d4-4a28-b071-9c0d7520f6c7,Transformation,A thorough or dramatic change in form or appearance.,5,/ˌtrænsfərˈmeɪʃən/,+,System,Default,,2025-01-25 13:58:03.096089+00
+e2f3f667-a474-46af-ae37-af300236bb2b,Craving,A powerful desire for something.,3,/ˈkreɪvɪŋ/,~,System,V01,,2025-01-25 13:58:03.096089+00
+e2fc1112-9544-45fb-b2ba-cf5ffad9c381,Disorientation,The condition of having lost one's sense of direction.,2,/dɪsˌɔːriənˈteɪʃən/,-,System,V01,,2025-01-25 13:58:03.096089+00
+e39dc986-b52e-4722-b798-20b9cbdbf911,Core cantering,Focusing on the central or most important part.,4,/kɔr ˈkæntərɪŋ/,+,System,V01,,2025-01-25 13:58:03.096089+00
+e3eac42b-641c-4e7a-9540-c7828b9534a8,Jubilance,The state of feeling or expressing great happiness and triumph.,5,/ˈdʒuːbɪləns/,+,System,V01,,2025-01-25 13:58:03.096089+00
+e547f06b-c3dc-4232-ab6f-9557270108dc,Supportiveness,The quality of being supportive.,5,/səˈpɔrtɪvnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+e5baced9-8a00-4502-ba4d-795afbf5a270,Incapability,The quality of being incapable.,2,/ˌɪnkəˈpeɪbɪlɪti/,-,System,V01,,2025-01-25 13:58:03.096089+00
+e5ea4455-a356-4fc1-bf09-f86a8eaa7473,Absurdity,The quality or state of being ridiculous or wildly unreasonable.,2,/əbˈsɜːrdɪti/,-,System,V01,,2025-01-25 13:58:03.096089+00
+e676d077-bfff-47d6-a480-16af59e9c6e5,Mindfulness,The quality or state of being conscious or aware of something.,5,/ˈmaɪndfʊlnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+e68768d4-664f-4684-bea7-ba5976509100,Being,Existence.,4,/ˈbiːɪŋ/,+,System,V01,,2025-01-25 13:58:03.096089+00
+e6e3b103-4f59-4d37-a56d-c7ecca5de414,Egotism,The practice of talking and thinking about oneself excessively because of an undue sense of self-importance.,2,/ˈiːɡəˌtɪzəm/,-,System,V01,,2025-01-25 13:58:03.096089+00
+e75525c6-e8d3-452a-8cf6-3f7f04efa19d,Authenticity,The quality of being authentic or genuine.,5,/ˌɔːθɛnˈtɪsɪti/,+,System,V01,,2025-01-25 13:58:03.096089+00
+e7710298-c27a-4352-9a30-b408f23dff7a,Imprisonment,The state of being imprisoned; captivity.,1,/ɪmˈprɪzənmənt/,-,System,V01,,2025-01-25 13:58:03.096089+00
+e7ab6516-a5ec-4214-94e6-05e9dadb3ee8,Bliss,Perfect happiness or joy.,5,/blɪs/,+,System,Default,,2025-01-25 13:58:03.096089+00
+e90b9b96-edcb-49af-9601-f564a00bc41e,Insightful,Having or showing an accurate and deep understanding.,5,/ɪnˈsaɪtfəl/,+,System,Default,,2025-01-25 13:58:03.096089+00
+ea255d8d-85e9-4fe3-8009-a125931c596f,Bargaining,The negotiation of the terms and conditions of a transaction.,3,/ˈbɑrɡənɪŋ/,~,System,V01,,2025-01-25 13:58:03.096089+00
+ea86402b-69cb-4497-a838-595edc49bdfe,Sturdiness,The quality of being strong and solid.,4,/ˈstɜːdinəs/,+,System,Default,,2025-01-25 13:58:03.096089+00
+ebaa8bcb-59ce-4e4e-b241-edcd3ea4c0da,Salvage,The act of saving something from danger or destruction.,4,/ˈsælvɪdʒ/,+,System,Default,,2025-01-25 13:58:03.096089+00
+ec268402-3678-4c8f-a0d3-dc72ecc63e2e,Salaciousness,The quality of being obscene or indecent.,1,/səˈleɪʃəsnəs/,-,System,Default,,2025-01-25 13:58:03.096089+00
+ec755730-7fd1-411c-88f4-5eb785c90506,Frivolity,Lack of seriousness; lightheartedness.,3,/frɪˈvɒlɪti/,~,System,V01,,2025-01-25 13:58:03.096089+00
+ec91bcb1-dda4-472c-ba72-7b645f003b9f,Contingency,A future event or circumstance that is possible but cannot be predicted with certainty.,3,/kənˈtɪndʒənsi/,~,System,Default,,2025-01-25 13:58:03.096089+00
+ecb84205-af8d-4034-9191-77b1f7a49ed9,Open-mindedness,The quality of being willing to consider new ideas; unprejudiced.,5,/ˌoʊpənˈmaɪndɪdnəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+ed962c1b-3810-4226-85b6-f1a9a0104f17,Beaming,Smiling broadly; radiating happiness.,5,/ˈbimɪŋ/,+,System,V01,,2025-01-25 13:58:03.096089+00
+f1e18621-6d87-4286-8739-82b6a8c93844,Heartache,"Emotional anguish or grief, typically caused by the loss or absence of someone loved.",2,/ˈhɑːrteɪk/,-,System,V01,,2025-01-25 13:58:03.096089+00
+f1edccce-c2b8-4cae-9b1f-1bc2cbc9dd84,Sadism,"The tendency to derive pleasure, especially sexual gratification, from inflicting pain, suffering, or humiliation on others.",1,/ˈseɪdɪzəm/,-,System,V01,,2025-01-25 13:58:03.096089+00
+f200fcde-a465-4e3d-a6cc-e206562eda0c,Manipulation,The action of controlling or influencing someone or something in a skillful but often unfair or deceitful way.,2,/məˌnɪpjʊˈleɪʃən/,-,System,V01,,2025-01-25 13:58:03.096089+00
+f266840d-f90f-41c4-9dd9-a0564edcbe26,Finery,Expensive or ostentatious clothes or decoration.,3,/ˈfaɪnəri/,~,System,V01,,2025-01-25 13:58:03.096089+00
+f2ed2f45-6b7b-49dc-a25d-5c527e904760,Controlling,Exercising control over something or someone.,2,/kənˈtroʊlɪŋ/,-,System,V01,,2025-01-25 13:58:03.096089+00
+f49b1384-1161-4b36-8e93-6677e822235c,Flight,The act of flying or moving through the air.,3,/flaɪt/,~,System,Default,,2025-01-25 13:58:03.096089+00
+f547b25f-8440-4ce2-a720-9b9f9e5eb32f,Steady,"Firmly fixed, supported, or balanced; not shaking or moving.",4,/ˈstɛdi/,+,System,V01,,2025-01-25 13:58:03.096089+00
+f5e4e7fd-3d21-4d2c-82b4-4ecfec9820e6,Surrender,Cease resistance to an enemy or opponent and submit to their authority.,3,/səˈrɛndər/,~,System,V01,,2025-01-25 13:58:03.096089+00
+f5eb9b36-a8fc-4af9-83a8-640121619330,Grateful,Feeling or showing an appreciation of kindness; thankful.,5,/ˈɡreɪtfʊl/,+,System,V01,,2025-01-25 13:58:03.096089+00
+f67cee49-ec3a-4c18-bf90-6c770255fb54,Offensiveness,"The quality of causing someone to feel deeply hurt, upset, or angry.",2,/əˈfɛnsɪvnəs/,-,System,V01,,2025-01-25 13:58:03.096089+00
+f6b8a3ea-33ee-4b87-b0bf-8e9376044f5a,Scandal,An action or event regarded as morally or legally wrong and causing general public outrage.,2,/ˈskændəl/,-,System,V01,,2025-01-25 13:58:03.096089+00
+f6c461fe-ab94-4471-8a83-52fc69aef623,Aim,A purpose or intention.,4,/eɪm/,+,System,Default,,2025-01-25 13:58:03.096089+00
+f6c54f29-7b09-42cc-915e-e60250b3d3aa,Insight,The capacity to gain an accurate and deep understanding.,5,/ˈɪnˌsaɪt/,+,System,Default,,2025-01-25 13:58:03.096089+00
+f7d93a6b-a19b-4091-a594-cacece1423dc,Son,A male child in relation to his parents.,3,/sʌn/,~,System,Default,,2025-01-25 13:58:03.096089+00
+f9de5f83-45c8-45a5-9183-3ae4ab8c6f35,Tremendous,"Very great in amount, scale, or intensity.",5,/trɪˈmɛndəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+fa735483-b7b7-4dc8-ba4c-0ed5fadc0eb5,Atonement,The action of making amends for a wrong.,4,/əˈtoʊnmənt/,+,System,Default,,2025-01-25 13:58:03.096089+00
+faaeebde-b3e8-4055-8d69-197f714b0963,Self-reliance,Reliance on one's own powers and resources rather than those of others.,5,/sɛlf rɪˈlaɪəns/,+,System,V01,,2025-01-25 13:58:03.096089+00
+fb0f1f3b-d276-453e-87dc-15fb518e6928,Threatening,Having a hostile or deliberately frightening quality or manner.,2,/ˈθrɛtənɪŋ/,-,System,V01,,2025-01-25 13:58:03.096089+00
+fb39cd0b-3865-4e63-af85-8d951686c4dc,Overbearing,Unpleasantly or arrogantly domineering.,2,/ˌoʊvərˈbɛrɪŋ/,-,System,Default,,2025-01-25 13:58:03.096089+00
+fbde625c-a712-44b0-93a3-bf8dd38622f7,Crippling,Causing severe damage or harm.,1,/ˈkrɪplɪŋ/,-,System,Default,,2025-01-25 13:58:03.096089+00
+fc34a2ca-72a9-49cd-996e-dd50c3d8d5c7,Effort,A vigorous or determined attempt.,3,/ˈɛfərt/,~,System,Default,,2025-01-25 13:58:03.096089+00
+fcaaaf2f-b653-4628-947c-fdab2ed04260,Natural,Existing in or caused by nature; not made or caused by humankind.,5,/ˈnætʃərəl/,+,System,V01,,2025-01-25 13:58:03.096089+00
+fcb99675-cc6a-4f1b-a3dd-c914412c9335,Excellence,The quality of being outstanding or extremely good.,5,/ˈɛksələns/,+,System,V01,,2025-01-25 13:58:03.096089+00
+fd0edefb-c5b8-4eb8-91e3-21b91c00d2bd,Carefreeness,The state of being free from anxiety or responsibility.,5,/ˈkɛrˌfrinəs/,+,System,V01,,2025-01-25 13:58:03.096089+00
+fe767f43-2453-4362-add6-044095c90f62,Seething,Filled with or characterized by intense but unexpressed anger.,2,/ˈsiːðɪŋ/,-,System,V01,,2025-01-25 13:58:03.096089+00
+ff437f61-58a8-4ef7-8173-6fd948045fa8,Empathy,The ability to understand and share the feelings of another.,5,/ˈɛmpəθi/,+,System,Default,,2025-01-25 13:58:03.096089+00
+ffc3e611-2911-4dd8-987d-37502ebf69fd,Honourability,The quality of being honourable.,5,/ˌɒnərəˈbɪlɪti/,+,System,V01,,2025-01-25 13:58:03.096089+00
+ffd6f4e9-7834-4e31-b26e-561b4c2ac237,Self-love,Regard for one's own well-being and happiness.,5,/sɛlf lʌv/,+,System,V01,,2025-01-25 13:58:03.096089+00
