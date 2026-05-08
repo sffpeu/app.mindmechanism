@@ -61,8 +61,8 @@ export default function SequencerPage() {
   }
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-neutral-50 dark:bg-neutral-950">
-      <div className="border-b border-black/10 bg-white/80 px-4 py-3 backdrop-blur-sm dark:border-white/10 dark:bg-black/60 sm:px-6">
+    <div className="flex h-full flex-col overflow-hidden bg-neutral-50 dark:bg-neutral-950">
+      <div className="border-b border-black/10 bg-white/80 pl-16 pr-4 py-3 backdrop-blur-sm dark:border-white/10 dark:bg-black/60 sm:pr-6">
         <SequencerHeader
           title={sequencer.sequence.title}
           isDirty={sequencer.isDirty}
@@ -78,7 +78,7 @@ export default function SequencerPage() {
         />
       </div>
 
-      <div className="min-h-0 flex-1 overflow-auto px-4 pb-3 pt-5 sm:px-6">
+      <div className="min-h-0 flex-1 overflow-auto pl-16 pr-4 pb-3 pt-5 sm:pr-6">
         <SequencerGrid
           steps={sequencer.sequence.steps}
           currentStepIndex={audio.currentStepIndex}
@@ -97,7 +97,7 @@ export default function SequencerPage() {
         </div>
       </div>
 
-      <div className="border-t border-black/10 px-4 py-4 dark:border-white/10 sm:px-6">
+      <div className="border-t border-black/10 pl-16 pr-4 py-4 dark:border-white/10 sm:pr-6">
         <MantraInput
           mantraText={sequencer.sequence.mantraText}
           mantraLanguage={sequencer.sequence.mantraLanguage}
@@ -111,7 +111,7 @@ export default function SequencerPage() {
         />
       </div>
 
-      <div className="border-t border-black/10 bg-white/80 px-4 py-3 backdrop-blur-sm dark:border-white/10 dark:bg-black/60 sm:px-6">
+      <div className="border-t border-black/10 bg-white/80 pl-16 pr-4 py-3 backdrop-blur-sm dark:border-white/10 dark:bg-black/60 sm:pr-6">
         <SequencerControls
           isPlaying={audio.isPlaying}
           bpm={sequencer.sequence.bpm}
