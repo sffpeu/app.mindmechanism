@@ -51,10 +51,14 @@ export default function SequencerPage() {
                 restores that wheel&apos;s factory drone.
               </li>
               <li>
-                Each triggered step uses a short <strong className="text-gray-800 dark:text-gray-200">attack → release</strong>{' '}
-                envelope only — full drone files are not left sustaining (better pads until shorter curated packs replace them).
+                Each triggered step uses <strong className="text-gray-800 dark:text-gray-200">attack → sustain (dial) → release</strong>{' '}
+                so you can keep key-like precision or add a little pad body without endless drone carry.
               </li>
               <li>BPM sets one bar of sixteen sixteenth-notes.</li>
+              <li>
+                A top-panel <strong className="text-gray-800 dark:text-gray-200">phrase tape</strong> records 5 seconds from mic, then
+                supports jog + replay for pronunciation and tonal analysis.
+              </li>
               <li>
                 <strong className="text-gray-800 dark:text-gray-200">Arm record</strong> → Play → Stop to capture the stereo mix.
               </li>

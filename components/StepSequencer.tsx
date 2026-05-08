@@ -11,6 +11,9 @@ import {
   Circle,
   Download,
   Loader2,
+  Pause,
+  RotateCw,
+  Rewind,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -32,6 +35,7 @@ export const TRACKS = 9
 
 const PATTERN_KEY_V2 = 'mm-sequencer-pattern-v2'
 const PATTERN_KEY_V1 = 'mm-sequencer-pattern-v1'
+const PAD_SUSTAIN_KEY = 'mm-sequencer-pad-sustain-ms'
 
 /**
  * Each step is a keyed hit (attack + release only, no sustain).
@@ -42,6 +46,10 @@ const PAD_RELEASE_PRESET_SEC = 0.14
 const PAD_RELEASE_USER_SEC = 0.2
 const PAD_PEAK_PRESET = 0.52
 const PAD_PEAK_USER = 0.82
+const PAD_SUSTAIN_MIN_MS = 0
+const PAD_SUSTAIN_MAX_MS = 420
+const PAD_SUSTAIN_DEFAULT_MS = 85
+const PHRASE_RECORD_MS = 5000
 
 /** Rough chromatic alignment with planet drones / wheels */
 const TRACK_COLORS = [
@@ -150,6 +158,19 @@ export default function StepSequencer() {
   const [libraryCount, setLibraryCount] = useState(0)
   const [presetsLoading, setPresetsLoading] = useState(true)
   const [presetError, setPresetError] = useState<string | null>(null)
+  const [padSustainMs, setPadSustainMs] = useState<number>(() => {
+    if (typeof window === 'undefined') return PAD_SUSTAIN_DEFAULT_MS
+    const raw = Number(localStorage.getItem(PAD_SUSTAIN_KEY))
+    if (!Number.isFinite(raw)) return PAD_SUSTAIN_DEFAULT_MS
+    return Math.max(PAD_SUSTAIN_MIN_MS, Math.min(PAD_SUSTAIN_MAX_MS, Math.round(raw)))
+  })
+  const [phraseUrl, setPhraseUrl] = useState<string | null>(null)
+  const [phraseBlob, setPhraseBlob] = useState<Blob | null>(null)
+  const [phraseDuration, setPhraseDuration] = useState(0)
+  const [phrasePos, setPhrasePos] = useState(0)
+  const [phraseRecActive, setPhraseRecActive] = useState(false)
+  const [phrasePlayActive, setPhrasePlayActive] = useState(false)
+  const [phraseError, setPhraseError] = useState<string | null>(null)
 
   const ctxRef = useRef<AudioContext | null>(null)
   const masterRef = useRef<GainNode | null>(null)
@@ -160,6 +181,11 @@ export default function StepSequencer() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const uploadTrackRef = useRef<number | null>(null)
+  const phraseRecorderRef = useRef<MediaRecorder | null>(null)
+  const phraseChunksRef = useRef<BlobPart[]>([])
+  const phraseStreamRef = useRef<MediaStream | null>(null)
+  const phraseAudioRef = useRef<HTMLAudioElement | null>(null)
+  const phraseStopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     tracksRef.current = tracks
@@ -175,6 +201,15 @@ export default function StepSequencer() {
   useEffect(() => {
     savePersistedPattern(bpm, tracks)
   }, [bpm, tracks])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      localStorage.setItem(PAD_SUSTAIN_KEY, String(Math.round(padSustainMs)))
+    } catch {
+      /* noop */
+    }
+  }, [padSustainMs])
 
   const ensureCtx = useCallback(() => {
     if (!ctxRef.current) {
@@ -253,10 +288,13 @@ export default function StepSequencer() {
       const releaseSec =
         tr.sampleKind === 'preset' ? PAD_RELEASE_PRESET_SEC : PAD_RELEASE_USER_SEC
       const a = PAD_ATTACK_SEC
-      const releaseEnd = now + a + releaseSec
+      const sustainSec = padSustainMs / 1000
+      const releaseStart = now + a + sustainSec
+      const releaseEnd = releaseStart + releaseSec
 
       g.gain.setValueAtTime(0, now)
       g.gain.linearRampToValueAtTime(peak, now + a)
+      g.gain.setValueAtTime(peak, releaseStart)
       g.gain.exponentialRampToValueAtTime(0.0001, releaseEnd)
 
       src.connect(g)
@@ -266,7 +304,7 @@ export default function StepSequencer() {
       src.start(now)
       src.stop(stopAt)
     }
-  }, [])
+  }, [padSustainMs])
 
   const stopTransport = useCallback(() => {
     if (intervalRef.current) {
@@ -331,9 +369,116 @@ export default function StepSequencer() {
   useEffect(() => {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
+      if (phraseStopTimerRef.current) clearTimeout(phraseStopTimerRef.current)
+      if (phraseRecorderRef.current && phraseRecorderRef.current.state !== 'inactive') {
+        phraseRecorderRef.current.stop()
+      }
+      phraseStreamRef.current?.getTracks().forEach((t) => t.stop())
+      if (phraseUrl) URL.revokeObjectURL(phraseUrl)
       void ctxRef.current?.close()
     }
+  }, [phraseUrl])
+
+  const stopPhrasePlayback = useCallback(() => {
+    const audio = phraseAudioRef.current
+    if (!audio) return
+    audio.pause()
+    setPhrasePlayActive(false)
   }, [])
+
+  const startPhraseRecord = useCallback(async () => {
+    if (phraseRecActive) return
+    setPhraseError(null)
+    stopPhrasePlayback()
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      phraseStreamRef.current = stream
+      phraseChunksRef.current = []
+      const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : MediaRecorder.isTypeSupported('audio/webm')
+          ? 'audio/webm'
+          : ''
+      const recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream)
+      phraseRecorderRef.current = recorder
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) phraseChunksRef.current.push(e.data)
+      }
+      recorder.onstop = () => {
+        const blob = new Blob(phraseChunksRef.current, {
+          type: recorder.mimeType || 'audio/webm',
+        })
+        const url = URL.createObjectURL(blob)
+        if (phraseUrl) URL.revokeObjectURL(phraseUrl)
+        setPhraseBlob(blob)
+        setPhraseUrl(url)
+        setPhrasePos(0)
+        setPhraseRecActive(false)
+        const audio = phraseAudioRef.current
+        if (audio) {
+          audio.src = url
+          audio.currentTime = 0
+          audio.onloadedmetadata = () => {
+            setPhraseDuration(Number.isFinite(audio.duration) ? audio.duration : 0)
+          }
+        }
+        phraseStreamRef.current?.getTracks().forEach((t) => t.stop())
+        phraseStreamRef.current = null
+      }
+      recorder.start(120)
+      setPhraseRecActive(true)
+      if (phraseStopTimerRef.current) clearTimeout(phraseStopTimerRef.current)
+      phraseStopTimerRef.current = setTimeout(() => {
+        if (recorder.state !== 'inactive') recorder.stop()
+      }, PHRASE_RECORD_MS)
+    } catch {
+      setPhraseRecActive(false)
+      setPhraseError('Microphone access is required to capture a phrase.')
+    }
+  }, [phraseRecActive, phraseUrl, stopPhrasePlayback])
+
+  const togglePhrasePlayback = useCallback(async () => {
+    const audio = phraseAudioRef.current
+    if (!audio || !phraseBlob) return
+    if (phrasePlayActive) {
+      audio.pause()
+      setPhrasePlayActive(false)
+      return
+    }
+    try {
+      await audio.play()
+      setPhrasePlayActive(true)
+    } catch {
+      setPhrasePlayActive(false)
+    }
+  }, [phraseBlob, phrasePlayActive])
+
+  const jogPhrase = useCallback((nextSec: number) => {
+    const audio = phraseAudioRef.current
+    if (!audio) return
+    const max = phraseDuration > 0 ? phraseDuration : PHRASE_RECORD_MS / 1000
+    const clamped = Math.max(0, Math.min(max, nextSec))
+    audio.currentTime = clamped
+    setPhrasePos(clamped)
+  }, [phraseDuration])
+
+  const resetPhrase = useCallback(() => {
+    stopPhrasePlayback()
+    jogPhrase(0)
+  }, [jogPhrase, stopPhrasePlayback])
+
+  useEffect(() => {
+    const audio = phraseAudioRef.current
+    if (!audio) return
+    const onTime = () => setPhrasePos(audio.currentTime || 0)
+    const onEnded = () => setPhrasePlayActive(false)
+    audio.addEventListener('timeupdate', onTime)
+    audio.addEventListener('ended', onEnded)
+    return () => {
+      audio.removeEventListener('timeupdate', onTime)
+      audio.removeEventListener('ended', onEnded)
+    }
+  }, [phraseUrl])
 
   const toggleStep = (track: number, step: number) => {
     setTracks((prev) =>
@@ -452,6 +597,7 @@ export default function StepSequencer() {
 
   return (
     <div className="space-y-6">
+      <audio ref={phraseAudioRef} className="hidden" preload="metadata" />
       <input
         ref={fileInputRef}
         type="file"
@@ -459,6 +605,104 @@ export default function StepSequencer() {
         className="hidden"
         onChange={onFile}
       />
+
+      <Card className="p-4 bg-neutral-950/90 border-neutral-800 text-neutral-100 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-500">Phrase analyzer tape</p>
+            <p className="text-xs text-neutral-400 mt-1">
+              Record exactly <strong className="text-neutral-200">5 seconds</strong>, then jog and replay for pronunciation and tonal appraisal.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant={phraseRecActive ? 'destructive' : 'outline'}
+              className="gap-1.5 border-neutral-700"
+              onClick={() => void startPhraseRecord()}
+              disabled={phraseRecActive}
+            >
+              <Circle className={cn('h-3.5 w-3.5', phraseRecActive && 'fill-red-500 text-red-500')} />
+              {phraseRecActive ? 'Recording...' : 'Record phrase (5s)'}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="gap-1.5 border-neutral-700"
+              onClick={() => void togglePhrasePlayback()}
+              disabled={!phraseBlob}
+            >
+              {phrasePlayActive ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+              {phrasePlayActive ? 'Pause' : 'Play'}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="gap-1 text-neutral-300"
+              onClick={resetPhrase}
+              disabled={!phraseBlob}
+            >
+              <Rewind className="h-3.5 w-3.5" />
+              Zero
+            </Button>
+          </div>
+        </div>
+        <div className="rounded-xl border border-neutral-800/80 bg-neutral-900/60 p-3">
+          <div className="flex items-center gap-4">
+            <div className="relative h-14 w-14 rounded-full border border-neutral-700 bg-neutral-950 shadow-inner">
+              <div
+                className="absolute inset-2 rounded-full border border-neutral-800 bg-neutral-900"
+                style={{
+                  transform: `rotate(${(phrasePos / Math.max(0.001, phraseDuration || PHRASE_RECORD_MS / 1000)) * 720}deg)`,
+                }}
+              />
+              <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-neutral-500" />
+            </div>
+            <div className="flex-1">
+              <div className="mb-2 h-2 rounded-full bg-neutral-800 overflow-hidden">
+                <div
+                  className="h-full bg-amber-400/80"
+                  style={{
+                    width: `${Math.min(
+                      100,
+                      (phrasePos / Math.max(0.001, phraseDuration || PHRASE_RECORD_MS / 1000)) * 100
+                    )}%`,
+                  }}
+                />
+              </div>
+              <Slider
+                value={[phrasePos]}
+                min={0}
+                max={Math.max(phraseDuration || PHRASE_RECORD_MS / 1000, 0.1)}
+                step={0.01}
+                onValueChange={([v]) => jogPhrase(v)}
+                disabled={!phraseBlob}
+              />
+              <div className="mt-1.5 flex items-center justify-between text-[10px] text-neutral-500">
+                <span>Tape jog</span>
+                <span className="tabular-nums">
+                  {phrasePos.toFixed(2)}s / {(phraseDuration || PHRASE_RECORD_MS / 1000).toFixed(2)}s
+                </span>
+              </div>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="gap-1 text-neutral-300"
+              onClick={() => jogPhrase(phrasePos + 0.1)}
+              disabled={!phraseBlob}
+            >
+              <RotateCw className="h-3.5 w-3.5" />
+              +0.1s
+            </Button>
+          </div>
+        </div>
+        {phraseError && <p className="text-xs text-red-400">{phraseError}</p>}
+      </Card>
 
       <Card className="p-4 bg-neutral-950/90 border-neutral-800 text-neutral-100 space-y-4">
         <div className="flex flex-wrap items-center gap-3 justify-between">
@@ -502,12 +746,25 @@ export default function StepSequencer() {
             />
             <span className="text-xs tabular-nums text-neutral-400 w-8">{bpm}</span>
           </div>
+          <div className="flex items-center gap-3 min-w-[180px] flex-1 max-w-sm">
+            <Label className="text-[10px] uppercase tracking-widest text-neutral-500 shrink-0">
+              Pad sustain
+            </Label>
+            <Slider
+              value={[padSustainMs]}
+              min={PAD_SUSTAIN_MIN_MS}
+              max={PAD_SUSTAIN_MAX_MS}
+              step={5}
+              onValueChange={([v]) => setPadSustainMs(v)}
+            />
+            <span className="text-xs tabular-nums text-neutral-400 w-14">{padSustainMs}ms</span>
+          </div>
         </div>
         <p className="text-[10px] text-neutral-500 leading-relaxed">
           Nine lanes match the nine wheels — each loads an MM planet drone preset so you can hit{' '}
-          <strong className="text-neutral-300">Play</strong> immediately. Each step fires a short{' '}
-          <strong className="text-neutral-300">attack → release</strong> hit (no sustain), so long drones behave like keyed pads until
-          curated short-sample packs ship. Replace lanes with your own clips when you like; patterns persist.
+          <strong className="text-neutral-300">Play</strong> immediately. Each step fires{' '}
+          <strong className="text-neutral-300">attack → sustain (dial) → release</strong>; keep sustain near zero for key-like taps or
+          lift it slightly for pad feel while avoiding full drone hang. Replace lanes with your own clips when you like; patterns persist.
         </p>
         <div className="flex flex-wrap items-center gap-2 text-[10px]">
           {presetsLoading && (
