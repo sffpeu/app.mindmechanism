@@ -54,7 +54,7 @@ export default function SequencerPage() {
                 Each triggered step uses <strong className="text-gray-800 dark:text-gray-200">attack → sustain (dial) → release</strong>{' '}
                 so you can keep key-like precision or add a little pad body without endless drone carry.
               </li>
-              <li>BPM sets one bar of sixteen sixteenth-notes.</li>
+              <li>BPM ranges from 5 to 120 and sets one bar of sixteen sixteenth-notes.</li>
               <li>
                 A top-panel <strong className="text-gray-800 dark:text-gray-200">phrase tape</strong> provides three 10-second pools with
                 pause/resume fill, variable playback speed (very slow to 2x), and layered replay for practitioner analysis.

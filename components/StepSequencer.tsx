@@ -35,7 +35,6 @@ export const TRACKS = 9
 
 const PATTERN_KEY_V2 = 'mm-sequencer-pattern-v2'
 const PATTERN_KEY_V1 = 'mm-sequencer-pattern-v1'
-const PAD_SUSTAIN_KEY = 'mm-sequencer-pad-sustain-ms'
 
 /**
  * Each step is a keyed hit (attack + release only, no sustain).
@@ -79,6 +78,8 @@ export type SequencerTrack = {
   label: string
   /** Factory drone vs imported sample */
   sampleKind: 'preset' | 'user'
+  /** Per-lane pad body in milliseconds */
+  sustainMs: number
 }
 
 function emptySteps(): boolean[] {
@@ -108,21 +109,34 @@ function normalizePersistedTracks(rawTracks: unknown): boolean[][] | null {
   return masks as boolean[][]
 }
 
-function loadPersistedPattern(): { bpm: number; stepMasks: boolean[][] | null } {
-  if (typeof window === 'undefined') return { bpm: 118, stepMasks: null }
+function normalizePersistedSustains(rawTracks: unknown): number[] | null {
+  if (!Array.isArray(rawTracks)) return null
+  const values = rawTracks.map((t) => {
+    const raw = (t as { sustainMs?: unknown })?.sustainMs
+    const n = typeof raw === 'number' ? raw : PAD_SUSTAIN_DEFAULT_MS
+    return Math.max(PAD_SUSTAIN_MIN_MS, Math.min(PAD_SUSTAIN_MAX_MS, Math.round(n)))
+  })
+  while (values.length < TRACKS) values.push(PAD_SUSTAIN_DEFAULT_MS)
+  if (values.length > TRACKS) values.length = TRACKS
+  return values
+}
+
+function loadPersistedPattern(): { bpm: number; stepMasks: boolean[][] | null; sustainMs: number[] | null } {
+  if (typeof window === 'undefined') return { bpm: 118, stepMasks: null, sustainMs: null }
   try {
     for (const key of [PATTERN_KEY_V2, PATTERN_KEY_V1]) {
       const raw = localStorage.getItem(key)
       if (!raw) continue
       const o = JSON.parse(raw) as { bpm?: number; tracks?: unknown }
       const bpm =
-        typeof o.bpm === 'number' ? Math.max(60, Math.min(180, Math.round(o.bpm))) : 118
+        typeof o.bpm === 'number' ? Math.max(5, Math.min(120, Math.round(o.bpm))) : 118
       const stepMasks = normalizePersistedTracks(o.tracks)
-      if (stepMasks) return { bpm, stepMasks }
+      const sustainMs = normalizePersistedSustains(o.tracks)
+      if (stepMasks) return { bpm, stepMasks, sustainMs }
     }
-    return { bpm: 118, stepMasks: null }
+    return { bpm: 118, stepMasks: null, sustainMs: null }
   } catch {
-    return { bpm: 118, stepMasks: null }
+    return { bpm: 118, stepMasks: null, sustainMs: null }
   }
 }
 
@@ -133,7 +147,7 @@ function savePersistedPattern(bpm: number, tracks: SequencerTrack[]) {
       PATTERN_KEY_V2,
       JSON.stringify({
         bpm,
-        tracks: tracks.map((t) => ({ steps: t.steps })),
+        tracks: tracks.map((t) => ({ steps: t.steps, sustainMs: t.sustainMs })),
       })
     )
   } catch {
@@ -142,13 +156,14 @@ function savePersistedPattern(bpm: number, tracks: SequencerTrack[]) {
 }
 
 function initialTracks(): SequencerTrack[] {
-  const { stepMasks } = loadPersistedPattern()
+  const { stepMasks, sustainMs } = loadPersistedPattern()
   const starter = stepMasks ?? defaultStarterSteps()
   return Array.from({ length: TRACKS }, (_, i) => ({
     steps: [...starter[i]!],
     buffer: null,
     label: `${MM_DRONE_PLANET_LABELS[i]} · preset`,
     sampleKind: 'preset' as const,
+    sustainMs: sustainMs?.[i] ?? PAD_SUSTAIN_DEFAULT_MS,
   }))
 }
 
@@ -166,12 +181,6 @@ export default function StepSequencer() {
   const [libraryCount, setLibraryCount] = useState(0)
   const [presetsLoading, setPresetsLoading] = useState(true)
   const [presetError, setPresetError] = useState<string | null>(null)
-  const [padSustainMs, setPadSustainMs] = useState<number>(() => {
-    if (typeof window === 'undefined') return PAD_SUSTAIN_DEFAULT_MS
-    const raw = Number(localStorage.getItem(PAD_SUSTAIN_KEY))
-    if (!Number.isFinite(raw)) return PAD_SUSTAIN_DEFAULT_MS
-    return Math.max(PAD_SUSTAIN_MIN_MS, Math.min(PAD_SUSTAIN_MAX_MS, Math.round(raw)))
-  })
   const [phraseDuration, setPhraseDuration] = useState(0)
   const [phrasePos, setPhrasePos] = useState(0)
   const [phraseRecActive, setPhraseRecActive] = useState(false)
@@ -220,15 +229,6 @@ export default function StepSequencer() {
   useEffect(() => {
     savePersistedPattern(bpm, tracks)
   }, [bpm, tracks])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    try {
-      localStorage.setItem(PAD_SUSTAIN_KEY, String(Math.round(padSustainMs)))
-    } catch {
-      /* noop */
-    }
-  }, [padSustainMs])
 
   const ensureCtx = useCallback(() => {
     if (!ctxRef.current) {
@@ -307,7 +307,7 @@ export default function StepSequencer() {
       const releaseSec =
         tr.sampleKind === 'preset' ? PAD_RELEASE_PRESET_SEC : PAD_RELEASE_USER_SEC
       const a = PAD_ATTACK_SEC
-      const sustainSec = padSustainMs / 1000
+      const sustainSec = tr.sustainMs / 1000
       const releaseStart = now + a + sustainSec
       const releaseEnd = releaseStart + releaseSec
 
@@ -323,7 +323,7 @@ export default function StepSequencer() {
       src.start(now)
       src.stop(stopAt)
     }
-  }, [padSustainMs])
+  }, [])
 
   const stopTransport = useCallback(() => {
     if (intervalRef.current) {
@@ -625,6 +625,13 @@ export default function StepSequencer() {
     )
   }
 
+  const setTrackSustainMs = (track: number, value: number) => {
+    const next = Math.max(PAD_SUSTAIN_MIN_MS, Math.min(PAD_SUSTAIN_MAX_MS, Math.round(value)))
+    setTracks((prev) =>
+      prev.map((tr, ti) => (ti === track ? { ...tr, sustainMs: next } : tr))
+    )
+  }
+
   const clearTrackSteps = (track: number) => {
     setTracks((prev) =>
       prev.map((tr, ti) =>
@@ -725,7 +732,7 @@ export default function StepSequencer() {
     URL.revokeObjectURL(u)
   }
 
-  const railW = 'w-[8.75rem]'
+  const railW = 'w-[11rem]'
 
   return (
     <div className="space-y-6">
@@ -948,35 +955,16 @@ export default function StepSequencer() {
             <Label className="text-[10px] uppercase tracking-widest text-neutral-500 shrink-0">
               BPM
             </Label>
-            <Slider
-              value={[bpm]}
-              min={60}
-              max={180}
-              step={1}
-              onValueChange={([v]) => setBpm(v)}
-              disabled={isPlaying}
-            />
+            <Slider value={[bpm]} min={5} max={120} step={1} onValueChange={([v]) => setBpm(v)} disabled={isPlaying} />
             <span className="text-xs tabular-nums text-neutral-400 w-8">{bpm}</span>
-          </div>
-          <div className="flex items-center gap-3 min-w-[180px] flex-1 max-w-sm">
-            <Label className="text-[10px] uppercase tracking-widest text-neutral-500 shrink-0">
-              Pad sustain
-            </Label>
-            <Slider
-              value={[padSustainMs]}
-              min={PAD_SUSTAIN_MIN_MS}
-              max={PAD_SUSTAIN_MAX_MS}
-              step={5}
-              onValueChange={([v]) => setPadSustainMs(v)}
-            />
-            <span className="text-xs tabular-nums text-neutral-400 w-14">{padSustainMs}ms</span>
           </div>
         </div>
         <p className="text-[10px] text-neutral-500 leading-relaxed">
           Nine lanes match the nine wheels — each loads an MM planet drone preset so you can hit{' '}
           <strong className="text-neutral-300">Play</strong> immediately. Each step fires{' '}
-          <strong className="text-neutral-300">attack → sustain (dial) → release</strong>; keep sustain near zero for key-like taps or
-          lift it slightly for pad feel while avoiding full drone hang. Replace lanes with your own clips when you like; patterns persist.
+          <strong className="text-neutral-300">attack → sustain (per lane) → release</strong>; keep sustain near zero for key-like taps
+          or lift it slightly for pad feel while avoiding full drone hang. Replace lanes with your own clips when you like; patterns
+          persist.
         </p>
         <div className="flex flex-wrap items-center gap-2 text-[10px]">
           {presetsLoading && (
@@ -996,13 +984,13 @@ export default function StepSequencer() {
       </Card>
 
       <div className="overflow-x-auto rounded-xl border border-neutral-800 bg-neutral-950/80 p-3">
-        <div className="min-w-[760px] space-y-1.5">
-          <div className={cn('flex gap-1 items-center', `pl-[8.75rem]`)}>
+        <div className="min-w-[760px] space-y-2">
+          <div className={cn('flex gap-1 items-center', `pl-[11rem]`)}>
             {Array.from({ length: STEPS }, (_, s) => (
               <div
                 key={s}
                 className={cn(
-                  'w-8 h-5 rounded text-[9px] font-mono flex items-center justify-center',
+                  'w-7 h-5 rounded text-[10px] font-mono flex items-center justify-center',
                   currentStep === s && isPlaying
                     ? 'bg-amber-500/30 text-amber-200'
                     : 'text-neutral-600'
@@ -1015,19 +1003,19 @@ export default function StepSequencer() {
           {tracks.map((tr, ti) => (
             <div key={ti} className="flex gap-1.5 items-center">
               <div className={cn(railW, 'shrink-0 flex flex-col gap-1 pr-1')}>
-                <div className="flex items-start gap-1">
+                <div className="flex items-start gap-1.5">
                   <span
-                    className="h-2.5 w-2.5 rounded-full shrink-0 mt-0.5"
+                    className="h-3 w-3 rounded-full shrink-0 mt-0.5"
                     style={{ backgroundColor: TRACK_COLORS[ti] }}
                   />
                   <div className="min-w-0 flex-1">
-                    <span className="text-[8px] font-semibold text-neutral-400 uppercase tracking-wider leading-none">
+                    <span className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider leading-none">
                       W{ti + 1}
                     </span>
-                    <p className="text-[9px] font-semibold text-neutral-200 leading-snug line-clamp-2">
+                    <p className="text-[13px] font-semibold text-neutral-200 leading-snug line-clamp-2">
                       {clockTitles[ti]}
                     </p>
-                    <p className="text-[8px] text-neutral-500 leading-tight">
+                    <p className="text-[11px] text-neutral-500 leading-tight">
                       {MM_DRONE_PLANET_LABELS[ti]}
                     </p>
                   </div>
@@ -1037,36 +1025,49 @@ export default function StepSequencer() {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 text-neutral-400 hover:text-amber-200"
+                    className="h-8 w-8 text-neutral-400 hover:text-amber-200"
                     onClick={() => onPickFile(ti)}
                     aria-label={`Import sample wheel ${ti + 1}`}
                   >
-                    <Upload className="h-3.5 w-3.5" />
+                    <Upload className="h-4 w-4" />
                   </Button>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 text-neutral-500 hover:text-amber-300"
+                    className="h-8 w-8 text-neutral-500 hover:text-amber-300"
                     onClick={() => clearTrackSteps(ti)}
                     aria-label={`Clear steps wheel ${ti + 1}`}
                   >
-                    <Disc3 className="h-3.5 w-3.5" />
+                    <Disc3 className="h-4 w-4" />
                   </Button>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 text-neutral-500 hover:text-emerald-400"
+                    className="h-8 w-8 text-neutral-500 hover:text-emerald-400"
                     onClick={() => void restorePreset(ti)}
                     aria-label={`Restore preset drone wheel ${ti + 1}`}
                   >
-                    <RotateCcw className="h-3.5 w-3.5" />
+                    <RotateCcw className="h-4 w-4" />
                   </Button>
                 </div>
-                <span className="text-[8px] text-neutral-600 truncate" title={tr.label}>
-                  {tr.label}
-                </span>
+                <div className="space-y-0.5">
+                  <span className="text-[10px] text-neutral-600 truncate block" title={tr.label}>
+                    {tr.label}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Label className="text-[9px] uppercase tracking-wider text-neutral-500">Sustain</Label>
+                    <Slider
+                      value={[tr.sustainMs]}
+                      min={PAD_SUSTAIN_MIN_MS}
+                      max={PAD_SUSTAIN_MAX_MS}
+                      step={5}
+                      onValueChange={([v]) => setTrackSustainMs(ti, v)}
+                    />
+                    <span className="text-[10px] text-neutral-400 tabular-nums w-12">{tr.sustainMs}ms</span>
+                  </div>
+                </div>
               </div>
               {tr.steps.map((on, si) => (
                 <button
@@ -1075,7 +1076,7 @@ export default function StepSequencer() {
                   onClick={() => toggleStep(ti, si)}
                   aria-pressed={on}
                   className={cn(
-                    'w-8 h-10 rounded-md border transition-colors shrink-0',
+                    'w-7 h-9 rounded-md border transition-colors shrink-0',
                     on
                       ? 'border-transparent shadow-inner'
                       : 'border-neutral-800 bg-neutral-900/80 hover:bg-neutral-800/80'
