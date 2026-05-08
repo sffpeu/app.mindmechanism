@@ -208,6 +208,8 @@ export default function StepSequencer() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const uploadTrackRef = useRef<number | null>(null)
+  const lanePreviewIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const lanePreviewTrackRef = useRef<number | null>(null)
   const phraseRecorderRef = useRef<MediaRecorder | null>(null)
   const phraseChunksRef = useRef<BlobPart[]>([])
   const phraseStreamRef = useRef<MediaStream | null>(null)
@@ -325,6 +327,34 @@ export default function StepSequencer() {
     }
   }, [])
 
+  const playHitForTrackStep = useCallback((trackIndex: number, stepIdx: number) => {
+    const ctx = ctxRef.current
+    const master = masterRef.current
+    if (!ctx || !master) return
+    const tr = tracksRef.current[trackIndex]
+    if (!tr || !tr.steps[stepIdx] || !tr.buffer) return
+    const now = ctx.currentTime
+    const src = ctx.createBufferSource()
+    src.buffer = tr.buffer
+    const g = ctx.createGain()
+    const peak = tr.sampleKind === 'preset' ? PAD_PEAK_PRESET : PAD_PEAK_USER
+    const releaseSec =
+      tr.sampleKind === 'preset' ? PAD_RELEASE_PRESET_SEC : PAD_RELEASE_USER_SEC
+    const a = PAD_ATTACK_SEC
+    const sustainSec = tr.sustainMs / 1000
+    const releaseStart = now + a + sustainSec
+    const releaseEnd = releaseStart + releaseSec
+
+    g.gain.setValueAtTime(0, now)
+    g.gain.linearRampToValueAtTime(peak, now + a)
+    g.gain.setValueAtTime(peak, releaseStart)
+    g.gain.exponentialRampToValueAtTime(0.0001, releaseEnd)
+    src.connect(g)
+    g.connect(master)
+    src.start(now)
+    src.stop(now + Math.min(tr.buffer.duration, a + sustainSec + releaseSec + 0.04))
+  }, [])
+
   const stopTransport = useCallback(() => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current)
@@ -388,6 +418,7 @@ export default function StepSequencer() {
   useEffect(() => {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
+      if (lanePreviewIntervalRef.current) clearInterval(lanePreviewIntervalRef.current)
       if (phraseStopTimerRef.current) clearTimeout(phraseStopTimerRef.current)
       if (phraseTickRef.current) clearInterval(phraseTickRef.current)
       if (phraseRecorderRef.current && phraseRecorderRef.current.state !== 'inactive') {
@@ -400,6 +431,34 @@ export default function StepSequencer() {
       void ctxRef.current?.close()
     }
   }, [pools])
+
+  const stopLanePreview = useCallback(() => {
+    if (lanePreviewIntervalRef.current) {
+      clearInterval(lanePreviewIntervalRef.current)
+      lanePreviewIntervalRef.current = null
+    }
+    lanePreviewTrackRef.current = null
+  }, [])
+
+  const startLanePreview = useCallback(
+    async (trackIndex: number) => {
+      const ctx = ensureCtx()
+      await ctx.resume()
+      if (lanePreviewTrackRef.current === trackIndex && lanePreviewIntervalRef.current) return
+      stopLanePreview()
+      lanePreviewTrackRef.current = trackIndex
+      const stepMs = ((60 / bpm) / 4) * 1000
+      let s = 0
+      setCurrentStep(0)
+      playHitForTrackStep(trackIndex, 0)
+      lanePreviewIntervalRef.current = setInterval(() => {
+        s = (s + 1) % STEPS
+        setCurrentStep(s)
+        playHitForTrackStep(trackIndex, s)
+      }, stepMs)
+    },
+    [bpm, ensureCtx, playHitForTrackStep, stopLanePreview]
+  )
 
   const stopPhrasePlayback = useCallback(() => {
     const audio = phraseAudioRef.current
@@ -1029,6 +1088,20 @@ export default function StepSequencer() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-neutral-300 hover:text-violet-300"
+                    aria-label={`Preview wheel ${ti + 1} while held`}
+                    onMouseDown={() => void startLanePreview(ti)}
+                    onMouseUp={stopLanePreview}
+                    onMouseLeave={stopLanePreview}
+                    onTouchStart={() => void startLanePreview(ti)}
+                    onTouchEnd={stopLanePreview}
+                  >
+                    <Play className="h-4 w-4" />
+                  </Button>
                   <Button
                     type="button"
                     variant="ghost"
