@@ -29,6 +29,10 @@ function airToFrequency(t: number): number {
   return 280 * 40 ** a
 }
 
+function clamp01(v: number): number {
+  return Math.max(0, Math.min(1, v))
+}
+
 type SynthAudioGraph = {
   ctx: AudioContext
   mix: GainNode
@@ -325,65 +329,314 @@ function PlanetPad({
   )
 }
 
-function RadSlider({
+function SynthKnob({
   label,
   value,
   onChange,
-  compact,
   disabled,
+  compact,
 }: {
   label: string
   value: number
   onChange: (v: number) => void
-  compact: boolean
   disabled?: boolean
+  compact: boolean
 }) {
+  const valRef = useRef(value)
+  const draggingRef = useRef(false)
+  const [isDragging, setIsDragging] = useState(false)
+
+  useEffect(() => {
+    valRef.current = value
+  }, [value])
+
+  const size = compact ? 36 : 44
+  const deg = -138 + value * 276
+
+  const endDrag = (e: React.PointerEvent) => {
+    draggingRef.current = false
+    setIsDragging(false)
+    try {
+      ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
+    } catch {
+      /* not captured */
+    }
+  }
+
   return (
-    <label
+    <div
       style={{
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 3,
-        cursor: disabled ? 'default' : 'pointer',
-        opacity: disabled ? 0.45 : 1,
-        minWidth: compact ? 36 : 42,
-        flex: compact ? '1 1 32px' : '1 1 38px',
+        gap: compact ? 3 : 4,
+        opacity: disabled ? 0.42 : 1,
+        minWidth: compact ? 40 : 48,
       }}
     >
+      <div
+        role="slider"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(value * 100)}
+        aria-label={label}
+        aria-disabled={disabled}
+        tabIndex={disabled ? -1 : 0}
+        onKeyDown={(e) => {
+          if (disabled) return
+          const step = e.shiftKey ? 0.06 : 0.025
+          if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+            onChange(clamp01(value + step))
+            e.preventDefault()
+          }
+          if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
+            onChange(clamp01(value - step))
+            e.preventDefault()
+          }
+        }}
+        onPointerDown={(e) => {
+          if (disabled) return
+          e.preventDefault()
+          e.currentTarget.setPointerCapture(e.pointerId)
+          draggingRef.current = true
+          setIsDragging(true)
+        }}
+        onPointerMove={(e) => {
+          if (!draggingRef.current || disabled) return
+          const next = clamp01(valRef.current - e.movementY * 0.0055)
+          valRef.current = next
+          onChange(next)
+        }}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: '50%',
+          cursor: disabled ? 'not-allowed' : isDragging ? 'grabbing' : 'grab',
+          touchAction: 'none',
+          position: 'relative',
+          background:
+            'radial-gradient(circle at 32% 28%, rgba(255,245,220,0.14), #35334a 42%, #12111a 72%, #08070c)',
+          boxShadow:
+            'inset 0 2px 5px rgba(255,255,255,0.11), inset 0 -3px 8px rgba(0,0,0,0.55), 0 5px 14px rgba(0,0,0,0.45)',
+          border: '1px solid rgba(197, 171, 110, 0.28)',
+          outline: 'none',
+        }}
+      >
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            inset: 5,
+            borderRadius: '50%',
+            border: '1px solid rgba(0,0,0,0.35)',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
+            pointerEvents: 'none',
+          }}
+        />
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            width: 2,
+            height: '36%',
+            marginLeft: -1,
+            marginTop: '-36%',
+            background: 'linear-gradient(to bottom, #e8ddb8, #7d6a45)',
+            transformOrigin: '50% 100%',
+            transform: `rotate(${deg}deg)`,
+            borderRadius: 1,
+            pointerEvents: 'none',
+            boxShadow: '0 0 3px rgba(197, 171, 110, 0.35)',
+          }}
+        />
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            width: compact ? 5 : 6,
+            height: compact ? 5 : 6,
+            marginLeft: compact ? -2.5 : -3,
+            marginTop: compact ? -2.5 : -3,
+            borderRadius: '50%',
+            background: 'radial-gradient(circle at 30% 25%, #4a4758, #1a1824)',
+            pointerEvents: 'none',
+            boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.12)',
+          }}
+        />
+      </div>
       <span
         style={{
-          fontSize: compact ? 7 : 8,
+          fontSize: compact ? 6 : 7,
           fontWeight: 700,
-          letterSpacing: '0.14em',
-          color: 'rgba(212, 196, 168, 0.75)',
-          writingMode: 'vertical-rl',
-          textOrientation: 'mixed',
-          transform: 'rotate(180deg)',
-          maxHeight: 52,
-          lineHeight: 1.2,
+          letterSpacing: '0.16em',
+          color: 'rgba(212, 196, 168, 0.82)',
+          textAlign: 'center',
         }}
       >
         {label}
       </span>
-      <input
-        type="range"
-        min={0}
-        max={100}
-        value={Math.round(value * 100)}
-        disabled={disabled}
+    </div>
+  )
+}
+
+function SynthLever({
+  label,
+  value,
+  onChange,
+  disabled,
+  compact,
+}: {
+  label: string
+  value: number
+  onChange: (v: number) => void
+  disabled?: boolean
+  compact: boolean
+}) {
+  const valRef = useRef(value)
+  const dragging = useRef(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const trackRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    valRef.current = value
+  }, [value])
+
+  const trackH = compact ? 56 : 68
+  const trackW = compact ? 15 : 17
+  const thumbH = compact ? 13 : 15
+  const travel = Math.max(0, trackH - thumbH)
+  const thumbTop = (1 - value) * travel
+
+  const setFromClientY = useCallback(
+    (clientY: number) => {
+      const el = trackRef.current
+      if (!el) return
+      const r = el.getBoundingClientRect()
+      const y = clientY - r.top
+      const t = clamp01(1 - y / r.height)
+      valRef.current = t
+      onChange(t)
+    },
+    [onChange]
+  )
+
+  const endDrag = (e: React.PointerEvent) => {
+    dragging.current = false
+    setIsDragging(false)
+    try {
+      trackRef.current?.releasePointerCapture(e.pointerId)
+    } catch {
+      /* */
+    }
+  }
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: compact ? 3 : 4,
+        opacity: disabled ? 0.42 : 1,
+        minWidth: compact ? 32 : 36,
+      }}
+    >
+      <div
+        ref={trackRef}
+        role="slider"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(value * 100)}
         aria-label={label}
-        onChange={(e) => onChange(Number(e.target.value) / 100)}
-        style={{
-          WebkitAppearance: 'slider-vertical',
-          writingMode: 'vertical-lr',
-          width: compact ? 22 : 26,
-          height: compact ? 64 : 78,
-          accentColor: '#c5ab6e',
-          cursor: disabled ? 'not-allowed' : 'pointer',
+        aria-disabled={disabled}
+        tabIndex={disabled ? -1 : 0}
+        onKeyDown={(e) => {
+          if (disabled) return
+          const step = e.shiftKey ? 0.07 : 0.03
+          if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+            onChange(clamp01(value + step))
+            e.preventDefault()
+          }
+          if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
+            onChange(clamp01(value - step))
+            e.preventDefault()
+          }
         }}
-      />
-    </label>
+        onPointerDown={(e) => {
+          if (disabled) return
+          e.preventDefault()
+          trackRef.current?.setPointerCapture(e.pointerId)
+          dragging.current = true
+          setIsDragging(true)
+          setFromClientY(e.clientY)
+        }}
+        onPointerMove={(e) => {
+          if (!dragging.current || disabled) return
+          setFromClientY(e.clientY)
+        }}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        style={{
+          height: trackH,
+          width: trackW,
+          borderRadius: trackW / 2,
+          cursor: disabled ? 'not-allowed' : isDragging ? 'grabbing' : 'grab',
+          touchAction: 'none',
+          position: 'relative',
+          background:
+            'linear-gradient(to bottom, rgba(5,5,12,0.9) 0%, rgba(32,30,48,0.95) 45%, rgba(12,11,20,0.98) 100%)',
+          boxShadow:
+            'inset 0 3px 10px rgba(0,0,0,0.65), inset 0 -1px 0 rgba(255,255,255,0.04), 0 2px 8px rgba(0,0,0,0.35)',
+          border: '1px solid rgba(197, 171, 110, 0.22)',
+          outline: 'none',
+        }}
+      >
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            inset: 3,
+            borderRadius: trackW / 2,
+            border: '1px dashed rgba(197, 171, 110, 0.08)',
+            pointerEvents: 'none',
+          }}
+        />
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            top: thumbTop,
+            width: trackW - 5,
+            height: thumbH,
+            borderRadius: 5,
+            background: 'linear-gradient(to bottom, #efe6d2, #b89d6e 55%, #6e5c3d)',
+            pointerEvents: 'none',
+            boxShadow:
+              '0 3px 6px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -2px 4px rgba(0,0,0,0.25)',
+            border: '1px solid rgba(45,40,32,0.5)',
+          }}
+        />
+      </div>
+      <span
+        style={{
+          fontSize: compact ? 6 : 7,
+          fontWeight: 700,
+          letterSpacing: '0.14em',
+          color: 'rgba(212, 196, 168, 0.82)',
+          textAlign: 'center',
+        }}
+      >
+        {label}
+      </span>
+    </div>
   )
 }
 
@@ -533,7 +786,7 @@ export default function SolarSystemResonance({
             fontWeight: 500,
           }}
         >
-          CELESTIAL RESONANCE · ORBIT + MODULATOR
+          CELESTIAL RESONANCE · KNOBS & LEVERS
         </p>
       </header>
 
@@ -575,9 +828,9 @@ export default function SolarSystemResonance({
             top: '50%',
             transform: 'translate(-50%, -50%)',
             width: compact ? '40%' : '44%',
-            maxWidth: compact ? 176 : 220,
+            maxWidth: compact ? 184 : 228,
             aspectRatio: '1',
-            maxHeight: compact ? 200 : 220,
+            maxHeight: compact ? 208 : 228,
             borderRadius: '50%',
             background:
               'radial-gradient(circle at 40% 28%, rgba(255,230,200,0.12), rgba(20,18,40,0.85) 70%)',
@@ -623,25 +876,25 @@ export default function SolarSystemResonance({
                 flexDirection: 'row',
                 alignItems: 'flex-end',
                 justifyContent: 'center',
-                gap: compact ? 4 : 8,
+                gap: compact ? 6 : 10,
                 width: '100%',
               }}
             >
-              <RadSlider
+              <SynthKnob
                 label="DRIFT"
                 value={modDrift}
                 onChange={setModDrift}
                 compact={compact}
                 disabled={!soundEnabled}
               />
-              <RadSlider
+              <SynthKnob
                 label="FLOW"
                 value={modFlow}
                 onChange={setModFlow}
                 compact={compact}
                 disabled={!soundEnabled}
               />
-              <RadSlider
+              <SynthKnob
                 label="AIR"
                 value={modAir}
                 onChange={setModAir}
@@ -655,18 +908,18 @@ export default function SolarSystemResonance({
                 flexDirection: 'row',
                 alignItems: 'flex-end',
                 justifyContent: 'center',
-                gap: compact ? 10 : 8,
+                gap: compact ? 12 : 16,
                 width: '100%',
               }}
             >
-              <RadSlider
+              <SynthLever
                 label="SPACE"
                 value={modSpace}
                 onChange={setModSpace}
                 compact={compact}
                 disabled={!soundEnabled}
               />
-              <RadSlider
+              <SynthLever
                 label="PULSE"
                 value={modPulse}
                 onChange={setModPulse}
