@@ -3,6 +3,7 @@
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Shield, Mail } from 'lucide-react'
+import { ExportButton } from '@/components/record/ExportButton'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { cn } from '@/lib/utils'
 
@@ -46,6 +47,18 @@ export function AccountSettings() {
             </span>
           </div>
         )}
+      </Card>
+
+      {/* ── Your data (GDPR portability) ───────────────────────────── */}
+      <Card className="space-y-3 border-neutral-200 bg-neutral-100 p-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400 dark:text-neutral-500">
+          Your data
+        </p>
+        <p className="text-sm leading-relaxed text-gray-600 dark:text-neutral-300">
+          Export everything the platform holds for you — vocabulary, phrase progress, practice log, and consent — as
+          one JSON file (GDPR Art.&nbsp;20 portability).
+        </p>
+        <ExportButton variant="full" />
       </Card>
 
       {/* ── Authentication ────────────────────────────────────────────── */}

@@ -9,6 +9,7 @@ import { LexiconPanel } from '@/components/record/LexiconPanel'
 import { PhraseHistoryPanel, type PhraseHistoryRow } from '@/components/record/PhraseHistoryPanel'
 import { AffinityPanel } from '@/components/record/AffinityPanel'
 import { ResearchStatusPanel } from '@/components/record/ResearchStatusPanel'
+import { ExportButton } from '@/components/record/ExportButton'
 
 export function MyRecordView() {
   const { user, profile } = useAuth()
@@ -63,6 +64,9 @@ export function MyRecordView() {
         <p className="mt-1 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
           Everything the platform holds that belongs to you.
         </p>
+        <div className="mt-4">
+          <ExportButton variant="full" />
+        </div>
       </header>
 
       <LexiconPanel />
