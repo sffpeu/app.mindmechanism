@@ -16,6 +16,7 @@ import { GlossaryAlphabetStrip } from '@/components/glossary/GlossaryAlphabetStr
 import { GlossaryToolbarActions } from '@/components/glossary/GlossaryToolbarActions'
 import { GlossaryWordScrollList } from '@/components/glossary/GlossaryWordScrollList'
 import { GlossaryVisualWordPanel } from '@/components/glossary/GlossaryVisualWordPanel'
+import { getVoiceNotesForTarget } from '@/lib/voiceNoteStorage'
 
 export default function GlossaryPage() {
   const { user } = useAuth()
@@ -35,6 +36,7 @@ export default function GlossaryPage() {
   const [diagramRotationSnapClockId, setDiagramRotationSnapClockId] = useState<number | null>(null)
   const [isAddWordOpen, setIsAddWordOpen] = useState(false)
   const [selectedCard, setSelectedCard] = useState<GlossaryWord | null>(null)
+  const [voiceNoteWordIds, setVoiceNoteWordIds] = useState<Set<string>>(new Set())
   const [editWord, setEditWord] = useState<GlossaryWord | null>(null)
   const sectionRefsMap = useRef<Record<string, HTMLDivElement | null>>({})
   const scrollContainerRef = useRef<HTMLDivElement | null>(null)
@@ -45,6 +47,23 @@ export default function GlossaryPage() {
   useEffect(() => {
     loadWords()
   }, [])
+
+  useEffect(() => {
+    let active = true
+    void (async () => {
+      const ids = new Set<string>()
+      await Promise.all(
+        words.map(async (word) => {
+          const notes = await getVoiceNotesForTarget({ kind: 'glossary', wordId: word.id })
+          if (notes.length > 0) ids.add(word.id)
+        })
+      )
+      if (active) setVoiceNoteWordIds(ids)
+    })()
+    return () => {
+      active = false
+    }
+  }, [words])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -317,6 +336,7 @@ export default function GlossaryPage() {
                   selectedCard={selectedCard}
                   onSelectCard={setSelectedCard}
                   clockHexPalette={CLOCK_HEX}
+                  hasVoiceNoteWordIds={voiceNoteWordIds}
                 />
               </div>
               {bottomChrome}

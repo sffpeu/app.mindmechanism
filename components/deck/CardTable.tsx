@@ -80,7 +80,15 @@ async function uploadToStorage(dataUrl: string, uid: string, label: string): Pro
   return getDownloadURL(fileRef)
 }
 
-const EMPTY_ANNOTATION: Annotation = { userDef: '', notes: '', imageUrl: null, textIsLight: false, textSize: 'md', textColor: null }
+const EMPTY_ANNOTATION: Annotation = {
+  userDef: '',
+  notes: '',
+  imageUrl: null,
+  textIsLight: false,
+  textSize: 'md',
+  textColor: null,
+  audioNoteId: undefined,
+}
 
 /** Left-edge stripe colours — glossary / notes wheel family (thin accent bar on dark chrome). */
 const DECK_CHROME_HELP_HEX = '#fd290a'

@@ -8,6 +8,7 @@ import type { GlossaryWord, GlossaryDefinition } from '@/types/Glossary'
 import { getWordDefinition } from '@/lib/glossary'
 import { SUPPORTED_LANGUAGES } from '@/types/Glossary'
 import { SpeakButton } from '@/components/glossary/SpeakButton'
+import { deleteVoiceNote, getVoiceNoteAudioUrl, getVoiceNotesForTarget, type VoiceNote } from '@/lib/voiceNoteStorage'
 
 export type GlossaryVisualWordPanelProps = {
   word: GlossaryWord
@@ -25,6 +26,7 @@ export function GlossaryVisualWordPanel({ word, clockHexPalette, onClose }: Glos
   const hex = cid != null && cid >= 0 && cid < clockHexPalette.length ? clockHexPalette[cid] : '#6b7280'
   const [extDef, setExtDef] = useState<GlossaryDefinition | null>(null)
   const [loadingExt, setLoadingExt] = useState(false)
+  const [voiceNotes, setVoiceNotes] = useState<VoiceNote[]>([])
   const lang = languageName(word.language)
 
   useEffect(() => {
@@ -36,6 +38,30 @@ export function GlossaryVisualWordPanel({ word, clockHexPalette, onClose }: Glos
       setLoadingExt(false)
     })
   }, [word.id])
+
+  useEffect(() => {
+    let active = true
+    void getVoiceNotesForTarget({ kind: 'glossary', wordId: word.id }).then((notes) => {
+      if (active) setVoiceNotes(notes)
+    })
+    return () => {
+      active = false
+    }
+  }, [word.id])
+
+  const playVoiceNote = async (noteId: string) => {
+    const audio = new Audio()
+    const url = await getVoiceNoteAudioUrl(noteId)
+    audio.src = url
+    audio.onended = () => URL.revokeObjectURL(url)
+    audio.onpause = () => URL.revokeObjectURL(url)
+    await audio.play().catch(() => URL.revokeObjectURL(url))
+  }
+
+  const removeVoiceNote = async (noteId: string) => {
+    await deleteVoiceNote(noteId)
+    setVoiceNotes((prev) => prev.filter((v) => v.id !== noteId))
+  }
 
   return (
     <aside
@@ -148,6 +174,43 @@ export function GlossaryVisualWordPanel({ word, clockHexPalette, onClose }: Glos
             <p className="text-sm leading-relaxed text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
               {extDef.academic}
             </p>
+          </div>
+        )}
+
+        {voiceNotes.length > 0 && (
+          <div>
+            <h3 className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">
+              Voice Notes
+            </h3>
+            <div className="space-y-2">
+              {voiceNotes.map((note) => (
+                <div key={note.id} className="rounded border border-black/10 dark:border-white/10 p-2">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      className="h-6 w-6 rounded border border-black/10 dark:border-white/20"
+                      onClick={() => void playVoiceNote(note.id)}
+                      title="Play voice note"
+                    >
+                      ▶
+                    </button>
+                    <span className="flex-1 truncate text-sm text-gray-800 dark:text-gray-200">{note.label}</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{note.durationSec.toFixed(1)}s</span>
+                    <button
+                      type="button"
+                      className="text-xs text-gray-500 hover:text-red-500"
+                      onClick={() => void removeVoiceNote(note.id)}
+                      title="Delete voice note"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <p className="mt-1 text-[10px] text-gray-500 dark:text-gray-400">
+                    {new Date(note.createdAt).toLocaleDateString('en-GB')}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

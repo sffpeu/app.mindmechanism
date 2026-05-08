@@ -1,8 +1,9 @@
 'use client'
 
-import { useRef, useCallback, useState } from 'react'
+import { useRef, useCallback, useState, useEffect } from 'react'
 import type { MandalaNode } from '@/data/mandalaNodes'
 import { WHEEL_COLORS, CARD_W, CARD_H } from '@/data/mandalaNodes'
+import { deleteVoiceNote, getVoiceNoteAudioUrl, getVoiceNotesForTarget, type VoiceNote } from '@/lib/voiceNoteStorage'
 
 export interface Annotation {
   userDef: string
@@ -16,6 +17,7 @@ export interface Annotation {
   /** When true, term and body copy use heavier weights on the card face. */
   textBold?: boolean
   textColor: string | null
+  audioNoteId?: string
 }
 
 interface DeckCardProps {
@@ -91,6 +93,9 @@ export function DeckCard({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const recognitionRef = useRef<{ stop: () => void } | null>(null)
   const [isRecording, setIsRecording] = useState(false)
+  const [voiceNote, setVoiceNote] = useState<VoiceNote | null>(null)
+  const [audioBusy, setAudioBusy] = useState(false)
+  const hiddenAudioRef = useRef<HTMLAudioElement | null>(null)
   const [srSupported] = useState(() => {
     if (typeof window === 'undefined') return false
     const w = window as unknown as Record<string, unknown>
@@ -98,6 +103,28 @@ export function DeckCard({
   })
 
   const hasImage = !!annotation.imageUrl
+  useEffect(() => {
+    let active = true
+    void getVoiceNotesForTarget({ kind: 'deck-card', nodeId: node.id }).then((notes) => {
+      if (!active) return
+      setVoiceNote(notes[0] ?? null)
+      if (notes[0]?.id && annotation.audioNoteId !== notes[0].id) {
+        onAnnotationChange('audioNoteId', notes[0].id)
+      }
+    })
+    return () => {
+      active = false
+    }
+  }, [annotation.audioNoteId, node.id, onAnnotationChange])
+
+  useEffect(() => {
+    return () => {
+      if (hiddenAudioRef.current) {
+        hiddenAudioRef.current.pause()
+      }
+    }
+  }, [])
+
   const sz = resolveFontSizes(annotation)
   const termWeight = annotation.textBold ? 800 : 500
   const bodyWeight = annotation.textBold ? 600 : 400
@@ -188,6 +215,33 @@ export function DeckCard({
   const handleRemoveImage = (e: React.MouseEvent) => {
     e.stopPropagation()
     onAnnotationChange('imageUrl', null)
+  }
+
+  const playVoiceNote = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!voiceNote || audioBusy) return
+    setAudioBusy(true)
+    try {
+      const url = await getVoiceNoteAudioUrl(voiceNote.id)
+      const audio = hiddenAudioRef.current ?? new Audio()
+      hiddenAudioRef.current = audio
+      audio.src = url
+      audio.onended = () => URL.revokeObjectURL(url)
+      audio.onpause = () => URL.revokeObjectURL(url)
+      await audio.play()
+    } catch {
+      /* noop */
+    } finally {
+      setAudioBusy(false)
+    }
+  }
+
+  const removeVoiceNote = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!voiceNote) return
+    await deleteVoiceNote(voiceNote.id)
+    setVoiceNote(null)
+    onAnnotationChange('audioNoteId', null)
   }
 
   return (
@@ -367,6 +421,52 @@ export function DeckCard({
               </div>
             </div>
           </div>
+          {voiceNote && (
+            <div
+              style={{
+                height: 28,
+                width: '100%',
+                borderBottomLeftRadius: 12,
+                borderBottomRightRadius: 12,
+                background: 'rgba(251, 191, 36, 0.45)',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0 8px',
+                gap: 8,
+              }}
+              className="dark:bg-amber-900/40"
+            >
+              <button
+                type="button"
+                onClick={playVoiceNote}
+                onPointerDown={stopProp}
+                style={{
+                  border: 'none',
+                  background: 'transparent',
+                  fontSize: 14,
+                  width: 20,
+                  height: 20,
+                  cursor: 'pointer',
+                }}
+                title="Play voice note"
+              >
+                ▶
+              </button>
+              <span style={{ fontSize: 11, fontWeight: 600, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {voiceNote.label}
+              </span>
+              <span style={{ fontSize: 10, opacity: 0.7 }}>{voiceNote.durationSec.toFixed(1)}s</span>
+              <button
+                type="button"
+                onClick={removeVoiceNote}
+                onPointerDown={stopProp}
+                style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 12 }}
+                title="Delete voice note"
+              >
+                ×
+              </button>
+            </div>
+          )}
         </div>
 
         {/* ── BACK ── */}

@@ -24,6 +24,7 @@ export interface SavedSession {
     textScalePercent?: number
     textBold?: boolean
     textColor?: string | null
+    audioNoteId?: string
   }>
 }
 

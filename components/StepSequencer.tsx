@@ -39,6 +39,10 @@ import {
 } from '@/lib/phraseAcousticAnalysis'
 import { transcribePhraseBlob } from '@/lib/phraseTranscribeClient'
 import { buildLaneProcessor } from '@/lib/sequencer-lane-processors'
+import { MANDALA_NODES } from '@/data/mandalaNodes'
+import { getAllWords } from '@/lib/glossary'
+import { saveVoiceNote, type VoiceNoteTarget } from '@/lib/voiceNoteStorage'
+import type { GlossaryWord } from '@/types/Glossary'
 
 export const STEPS = 16
 /** One lane per mandala / wheel (0–8). */
@@ -234,6 +238,14 @@ export default function StepSequencer() {
   const [phraseReadoutBusy, setPhraseReadoutBusy] = useState(false)
   const [phraseTranscribeBusy, setPhraseTranscribeBusy] = useState(false)
   const [readoutExportMsg, setReadoutExportMsg] = useState<string | null>(null)
+  const [attachOpen, setAttachOpen] = useState(false)
+  const [attachTab, setAttachTab] = useState<'deck-card' | 'glossary'>('deck-card')
+  const [attachSearch, setAttachSearch] = useState('')
+  const [attachLabel, setAttachLabel] = useState('')
+  const [attachSaving, setAttachSaving] = useState(false)
+  const [attachMsg, setAttachMsg] = useState<string | null>(null)
+  const [attachGlossaryWords, setAttachGlossaryWords] = useState<GlossaryWord[]>([])
+  const [selectedTarget, setSelectedTarget] = useState<VoiceNoteTarget | null>(null)
 
   const ctxRef = useRef<AudioContext | null>(null)
   const masterRef = useRef<GainNode | null>(null)
@@ -266,6 +278,17 @@ export default function StepSequencer() {
   useEffect(() => {
     setReadoutExportMsg(null)
   }, [activePool])
+
+  useEffect(() => {
+    if (!attachOpen || attachTab !== 'glossary') return
+    let active = true
+    void getAllWords().then((rows) => {
+      if (active) setAttachGlossaryWords(rows)
+    })
+    return () => {
+      active = false
+    }
+  }, [attachOpen, attachTab])
 
   useEffect(() => {
     setLibraryCount(loadCompositions().length)
@@ -895,6 +918,44 @@ export default function StepSequencer() {
     setRecordedMs(0)
   }, [activePool, pools])
 
+  const openAttachModal = useCallback(() => {
+    const pool = pools[activePool]
+    if (!pool?.blob) return
+    setAttachMsg(null)
+    setAttachSearch('')
+    setSelectedTarget(null)
+    setAttachLabel(pool.transcriptText?.trim() || pool.notes?.trim() || `Pool ${activePool + 1}`)
+    setAttachOpen(true)
+  }, [activePool, pools])
+
+  const confirmAttachVoiceNote = useCallback(async () => {
+    const pool = pools[activePool]
+    if (!pool?.blob || !selectedTarget) return
+    setAttachSaving(true)
+    setAttachMsg(null)
+    try {
+      await saveVoiceNote({
+        target: selectedTarget,
+        blob: pool.blob,
+        mime: pool.blob.type || 'audio/webm',
+        durationSec: pool.durationSec || Math.max(0, recordedMsRef.current / 1000),
+        label: attachLabel.trim() || `Pool ${activePool + 1}`,
+        createdAt: Date.now(),
+        sessionContext: `phrase-pool-${activePool + 1}`,
+      })
+      const attachedName =
+        selectedTarget.kind === 'glossary'
+          ? attachGlossaryWords.find((w) => w.id === selectedTarget.wordId)?.word ?? 'word'
+          : MANDALA_NODES.find((n) => n.id === selectedTarget.nodeId)?.term ?? 'card'
+      setAttachMsg(`Attached to ${attachedName}.`)
+      setAttachOpen(false)
+    } catch {
+      setAttachMsg('Attach failed. Try again.')
+    } finally {
+      setAttachSaving(false)
+    }
+  }, [activePool, attachGlossaryWords, attachLabel, pools, selectedTarget])
+
   const toggleStep = (track: number, step: number) => {
     setTracks((prev) =>
       prev.map((tr, ti) =>
@@ -1223,6 +1284,9 @@ export default function StepSequencer() {
           <div className="mt-2 flex gap-2">
             <Button type="button" size="sm" variant="ghost" onClick={resetActivePool}>
               Reset pool {activePool + 1}
+            </Button>
+            <Button type="button" size="sm" variant="outline" onClick={openAttachModal} disabled={!pools[activePool]?.blob}>
+              Attach to card / glossary
             </Button>
           </div>
 
@@ -1744,6 +1808,78 @@ export default function StepSequencer() {
         </Card>
       )}
 
+      {attachOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4">
+          <div className="w-full max-w-lg rounded-xl border border-white/15 bg-neutral-950 p-4 text-neutral-100">
+            <div className="mb-3">
+              <h3 className="text-sm font-semibold">Attach voice note</h3>
+              <p className="text-xs text-neutral-400">Stored on this device only (IndexedDB).</p>
+            </div>
+            <div className="mb-3 flex gap-2">
+              <Button type="button" size="sm" variant={attachTab === 'deck-card' ? 'default' : 'outline'} onClick={() => { setAttachTab('deck-card'); setSelectedTarget(null) }}>
+                Deck card
+              </Button>
+              <Button type="button" size="sm" variant={attachTab === 'glossary' ? 'default' : 'outline'} onClick={() => { setAttachTab('glossary'); setSelectedTarget(null) }}>
+                Glossary word
+              </Button>
+            </div>
+            <Input
+              value={attachLabel}
+              onChange={(e) => setAttachLabel(e.target.value)}
+              placeholder="Voice note label"
+              className="mb-2 bg-neutral-900 border-neutral-700"
+            />
+            <Input
+              value={attachSearch}
+              onChange={(e) => setAttachSearch(e.target.value)}
+              placeholder={`Search ${attachTab === 'deck-card' ? 'cards' : 'words'}...`}
+              className="mb-2 bg-neutral-900 border-neutral-700"
+            />
+            <div className="mb-3 max-h-56 overflow-y-auto rounded border border-neutral-800">
+              {attachTab === 'deck-card' ? (
+                MANDALA_NODES.filter((n) => n.term.toLowerCase().includes(attachSearch.toLowerCase())).map((node) => (
+                  <button
+                    key={node.id}
+                    type="button"
+                    className={cn(
+                      'w-full border-b border-neutral-800 px-3 py-2 text-left text-xs hover:bg-neutral-900',
+                      selectedTarget?.kind === 'deck-card' && selectedTarget.nodeId === node.id && 'bg-neutral-800'
+                    )}
+                    onClick={() => setSelectedTarget({ kind: 'deck-card', nodeId: node.id })}
+                  >
+                    {node.term}
+                  </button>
+                ))
+              ) : (
+                attachGlossaryWords
+                  .filter((w) => w.word.toLowerCase().includes(attachSearch.toLowerCase()))
+                  .map((word) => (
+                    <button
+                      key={word.id}
+                      type="button"
+                      className={cn(
+                        'w-full border-b border-neutral-800 px-3 py-2 text-left text-xs hover:bg-neutral-900',
+                        selectedTarget?.kind === 'glossary' && selectedTarget.wordId === word.id && 'bg-neutral-800'
+                      )}
+                      onClick={() => setSelectedTarget({ kind: 'glossary', wordId: word.id })}
+                    >
+                      {word.word}
+                    </button>
+                  ))
+              )}
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="button" size="sm" variant="ghost" onClick={() => setAttachOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="button" size="sm" disabled={!selectedTarget || attachSaving} onClick={() => void confirmAttachVoiceNote()}>
+                {attachSaving ? 'Saving…' : 'Attach'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <p className="text-[11px] text-neutral-500">
         Design sustained tones in{' '}
         <Link href="/synth-lab" className="text-violet-400 hover:underline">
@@ -1752,6 +1888,7 @@ export default function StepSequencer() {
         ; bounce or capture audio, then import on the matching wheel. These layers sit under the same symbolic map as
         timed practice — rhythm here is composition homework, not distraction.
       </p>
+      {attachMsg && <p className="text-xs text-emerald-400">{attachMsg}</p>}
     </div>
   )
 }

@@ -31,6 +31,7 @@ export type GlossaryWordScrollListProps = {
   selectedCard: GlossaryWord | null
   onSelectCard: (word: GlossaryWord | null) => void
   clockHexPalette: readonly string[]
+  hasVoiceNoteWordIds: Set<string>
 }
 
 export function GlossaryWordScrollList({
@@ -41,6 +42,7 @@ export function GlossaryWordScrollList({
   selectedCard,
   onSelectCard,
   clockHexPalette,
+  hasVoiceNoteWordIds,
 }: GlossaryWordScrollListProps) {
   return (
     <div
@@ -170,6 +172,13 @@ export function GlossaryWordScrollList({
                           audioUrl={word.audio_url}
                           hex={tint?.hex}
                         />
+                        {hasVoiceNoteWordIds.has(word.id) && (
+                          <span
+                            title="Has voice notes"
+                            className="inline-block h-2 w-2 rounded-full"
+                            style={{ backgroundColor: tint?.hex ?? '#9ca3af' }}
+                          />
+                        )}
                       </div>
                       {word.phonetic_spelling && (
                         <span className="text-xs text-gray-500 dark:text-gray-400 font-mono block mb-1">
