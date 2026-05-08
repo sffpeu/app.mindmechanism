@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { Sparkles } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
@@ -20,6 +21,13 @@ export default function SynthLabPage() {
             </h1>
             <p className="text-sm text-gray-600 dark:text-gray-400 max-w-2xl leading-relaxed">
               Tap planets to layer live sine tones at symbolic Hz. Silence all stops every oscillator.
+            </p>
+            <p className="text-xs text-violet-600 dark:text-violet-400">
+              For sample loops and bar sequencing, open the{' '}
+              <Link href="/sequencer" className="font-medium hover:underline">
+                16-step sequencer
+              </Link>
+              .
             </p>
           </header>
 

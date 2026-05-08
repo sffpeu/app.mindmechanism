@@ -17,6 +17,7 @@ import { MM_DRONE_PATH, MM_DRONE_PLANET_LABELS } from '@/lib/mmDroneTones'
 import { cn } from '@/lib/utils'
 import { startSpotifyAuth, spotifyTokensValid } from '@/lib/spotify'
 import { useState, useCallback, useEffect, useRef } from 'react'
+import { SequencerLoopsCard } from '@/components/settings/SequencerLoopsCard'
 
 const CLOCK_COUNT = 9
 
@@ -392,6 +393,8 @@ export function SoundSettings() {
           </>
         )}
       </Card>
+
+      <SequencerLoopsCard />
 
       {/* ── Your music ────────────────────────────────────────────────── */}
       <Card className={cn('p-4 bg-neutral-100 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 space-y-3', !hasStreamingAccess && 'opacity-70')}>

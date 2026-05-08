@@ -16,6 +16,7 @@ import {
   SquareStack,
   Minimize2,
   Sparkles,
+  Disc3,
 } from 'lucide-react';
 import { Dock, DockIcon, DockItem, DockLabel } from '@/components/ui/dock';
 import { useTheme } from '@/app/ThemeContext';
@@ -46,6 +47,7 @@ const navItems = [
   { title: 'Notes', href: '/notes', icon: ClipboardList },
   { title: 'Glossary', href: '/glossary', icon: BookOpen },
   { title: 'Synth lab', href: '/synth-lab', icon: Sparkles },
+  { title: 'Sequencer', href: '/sequencer', icon: Disc3 },
   { title: 'Deck', href: '/deck', icon: SquareStack },
 ];
 
