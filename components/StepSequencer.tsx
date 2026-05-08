@@ -306,10 +306,22 @@ export default function StepSequencer() {
   const stackCountdownRef = useRef<ReturnType<typeof setInterval> | null>(null)
   /** Pool index → object URL that finished warm-up (invalidated when URL changes). */
   const preloadedPoolUrlRef = useRef<Map<number, string>>(new Map())
+  /** Latest recorded length for MediaRecorder onstop (state updates can lag one frame). */
+  const recordedMsRef = useRef(0)
+  /** Stacked phrase playback via Web Audio (HTML Audio loses autoplay after countdown). */
+  const phraseStackSourcesRef = useRef<(AudioBufferSourceNode | null)[]>(
+    Array.from({ length: PRACTICE_POOLS }, () => null)
+  )
+  const phraseStackDurationRef = useRef<number[]>(Array.from({ length: PRACTICE_POOLS }, () => 0))
+  const phraseStackStartTimeRef = useRef(0)
 
   useEffect(() => {
     tracksRef.current = tracks
   }, [tracks])
+
+  useEffect(() => {
+    recordedMsRef.current = recordedMs
+  }, [recordedMs])
 
   useEffect(() => {
     setLibraryCount(loadCompositions().length)
@@ -606,6 +618,7 @@ export default function StepSequencer() {
   }, [])
 
   const finalizePhrasePool = useCallback(() => {
+    setPhraseError(null)
     if (phraseStopTimerRef.current) {
       clearTimeout(phraseStopTimerRef.current)
       phraseStopTimerRef.current = null
@@ -615,7 +628,23 @@ export default function StepSequencer() {
       phraseTickRef.current = null
     }
     const recorder = phraseRecorderRef.current
-    if (recorder && recorder.state !== 'inactive') recorder.stop()
+    if (recorder && recorder.state !== 'inactive') {
+      try {
+        if (recorder.state === 'paused') {
+          recorder.resume()
+        }
+        if (typeof recorder.requestData === 'function') {
+          recorder.requestData()
+        }
+      } catch {
+        /* ignore */
+      }
+      try {
+        recorder.stop()
+      } catch {
+        setPhraseError('Could not finish recording. Try Record again.')
+      }
+    }
     setPhraseRecActive(false)
     setPhraseRecPaused(false)
   }, [])
@@ -666,7 +695,10 @@ export default function StepSequencer() {
               ...pool,
               blob,
               url,
-              durationSec: Math.min(POOL_RECORD_MS / 1000, recordedMs / 1000),
+              durationSec: Math.min(
+                POOL_RECORD_MS / 1000,
+                recordedMsRef.current / 1000
+              ),
             }
           })
         )
@@ -694,6 +726,7 @@ export default function StepSequencer() {
       phraseTickRef.current = setInterval(() => {
         setRecordedMs((prev) => {
           const next = Math.min(POOL_RECORD_MS, prev + 100)
+          recordedMsRef.current = next
           if (next >= POOL_RECORD_MS) {
             finalizePhrasePool()
           }
@@ -798,6 +831,16 @@ export default function StepSequencer() {
       clearInterval(stackCountdownRef.current)
       stackCountdownRef.current = null
     }
+    phraseStackSourcesRef.current.forEach((src, idx) => {
+      if (!src) return
+      try {
+        src.stop()
+      } catch {
+        /* already stopped */
+      }
+      phraseStackSourcesRef.current[idx] = null
+    })
+    phraseStackDurationRef.current = Array.from({ length: PRACTICE_POOLS }, () => 0)
     allPoolsAudioRef.current.forEach((audio, idx) => {
       if (!audio) return
       audio.pause()
@@ -813,6 +856,7 @@ export default function StepSequencer() {
       stopAllPoolsPlayback()
       return
     }
+    setPhraseError(null)
     if (stackCountdownRef.current) {
       clearInterval(stackCountdownRef.current)
       stackCountdownRef.current = null
@@ -823,13 +867,31 @@ export default function StepSequencer() {
       .map((idx) => ({ ...pools[idx], idx }))
       .filter((p) => p.url)
     if (!active.length) return
+
+    const ctx = ensureCtx()
+    void ctx.resume()
+
     try {
       await preloadArmedPools()
       stopAllPoolsPlayback()
+
+      const decoded = new Map<number, AudioBuffer>()
+      for (const p of active) {
+        const url = p.url!
+        const res = await fetch(url)
+        if (!res.ok) throw new Error(`fetch ${res.status}`)
+        const ab = await res.arrayBuffer()
+        const buf = await ctx.decodeAudioData(ab.slice(0))
+        decoded.set(p.idx, buf)
+      }
+
+      const rateSnapshot = phraseRate
+      const volSnapshot = [...poolVolumes]
+
       setPoolProgress(Array.from({ length: PRACTICE_POOLS }, () => 0))
       let c = STACK_COUNTDOWN_SEC
       setStackCountdown(c)
-      stackCountdownRef.current = setInterval(async () => {
+      stackCountdownRef.current = setInterval(() => {
         c -= 1
         setStackCountdown(c > 0 ? c : 0)
         if (c > 0) return
@@ -839,47 +901,79 @@ export default function StepSequencer() {
         }
         setStackCountdown(null)
 
-        const starts: Promise<void>[] = []
-        const startedFlags: boolean[] = Array.from({ length: active.length }, () => false)
-        for (let order = 0; order < active.length; order++) {
-          const p = active[order]!
-          const a = new Audio(p.url!)
-          a.preload = 'auto'
-          a.playbackRate = phraseRate
-          const dominance = order === 0 ? 1 : 0.78
-          a.volume = Math.max(0, Math.min(1, (poolVolumes[p.idx] ?? 1) * dominance))
-          allPoolsAudioRef.current[p.idx] = a
-          starts.push(
-            a.play().then(() => {
-              startedFlags[order] = true
-            }).catch(() => {
-              allPoolsAudioRef.current[p.idx] = null
-            })
-          )
+        const ctxNow = ctxRef.current
+        const master = masterRef.current
+        if (!ctxNow || !master) {
+          setPhraseError('Audio context not ready.')
+          return
         }
-        await Promise.allSettled(starts)
-        const started = startedFlags.filter(Boolean).length
-        if (started === 0) {
+
+        void ctxNow.resume()
+        const startAt = ctxNow.currentTime
+        phraseStackStartTimeRef.current = startAt
+
+        phraseStackDurationRef.current = Array.from({ length: PRACTICE_POOLS }, () => 0)
+        let maxScaled = 0
+        let anyStarted = false
+
+        active.forEach((p, order) => {
+          const buf = decoded.get(p.idx)
+          if (!buf) return
+          const src = ctxNow.createBufferSource()
+          src.buffer = buf
+          src.playbackRate.value = rateSnapshot
+          const g = ctxNow.createGain()
+          const dominance = order === 0 ? 1 : 0.78
+          g.gain.value = Math.max(
+            0,
+            Math.min(1, (volSnapshot[p.idx] ?? 1) * dominance)
+          )
+          src.connect(g)
+          g.connect(master)
+          src.start(startAt)
+          phraseStackSourcesRef.current[p.idx] = src
+          phraseStackDurationRef.current[p.idx] = buf.duration
+          const scaled = buf.duration / Math.max(0.001, rateSnapshot)
+          if (scaled > maxScaled) maxScaled = scaled
+          anyStarted = true
+        })
+
+        if (!anyStarted) {
           setPhraseError('Stacked play could not start after countdown.')
           return
         }
+
         setPlayAllActive(true)
         allPoolsTickerRef.current = setInterval(() => {
+          const cctx = ctxRef.current
+          if (!cctx) return
+          const elapsed = cctx.currentTime - phraseStackStartTimeRef.current
           setPoolProgress((prev) =>
             prev.map((_, i) => {
-              const a = allPoolsAudioRef.current[i]
-              if (!a || !Number.isFinite(a.duration) || a.duration <= 0) return 0
-              return Math.max(0, Math.min(1, a.currentTime / a.duration))
+              const dur = phraseStackDurationRef.current[i]
+              if (!dur || dur <= 0) return 0
+              return Math.min(1, elapsed / (dur / Math.max(0.001, rateSnapshot)))
             })
           )
-          const stillPlaying = allPoolsAudioRef.current.some((a) => a && !a.paused && !a.ended)
-          if (!stillPlaying) stopAllPoolsPlayback()
+          if (elapsed >= maxScaled - 0.05) {
+            stopAllPoolsPlayback()
+          }
         }, 80)
       }, 1000)
     } catch {
-      setPhraseError('Could not play all pools at once on this browser.')
+      setPhraseError('Could not decode pools for stacked playback. Try re-recording.')
     }
-  }, [activePool, armedPools, playAllActive, phraseRate, poolVolumes, pools, preloadArmedPools, stopAllPoolsPlayback])
+  }, [
+    activePool,
+    armedPools,
+    ensureCtx,
+    playAllActive,
+    phraseRate,
+    poolVolumes,
+    pools,
+    preloadArmedPools,
+    stopAllPoolsPlayback,
+  ])
 
   const onPoolPressStart = (poolIndex: number) => {
     if (poolHoldTimeoutRef.current) clearTimeout(poolHoldTimeoutRef.current)
