@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card } from '@/components/ui/card'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useSequencer } from '@/lib/hooks/useSequencer'
@@ -62,8 +61,8 @@ export default function SequencerPage() {
   }
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-7xl flex-col gap-4 px-4 py-6 sm:px-6">
-      <Card className="p-4 sm:p-5">
+    <div className="flex h-full min-h-screen w-full flex-col bg-neutral-50 dark:bg-neutral-950">
+      <div className="border-b border-black/10 bg-white/80 px-4 py-3 backdrop-blur-sm dark:border-white/10 dark:bg-black/60 sm:px-6">
         <SequencerHeader
           title={sequencer.sequence.title}
           isDirty={sequencer.isDirty}
@@ -77,18 +76,18 @@ export default function SequencerPage() {
           }}
           onDelete={(id) => void deleteSequence(id)}
         />
-      </Card>
+      </div>
 
-      <Card className="p-4 sm:p-5">
-        <div className="overflow-x-auto">
-          <SequencerGrid
-            steps={sequencer.sequence.steps}
-            currentStepIndex={audio.currentStepIndex}
-            syllableByStepId={syllableByStepId}
-            onToggleStep={sequencer.toggleStep}
-            onAssignNode={sequencer.assignNode}
-            onSetDuration={sequencer.setDuration}
-          />
+      <div className="flex-1 overflow-x-auto px-4 pb-2 pt-6 sm:px-6">
+        <SequencerGrid
+          steps={sequencer.sequence.steps}
+          currentStepIndex={audio.currentStepIndex}
+          syllableByStepId={syllableByStepId}
+          onToggleStep={sequencer.toggleStep}
+          onAssignNode={sequencer.assignNode}
+          onSetDuration={sequencer.setDuration}
+        />
+        <div className="mt-1">
           <SyllabicAligner
             steps={sequencer.sequence.steps}
             syllables={sequencer.sequence.syllables}
@@ -96,9 +95,9 @@ export default function SequencerPage() {
             overflowSyllables={overflowSyllables}
           />
         </div>
-      </Card>
+      </div>
 
-      <Card className="p-4 sm:p-5">
+      <div className="border-t border-black/10 px-4 py-4 dark:border-white/10 sm:px-6">
         <MantraInput
           mantraText={sequencer.sequence.mantraText}
           mantraLanguage={sequencer.sequence.mantraLanguage}
@@ -110,15 +109,15 @@ export default function SequencerPage() {
           onLanguageChange={sequencer.setMantraLanguage}
           onIpaChange={sequencer.setIpaText}
         />
-      </Card>
+      </div>
 
-      <Card className="p-4 sm:p-5">
+      <div className="border-t border-black/10 bg-white/80 px-4 py-3 backdrop-blur-sm dark:border-white/10 dark:bg-black/60 sm:px-6">
         <SequencerControls
           isPlaying={audio.isPlaying}
           bpm={sequencer.sequence.bpm}
           stepCount={sequencer.sequence.stepCount}
           loop={sequencer.sequence.loop}
-          toneMode={toneMode}
+          toneMode={toneMode ?? 'drone'}
           onPlay={() => void audio.play()}
           onPause={audio.pause}
           onStop={audio.stop}
@@ -127,7 +126,7 @@ export default function SequencerPage() {
           onLoopChange={sequencer.setLoop}
           onToneModeChange={setToneMode}
         />
-      </Card>
+      </div>
     </div>
   )
 }

@@ -7,15 +7,15 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils'
 
 const NODE_COLORS: Record<NodeIndex, string> = {
-  0: '#64748b',
-  1: '#4f46e5',
-  2: '#f59e0b',
-  3: '#84cc16',
-  4: '#0ea5e9',
-  5: '#8b5cf6',
-  6: '#facc15',
-  7: '#ec4899',
-  8: '#e5e7eb',
+  0: '#8b7355',
+  1: '#5b8fa8',
+  2: '#c0392b',
+  3: '#4a9e72',
+  4: '#c4a35a',
+  5: '#6b5b9e',
+  6: '#b8860b',
+  7: '#9c6b8a',
+  8: '#4a7fa5',
 }
 
 type Props = {

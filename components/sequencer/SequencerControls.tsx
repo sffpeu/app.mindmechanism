@@ -3,9 +3,7 @@
 import { Pause, Play, Repeat, Square } from 'lucide-react'
 import type { StepCount } from '@/lib/sequencer'
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
-import { Switch } from '@/components/ui/switch'
 
 type Props = {
   isPlaying: boolean
@@ -37,9 +35,9 @@ export function SequencerControls({
   onToneModeChange,
 }: Props) {
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <Button type="button" size="icon" onClick={isPlaying ? onPause : onPlay}>
+    <div className="flex flex-wrap items-center gap-4">
+      <div className="flex items-center gap-1.5">
+        <Button type="button" size="icon" variant={isPlaying ? 'default' : 'outline'} onClick={isPlaying ? onPause : onPlay}>
           {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
         </Button>
         <Button type="button" size="icon" variant="outline" onClick={onStop}>
@@ -50,58 +48,62 @@ export function SequencerControls({
           size="sm"
           variant={loop ? 'default' : 'outline'}
           onClick={() => onLoopChange(!loop)}
-          className="gap-1.5"
+          className="gap-1"
         >
-          <Repeat className="h-4 w-4" />
+          <Repeat className="h-3.5 w-3.5" />
           Loop
         </Button>
       </div>
 
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label>BPM</Label>
-          <span className="text-sm tabular-nums">{bpm}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button type="button" size="sm" variant="outline" onClick={() => onBpmChange(bpm - 5)}>
-            -5
-          </Button>
+      <div className="h-6 w-px bg-black/15 dark:bg-white/15" />
+
+      <div className="flex items-center gap-2">
+        <Button type="button" size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => onBpmChange(bpm - 5)}>
+          -5
+        </Button>
+        <div className="flex min-w-[80px] items-center gap-1.5">
           <Slider
             value={[bpm]}
             min={40}
             max={180}
             step={1}
             onValueChange={([v]) => onBpmChange(v)}
+            className="w-20"
           />
-          <Button type="button" size="sm" variant="outline" onClick={() => onBpmChange(bpm + 5)}>
-            +5
+          <span className="text-xs tabular-nums text-gray-500">{bpm} bpm</span>
+        </div>
+        <Button type="button" size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => onBpmChange(bpm + 5)}>
+          +5
+        </Button>
+      </div>
+
+      <div className="h-6 w-px bg-black/15 dark:bg-white/15" />
+
+      <div className="flex items-center gap-1.5">
+        <span className="text-xs text-gray-500">Steps</span>
+        {([8, 16, 32] as StepCount[]).map((count) => (
+          <Button
+            key={count}
+            type="button"
+            size="sm"
+            variant={stepCount === count ? 'default' : 'outline'}
+            className="h-7 px-2.5 text-xs"
+            onClick={() => onStepCountChange(count)}
+          >
+            {count}
           </Button>
-        </div>
+        ))}
       </div>
 
-      <div className="space-y-2">
-        <Label>Steps</Label>
-        <div className="flex items-center gap-2">
-          {[8, 16, 32].map((count) => (
-            <Button
-              key={count}
-              type="button"
-              size="sm"
-              variant={stepCount === count ? 'default' : 'outline'}
-              onClick={() => onStepCountChange(count as StepCount)}
-            >
-              {count}
-            </Button>
-          ))}
-        </div>
-      </div>
+      <div className="h-6 w-px bg-black/15 dark:bg-white/15" />
 
-      <div className="flex flex-wrap items-center gap-3">
-        <Label>Source</Label>
+      <div className="flex items-center gap-1.5">
+        <span className="text-xs text-gray-500">Source</span>
         <Button
           type="button"
           size="sm"
           variant={toneMode === 'drone' ? 'default' : 'outline'}
+          className="h-7 px-2.5 text-xs"
           onClick={() => onToneModeChange('drone')}
         >
           Drone
@@ -110,16 +112,11 @@ export function SequencerControls({
           type="button"
           size="sm"
           variant={toneMode === 'synthetic' ? 'default' : 'outline'}
+          className="h-7 px-2.5 text-xs"
           onClick={() => onToneModeChange('synthetic')}
         >
           Sine
         </Button>
-        <div className="ml-auto inline-flex items-center gap-2">
-          <Label htmlFor="loop-toggle" className="text-xs">
-            Loop
-          </Label>
-          <Switch id="loop-toggle" checked={loop} onCheckedChange={onLoopChange} />
-        </div>
       </div>
     </div>
   )
