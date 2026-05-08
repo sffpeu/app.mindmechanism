@@ -49,7 +49,15 @@ const PAD_PEAK_USER = 0.82
 const PAD_SUSTAIN_MIN_MS = 0
 const PAD_SUSTAIN_MAX_MS = 420
 const PAD_SUSTAIN_DEFAULT_MS = 85
-const PHRASE_RECORD_MS = 5000
+const POOL_RECORD_MS = 10000
+const PRACTICE_POOLS = 3
+
+type PhrasePool = {
+  blob: Blob | null
+  url: string | null
+  durationSec: number
+  notes: string
+}
 
 /** Rough chromatic alignment with planet drones / wheels */
 const TRACK_COLORS = [
@@ -164,13 +172,23 @@ export default function StepSequencer() {
     if (!Number.isFinite(raw)) return PAD_SUSTAIN_DEFAULT_MS
     return Math.max(PAD_SUSTAIN_MIN_MS, Math.min(PAD_SUSTAIN_MAX_MS, Math.round(raw)))
   })
-  const [phraseUrl, setPhraseUrl] = useState<string | null>(null)
-  const [phraseBlob, setPhraseBlob] = useState<Blob | null>(null)
   const [phraseDuration, setPhraseDuration] = useState(0)
   const [phrasePos, setPhrasePos] = useState(0)
   const [phraseRecActive, setPhraseRecActive] = useState(false)
+  const [phraseRecPaused, setPhraseRecPaused] = useState(false)
   const [phrasePlayActive, setPhrasePlayActive] = useState(false)
   const [phraseError, setPhraseError] = useState<string | null>(null)
+  const [phraseRate, setPhraseRate] = useState(1)
+  const [activePool, setActivePool] = useState(0)
+  const [pools, setPools] = useState<PhrasePool[]>(
+    Array.from({ length: PRACTICE_POOLS }, () => ({
+      blob: null,
+      url: null,
+      durationSec: 0,
+      notes: '',
+    }))
+  )
+  const [recordedMs, setRecordedMs] = useState(0)
 
   const ctxRef = useRef<AudioContext | null>(null)
   const masterRef = useRef<GainNode | null>(null)
@@ -186,6 +204,7 @@ export default function StepSequencer() {
   const phraseStreamRef = useRef<MediaStream | null>(null)
   const phraseAudioRef = useRef<HTMLAudioElement | null>(null)
   const phraseStopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const phraseTickRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     tracksRef.current = tracks
@@ -370,14 +389,17 @@ export default function StepSequencer() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
       if (phraseStopTimerRef.current) clearTimeout(phraseStopTimerRef.current)
+      if (phraseTickRef.current) clearInterval(phraseTickRef.current)
       if (phraseRecorderRef.current && phraseRecorderRef.current.state !== 'inactive') {
         phraseRecorderRef.current.stop()
       }
       phraseStreamRef.current?.getTracks().forEach((t) => t.stop())
-      if (phraseUrl) URL.revokeObjectURL(phraseUrl)
+      pools.forEach((p) => {
+        if (p.url) URL.revokeObjectURL(p.url)
+      })
       void ctxRef.current?.close()
     }
-  }, [phraseUrl])
+  }, [pools])
 
   const stopPhrasePlayback = useCallback(() => {
     const audio = phraseAudioRef.current
@@ -386,10 +408,40 @@ export default function StepSequencer() {
     setPhrasePlayActive(false)
   }, [])
 
-  const startPhraseRecord = useCallback(async () => {
-    if (phraseRecActive) return
+  const finalizePhrasePool = useCallback(() => {
+    if (phraseStopTimerRef.current) {
+      clearTimeout(phraseStopTimerRef.current)
+      phraseStopTimerRef.current = null
+    }
+    if (phraseTickRef.current) {
+      clearInterval(phraseTickRef.current)
+      phraseTickRef.current = null
+    }
+    const recorder = phraseRecorderRef.current
+    if (recorder && recorder.state !== 'inactive') recorder.stop()
+    setPhraseRecActive(false)
+    setPhraseRecPaused(false)
+  }, [])
+
+  const startOrResumePhraseRecord = useCallback(async () => {
     setPhraseError(null)
     stopPhrasePlayback()
+    const currentPool = pools[activePool]
+    const currentMs = Math.round(currentPool.durationSec * 1000)
+    if (currentMs >= POOL_RECORD_MS) {
+      setPhraseError('This pool is full (10s). Switch pool or reset.')
+      return
+    }
+
+    const existing = phraseRecorderRef.current
+    if (existing && existing.state === 'paused') {
+      existing.resume()
+      setPhraseRecPaused(false)
+      setPhraseRecActive(true)
+      return
+    }
+    if (existing && existing.state === 'recording') return
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       phraseStreamRef.current = stream
@@ -409,11 +461,22 @@ export default function StepSequencer() {
           type: recorder.mimeType || 'audio/webm',
         })
         const url = URL.createObjectURL(blob)
-        if (phraseUrl) URL.revokeObjectURL(phraseUrl)
-        setPhraseBlob(blob)
-        setPhraseUrl(url)
+        setPools((prev) =>
+          prev.map((pool, idx) => {
+            if (idx !== activePool) return pool
+            if (pool.url) URL.revokeObjectURL(pool.url)
+            return {
+              ...pool,
+              blob,
+              url,
+              durationSec: Math.min(POOL_RECORD_MS / 1000, recordedMs / 1000),
+            }
+          })
+        )
         setPhrasePos(0)
+        setPhraseDuration(Math.min(POOL_RECORD_MS / 1000, recordedMs / 1000))
         setPhraseRecActive(false)
+        setPhraseRecPaused(false)
         const audio = phraseAudioRef.current
         if (audio) {
           audio.src = url
@@ -424,39 +487,60 @@ export default function StepSequencer() {
         }
         phraseStreamRef.current?.getTracks().forEach((t) => t.stop())
         phraseStreamRef.current = null
+        phraseRecorderRef.current = null
       }
       recorder.start(120)
       setPhraseRecActive(true)
-      if (phraseStopTimerRef.current) clearTimeout(phraseStopTimerRef.current)
-      phraseStopTimerRef.current = setTimeout(() => {
-        if (recorder.state !== 'inactive') recorder.stop()
-      }, PHRASE_RECORD_MS)
+      setPhraseRecPaused(false)
+      setRecordedMs(currentMs)
+      if (phraseTickRef.current) clearInterval(phraseTickRef.current)
+      phraseTickRef.current = setInterval(() => {
+        setRecordedMs((prev) => {
+          const next = Math.min(POOL_RECORD_MS, prev + 100)
+          if (next >= POOL_RECORD_MS) {
+            finalizePhrasePool()
+          }
+          return next
+        })
+      }, 100)
     } catch {
       setPhraseRecActive(false)
       setPhraseError('Microphone access is required to capture a phrase.')
     }
-  }, [phraseRecActive, phraseUrl, stopPhrasePlayback])
+  }, [activePool, finalizePhrasePool, pools, recordedMs, stopPhrasePlayback])
+
+  const pausePhraseRecord = useCallback(() => {
+    const recorder = phraseRecorderRef.current
+    if (!recorder || recorder.state !== 'recording') return
+    recorder.pause()
+    setPhraseRecPaused(true)
+    if (phraseTickRef.current) {
+      clearInterval(phraseTickRef.current)
+      phraseTickRef.current = null
+    }
+  }, [])
 
   const togglePhrasePlayback = useCallback(async () => {
     const audio = phraseAudioRef.current
-    if (!audio || !phraseBlob) return
+    if (!audio || !pools[activePool]?.blob) return
     if (phrasePlayActive) {
       audio.pause()
       setPhrasePlayActive(false)
       return
     }
     try {
+      audio.playbackRate = phraseRate
       await audio.play()
       setPhrasePlayActive(true)
     } catch {
       setPhrasePlayActive(false)
     }
-  }, [phraseBlob, phrasePlayActive])
+  }, [activePool, phrasePlayActive, phraseRate, pools])
 
   const jogPhrase = useCallback((nextSec: number) => {
     const audio = phraseAudioRef.current
     if (!audio) return
-    const max = phraseDuration > 0 ? phraseDuration : PHRASE_RECORD_MS / 1000
+    const max = phraseDuration > 0 ? phraseDuration : POOL_RECORD_MS / 1000
     const clamped = Math.max(0, Math.min(max, nextSec))
     audio.currentTime = clamped
     setPhrasePos(clamped)
@@ -478,7 +562,55 @@ export default function StepSequencer() {
       audio.removeEventListener('timeupdate', onTime)
       audio.removeEventListener('ended', onEnded)
     }
-  }, [phraseUrl])
+  }, [activePool, pools])
+
+  useEffect(() => {
+    const pool = pools[activePool]
+    if (!pool?.url) return
+    const audio = phraseAudioRef.current
+    if (!audio) return
+    audio.src = pool.url
+    audio.currentTime = 0
+    audio.playbackRate = phraseRate
+    setPhrasePos(0)
+    setPhraseDuration(pool.durationSec || 0)
+    setRecordedMs(Math.round((pool.durationSec || 0) * 1000))
+  }, [activePool, pools, phraseRate])
+
+  useEffect(() => {
+    const audio = phraseAudioRef.current
+    if (!audio) return
+    audio.playbackRate = phraseRate
+  }, [phraseRate])
+
+  const playAllPoolsTogether = useCallback(async () => {
+    const active = pools.filter((p) => p.url)
+    if (!active.length) return
+    try {
+      await Promise.all(
+        active.map(async (p) => {
+          const a = new Audio(p.url!)
+          a.playbackRate = phraseRate
+          await a.play()
+        })
+      )
+    } catch {
+      setPhraseError('Could not play all pools at once on this browser.')
+    }
+  }, [phraseRate, pools])
+
+  const resetActivePool = useCallback(() => {
+    const pool = pools[activePool]
+    if (pool?.url) URL.revokeObjectURL(pool.url)
+    setPools((prev) =>
+      prev.map((p, i) =>
+        i === activePool ? { blob: null, url: null, durationSec: 0, notes: '' } : p
+      )
+    )
+    setPhrasePos(0)
+    setPhraseDuration(0)
+    setRecordedMs(0)
+  }, [activePool, pools])
 
   const toggleStep = (track: number, step: number) => {
     setTracks((prev) =>
@@ -611,20 +743,55 @@ export default function StepSequencer() {
           <div>
             <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-500">Phrase analyzer tape</p>
             <p className="text-xs text-neutral-400 mt-1">
-              Record exactly <strong className="text-neutral-200">5 seconds</strong>, then jog and replay for pronunciation and tonal appraisal.
+              Three practitioner pools. Each pool records up to <strong className="text-neutral-200">10 seconds</strong> with pause/resume fill, then compare for pronunciation precision.
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 rounded-lg border border-neutral-700/80 bg-neutral-900/70 p-1">
+              {pools.map((pool, i) => (
+                <Button
+                  key={i}
+                  type="button"
+                  size="sm"
+                  variant={activePool === i ? 'secondary' : 'ghost'}
+                  className="h-7 px-2 text-[10px]"
+                  onClick={() => setActivePool(i)}
+                >
+                  P{i + 1} {pool.durationSec > 0 ? `${pool.durationSec.toFixed(1)}s` : ''}
+                </Button>
+              ))}
+            </div>
             <Button
               type="button"
               size="sm"
               variant={phraseRecActive ? 'destructive' : 'outline'}
               className="gap-1.5 border-neutral-700"
-              onClick={() => void startPhraseRecord()}
-              disabled={phraseRecActive}
+              onClick={() => void startOrResumePhraseRecord()}
             >
               <Circle className={cn('h-3.5 w-3.5', phraseRecActive && 'fill-red-500 text-red-500')} />
-              {phraseRecActive ? 'Recording...' : 'Record phrase (5s)'}
+              {phraseRecActive ? 'Recording...' : phraseRecPaused ? 'Resume' : 'Record'}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="gap-1.5 border-neutral-700"
+              onClick={pausePhraseRecord}
+              disabled={!phraseRecActive}
+            >
+              <Pause className="h-3.5 w-3.5" />
+              Pause
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="gap-1.5 border-neutral-700"
+              onClick={finalizePhrasePool}
+              disabled={!phraseRecActive && !phraseRecPaused}
+            >
+              <Square className="h-3.5 w-3.5" />
+              Finish pool
             </Button>
             <Button
               type="button"
@@ -632,7 +799,7 @@ export default function StepSequencer() {
               variant="outline"
               className="gap-1.5 border-neutral-700"
               onClick={() => void togglePhrasePlayback()}
-              disabled={!phraseBlob}
+              disabled={!pools[activePool]?.blob}
             >
               {phrasePlayActive ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
               {phrasePlayActive ? 'Pause' : 'Play'}
@@ -643,12 +810,37 @@ export default function StepSequencer() {
               variant="ghost"
               className="gap-1 text-neutral-300"
               onClick={resetPhrase}
-              disabled={!phraseBlob}
+              disabled={!pools[activePool]?.blob}
             >
               <Rewind className="h-3.5 w-3.5" />
               Zero
             </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="gap-1 text-neutral-300"
+              onClick={playAllPoolsTogether}
+              disabled={!pools.some((p) => p.blob)}
+            >
+              <Disc3 className="h-3.5 w-3.5" />
+              Play all 3
+            </Button>
           </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <Label className="text-[10px] uppercase tracking-widest text-neutral-500 shrink-0">
+            Playback speed
+          </Label>
+          <Slider
+            value={[phraseRate]}
+            min={0.1}
+            max={2}
+            step={0.05}
+            onValueChange={([v]) => setPhraseRate(v)}
+            className="max-w-sm"
+          />
+          <span className="text-xs tabular-nums text-neutral-400 w-12">{phraseRate.toFixed(2)}x</span>
         </div>
         <div className="rounded-xl border border-neutral-800/80 bg-neutral-900/60 p-3">
           <div className="flex items-center gap-4">
@@ -656,7 +848,7 @@ export default function StepSequencer() {
               <div
                 className="absolute inset-2 rounded-full border border-neutral-800 bg-neutral-900"
                 style={{
-                  transform: `rotate(${(phrasePos / Math.max(0.001, phraseDuration || PHRASE_RECORD_MS / 1000)) * 720}deg)`,
+                  transform: `rotate(${(phrasePos / Math.max(0.001, phraseDuration || POOL_RECORD_MS / 1000)) * 720}deg)`,
                 }}
               />
               <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-neutral-500" />
@@ -668,7 +860,7 @@ export default function StepSequencer() {
                   style={{
                     width: `${Math.min(
                       100,
-                      (phrasePos / Math.max(0.001, phraseDuration || PHRASE_RECORD_MS / 1000)) * 100
+                      (phrasePos / Math.max(0.001, phraseDuration || POOL_RECORD_MS / 1000)) * 100
                     )}%`,
                   }}
                 />
@@ -676,15 +868,15 @@ export default function StepSequencer() {
               <Slider
                 value={[phrasePos]}
                 min={0}
-                max={Math.max(phraseDuration || PHRASE_RECORD_MS / 1000, 0.1)}
+                max={Math.max(phraseDuration || POOL_RECORD_MS / 1000, 0.1)}
                 step={0.01}
                 onValueChange={([v]) => jogPhrase(v)}
-                disabled={!phraseBlob}
+                disabled={!pools[activePool]?.blob}
               />
               <div className="mt-1.5 flex items-center justify-between text-[10px] text-neutral-500">
                 <span>Tape jog</span>
                 <span className="tabular-nums">
-                  {phrasePos.toFixed(2)}s / {(phraseDuration || PHRASE_RECORD_MS / 1000).toFixed(2)}s
+                  {phrasePos.toFixed(2)}s / {(phraseDuration || POOL_RECORD_MS / 1000).toFixed(2)}s
                 </span>
               </div>
             </div>
@@ -694,10 +886,30 @@ export default function StepSequencer() {
               variant="ghost"
               className="gap-1 text-neutral-300"
               onClick={() => jogPhrase(phrasePos + 0.1)}
-              disabled={!phraseBlob}
+              disabled={!pools[activePool]?.blob}
             >
               <RotateCw className="h-3.5 w-3.5" />
               +0.1s
+            </Button>
+          </div>
+          <div className="mt-3 space-y-1">
+            <Label className="text-[10px] uppercase tracking-widest text-neutral-500">
+              Pool {activePool + 1} appraisal notes
+            </Label>
+            <Input
+              value={pools[activePool]?.notes || ''}
+              onChange={(e) =>
+                setPools((prev) =>
+                  prev.map((p, i) => (i === activePool ? { ...p, notes: e.target.value } : p))
+                )
+              }
+              placeholder="Mark pronunciation misses, tonal drift, consonant failures..."
+              className="bg-neutral-950 border-neutral-700"
+            />
+          </div>
+          <div className="mt-2 flex gap-2">
+            <Button type="button" size="sm" variant="ghost" onClick={resetActivePool}>
+              Reset pool {activePool + 1}
             </Button>
           </div>
         </div>

@@ -56,8 +56,8 @@ export default function SequencerPage() {
               </li>
               <li>BPM sets one bar of sixteen sixteenth-notes.</li>
               <li>
-                A top-panel <strong className="text-gray-800 dark:text-gray-200">phrase tape</strong> records 5 seconds from mic, then
-                supports jog + replay for pronunciation and tonal analysis.
+                A top-panel <strong className="text-gray-800 dark:text-gray-200">phrase tape</strong> provides three 10-second pools with
+                pause/resume fill, variable playback speed (very slow to 2x), and layered replay for practitioner analysis.
               </li>
               <li>
                 <strong className="text-gray-800 dark:text-gray-200">Arm record</strong> → Play → Stop to capture the stereo mix.
