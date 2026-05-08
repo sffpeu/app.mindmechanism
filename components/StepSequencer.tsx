@@ -43,6 +43,8 @@ import { MANDALA_NODES } from '@/data/mandalaNodes'
 import { getAllWords } from '@/lib/glossary'
 import { saveVoiceNote, type VoiceNoteTarget } from '@/lib/voiceNoteStorage'
 import type { GlossaryWord } from '@/types/Glossary'
+import { useAuth } from '@/lib/FirebaseAuthContext'
+import { logSequencerSession } from '@/lib/researchLogging'
 
 export const STEPS = 16
 /** One lane per mandala / wheel (0–8). */
@@ -273,6 +275,11 @@ export default function StepSequencer({ mantraText, onPoolFinished }: StepSequen
   const phraseTickRef = useRef<ReturnType<typeof setInterval> | null>(null)
   /** Latest recorded length for MediaRecorder onstop (state updates can lag one frame). */
   const recordedMsRef = useRef(0)
+  /** Category B — counts pad hits per lane during main transport (Play → Stop). */
+  const sessionNodeUsageRef = useRef<Record<number, number>>({})
+  const sessionStepCountRef = useRef(0)
+
+  const { user, profile } = useAuth()
 
   useEffect(() => {
     tracksRef.current = tracks
@@ -378,6 +385,8 @@ export default function StepSequencer({ mantraText, onPoolFinished }: StepSequen
     for (let t = 0; t < TRACKS; t++) {
       const tr = list[t]
       if (!tr.steps[stepIdx] || !tr.buffer) continue
+      sessionNodeUsageRef.current[t] = (sessionNodeUsageRef.current[t] ?? 0) + 1
+      sessionStepCountRef.current += 1
       const src = ctx.createBufferSource()
       src.buffer = tr.buffer
       const g = ctx.createGain()
@@ -454,19 +463,32 @@ export default function StepSequencer({ mantraText, onPoolFinished }: StepSequen
       clearInterval(intervalRef.current)
       intervalRef.current = null
     }
+    const usage = { ...sessionNodeUsageRef.current }
+    const totalSteps = sessionStepCountRef.current
+    sessionNodeUsageRef.current = {}
+    sessionStepCountRef.current = 0
+    if (totalSteps > 0 && user?.uid) {
+      void logSequencerSession(user.uid, profile, {
+        nodeUsage: usage,
+        totalStepsFired: totalSteps,
+      })
+    }
     setIsPlaying(false)
     setCurrentStep(0)
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop()
       setRecordingActive(false)
     }
-  }, [])
+  }, [user?.uid, profile])
 
   const startTransport = useCallback(async () => {
     const ctx = ensureCtx()
     await ctx.resume()
 
     if (intervalRef.current) clearInterval(intervalRef.current)
+
+    sessionNodeUsageRef.current = {}
+    sessionStepCountRef.current = 0
 
     const stepMs = ((60 / bpm) / 4) * 1000
     setCurrentStep(0)

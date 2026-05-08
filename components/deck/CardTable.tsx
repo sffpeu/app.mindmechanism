@@ -101,7 +101,7 @@ const DECK_STRIP_BTN_DRAW =
   'rounded-full border border-transparent px-[18px] py-2.5 text-sm font-semibold tracking-wide text-white/90 transition-colors duration-150 hover:border-emerald-400/55 hover:bg-emerald-500/22 hover:text-emerald-100'
 
 export function CardTable() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const tableRef = useRef<HTMLDivElement>(null)
   const bgInputRef = useRef<HTMLInputElement>(null)
   const [cards, setCards] = useState<CardState[]>([])
@@ -254,24 +254,28 @@ export function CardTable() {
     if (card?.customContent) {
       const { term, definition, phonetic } = card.customContent
       if (!term.trim()) { showToast('Add a term to the card first'); return }
-      const result = await addUserWord({
-        word: term.trim(),
-        definition: definition.trim() || '',
-        phonetic_spelling: phonetic.trim() || '',
-        grade: 3,
-        rating: '~',
-        source: 'user',
-        version: 'User',
-        language: 'en',
-        user_id: user?.uid,
-      })
+      const researchContext = user ? { uid: user.uid, profile } : undefined
+      const result = await addUserWord(
+        {
+          word: term.trim(),
+          definition: definition.trim() || '',
+          phonetic_spelling: phonetic.trim() || '',
+          grade: 3,
+          rating: '~',
+          source: 'user',
+          version: 'User',
+          language: 'en',
+          user_id: user?.uid,
+        },
+        researchContext
+      )
       showToast(result ? `"${term.trim()}" added to My Words` : 'Failed to add — try again')
       return
     }
     const node = MANDALA_NODES.find(n => n.id === nodeId)
     if (!node) return
     showToast(`"${node.term}" sent to Glossary`)
-  }, [cards, showToast, user])
+  }, [cards, showToast, user, profile])
 
   const handleCustomContentChange = useCallback((nodeId: string, field: 'term' | 'definition' | 'phonetic', value: string) => {
     setCards(prev => prev.map(c =>

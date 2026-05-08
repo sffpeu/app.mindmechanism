@@ -8,6 +8,7 @@ import { doc, Firestore, setDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { RESEARCH_PROTOCOL_VERSION } from '@/lib/researchProtocol'
+import { excludeUserResearchData } from '@/lib/researchLogging'
 import { ResearchConsentFlow } from '@/components/research/ResearchConsentFlow'
 
 function fmtDate(value?: string): string {
@@ -45,6 +46,9 @@ export function ResearchParticipationSettings() {
         },
         { merge: true }
       )
+      if (category === 'categoryB' && !granted) {
+        await excludeUserResearchData(user.uid)
+      }
       await refreshProfile()
     } finally {
       setUpdating(null)

@@ -29,7 +29,7 @@ interface AddWordDialogProps {
 }
 
 export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord, mode = 'formal' }: AddWordDialogProps) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { playSuccess } = useSoundEffects();
   const [word, setWord] = useState('');
   const [definition, setDefinition] = useState('');
@@ -190,7 +190,8 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord, mode 
         personal: isPersonal,
       };
       if (clockId !== 'none') updates.clock_id = Number(clockId);
-      const result = await updateUserWord(editWord.id, updates);
+      const researchContext = user ? { uid: user.uid, profile } : undefined
+      const result = await updateUserWord(editWord.id, updates, researchContext);
       if (result) {
         playSuccess();
         toast.success('Word updated successfully');
@@ -229,7 +230,8 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord, mode 
         personal: isPersonal,
       };
       if (clockId !== 'none') newWord.clock_id = Number(clockId);
-      const result = await addUserWord(newWord);
+      const researchContext = user ? { uid: user.uid, profile } : undefined
+      const result = await addUserWord(newWord, researchContext);
       if (result) {
         playSuccess();
         toast.success('Word added successfully');

@@ -83,6 +83,20 @@
           "order": "DESCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "research_b_events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "user_hash",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "research_excluded",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []

@@ -1,5 +1,7 @@
 import { db } from './firebase';
 import { GlossaryWord, GlossaryDefinition, WordRating } from '@/types/Glossary';
+import type { UserProfile } from '@/lib/FirebaseAuthContext';
+import { logWheelAssignment } from '@/lib/researchLogging';
 import {
   collection,
   query as firestoreQuery,
@@ -349,7 +351,10 @@ export async function getClockWords(): Promise<GlossaryWord[]> {
   }
 }
 
-export async function addUserWord(word: Omit<GlossaryWord, 'id' | 'created_at'>): Promise<GlossaryWord | null> {
+export async function addUserWord(
+  word: Omit<GlossaryWord, 'id' | 'created_at'>,
+  researchContext?: { uid: string; profile: UserProfile | null }
+): Promise<GlossaryWord | null> {
   try {
     if (!db) throw new Error('Firestore is not initialized');
 
@@ -358,6 +363,14 @@ export async function addUserWord(word: Omit<GlossaryWord, 'id' | 'created_at'>)
       ...word,
       created_at: new Date().toISOString()
     });
+
+    if (researchContext && word.clock_id != null) {
+      await logWheelAssignment(researchContext.uid, researchContext.profile, {
+        wheelIndex: word.clock_id,
+        language: word.language ?? 'und',
+        grade: word.grade ?? 0,
+      })
+    }
 
     return {
       id: docRef.id,
@@ -370,12 +383,24 @@ export async function addUserWord(word: Omit<GlossaryWord, 'id' | 'created_at'>)
   }
 }
 
-export async function updateUserWord(id: string, updates: Partial<GlossaryWord>): Promise<GlossaryWord | null> {
+export async function updateUserWord(
+  id: string,
+  updates: Partial<GlossaryWord>,
+  researchContext?: { uid: string; profile: UserProfile | null }
+): Promise<GlossaryWord | null> {
   try {
     if (!db) throw new Error('Firestore is not initialized');
 
     const docRef = doc(db as Firestore, 'glossary', id);
     await updateDoc(docRef, updates);
+
+    if (researchContext && updates.clock_id != null) {
+      await logWheelAssignment(researchContext.uid, researchContext.profile, {
+        wheelIndex: updates.clock_id,
+        language: updates.language ?? 'und',
+        grade: updates.grade ?? 0,
+      })
+    }
 
     return {
       id,
