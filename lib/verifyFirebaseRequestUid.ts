@@ -20,7 +20,8 @@ export async function verifyFirebaseRequestUid(request: Request): Promise<string
     }
   }
 
-  const cookieToken = cookies().get('__firebase_auth_token')?.value
+  const cookieStore = await cookies()
+  const cookieToken = cookieStore.get('__firebase_auth_token')?.value
   if (cookieToken) {
     try {
       const decoded = await authAdmin.verifyIdToken(cookieToken)
