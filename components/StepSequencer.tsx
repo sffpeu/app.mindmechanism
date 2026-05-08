@@ -703,7 +703,8 @@ export default function StepSequencer() {
     try {
       stopAllPoolsPlayback()
       setPoolProgress(Array.from({ length: PRACTICE_POOLS }, () => 0))
-      let started = 0
+      const starts: Promise<void>[] = []
+      const startedFlags: boolean[] = Array.from({ length: active.length }, () => false)
       for (let order = 0; order < active.length; order++) {
         const p = active[order]!
         const a = new Audio(p.url!)
@@ -712,13 +713,19 @@ export default function StepSequencer() {
         const dominance = order === 0 ? 1 : 0.78
         a.volume = Math.max(0, Math.min(1, (poolVolumes[p.idx] ?? 1) * dominance))
         allPoolsAudioRef.current[p.idx] = a
-        try {
-          await a.play()
-          started += 1
-        } catch {
-          allPoolsAudioRef.current[p.idx] = null
-        }
+        starts.push(
+          a
+            .play()
+            .then(() => {
+              startedFlags[order] = true
+            })
+            .catch(() => {
+              allPoolsAudioRef.current[p.idx] = null
+            })
+        )
       }
+      await Promise.allSettled(starts)
+      const started = startedFlags.filter(Boolean).length
       if (started === 0) {
         setPhraseError('Multi-play could not start. Try tapping Play all again.')
         return
@@ -899,6 +906,10 @@ export default function StepSequencer() {
 
   const railW = 'w-[16.5rem]'
   const selectedPoolColor = POOL_COLORS[activePool] ?? '#56c1ff'
+  const poolSecondsLeft = Math.max(
+    0,
+    Math.ceil((POOL_RECORD_MS - Math.min(POOL_RECORD_MS, recordedMs)) / 1000)
+  )
 
   return (
     <div className="space-y-6">
@@ -1068,6 +1079,18 @@ export default function StepSequencer() {
             className="max-w-sm"
           />
           <span className="text-xs tabular-nums text-neutral-400 w-12">{phraseRate.toFixed(2)}x</span>
+          <div
+            className="ml-auto h-12 w-16 rounded-md border flex items-center justify-center text-3xl font-black tabular-nums"
+            style={{
+              borderColor: `${selectedPoolColor}99`,
+              color: selectedPoolColor,
+              backgroundColor: `${selectedPoolColor}14`,
+            }}
+            aria-live="polite"
+          >
+            {poolSecondsLeft}
+          </div>
+          <span className="text-[10px] uppercase tracking-widest text-neutral-500 -ml-1">sec left</span>
         </div>
         <div className="rounded-xl border border-neutral-800/80 bg-neutral-900/60 p-3">
           <div className="flex items-center gap-4">
