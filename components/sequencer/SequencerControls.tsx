@@ -35,52 +35,50 @@ export function SequencerControls({
   onToneModeChange,
 }: Props) {
   return (
-    <div className="flex flex-wrap items-center gap-4">
-      <div className="flex items-center gap-1.5">
-        <Button type="button" size="icon" variant={isPlaying ? 'default' : 'outline'} onClick={isPlaying ? onPause : onPlay}>
-          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+      <div className="flex items-center gap-1">
+        <Button type="button" size="icon" variant={isPlaying ? 'default' : 'outline'} className="h-8 w-8" onClick={isPlaying ? onPause : onPlay}>
+          {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
         </Button>
-        <Button type="button" size="icon" variant="outline" onClick={onStop}>
-          <Square className="h-4 w-4" />
+        <Button type="button" size="icon" variant="outline" className="h-8 w-8" onClick={onStop}>
+          <Square className="h-3.5 w-3.5" />
         </Button>
         <Button
           type="button"
           size="sm"
           variant={loop ? 'default' : 'outline'}
+          className="h-8 gap-1 px-2.5"
           onClick={() => onLoopChange(!loop)}
-          className="gap-1"
         >
           <Repeat className="h-3.5 w-3.5" />
-          Loop
+          <span className="text-xs">Loop</span>
         </Button>
       </div>
 
-      <div className="h-6 w-px bg-black/15 dark:bg-white/15" />
-
-      <div className="flex items-center gap-2">
-        <Button type="button" size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => onBpmChange(bpm - 5)}>
-          -5
-        </Button>
-        <div className="flex min-w-[80px] items-center gap-1.5">
-          <Slider
-            value={[bpm]}
-            min={40}
-            max={180}
-            step={1}
-            onValueChange={([v]) => onBpmChange(v)}
-            className="w-20"
-          />
-          <span className="text-xs tabular-nums text-gray-500">{bpm} bpm</span>
-        </div>
-        <Button type="button" size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => onBpmChange(bpm + 5)}>
-          +5
-        </Button>
-      </div>
-
-      <div className="h-6 w-px bg-black/15 dark:bg-white/15" />
+      <div className="h-5 w-px shrink-0 bg-black/12 dark:bg-white/12" />
 
       <div className="flex items-center gap-1.5">
-        <span className="text-xs text-gray-500">Steps</span>
+        <Button type="button" variant="outline" className="h-7 px-2 text-xs" onClick={() => onBpmChange(bpm - 5)}>
+          −5
+        </Button>
+        <Slider
+          value={[bpm]}
+          min={40}
+          max={180}
+          step={1}
+          onValueChange={([v]) => onBpmChange(v)}
+          className="w-24"
+        />
+        <Button type="button" variant="outline" className="h-7 px-2 text-xs" onClick={() => onBpmChange(bpm + 5)}>
+          +5
+        </Button>
+        <span className="w-14 text-xs tabular-nums text-gray-500 dark:text-gray-400">{bpm} bpm</span>
+      </div>
+
+      <div className="h-5 w-px shrink-0 bg-black/12 dark:bg-white/12" />
+
+      <div className="flex items-center gap-1">
+        <span className="mr-1 text-xs text-gray-500 dark:text-gray-400">Steps</span>
         {([8, 16, 32] as StepCount[]).map((count) => (
           <Button
             key={count}
@@ -95,10 +93,10 @@ export function SequencerControls({
         ))}
       </div>
 
-      <div className="h-6 w-px bg-black/15 dark:bg-white/15" />
+      <div className="h-5 w-px shrink-0 bg-black/12 dark:bg-white/12" />
 
-      <div className="flex items-center gap-1.5">
-        <span className="text-xs text-gray-500">Source</span>
+      <div className="flex items-center gap-1">
+        <span className="mr-1 text-xs text-gray-500 dark:text-gray-400">Source</span>
         <Button
           type="button"
           size="sm"

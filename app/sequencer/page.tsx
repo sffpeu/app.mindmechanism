@@ -51,7 +51,7 @@ export default function SequencerPage() {
   if (loading || sequencesLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <LoadingSpinner size="lg" />
+        <LoadingSpinner size="lg" isLoading />
       </div>
     )
   }
@@ -61,7 +61,7 @@ export default function SequencerPage() {
   }
 
   return (
-    <div className="flex h-full min-h-screen w-full flex-col bg-neutral-50 dark:bg-neutral-950">
+    <div className="flex h-screen flex-col overflow-hidden bg-neutral-50 dark:bg-neutral-950">
       <div className="border-b border-black/10 bg-white/80 px-4 py-3 backdrop-blur-sm dark:border-white/10 dark:bg-black/60 sm:px-6">
         <SequencerHeader
           title={sequencer.sequence.title}
@@ -78,7 +78,7 @@ export default function SequencerPage() {
         />
       </div>
 
-      <div className="flex-1 overflow-x-auto px-4 pb-2 pt-6 sm:px-6">
+      <div className="min-h-0 flex-1 overflow-auto px-4 pb-3 pt-5 sm:px-6">
         <SequencerGrid
           steps={sequencer.sequence.steps}
           currentStepIndex={audio.currentStepIndex}
