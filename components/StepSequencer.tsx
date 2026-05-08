@@ -14,6 +14,9 @@ import {
   Pause,
   RotateCw,
   Rewind,
+  Activity,
+  ClipboardCopy,
+  Mic2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -28,6 +31,13 @@ import {
 } from '@/lib/userCompositionsStorage'
 import { clockTitles } from '@/lib/clockTitles'
 import { MM_DRONE_PATH, MM_DRONE_PLANET_LABELS } from '@/lib/mmDroneTones'
+import {
+  analyzePhraseBlob,
+  exportPhraseReadoutJson,
+  type PhraseAcousticReport,
+  type PhraseTranscriptWord,
+} from '@/lib/phraseAcousticAnalysis'
+import { transcribePhraseBlob } from '@/lib/phraseTranscribeClient'
 
 export const STEPS = 16
 /** One lane per mandala / wheel (0–8). */
@@ -50,134 +60,18 @@ const PAD_SUSTAIN_MAX_MS = 420
 const PAD_SUSTAIN_DEFAULT_MS = 85
 const POOL_RECORD_MS = 10000
 const PRACTICE_POOLS = 3
+/** Accent for the three independent phrase channels (no stacking). */
 const POOL_COLORS = ['#fd290a', '#156fde', '#ee5fa7'] as const
-const STACK_COUNTDOWN_SEC = 3
 
-/**
- * Warm blob/WebM clips for stacked playback. Many browsers skip or reorder media events
- * for object URLs; we accept HAVE_METADATA, microtask re-check, or a timeout so preload
- * never blocks the stack unnecessarily.
- */
-function waitPhrasePoolAudio(url: string, timeoutMs = 4000): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const a = new Audio()
-    a.preload = 'auto'
-    let settled = false
-
-    const cleanup = () => {
-      clearTimeout(t)
-      a.removeEventListener('loadedmetadata', onMediaEvent)
-      a.removeEventListener('loadeddata', onMediaEvent)
-      a.removeEventListener('canplay', onMediaEvent)
-      a.removeEventListener('canplaythrough', onMediaEvent)
-      a.removeEventListener('error', onError)
-    }
-
-    const finish = () => {
-      if (settled) return
-      settled = true
-      cleanup()
-      resolve()
-    }
-
-    const fail = () => {
-      if (settled) return
-      settled = true
-      cleanup()
-      reject(new Error('media error'))
-    }
-
-    const onMediaEvent = () => finish()
-    const onError = () => fail()
-
-    const t = setTimeout(() => finish(), timeoutMs)
-
-    a.addEventListener('loadedmetadata', onMediaEvent)
-    a.addEventListener('loadeddata', onMediaEvent)
-    a.addEventListener('canplay', onMediaEvent)
-    a.addEventListener('canplaythrough', onMediaEvent)
-    a.addEventListener('error', onError)
-
-    a.src = url
-
-    if (a.readyState >= HTMLMediaElement.HAVE_METADATA && !a.error) {
-      finish()
-      return
-    }
-
-    try {
-      a.load()
-    } catch {
-      fail()
-      return
-    }
-
-    queueMicrotask(() => {
-      if (settled) return
-      if (!a.error && a.readyState >= HTMLMediaElement.HAVE_METADATA) finish()
+function sparkPolylinePoints(curve: number[], width: number, height: number): string {
+  if (!curve.length) return ''
+  return curve
+    .map((v, i) => {
+      const x = (i / Math.max(1, curve.length - 1)) * width
+      const y = height - 2 - v * (height - 4)
+      return `${x.toFixed(1)},${y.toFixed(1)}`
     })
-  })
-}
-
-/** Decode phrase pool audio for Web Audio stacking (prefer Blob — avoids flaky fetch(blob:)). */
-async function decodePhrasePoolBuffer(
-  ctx: BaseAudioContext,
-  pool: { blob: Blob | null; url: string | null }
-): Promise<AudioBuffer | null> {
-  try {
-    let ab: ArrayBuffer
-    if (pool.blob && pool.blob.size > 0) {
-      ab = await pool.blob.arrayBuffer()
-    } else if (pool.url) {
-      const res = await fetch(pool.url)
-      if (!res.ok) return null
-      ab = await res.arrayBuffer()
-    } else {
-      return null
-    }
-    if (ab.byteLength < 64) return null
-    return await ctx.decodeAudioData(ab.slice(0))
-  } catch {
-    return null
-  }
-}
-
-async function waitAudioLoadedMetadata(el: HTMLAudioElement): Promise<void> {
-  if (el.readyState >= HTMLMediaElement.HAVE_METADATA) return
-  await new Promise<void>((resolve, reject) => {
-    const ok = () => {
-      el.removeEventListener('loadedmetadata', ok)
-      el.removeEventListener('error', bad)
-      resolve()
-    }
-    const bad = () => {
-      el.removeEventListener('loadedmetadata', ok)
-      el.removeEventListener('error', bad)
-      reject(new Error('metadata'))
-    }
-    el.addEventListener('loadedmetadata', ok, { once: true })
-    el.addEventListener('error', bad, { once: true })
-    try {
-      el.load()
-    } catch {
-      bad()
-    }
-  })
-}
-
-/** Same-gesture unlock so delayed stacked play still works when decodeAudioData rejects (e.g. WebM). */
-async function unlockPhraseHtmlAudio(url: string): Promise<HTMLAudioElement> {
-  const el = new Audio()
-  el.preload = 'auto'
-  el.src = url
-  el.setAttribute('playsinline', '')
-  await waitAudioLoadedMetadata(el)
-  el.muted = true
-  await el.play()
-  el.pause()
-  el.currentTime = 0
-  el.muted = false
-  return el
+    .join(' ')
 }
 
 type PhrasePool = {
@@ -185,6 +79,14 @@ type PhrasePool = {
   url: string | null
   durationSec: number
   notes: string
+  /** Client-side acoustic scaffolding for this take (explicit readout). */
+  acousticReadout?: PhraseAcousticReport | null
+  acousticReadoutError?: string | null
+  /** Server Whisper transcript for this take (optional). */
+  transcriptWords?: PhraseTranscriptWord[] | null
+  transcriptText?: string | null
+  transcriptLanguage?: string | null
+  transcribeError?: string | null
 }
 
 /** Rough chromatic alignment with planet drones / wheels */
@@ -328,19 +230,9 @@ export default function StepSequencer() {
   )
   const [recordedMs, setRecordedMs] = useState(0)
   const [lanePreviewTrack, setLanePreviewTrack] = useState<number | null>(null)
-  const [poolVolumes, setPoolVolumes] = useState<number[]>(
-    Array.from({ length: PRACTICE_POOLS }, () => 1)
-  )
-  const [volumePopoverPool, setVolumePopoverPool] = useState<number | null>(null)
-  const [playAllActive, setPlayAllActive] = useState(false)
-  const [poolProgress, setPoolProgress] = useState<number[]>(
-    Array.from({ length: PRACTICE_POOLS }, () => 0)
-  )
-  const [armedPools, setArmedPools] = useState<number[]>([0])
-  const [stackCountdown, setStackCountdown] = useState<number | null>(null)
-  const [stackArmedReady, setStackArmedReady] = useState(false)
-  /** Bumped after preload completes so ARMED status re-reads preloadedPoolUrlRef. */
-  const [preloadRevision, setPreloadRevision] = useState(0)
+  const [phraseReadoutBusy, setPhraseReadoutBusy] = useState(false)
+  const [phraseTranscribeBusy, setPhraseTranscribeBusy] = useState(false)
+  const [readoutExportMsg, setReadoutExportMsg] = useState<string | null>(null)
 
   const ctxRef = useRef<AudioContext | null>(null)
   const masterRef = useRef<GainNode | null>(null)
@@ -359,24 +251,8 @@ export default function StepSequencer() {
   const phraseAudioRef = useRef<HTMLAudioElement | null>(null)
   const phraseStopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const phraseTickRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const poolHoldTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const allPoolsAudioRef = useRef<(HTMLAudioElement | null)[]>(
-    Array.from({ length: PRACTICE_POOLS }, () => null)
-  )
-  const allPoolsTickerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const stackCountdownRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  /** Pool index → object URL that finished warm-up (invalidated when URL changes). */
-  const preloadedPoolUrlRef = useRef<Map<number, string>>(new Map())
   /** Latest recorded length for MediaRecorder onstop (state updates can lag one frame). */
   const recordedMsRef = useRef(0)
-  /** Stacked phrase playback via Web Audio (HTML Audio loses autoplay after countdown). */
-  const phraseStackSourcesRef = useRef<(AudioBufferSourceNode | null)[]>(
-    Array.from({ length: PRACTICE_POOLS }, () => null)
-  )
-  const phraseStackDurationRef = useRef<number[]>(Array.from({ length: PRACTICE_POOLS }, () => 0))
-  const phraseStackStartTimeRef = useRef(0)
-  /** Which engine is driving stacked phrase progress after countdown. */
-  const phraseStackDriverRef = useRef<'wa' | 'html' | null>(null)
 
   useEffect(() => {
     tracksRef.current = tracks
@@ -385,6 +261,10 @@ export default function StepSequencer() {
   useEffect(() => {
     recordedMsRef.current = recordedMs
   }, [recordedMs])
+
+  useEffect(() => {
+    setReadoutExportMsg(null)
+  }, [activePool])
 
   useEffect(() => {
     setLibraryCount(loadCompositions().length)
@@ -586,14 +466,6 @@ export default function StepSequencer() {
       if (lanePreviewIntervalRef.current) clearInterval(lanePreviewIntervalRef.current)
       if (phraseStopTimerRef.current) clearTimeout(phraseStopTimerRef.current)
       if (phraseTickRef.current) clearInterval(phraseTickRef.current)
-      if (poolHoldTimeoutRef.current) clearTimeout(poolHoldTimeoutRef.current)
-      if (allPoolsTickerRef.current) clearInterval(allPoolsTickerRef.current)
-      if (stackCountdownRef.current) clearInterval(stackCountdownRef.current)
-      allPoolsAudioRef.current.forEach((audio) => {
-        if (!audio) return
-        audio.pause()
-        audio.src = ''
-      })
       if (phraseRecorderRef.current && phraseRecorderRef.current.state !== 'inactive') {
         phraseRecorderRef.current.stop()
       }
@@ -604,44 +476,6 @@ export default function StepSequencer() {
       void ctxRef.current?.close()
     }
   }, [pools])
-
-  useEffect(() => {
-    const m = preloadedPoolUrlRef.current
-    for (let i = 0; i < PRACTICE_POOLS; i++) {
-      if (m.get(i) !== pools[i]?.url) m.delete(i)
-    }
-  }, [pools])
-
-  useEffect(() => {
-    const armed = (armedPools.length ? armedPools : [activePool]).filter((i) => !!pools[i]?.url)
-    const warmed =
-      armed.length > 0 &&
-      armed.every((i) => preloadedPoolUrlRef.current.get(i) === pools[i]?.url)
-    setStackArmedReady(warmed)
-  }, [activePool, armedPools, pools, preloadRevision])
-
-  const preloadArmedPools = useCallback(async () => {
-    const order = armedPools.length ? armedPools : [activePool]
-    const targets = order.filter((i) => !!pools[i]?.url)
-    if (!targets.length) {
-      setStackArmedReady(false)
-      return false
-    }
-    for (const idx of targets) {
-      const pool = pools[idx]
-      const url = pool?.url
-      if (!url) continue
-      if (preloadedPoolUrlRef.current.get(idx) === url) continue
-      try {
-        await waitPhrasePoolAudio(url)
-      } catch {
-        /* Still allow stacked play — fresh Audio() may decode on play(). */
-      }
-      preloadedPoolUrlRef.current.set(idx, url)
-    }
-    setPreloadRevision((r) => r + 1)
-    return true
-  }, [activePool, armedPools, pools])
 
   const stopLanePreview = useCallback(() => {
     if (lanePreviewIntervalRef.current) {
@@ -762,6 +596,12 @@ export default function StepSequencer() {
                 POOL_RECORD_MS / 1000,
                 recordedMsRef.current / 1000
               ),
+              acousticReadout: null,
+              acousticReadoutError: null,
+              transcriptWords: null,
+              transcriptText: null,
+              transcriptLanguage: null,
+              transcribeError: null,
             }
           })
         )
@@ -823,13 +663,13 @@ export default function StepSequencer() {
     }
     try {
       audio.playbackRate = phraseRate
-      audio.volume = poolVolumes[activePool] ?? 1
+      audio.volume = 1
       await audio.play()
       setPhrasePlayActive(true)
     } catch {
       setPhrasePlayActive(false)
     }
-  }, [activePool, phrasePlayActive, phraseRate, poolVolumes, pools])
+  }, [activePool, phrasePlayActive, phraseRate, pools])
 
   const jogPhrase = useCallback((nextSec: number) => {
     const audio = phraseAudioRef.current
@@ -844,6 +684,139 @@ export default function StepSequencer() {
     stopPhrasePlayback()
     jogPhrase(0)
   }, [jogPhrase, stopPhrasePlayback])
+
+  const runAcousticReadout = useCallback(async () => {
+    const blob = pools[activePool]?.blob
+    if (!blob) return
+    const ap = activePool
+    setReadoutExportMsg(null)
+    setPhraseReadoutBusy(true)
+    setPools((prev) =>
+      prev.map((p, i) => (i === ap ? { ...p, acousticReadoutError: null } : p))
+    )
+    try {
+      const tw = pools[activePool]?.transcriptWords
+      const report = await analyzePhraseBlob(blob, {
+        transcriptWords: tw && tw.length > 0 ? tw : undefined,
+      })
+      setPools((prev) =>
+        prev.map((p, i) =>
+          i === ap ? { ...p, acousticReadout: report, acousticReadoutError: null } : p
+        )
+      )
+    } catch {
+      setPools((prev) =>
+        prev.map((p, i) =>
+          i === ap
+            ? {
+                ...p,
+                acousticReadout: null,
+                acousticReadoutError:
+                  'Readout failed while decoding this take. Try again, or record a shorter clip.',
+              }
+            : p
+        )
+      )
+    } finally {
+      setPhraseReadoutBusy(false)
+    }
+  }, [activePool, pools])
+
+  const runServerTranscribeAndAlign = useCallback(async () => {
+    const blob = pools[activePool]?.blob
+    if (!blob) return
+    const ap = activePool
+    setReadoutExportMsg(null)
+    setPhraseTranscribeBusy(true)
+    setPools((prev) =>
+      prev.map((p, i) => (i === ap ? { ...p, transcribeError: null } : p))
+    )
+    try {
+      const { words, text, language } = await transcribePhraseBlob(blob)
+      setPools((prev) =>
+        prev.map((p, i) =>
+          i === ap
+            ? {
+                ...p,
+                transcriptWords: words,
+                transcriptText: text,
+                transcriptLanguage: language,
+                transcribeError: null,
+              }
+            : p
+        )
+      )
+      try {
+        const report = await analyzePhraseBlob(blob, { transcriptWords: words })
+        setPools((prev) =>
+          prev.map((p, i) =>
+            i === ap ? { ...p, acousticReadout: report, acousticReadoutError: null } : p
+          )
+        )
+      } catch {
+        setPools((prev) =>
+          prev.map((p, i) =>
+            i === ap
+              ? {
+                  ...p,
+                  acousticReadout: null,
+                  acousticReadoutError:
+                    'Transcript received, but local acoustic merge failed. Try Run readout.',
+                }
+              : p
+          )
+        )
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Transcription failed.'
+      setPools((prev) =>
+        prev.map((p, i) => (i === ap ? { ...p, transcribeError: msg } : p))
+      )
+    } finally {
+      setPhraseTranscribeBusy(false)
+    }
+  }, [activePool, pools])
+
+  const copyReadoutExport = useCallback(async () => {
+    const read = pools[activePool]?.acousticReadout
+    if (!read) return
+    const text = exportPhraseReadoutJson(read, {
+      channelIndex: activePool,
+      notes: pools[activePool]?.notes,
+      poolDurationSec: pools[activePool]?.durationSec,
+      transcriptText: pools[activePool]?.transcriptText,
+      transcriptWords: pools[activePool]?.transcriptWords,
+    })
+    try {
+      await navigator.clipboard.writeText(text)
+      setReadoutExportMsg('Copied readout JSON to clipboard.')
+      window.setTimeout(() => setReadoutExportMsg(null), 3200)
+    } catch {
+      setReadoutExportMsg('Clipboard blocked — use Download JSON.')
+      window.setTimeout(() => setReadoutExportMsg(null), 4200)
+    }
+  }, [activePool, pools])
+
+  const downloadReadoutExport = useCallback(() => {
+    const read = pools[activePool]?.acousticReadout
+    if (!read) return
+    const text = exportPhraseReadoutJson(read, {
+      channelIndex: activePool,
+      notes: pools[activePool]?.notes,
+      poolDurationSec: pools[activePool]?.durationSec,
+      transcriptText: pools[activePool]?.transcriptText,
+      transcriptWords: pools[activePool]?.transcriptWords,
+    })
+    const blob = new Blob([text], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `mm-phrase-p${activePool + 1}-readout.json`
+    a.click()
+    URL.revokeObjectURL(url)
+    setReadoutExportMsg('Download started.')
+    window.setTimeout(() => setReadoutExportMsg(null), 2800)
+  }, [activePool, pools])
 
   useEffect(() => {
     const audio = phraseAudioRef.current
@@ -877,263 +850,25 @@ export default function StepSequencer() {
     audio.playbackRate = phraseRate
   }, [phraseRate])
 
-  useEffect(() => {
-    const audio = phraseAudioRef.current
-    if (audio) audio.volume = poolVolumes[activePool] ?? 1
-    allPoolsAudioRef.current.forEach((a, i) => {
-      if (a) a.volume = poolVolumes[i] ?? 1
-    })
-  }, [activePool, poolVolumes])
-
-  const stopAllPoolsPlayback = useCallback(() => {
-    if (allPoolsTickerRef.current) {
-      clearInterval(allPoolsTickerRef.current)
-      allPoolsTickerRef.current = null
-    }
-    if (stackCountdownRef.current) {
-      clearInterval(stackCountdownRef.current)
-      stackCountdownRef.current = null
-    }
-    phraseStackSourcesRef.current.forEach((src, idx) => {
-      if (!src) return
-      try {
-        src.stop()
-      } catch {
-        /* already stopped */
-      }
-      phraseStackSourcesRef.current[idx] = null
-    })
-    phraseStackDurationRef.current = Array.from({ length: PRACTICE_POOLS }, () => 0)
-    phraseStackDriverRef.current = null
-    allPoolsAudioRef.current.forEach((audio, idx) => {
-      if (!audio) return
-      audio.pause()
-      audio.src = ''
-      allPoolsAudioRef.current[idx] = null
-    })
-    setStackCountdown(null)
-    setPlayAllActive(false)
-  }, [])
-
-  const playAllPoolsTogether = useCallback(async () => {
-    if (playAllActive) {
-      stopAllPoolsPlayback()
-      return
-    }
-    setPhraseError(null)
-    if (stackCountdownRef.current) {
-      clearInterval(stackCountdownRef.current)
-      stackCountdownRef.current = null
-      setStackCountdown(null)
-    }
-    const poolOrder = armedPools.length ? armedPools : [activePool]
-    const active = poolOrder
-      .map((idx) => ({ ...pools[idx], idx }))
-      .filter((p) => p.url)
-    if (!active.length) return
-
-    const ctx = ensureCtx()
-    void ctx.resume()
-
-    try {
-      await preloadArmedPools()
-      stopAllPoolsPlayback()
-
-      const decoded = new Map<number, AudioBuffer>()
-      for (const p of active) {
-        const buf = await decodePhrasePoolBuffer(ctx, { blob: p.blob, url: p.url })
-        if (buf) decoded.set(p.idx, buf)
-      }
-      const useWebAudioStack = decoded.size === active.length
-
-      if (!useWebAudioStack) {
-        phraseStackDurationRef.current = Array.from({ length: PRACTICE_POOLS }, () => 0)
-        for (const p of active) {
-          if (!p.url) continue
-          try {
-            const el = await unlockPhraseHtmlAudio(p.url)
-            allPoolsAudioRef.current[p.idx] = el
-            phraseStackDurationRef.current[p.idx] =
-              Number.isFinite(el.duration) && el.duration > 0 ? el.duration : 0
-          } catch {
-            stopAllPoolsPlayback()
-            setPhraseError(
-              'Stacked playback could not prepare audio in this browser. Try a shorter take or another browser.'
-            )
-            return
-          }
-        }
-      }
-
-      const rateSnapshot = phraseRate
-      const volSnapshot = [...poolVolumes]
-
-      setPoolProgress(Array.from({ length: PRACTICE_POOLS }, () => 0))
-      let c = STACK_COUNTDOWN_SEC
-      setStackCountdown(c)
-      stackCountdownRef.current = setInterval(() => {
-        c -= 1
-        setStackCountdown(c > 0 ? c : 0)
-        if (c > 0) return
-        if (stackCountdownRef.current) {
-          clearInterval(stackCountdownRef.current)
-          stackCountdownRef.current = null
-        }
-        setStackCountdown(null)
-
-        if (useWebAudioStack) {
-          const ctxNow = ctxRef.current
-          const master = masterRef.current
-          if (!ctxNow || !master) {
-            setPhraseError('Audio context not ready.')
-            return
-          }
-
-          void ctxNow.resume()
-          const startAt = ctxNow.currentTime
-          phraseStackStartTimeRef.current = startAt
-          phraseStackDriverRef.current = 'wa'
-
-          phraseStackDurationRef.current = Array.from({ length: PRACTICE_POOLS }, () => 0)
-          let maxScaled = 0
-          let anyStarted = false
-
-          active.forEach((p, order) => {
-            const buf = decoded.get(p.idx)
-            if (!buf) return
-            const src = ctxNow.createBufferSource()
-            src.buffer = buf
-            src.playbackRate.value = rateSnapshot
-            const g = ctxNow.createGain()
-            const dominance = order === 0 ? 1 : 0.78
-            g.gain.value = Math.max(
-              0,
-              Math.min(1, (volSnapshot[p.idx] ?? 1) * dominance)
-            )
-            src.connect(g)
-            g.connect(master)
-            src.start(startAt)
-            phraseStackSourcesRef.current[p.idx] = src
-            phraseStackDurationRef.current[p.idx] = buf.duration
-            const scaled = buf.duration / Math.max(0.001, rateSnapshot)
-            if (scaled > maxScaled) maxScaled = scaled
-            anyStarted = true
-          })
-
-          if (!anyStarted) {
-            setPhraseError('Stacked play could not start after countdown.')
-            return
-          }
-
-          setPlayAllActive(true)
-          allPoolsTickerRef.current = setInterval(() => {
-            const cctx = ctxRef.current
-            if (!cctx) return
-            const elapsed = cctx.currentTime - phraseStackStartTimeRef.current
-            setPoolProgress((prev) =>
-              prev.map((_, i) => {
-                const dur = phraseStackDurationRef.current[i]
-                if (!dur || dur <= 0) return 0
-                return Math.min(1, elapsed / (dur / Math.max(0.001, rateSnapshot)))
-              })
-            )
-            if (elapsed >= maxScaled - 0.05) {
-              stopAllPoolsPlayback()
-            }
-          }, 80)
-          return
-        }
-
-        phraseStackDriverRef.current = 'html'
-        void (async () => {
-          const starts: Promise<void>[] = []
-          for (let order = 0; order < active.length; order++) {
-            const p = active[order]!
-            const el = allPoolsAudioRef.current[p.idx]
-            if (!el) continue
-            el.currentTime = 0
-            el.playbackRate = rateSnapshot
-            const dominance = order === 0 ? 1 : 0.78
-            el.volume = Math.max(0, Math.min(1, (volSnapshot[p.idx] ?? 1) * dominance))
-            starts.push(el.play().then(() => undefined))
-          }
-          const results = await Promise.allSettled(starts)
-          const started = results.filter((r) => r.status === 'fulfilled').length
-          if (started === 0) {
-            setPhraseError('Stacked play could not start after countdown.')
-            return
-          }
-          setPlayAllActive(true)
-          allPoolsTickerRef.current = setInterval(() => {
-            setPoolProgress((prev) =>
-              prev.map((_, i) => {
-                const el = allPoolsAudioRef.current[i]
-                if (!el || !Number.isFinite(el.duration) || el.duration <= 0) return 0
-                return Math.min(1, el.currentTime / el.duration)
-              })
-            )
-            const done = active.every((p) => {
-              const el = allPoolsAudioRef.current[p.idx]
-              if (!el) return true
-              return (
-                el.ended ||
-                (el.duration > 0 && el.currentTime >= el.duration - 0.05)
-              )
-            })
-            if (done) stopAllPoolsPlayback()
-          }, 80)
-        })()
-      }, 1000)
-    } catch {
-      setPhraseError('Stacked playback failed unexpectedly. Try Play stacked again.')
-    }
-  }, [
-    activePool,
-    armedPools,
-    ensureCtx,
-    playAllActive,
-    phraseRate,
-    poolVolumes,
-    pools,
-    preloadArmedPools,
-    stopAllPoolsPlayback,
-  ])
-
-  const onPoolPressStart = (poolIndex: number) => {
-    if (poolHoldTimeoutRef.current) clearTimeout(poolHoldTimeoutRef.current)
-    poolHoldTimeoutRef.current = setTimeout(() => {
-      setVolumePopoverPool(poolIndex)
-    }, 320)
-  }
-
-  const onPoolPressEnd = () => {
-    if (!poolHoldTimeoutRef.current) return
-    clearTimeout(poolHoldTimeoutRef.current)
-    poolHoldTimeoutRef.current = null
-  }
-
-  const togglePoolArm = (poolIndex: number) => {
-    setActivePool(poolIndex)
-    setArmedPools((prev) => {
-      if (prev.includes(poolIndex)) {
-        if (prev.length === 1) return prev
-        return prev.filter((i) => i !== poolIndex)
-      }
-      return [...prev, poolIndex]
-    })
-    if (stackCountdownRef.current) {
-      clearInterval(stackCountdownRef.current)
-      stackCountdownRef.current = null
-      setStackCountdown(null)
-    }
-  }
-
   const resetActivePool = useCallback(() => {
     const pool = pools[activePool]
     if (pool?.url) URL.revokeObjectURL(pool.url)
     setPools((prev) =>
       prev.map((p, i) =>
-        i === activePool ? { blob: null, url: null, durationSec: 0, notes: '' } : p
+        i === activePool
+          ? {
+              blob: null,
+              url: null,
+              durationSec: 0,
+              notes: '',
+              acousticReadout: null,
+              acousticReadoutError: null,
+              transcriptWords: null,
+              transcriptText: null,
+              transcriptLanguage: null,
+              transcribeError: null,
+            }
+          : p
       )
     )
     setPhrasePos(0)
@@ -1267,6 +1002,8 @@ export default function StepSequencer() {
     0,
     Math.ceil((POOL_RECORD_MS - Math.min(POOL_RECORD_MS, recordedMs)) / 1000)
   )
+  const phraseReadout = pools[activePool]?.acousticReadout ?? null
+  const phraseReadoutErr = pools[activePool]?.acousticReadoutError
 
   return (
     <div className="space-y-6">
@@ -1284,10 +1021,10 @@ export default function StepSequencer() {
           <div>
             <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-500">Phrase analyzer tape</p>
             <p className="text-xs text-neutral-400 mt-1">
-              Three practitioner pools. Each pool records up to <strong className="text-neutral-200">10 seconds</strong> with pause/resume fill, then compare for pronunciation precision.
+              Three independent channels (P1–P3). Each records up to <strong className="text-neutral-200">10 seconds</strong> with pause/resume, then play back and annotate that channel alone.
             </p>
           </div>
-          <div className="flex items-center gap-2 relative">
+          <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-1 rounded-lg border border-neutral-700/80 bg-neutral-900/70 p-1">
               {pools.map((pool, i) => (
                 <Button
@@ -1298,55 +1035,16 @@ export default function StepSequencer() {
                   className="h-7 px-2 text-[10px] border"
                   style={{
                     borderColor: activePool === i ? `${POOL_COLORS[i]}aa` : 'transparent',
-                    color: armedPools.includes(i) ? POOL_COLORS[i] : '#a3a3a3',
-                    backgroundColor: armedPools.includes(i) ? `${POOL_COLORS[i]}22` : 'transparent',
+                    color: activePool === i ? POOL_COLORS[i] : '#a3a3a3',
+                    backgroundColor: activePool === i ? `${POOL_COLORS[i]}22` : 'transparent',
                   }}
-                  onClick={() => togglePoolArm(i)}
-                  onMouseDown={() => onPoolPressStart(i)}
-                  onMouseUp={onPoolPressEnd}
-                  onMouseLeave={onPoolPressEnd}
-                  onTouchStart={() => onPoolPressStart(i)}
-                  onTouchEnd={onPoolPressEnd}
+                  onClick={() => setActivePool(i)}
                 >
                   P{i + 1}
-                  {armedPools[0] === i ? ' ★' : ''}
                   {pool.durationSec > 0 ? ` ${pool.durationSec.toFixed(1)}s` : ''}
                 </Button>
               ))}
             </div>
-            {volumePopoverPool != null && (
-              <div className="absolute left-0 top-10 z-20 rounded-md border border-neutral-700 bg-neutral-950/95 p-2 w-56">
-                <div className="flex items-center justify-between mb-1">
-                  <span
-                    className="text-[10px] uppercase tracking-wider font-semibold"
-                    style={{ color: POOL_COLORS[volumePopoverPool] }}
-                  >
-                    Pool {volumePopoverPool + 1} volume
-                  </span>
-                  <button
-                    type="button"
-                    className="text-[10px] text-neutral-500 hover:text-neutral-200"
-                    onClick={() => setVolumePopoverPool(null)}
-                  >
-                    Close
-                  </button>
-                </div>
-                <Slider
-                  value={[poolVolumes[volumePopoverPool] ?? 1]}
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  onValueChange={([v]) =>
-                    setPoolVolumes((prev) =>
-                      prev.map((p, idx) => (idx === volumePopoverPool ? v : p))
-                    )
-                  }
-                />
-                <p className="text-[10px] text-neutral-400 mt-1">
-                  {((poolVolumes[volumePopoverPool] ?? 1) * 100).toFixed(0)}%
-                </p>
-              </div>
-            )}
             <Button
               type="button"
               size="sm"
@@ -1406,31 +1104,10 @@ export default function StepSequencer() {
               <Rewind className="h-3.5 w-3.5" />
               Zero
             </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              className="gap-1 text-neutral-300"
-              style={playAllActive ? { color: '#fff' } : undefined}
-              onClick={playAllPoolsTogether}
-              disabled={!pools.some((p) => p.blob)}
-            >
-              <Disc3 className="h-3.5 w-3.5" />
-              {playAllActive ? 'Stop stacked' : 'Play stacked'}
-            </Button>
           </div>
         </div>
         <p className="text-[10px] text-neutral-500 -mt-1">
-          Click pools to arm layers for stacked playback. First armed pool (★) is dominant.
-          {' '}Status:{' '}
-          <span className={stackArmedReady ? 'text-emerald-400' : 'text-amber-400'}>
-            {stackArmedReady ? 'ARMED' : 'NOT ARMED'}
-          </span>
-          {stackCountdown != null ? (
-            <span className="ml-2 text-amber-300 font-semibold">
-              Stack starts in {stackCountdown}
-            </span>
-          ) : null}
+          P1–P3 are separate channels. Select a channel, then record, play, and jot appraisal notes for that take only.
         </p>
         <div className="flex items-center gap-3">
           <Label className="text-[10px] uppercase tracking-widest text-neutral-500 shrink-0">
@@ -1470,34 +1147,18 @@ export default function StepSequencer() {
               <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-neutral-500" />
             </div>
             <div className="flex-1">
-              {!playAllActive ? (
-                <div className="mb-2 h-2 rounded-full bg-neutral-800 overflow-hidden">
-                  <div
-                    className="h-full"
-                    style={{
-                      backgroundColor: selectedPoolColor,
-                      width: `${Math.min(
-                        100,
-                        (phrasePos / Math.max(0.001, phraseDuration || POOL_RECORD_MS / 1000)) * 100
-                      )}%`,
-                    }}
-                  />
-                </div>
-              ) : (
-                <div className="mb-2 space-y-1">
-                  {armedPools.map((poolIdx) => (
-                    <div key={poolIdx} className="h-1.5 rounded-full bg-neutral-800 overflow-hidden">
-                      <div
-                        className="h-full"
-                        style={{
-                          backgroundColor: POOL_COLORS[poolIdx]!,
-                          width: `${(poolProgress[poolIdx] ?? 0) * 100}%`,
-                        }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
+              <div className="mb-2 h-2 rounded-full bg-neutral-800 overflow-hidden">
+                <div
+                  className="h-full"
+                  style={{
+                    backgroundColor: selectedPoolColor,
+                    width: `${Math.min(
+                      100,
+                      (phrasePos / Math.max(0.001, phraseDuration || POOL_RECORD_MS / 1000)) * 100
+                    )}%`,
+                  }}
+                />
+              </div>
               <Slider
                 value={[phrasePos]}
                 min={0}
@@ -1544,6 +1205,280 @@ export default function StepSequencer() {
             <Button type="button" size="sm" variant="ghost" onClick={resetActivePool}>
               Reset pool {activePool + 1}
             </Button>
+          </div>
+
+          <div className="mt-4 pt-4 border-t border-neutral-800/90 space-y-3">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-[10px] uppercase tracking-[0.18em] text-neutral-500 flex items-center gap-1.5">
+                  <Activity className="h-3 w-3 shrink-0" />
+                  Acoustic scaffolding
+                </p>
+                <p className="text-[10px] text-neutral-500 mt-1 max-w-xl leading-relaxed">
+                  A <strong className="text-neutral-400">defensible readout</strong> for where loudness and pitch rise
+                  together against <em>this clip&apos;s</em> baseline—scaffolding for owned output, not a verdict on
+                  feeling or fluency. Optional <strong className="text-neutral-400">server ASR</strong> (Whisper, word
+                  timestamps) indexes the same local metrics by token—still evidence, not a score. Requires{' '}
+                  <code className="text-neutral-400">OPENAI_API_KEY</code> on the server.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5 border-neutral-600"
+                  disabled={!pools[activePool]?.blob || phraseReadoutBusy || phraseTranscribeBusy}
+                  onClick={() => void runAcousticReadout()}
+                >
+                  {phraseReadoutBusy ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Activity className="h-3.5 w-3.5" />
+                  )}
+                  Run readout
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5 border-neutral-600"
+                  disabled={!pools[activePool]?.blob || phraseReadoutBusy || phraseTranscribeBusy}
+                  onClick={() => void runServerTranscribeAndAlign()}
+                >
+                  {phraseTranscribeBusy ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Mic2 className="h-3.5 w-3.5" />
+                  )}
+                  ASR + align
+                </Button>
+              </div>
+            </div>
+
+            {pools[activePool]?.transcribeError ? (
+              <p className="text-xs text-red-400">{pools[activePool].transcribeError}</p>
+            ) : null}
+            {pools[activePool]?.transcriptText ? (
+              <div className="rounded border border-neutral-800/80 bg-neutral-950/40 p-2 max-h-20 overflow-y-auto">
+                <p className="text-[10px] uppercase tracking-wider text-neutral-500 mb-0.5">Transcript (server)</p>
+                <p className="text-[10px] text-neutral-300 leading-relaxed">{pools[activePool].transcriptText}</p>
+                {pools[activePool]?.transcriptLanguage ? (
+                  <p className="text-[10px] text-neutral-500 mt-1">
+                    Language tag: {pools[activePool].transcriptLanguage}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+
+            {phraseReadoutErr ? <p className="text-xs text-red-400">{phraseReadoutErr}</p> : null}
+
+            {phraseReadout ? (
+              <div className="space-y-3 rounded-lg border border-neutral-800/80 bg-neutral-950/50 p-3">
+                <p className="text-[10px] text-neutral-500 leading-relaxed">{phraseReadout.methodologyLine}</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="gap-1 h-7 text-[10px] border-neutral-600"
+                    onClick={() => void copyReadoutExport()}
+                  >
+                    <ClipboardCopy className="h-3 w-3" />
+                    Copy JSON
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="gap-1 h-7 text-[10px] border-neutral-600"
+                    onClick={downloadReadoutExport}
+                  >
+                    <Download className="h-3 w-3" />
+                    Download JSON
+                  </Button>
+                  {readoutExportMsg ? (
+                    <span className="text-[10px] text-emerald-400/95">{readoutExportMsg}</span>
+                  ) : null}
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px]">
+                  <div className="rounded border border-neutral-800/80 bg-neutral-900/40 p-2">
+                    <p className="text-neutral-500 uppercase tracking-wider">Median F0</p>
+                    <p className="text-neutral-200 font-semibold tabular-nums mt-0.5">
+                      {phraseReadout.summary.medianF0Hz != null
+                        ? `${phraseReadout.summary.medianF0Hz.toFixed(0)} Hz`
+                        : '—'}
+                    </p>
+                  </div>
+                  <div className="rounded border border-neutral-800/80 bg-neutral-900/40 p-2">
+                    <p className="text-neutral-500 uppercase tracking-wider">F0 span</p>
+                    <p className="text-neutral-200 font-semibold tabular-nums mt-0.5">
+                      {phraseReadout.summary.f0MinHz != null && phraseReadout.summary.f0MaxHz != null
+                        ? `${phraseReadout.summary.f0MinHz.toFixed(0)}–${phraseReadout.summary.f0MaxHz.toFixed(0)} Hz`
+                        : '—'}
+                    </p>
+                  </div>
+                  <div className="rounded border border-neutral-800/80 bg-neutral-900/40 p-2">
+                    <p className="text-neutral-500 uppercase tracking-wider">Voiced frames</p>
+                    <p className="text-neutral-200 font-semibold tabular-nums mt-0.5">
+                      {(phraseReadout.summary.voicedFrameFraction * 100).toFixed(0)}%
+                    </p>
+                  </div>
+                  <div className="rounded border border-neutral-800/80 bg-neutral-900/40 p-2">
+                    <p className="text-neutral-500 uppercase tracking-wider">Brightness</p>
+                    <p
+                      className="text-neutral-200 font-semibold tabular-nums mt-0.5"
+                      title="HF emphasis ÷ RMS (clip-relative timbre proxy)"
+                    >
+                      {phraseReadout.summary.brightnessRatio.toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+
+                {phraseReadout.wordAlignments.length > 0 ? (
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-neutral-500 mb-1.5">
+                      Word-aligned prominence (Whisper timing · local frames)
+                    </p>
+                    <div className="max-h-48 overflow-y-auto rounded border border-neutral-800/80">
+                      <table className="w-full text-left text-[10px]">
+                        <thead>
+                          <tr className="text-neutral-500 border-b border-neutral-800 bg-neutral-950/80">
+                            <th className="py-1.5 px-2 font-medium">Word</th>
+                            <th className="py-1.5 px-2 font-medium">Time</th>
+                            <th className="py-1.5 px-2 font-medium">Prom μ</th>
+                            <th className="py-1.5 px-2 font-medium">Prom max</th>
+                            <th className="py-1.5 px-2 font-medium">F0</th>
+                            <th className="py-1.5 px-2 font-medium">#fr</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {phraseReadout.wordAlignments.map((row, idx) => (
+                            <tr
+                              key={`${row.word}-${row.startSec}-${idx}`}
+                              className="border-b border-neutral-800/40 hover:bg-neutral-900/70 cursor-pointer text-neutral-300"
+                              onClick={() => jogPhrase(row.startSec)}
+                            >
+                              <td className="py-1 px-2 max-w-[8rem] truncate" title={row.word}>
+                                {row.word}
+                              </td>
+                              <td className="py-1 px-2 tabular-nums text-neutral-400">
+                                {row.startSec.toFixed(2)}–{row.endSec.toFixed(2)}s
+                              </td>
+                              <td className="py-1 px-2 tabular-nums">{row.prominenceMean.toFixed(2)}</td>
+                              <td className="py-1 px-2 tabular-nums">{row.prominenceMax.toFixed(2)}</td>
+                              <td className="py-1 px-2 tabular-nums">
+                                {row.meanF0Hz != null ? `${row.meanF0Hz.toFixed(0)} Hz` : '—'}
+                              </td>
+                              <td className="py-1 px-2 tabular-nums text-neutral-500">{row.frameCount}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ) : null}
+
+                {phraseReadout.prominenceCurve.length > 0 ? (
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-neutral-500 mb-1">
+                      Prominence (solid) · energy (muted) — click graph to seek
+                    </p>
+                    <svg
+                      className="w-full h-14 text-neutral-600 cursor-crosshair touch-manipulation"
+                      viewBox="0 0 200 56"
+                      preserveAspectRatio="none"
+                      role="img"
+                      aria-label="Seek tape: click along the waveform to jump playback time"
+                      onClick={(e) => {
+                        const svg = e.currentTarget
+                        const rect = svg.getBoundingClientRect()
+                        const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / Math.max(1, rect.width)))
+                        jogPhrase(ratio * phraseReadout.durationSec)
+                      }}
+                    >
+                      <polyline
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.2"
+                        opacity={0.35}
+                        points={sparkPolylinePoints(phraseReadout.energyCurve, 200, 56)}
+                      />
+                      <polyline
+                        fill="none"
+                        stroke={selectedPoolColor}
+                        strokeWidth="1.5"
+                        points={sparkPolylinePoints(phraseReadout.prominenceCurve, 200, 56)}
+                      />
+                    </svg>
+                  </div>
+                ) : null}
+
+                {phraseReadout.speechSegments.length > 0 ? (
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-neutral-500 mb-1.5">
+                      Voiced segments (energy bursts — not word alignment)
+                    </p>
+                    <div className="max-h-40 overflow-y-auto rounded border border-neutral-800/80">
+                      <table className="w-full text-left text-[10px]">
+                        <thead>
+                          <tr className="text-neutral-500 border-b border-neutral-800 bg-neutral-950/80">
+                            <th className="py-1.5 px-2 font-medium">#</th>
+                            <th className="py-1.5 px-2 font-medium">Start–end</th>
+                            <th className="py-1.5 px-2 font-medium">Dur</th>
+                            <th className="py-1.5 px-2 font-medium">F0</th>
+                            <th className="py-1.5 px-2 font-medium">Prom.</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {phraseReadout.speechSegments.map((seg, idx) => (
+                            <tr
+                              key={`${seg.startSec}-${seg.endSec}-${idx}`}
+                              className="border-b border-neutral-800/40 hover:bg-neutral-900/70 cursor-pointer text-neutral-300"
+                              onClick={() => jogPhrase(seg.startSec)}
+                            >
+                              <td className="py-1 px-2 tabular-nums text-neutral-500">{idx + 1}</td>
+                              <td className="py-1 px-2 tabular-nums">
+                                {seg.startSec.toFixed(2)}–{seg.endSec.toFixed(2)}s
+                              </td>
+                              <td className="py-1 px-2 tabular-nums">{seg.durationSec.toFixed(2)}s</td>
+                              <td className="py-1 px-2 tabular-nums">
+                                {seg.meanF0Hz != null ? `${seg.meanF0Hz.toFixed(0)} Hz` : '—'}
+                              </td>
+                              <td className="py-1 px-2 tabular-nums">{seg.meanProminence.toFixed(2)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ) : null}
+
+                {phraseReadout.prominencePeaks.length > 0 ? (
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-neutral-500 mb-1.5">
+                      Acoustic prominence peaks — tap to jog tape
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {phraseReadout.prominencePeaks.map((pk) => (
+                        <button
+                          key={`${pk.tSec}-${pk.score}`}
+                          type="button"
+                          className="rounded border border-neutral-700/90 bg-neutral-900/60 px-2 py-1 text-[10px] text-neutral-300 hover:bg-neutral-800/80 tabular-nums"
+                          onClick={() => jogPhrase(pk.tSec)}
+                        >
+                          {pk.tSec.toFixed(2)}s · {pk.score}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-neutral-500">
+                    No clear prominence peaks in this take (very even level, or mostly noise / silence).
+                  </p>
+                )}
+              </div>
+            ) : null}
           </div>
         </div>
         {phraseError && <p className="text-xs text-red-400">{phraseError}</p>}

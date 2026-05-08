@@ -56,8 +56,9 @@ export default function SequencerPage() {
               </li>
               <li>BPM ranges from 5 to 120 and sets one bar of sixteen sixteenth-notes.</li>
               <li>
-                A top-panel <strong className="text-gray-800 dark:text-gray-200">phrase tape</strong> provides three 10-second pools with
-                pause/resume fill, variable playback speed (very slow to 2x), and layered replay for practitioner analysis.
+                A top-panel <strong className="text-gray-800 dark:text-gray-200">phrase tape</strong> provides three independent 10-second channels with
+                pause/resume fill, variable playback speed (very slow to 2x), per-channel playback, appraisal notes, and an optional{' '}
+                <strong className="text-gray-800 dark:text-gray-200">acoustic readout</strong> (pitch, loudness, prominence peaks, voiced-segment table, optional Whisper word alignment via server <code className="text-[11px] px-1 rounded bg-black/5 dark:bg-white/10">OPENAI_API_KEY</code>, exportable JSON) grounded in this clip only—not a mood or fluency score.
               </li>
               <li>
                 <strong className="text-gray-800 dark:text-gray-200">Arm record</strong> → Play → Stop to capture the stereo mix.
