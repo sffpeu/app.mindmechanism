@@ -208,6 +208,7 @@ export default function StepSequencer() {
   const [poolProgress, setPoolProgress] = useState<number[]>(
     Array.from({ length: PRACTICE_POOLS }, () => 0)
   )
+  const [armedPools, setArmedPools] = useState<number[]>([0])
 
   const ctxRef = useRef<AudioContext | null>(null)
   const masterRef = useRef<GainNode | null>(null)
@@ -694,20 +695,34 @@ export default function StepSequencer() {
       stopAllPoolsPlayback()
       return
     }
-    const active = pools
-      .map((p, i) => ({ ...p, idx: i }))
+    const poolOrder = armedPools.length ? armedPools : [activePool]
+    const active = poolOrder
+      .map((idx) => ({ ...pools[idx], idx }))
       .filter((p) => p.url)
     if (!active.length) return
     try {
       stopAllPoolsPlayback()
       setPoolProgress(Array.from({ length: PRACTICE_POOLS }, () => 0))
-      await Promise.all(active.map(async (p) => {
+      let started = 0
+      for (let order = 0; order < active.length; order++) {
+        const p = active[order]!
         const a = new Audio(p.url!)
         a.playbackRate = phraseRate
-        a.volume = poolVolumes[p.idx] ?? 1
+        // first selected pool is dominant in stacked analysis playback
+        const dominance = order === 0 ? 1 : 0.78
+        a.volume = Math.max(0, Math.min(1, (poolVolumes[p.idx] ?? 1) * dominance))
         allPoolsAudioRef.current[p.idx] = a
-        await a.play()
-      }))
+        try {
+          await a.play()
+          started += 1
+        } catch {
+          allPoolsAudioRef.current[p.idx] = null
+        }
+      }
+      if (started === 0) {
+        setPhraseError('Multi-play could not start. Try tapping Play all again.')
+        return
+      }
       setPlayAllActive(true)
       allPoolsTickerRef.current = setInterval(() => {
         setPoolProgress((prev) =>
@@ -723,7 +738,7 @@ export default function StepSequencer() {
     } catch {
       setPhraseError('Could not play all pools at once on this browser.')
     }
-  }, [playAllActive, phraseRate, poolVolumes, pools, stopAllPoolsPlayback])
+  }, [activePool, armedPools, playAllActive, phraseRate, poolVolumes, pools, stopAllPoolsPlayback])
 
   const onPoolPressStart = (poolIndex: number) => {
     if (poolHoldTimeoutRef.current) clearTimeout(poolHoldTimeoutRef.current)
@@ -736,6 +751,17 @@ export default function StepSequencer() {
     if (!poolHoldTimeoutRef.current) return
     clearTimeout(poolHoldTimeoutRef.current)
     poolHoldTimeoutRef.current = null
+  }
+
+  const togglePoolArm = (poolIndex: number) => {
+    setActivePool(poolIndex)
+    setArmedPools((prev) => {
+      if (prev.includes(poolIndex)) {
+        if (prev.length === 1) return prev
+        return prev.filter((i) => i !== poolIndex)
+      }
+      return [...prev, poolIndex]
+    })
   }
 
   const resetActivePool = useCallback(() => {
@@ -904,17 +930,19 @@ export default function StepSequencer() {
                   className="h-7 px-2 text-[10px] border"
                   style={{
                     borderColor: activePool === i ? `${POOL_COLORS[i]}aa` : 'transparent',
-                    color: activePool === i ? POOL_COLORS[i] : '#a3a3a3',
-                    backgroundColor: activePool === i ? `${POOL_COLORS[i]}22` : 'transparent',
+                    color: armedPools.includes(i) ? POOL_COLORS[i] : '#a3a3a3',
+                    backgroundColor: armedPools.includes(i) ? `${POOL_COLORS[i]}22` : 'transparent',
                   }}
-                  onClick={() => setActivePool(i)}
+                  onClick={() => togglePoolArm(i)}
                   onMouseDown={() => onPoolPressStart(i)}
                   onMouseUp={onPoolPressEnd}
                   onMouseLeave={onPoolPressEnd}
                   onTouchStart={() => onPoolPressStart(i)}
                   onTouchEnd={onPoolPressEnd}
                 >
-                  P{i + 1} {pool.durationSec > 0 ? `${pool.durationSec.toFixed(1)}s` : ''}
+                  P{i + 1}
+                  {armedPools[0] === i ? ' ★' : ''}
+                  {pool.durationSec > 0 ? ` ${pool.durationSec.toFixed(1)}s` : ''}
                 </Button>
               ))}
             </div>
@@ -1020,10 +1048,13 @@ export default function StepSequencer() {
               disabled={!pools.some((p) => p.blob)}
             >
               <Disc3 className="h-3.5 w-3.5" />
-              {playAllActive ? 'Stop all 3' : 'Play all 3'}
+              {playAllActive ? 'Stop stacked' : 'Play stacked'}
             </Button>
           </div>
         </div>
+        <p className="text-[10px] text-neutral-500 -mt-1">
+          Click pools to arm layers for stacked playback. First armed pool (★) is dominant.
+        </p>
         <div className="flex items-center gap-3">
           <Label className="text-[10px] uppercase tracking-widest text-neutral-500 shrink-0">
             Playback speed
@@ -1065,9 +1096,15 @@ export default function StepSequencer() {
                 </div>
               ) : (
                 <div className="mb-2 space-y-1">
-                  {POOL_COLORS.map((c, i) => (
-                    <div key={c} className="h-1.5 rounded-full bg-neutral-800 overflow-hidden">
-                      <div className="h-full" style={{ backgroundColor: c, width: `${poolProgress[i] * 100}%` }} />
+                  {armedPools.map((poolIdx) => (
+                    <div key={poolIdx} className="h-1.5 rounded-full bg-neutral-800 overflow-hidden">
+                      <div
+                        className="h-full"
+                        style={{
+                          backgroundColor: POOL_COLORS[poolIdx]!,
+                          width: `${(poolProgress[poolIdx] ?? 0) * 100}%`,
+                        }}
+                      />
                     </div>
                   ))}
                 </div>
