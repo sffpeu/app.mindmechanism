@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { Dock, DockIcon, DockItem, DockLabel } from '@/components/ui/dock';
 import { useTheme } from '@/app/ThemeContext';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { SettingsDialog } from '@/components/settings/SettingsDialog';
 import { AppInfoOverlay } from '@/components/AppInfoOverlay';
@@ -30,6 +30,7 @@ import { useFullscreen } from '@/lib/hooks/useFullscreen';
 import { useIdleFade } from '@/lib/hooks/useIdleFade';
 import { cn } from '@/lib/utils';
 import { useSettings } from '@/lib/hooks/useSettings';
+import { usePortal } from '@/contexts/PortalContext';
 
 function isPublicAuthPath(pathname: string | null) {
   if (!pathname) return true;
@@ -41,7 +42,7 @@ function isPublicAuthPath(pathname: string | null) {
 /** Horizontal center of dock icons: pl-3 + Dock mx-2 + half of vertical rail width (see `panelHeight` on Dock, default 64) */
 const DOCK_ICON_CENTER_LEFT = 'calc(0.75rem + 0.5rem + 32px)'
 
-const navItems = [
+const baseNavTemplate = [
   { title: 'Home', href: '/layers', icon: Home },
   { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { title: 'Sessions', href: '/sessions', icon: Clock },
@@ -51,12 +52,20 @@ const navItems = [
   { title: 'Sequencer', href: '/sequencer', icon: Music2 },
   { title: 'Synth Lab', href: '/synth-lab', icon: Waves },
   { title: 'My Record', href: '/record', icon: ScrollText },
-];
+] as const
 
 export function AppDock() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, loading } = useAuth();
+  const { config } = usePortal();
+  const navItems = useMemo(
+    () =>
+      baseNavTemplate.map((item) =>
+        item.href === '/record' ? { ...item, title: config.copy.recordSectionTitle } : item
+      ),
+    [config.copy.recordSectionTitle]
+  );
   const { isDarkMode, setIsDarkMode } = useTheme();
   const { accessibilityEnabled, accessibilityMode } = useSettings();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -199,7 +208,8 @@ export function AppDock() {
       <button
         type="button"
         onClick={() => setIsInfoOpen(true)}
-        aria-label="App information"
+        title={`${config.name} — ${config.tagline}`}
+        aria-label={`${config.name} app information`}
         className={cn(
           'fixed top-4 z-[12001] flex h-10 w-10 -translate-x-1/2 items-center justify-center rounded-full shadow-md ring-2 ring-black/10 transition-all duration-200',
           'bg-gray-200 text-neutral-800 hover:bg-gray-300 hover:ring-black/15',

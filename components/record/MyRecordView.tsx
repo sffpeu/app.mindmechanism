@@ -18,8 +18,10 @@ import { ExportButton } from '@/components/record/ExportButton'
 import { downloadKeyBackup, exportKeyAsBase64, loadKey } from '@/lib/passportCrypto'
 import { PASSPORT_BACKUP_REMINDER_KEY } from '@/lib/passportCipherUi'
 import { getOrCreatePassportId } from '@/lib/passportIdentity'
+import { usePortal } from '@/contexts/PortalContext'
 
 export function MyRecordView() {
+  const { config } = usePortal()
   const { user, profile } = useAuth()
   const { key: passportKey } = usePassportKey()
   const [phraseRows, setPhraseRows] = useState<PhraseHistoryRow[]>([])
@@ -98,16 +100,18 @@ export function MyRecordView() {
       <header className="border-b border-black/8 pb-5 dark:border-white/8">
         <div className="mb-2 flex items-center gap-2 text-gray-400 dark:text-neutral-500">
           <ScrollText className="h-4 w-4" aria-hidden />
-          <span className="text-[10px] font-semibold uppercase tracking-[0.2em]">My Record</span>
+          <span className="text-[10px] font-semibold uppercase tracking-[0.2em]">
+            {config.copy.recordSectionTitle}
+          </span>
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Your practice record</h1>
-        <p className="mt-1 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-          Everything the platform holds that belongs to you.
-        </p>
-        {passportId && (
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+          Your {config.copy.practiceLabel.toLowerCase()} record
+        </h1>
+        <p className="mt-1 text-sm leading-relaxed text-gray-500 dark:text-gray-400">{config.heroSubtext}</p>
+        {config.features.showPassportPanel && passportId ? (
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400 dark:text-neutral-500">
-              Passport ID
+              {config.copy.passportLabel} ID
             </span>
             <span className="font-mono text-xs tracking-wider text-gray-700 dark:text-gray-300">{passportId}</span>
             <button
@@ -119,7 +123,7 @@ export function MyRecordView() {
               Copy
             </button>
           </div>
-        )}
+        ) : null}
         {showPassportBackupBanner && (
           <div
             role="status"
@@ -149,22 +153,38 @@ export function MyRecordView() {
             </button>
           </div>
         )}
-        <div className="mt-4">
-          <ExportButton variant="full" />
-        </div>
+        {config.features.showPassportPanel ? (
+          <div className="mt-4">
+            <ExportButton variant="full" />
+          </div>
+        ) : null}
       </header>
 
-      <LexiconPanel />
-      <PhraseHistoryPanel rows={phraseRows} loading={loading} />
-      <AffinityPanel profile={affinity} loading={loading} />
+      {config.features.showLexiconAnchor ? <LexiconPanel /> : null}
+      {config.features.showPhraseProgress ? (
+        <PhraseHistoryPanel rows={phraseRows} loading={loading} />
+      ) : null}
+      {config.features.showNodeAffinity ? <AffinityPanel profile={affinity} loading={loading} /> : null}
       <ResearchStatusPanel
         consentRecord={profile?.researchConsent}
         userId={user?.uid}
         passportKey={passportKey}
       />
-      <ResearchDashboard />
-      {user?.uid ? <InstitutionalAccessPanel uid={user.uid} /> : null}
-      {user?.uid ? <CredentialsPanel uid={user.uid} /> : null}
+      {config.features.showResearchDashboard ? <ResearchDashboard /> : null}
+      {config.features.showInstitutionalAccess && user?.uid ? (
+        <InstitutionalAccessPanel uid={user.uid} />
+      ) : null}
+      {config.features.showCredentials && user?.uid ? <CredentialsPanel uid={user.uid} /> : null}
+      {config.features.showTeamAggregates ? (
+        <section className="rounded-2xl border border-black/8 bg-white/60 px-5 py-5 shadow-sm dark:border-white/8 dark:bg-neutral-950/60">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400 dark:text-neutral-500">
+            Team capability
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-neutral-400">
+            Team-level aggregates and anonymised group views will appear here in a later release.
+          </p>
+        </section>
+      ) : null}
     </div>
   )
 }

@@ -77,6 +77,10 @@ const TIER_CONFIG = {
     label: 'Sovereign',
     color: 'text-violet-600 dark:text-violet-400',
   },
+  academic_pro: {
+    label: 'Academic Pro',
+    color: 'text-emerald-600 dark:text-emerald-400',
+  },
 } as const
 
 // ─── COMPONENT ────────────────────────────────────────────────────────────────
@@ -211,7 +215,7 @@ export default function DashboardPage() {
     : null
 
   const tier = profile?.tier ?? 'open'
-  const tierCfg = TIER_CONFIG[tier]
+  const tierCfg = TIER_CONFIG[tier as keyof typeof TIER_CONFIG] ?? TIER_CONFIG.open
 
   // Counts for the scheduled/group drawer badge
   const scheduledActivityCount = scheduledSessionsCount + groupUpcomingSessionsCount

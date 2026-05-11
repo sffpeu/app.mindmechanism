@@ -16,6 +16,8 @@ import { useSoundEffects } from '@/lib/sounds'
 import { useRouter } from 'next/navigation'
 import { createSession } from '@/lib/sessions'
 import { useAuth } from '@/lib/FirebaseAuthContext'
+import { useEffectiveNodeTier } from '@/lib/useEffectiveNodeTier'
+import { filterGlossaryWordsByTier } from '@/lib/nodeTiers'
 import { testWords } from '@/lib/testWords'
 
 interface SessionDurationDialogProps {
@@ -47,6 +49,7 @@ export function SessionDurationDialog({
   onNext 
 }: SessionDurationDialogProps) {
   const { user } = useAuth()
+  const nodeTier = useEffectiveNodeTier()
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null)
   const [customDuration, setCustomDuration] = useState('')
   const [isCustom, setIsCustom] = useState(false)
@@ -91,7 +94,7 @@ export function SessionDurationDialog({
     if (step === 'words') {
       loadGlossaryWords()
     }
-  }, [step])
+  }, [step, nodeTier, user?.uid])
 
   // Debounced search (in sync with /glossary)
   useEffect(() => {
@@ -100,11 +103,13 @@ export function SessionDurationDialog({
       if (!searchQuery.trim()) {
         loadGlossaryWords()
       } else {
-        searchWords(searchQuery).then(setGlossaryWords).catch(() => setGlossaryWords([]))
+        searchWords(searchQuery)
+          .then((w) => setGlossaryWords(filterGlossaryWordsByTier(w ?? [], nodeTier, user?.uid)))
+          .catch(() => setGlossaryWords([]))
       }
     }, 300)
     return () => clearTimeout(timer)
-  }, [step, searchQuery])
+  }, [step, searchQuery, nodeTier, user?.uid])
 
   useEffect(() => {
     if (step === 'words') {
@@ -131,12 +136,13 @@ export function SessionDurationDialog({
       setIsLoadingWords(true)
       setLoadError(null)
       const words = await getAllWords()
-      if (!words || words.length === 0) {
+      const tiered = filterGlossaryWordsByTier(words ?? [], nodeTier, user?.uid)
+      if (!tiered || tiered.length === 0) {
         console.log('No words found in glossary')
         setLoadError('No words found in the glossary. Please try again later.')
         setGlossaryWords([])
       } else {
-        setGlossaryWords(words)
+        setGlossaryWords(tiered)
       }
     } catch (error) {
       console.error('Error loading glossary words:', error)

@@ -15,6 +15,7 @@ import {
   type LexiconAnchorRecord,
 } from '@/lib/lexiconAnchor'
 import { RESEARCH_PROTOCOL_VERSION } from '@/lib/researchProtocol'
+import { usePortal } from '@/contexts/PortalContext'
 
 function fmtAnchorDate(iso?: string): string {
   if (!iso) return ''
@@ -47,6 +48,7 @@ function readLexMeta(data: Record<string, unknown> | undefined): PassportLexMeta
 
 export function LexiconPanel() {
   const { user } = useAuth()
+  const { config } = usePortal()
   const [total, setTotal] = useState(0)
   const [byWheel, setByWheel] = useState<number[]>(() => Array(9).fill(0))
   const [loading, setLoading] = useState(true)
@@ -121,7 +123,7 @@ export function LexiconPanel() {
   return (
     <section className="rounded-2xl border border-black/8 bg-white/60 px-5 py-5 shadow-sm dark:border-white/8 dark:bg-neutral-950/60">
       <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400 dark:text-neutral-500">
-        Your words
+        {config.copy.lexiconLabel}
       </p>
       <div className="my-3 border-t border-black/8 dark:border-white/8" />
 

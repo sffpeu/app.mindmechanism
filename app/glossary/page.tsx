@@ -4,8 +4,11 @@ import { Suspense, useEffect, useState, useRef, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords, searchWords } from '@/lib/glossary'
+import { useEffectiveNodeTier } from '@/lib/useEffectiveNodeTier'
+import { filterGlossaryWordsByTier } from '@/lib/nodeTiers'
 import { AddWordDialog } from '@/components/AddWordDialog'
 import { useAuth } from '@/lib/FirebaseAuthContext'
+import { usePortal } from '@/contexts/PortalContext'
 import { cn } from '@/lib/utils'
 import { GlossaryRadialTree } from '@/components/GlossaryRadialTree'
 import { GlossarySearchBar } from '@/components/glossary/GlossarySearchBar'
@@ -23,6 +26,8 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 function GlossaryPageInner() {
   const searchParams = useSearchParams()
   const { user } = useAuth()
+  const { config } = usePortal()
+  const nodeTier = useEffectiveNodeTier()
   const [searchQuery, setSearchQuery] = useState('')
   const [scopeFilter, setScopeFilter] = useState<'All' | 'Default' | 'Mine' | 'My Words'>('All')
   const [selectedClockId, setSelectedClockId] = useState<number | null>(null)
@@ -50,7 +55,7 @@ function GlossaryPageInner() {
 
   useEffect(() => {
     loadWords()
-  }, [])
+  }, [nodeTier, user?.uid])
 
   useEffect(() => {
     if (searchParams.get('tab') === 'personal') {
@@ -85,14 +90,15 @@ function GlossaryPageInner() {
     }, 300)
 
     return () => clearTimeout(timer)
-  }, [searchQuery])
+  }, [searchQuery, nodeTier, user?.uid])
 
   const loadWords = async () => {
     setLoading(true)
     try {
       const allWords = await getAllWords()
-      setWords(allWords)
-      setFullWordList(allWords)
+      const tiered = filterGlossaryWordsByTier(allWords, nodeTier, user?.uid)
+      setWords(tiered)
+      setFullWordList(tiered)
     } catch (error) {
       console.error('Error loading words:', error)
     }
@@ -103,7 +109,7 @@ function GlossaryPageInner() {
     setLoading(true)
     try {
       const results = await searchWords(searchQuery)
-      setWords(results)
+      setWords(filterGlossaryWordsByTier(results, nodeTier, user?.uid))
     } catch (error) {
       console.error('Error searching words:', error)
     }
@@ -339,7 +345,10 @@ function GlossaryPageInner() {
       ) : (
         <div className="flex-1 min-h-0 flex flex-col max-w-7xl mx-auto w-full pl-16 pr-4 py-6">
           <div className="mb-6 shrink-0">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 mb-1">The Mind Mechanism</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 mb-1">
+              {config.name}
+            </p>
+            <p className="mb-2 text-[11px] leading-snug text-gray-500 dark:text-neutral-500">{config.tagline}</p>
             <h1 className="text-4xl font-black tracking-tight text-gray-900 dark:text-white mb-2">Glossary</h1>
             <p className="text-gray-600 dark:text-gray-400">The vocabulary of the interior. Browse, search, and build your own word set.</p>
           </div>

@@ -46,7 +46,7 @@ export interface UserProfile {
    * or directly from the user's Firestore profile document.
    * Defaults to 'open' when absent.
    */
-  tier?: 'open' | 'standard' | 'sovereign';
+  tier?: 'open' | 'standard' | 'sovereign' | 'academic_pro';
   preferences: {
     emailNotifications: boolean;
     allowLocationData: boolean;

@@ -6,6 +6,7 @@ import { SoundProvider } from '@/components/SoundProvider'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { FontProvider } from '@/components/FontProvider'
 import { AccessibilityProvider } from '@/components/AccessibilityProvider'
+import { PortalProvider } from '@/contexts/PortalContext'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-montserrat' })
@@ -40,7 +41,9 @@ export default function RootLayout({
           <FontProvider>
             <AccessibilityProvider>
               <SoundProvider>
-                <LayoutContent>{children}</LayoutContent>
+                <PortalProvider>
+                  <LayoutContent>{children}</LayoutContent>
+                </PortalProvider>
               </SoundProvider>
             </AccessibilityProvider>
           </FontProvider>

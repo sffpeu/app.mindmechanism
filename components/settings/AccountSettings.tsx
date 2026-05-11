@@ -19,13 +19,14 @@ const TIER_CONFIG = {
   open:      { label: 'Open',      color: 'text-gray-500 dark:text-gray-400' },
   standard:  { label: 'Standard',  color: 'text-sky-600 dark:text-sky-400'   },
   sovereign: { label: 'Sovereign', color: 'text-violet-600 dark:text-violet-400' },
+  academic_pro: { label: 'Academic Pro', color: 'text-emerald-600 dark:text-emerald-400' },
 } as const
 
 export function AccountSettings() {
   const { user, profile } = useAuth()
   const { refreshFromIdb } = usePassportKey()
   const tier = profile?.tier ?? 'open'
-  const tierCfg = TIER_CONFIG[tier]
+  const tierCfg = TIER_CONFIG[tier as keyof typeof TIER_CONFIG] ?? TIER_CONFIG.open
   const [keyMsg, setKeyMsg] = useState<string | null>(null)
   const [hasKey, setHasKey] = useState<boolean | null>(null)
   const [personalWordCount, setPersonalWordCount] = useState<number | null>(null)

@@ -12,6 +12,7 @@ import { GettingStarted } from '@/components/info/GettingStarted'
 import { FAQ } from '@/components/info/FAQ'
 import { PrivacyData } from '@/components/info/PrivacyData'
 import { LegalContact } from '@/components/info/LegalContact'
+import { usePortal } from '@/contexts/PortalContext'
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 
@@ -92,6 +93,7 @@ type Props = {
 
 export function AppInfoOverlay({ clockHex, open: openProp, onOpenChange }: Props) {
   const controlled = openProp !== undefined
+  const { config } = usePortal()
   const [internalOpen, setInternalOpen] = useState(false)
   const open = controlled ? openProp! : internalOpen
   const setOpen = (v: boolean) => {
@@ -136,9 +138,14 @@ export function AppInfoOverlay({ clockHex, open: openProp, onOpenChange }: Props
                 className="w-6 h-6 rounded-full"
                 style={{ backgroundColor: clockHex, boxShadow: `0 0 10px ${clockHex}55` }}
               />
-              <span className="text-sm font-semibold tracking-wide text-gray-900 dark:text-white">
-                Mind Mechanism
-              </span>
+              <div className="min-w-0">
+                <span className="block truncate text-sm font-semibold tracking-wide text-gray-900 dark:text-white">
+                  {config.name}
+                </span>
+                <span className="block truncate text-[11px] text-gray-500 dark:text-neutral-400">
+                  {config.tagline}
+                </span>
+              </div>
             </div>
             <button
               type="button"

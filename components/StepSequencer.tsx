@@ -44,6 +44,8 @@ import { getAllWords } from '@/lib/glossary'
 import { saveVoiceNote, type VoiceNoteTarget } from '@/lib/voiceNoteStorage'
 import type { GlossaryWord } from '@/types/Glossary'
 import { useAuth } from '@/lib/FirebaseAuthContext'
+import { useEffectiveNodeTier } from '@/lib/useEffectiveNodeTier'
+import { filterGlossaryWordsByTier } from '@/lib/nodeTiers'
 import { logSequencerSession } from '@/lib/researchLogging'
 import { logNodeAffinitySession } from '@/lib/nodeAffinity'
 import { WHEEL_HEX } from '@/lib/wheelColors'
@@ -278,6 +280,7 @@ export default function StepSequencer({
   const sessionStepCountRef = useRef(0)
 
   const { user, profile } = useAuth()
+  const nodeTier = useEffectiveNodeTier()
 
   useEffect(() => {
     tracksRef.current = tracks
@@ -295,12 +298,12 @@ export default function StepSequencer({
     if (!attachOpen || attachTab !== 'glossary') return
     let active = true
     void getAllWords().then((rows) => {
-      if (active) setAttachGlossaryWords(rows)
+      if (active) setAttachGlossaryWords(filterGlossaryWordsByTier(rows, nodeTier, user?.uid))
     })
     return () => {
       active = false
     }
-  }, [attachOpen, attachTab])
+  }, [attachOpen, attachTab, nodeTier, user?.uid])
 
   useEffect(() => {
     setLibraryCount(loadCompositions().length)

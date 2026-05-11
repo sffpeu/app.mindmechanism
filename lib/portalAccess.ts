@@ -1,4 +1,4 @@
-export type MembershipTier = 'open' | 'standard' | 'sovereign'
+export type MembershipTier = 'open' | 'standard' | 'sovereign' | 'academic_pro'
 
 export const STUDENT_ACADEMIC_TIERS: MembershipTier[] = ['standard', 'sovereign']
 
@@ -9,5 +9,6 @@ export function hasStudentAcademicPortal(tier: MembershipTier | undefined): bool
 export function tierDisplayName(tier: MembershipTier | undefined): string {
   if (tier === 'sovereign') return 'Sovereign'
   if (tier === 'standard') return 'Standard'
+  if (tier === 'academic_pro') return 'Academic Pro'
   return 'Open'
 }
