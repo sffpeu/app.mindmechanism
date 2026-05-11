@@ -16,11 +16,15 @@ from pathlib import Path
 SVG_NS = "http://www.w3.org/2000/svg"
 CEREMONY = "#fd290a"
 BG = "#0d0d0d"
-# Inner ring: concentric circle r≈257.987 (Layer-17 local) under scale 4.16667; hub at square centre.
+# Hub at square centre (Layer-17 local → world via S). Mask radius is intentionally *small*:
+# the inner concentric circle in the art is r≈258 local (~1078 world); masking that whole
+# disc wipes the lotus / diamond / inner squares (they read as “lost in the background”).
+# We only punch a small hole so crossing spokes vanish at the middle, not the whole inner ring.
 S = 4.16667
 HUB_CX = 764.41 * S
 HUB_CY = 765.716 * S
-HUB_R = 257.987 * S + 3.0
+HUB_R_LOCAL = 58.0  # layer units under Layer-17 scale; ~240px world
+HUB_R = HUB_R_LOCAL * S + 4.0
 
 TRIANGLE_D_PREFIX = "M0,70.433L40.664,0"
 
@@ -243,7 +247,10 @@ def main() -> None:
     out_arg.parent.mkdir(parents=True, exist_ok=True)
     out_arg.write_text(html, encoding="utf-8")
     print(out_arg)
-    print(f"Structure report — hub mask: centre (~{HUB_CX:.1f}, {HUB_CY:.1f}), r≈{HUB_R:.1f}; ceremony: {CEREMONY}")
+    print(
+        f"Structure report — hub mask: centre (~{HUB_CX:.1f}, {HUB_CY:.1f}), "
+        f"r≈{HUB_R:.1f} world (~{HUB_R_LOCAL:g} local); ceremony: {CEREMONY}"
+    )
     for line in report_lines:
         print(line)
 
