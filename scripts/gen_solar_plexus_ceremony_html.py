@@ -2,7 +2,8 @@
 """Generate solar_plexus_ceremony.html from public/3.svg (vector solar plexus wheel).
 
 Hub lines are clipped at the inner disc using an SVG mask so strokes do not meet at
-the centre; the triangle outline is drawn above the hub fill.
+the centre; the triangle outline is drawn above the hub fill. White knockout fills in
+the source (if any) map to the page background so author “cover” strokes still work.
 """
 from __future__ import annotations
 
@@ -38,9 +39,16 @@ def fix_style(style: str | None) -> str | None:
     s = re.sub(r"stroke:\s*#3c6db5\b", f"stroke:{CEREMONY}", s, flags=re.I)
     s = re.sub(r"stroke:\s*#fff(?:fff)?\b", f"stroke:{CEREMONY}", s, flags=re.I)
     s = re.sub(r"stroke:\s*white\b", f"stroke:{CEREMONY}", s, flags=re.I)
+    # Solid fills used in-source to cover unwanted strokes (often white) → page fill on dark theme.
     s = re.sub(r"fill:\s*white\b", f"fill:{BG}", s, flags=re.I)
     s = re.sub(r"fill:\s*#fff\b", f"fill:{BG}", s, flags=re.I)
     s = re.sub(r"fill:\s*#ffffff\b", f"fill:{BG}", s, flags=re.I)
+    s = re.sub(
+        r"fill:\s*rgb\s*\(\s*255\s*,\s*255\s*,\s*255\s*\)",
+        f"fill:{BG}",
+        s,
+        flags=re.I,
+    )
     return s
 
 

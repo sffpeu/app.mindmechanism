@@ -5,6 +5,11 @@ Keeps the entire Layer-17 subtree intact (avoids misaligned node clusters). Appl
 SVG hub mask so strokes do not meet at the centre; the central triangle outline is
 drawn above the masked content.
 
+In the source artwork, filled shapes (often white) stacked above strokes are the
+intended way to hide construction lines. The ceremony restyle maps those fills to the
+page background (#0d0d0d). Where the vector has no such fills (e.g. 1.svg is all
+fill:none today), the hub mask approximates the same effect for spokes.
+
 Do not peel inner paths into a separate group: duplicates + mask interaction made
 larger centre regions disappear. Keep one masked Layer-17 clone (minus triangle only)
 and tune the hub hole size instead.
@@ -52,9 +57,17 @@ def fix_style(style: str | None) -> str | None:
     s = re.sub(r"stroke:\s*#3c6db5\b", f"stroke:{CEREMONY}", s, flags=re.I)
     s = re.sub(r"stroke:\s*#fff(?:fff)?\b", f"stroke:{CEREMONY}", s, flags=re.I)
     s = re.sub(r"stroke:\s*white\b", f"stroke:{CEREMONY}", s, flags=re.I)
+    # Author knockouts: solid fills (often white) stacked above strokes to hide construction.
+    # Map to page fill so they still read as “holes” on dark ceremony backgrounds.
     s = re.sub(r"fill:\s*white\b", f"fill:{BG}", s, flags=re.I)
     s = re.sub(r"fill:\s*#fff\b", f"fill:{BG}", s, flags=re.I)
     s = re.sub(r"fill:\s*#ffffff\b", f"fill:{BG}", s, flags=re.I)
+    s = re.sub(
+        r"fill:\s*rgb\s*\(\s*255\s*,\s*255\s*,\s*255\s*\)",
+        f"fill:{BG}",
+        s,
+        flags=re.I,
+    )
     return s
 
 

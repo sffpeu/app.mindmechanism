@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Generate throat_ceremony.html from public/clock_5.svg (Throat wheel on route /4)."""
+"""Generate throat_ceremony.html from public/clock_5.svg (Throat wheel on route /4).
+
+White (or rgb(255,255,255)) filled knockouts in the SVG stay knockouts on dark pages
+via fix_style mapping fills to the page background.
+"""
 from __future__ import annotations
 
 import copy
@@ -30,9 +34,16 @@ def fix_style(style: str | None) -> str | None:
     s = re.sub(r"stroke:\s*#3c6db5\b", f"stroke:{CEREMONY}", s, flags=re.I)
     s = re.sub(r"stroke:\s*#fff(?:fff)?\b", f"stroke:{CEREMONY}", s, flags=re.I)
     s = re.sub(r"stroke:\s*white\b", f"stroke:{CEREMONY}", s, flags=re.I)
+    # Solid fills used in-source to cover unwanted strokes (often white) → page fill on dark theme.
     s = re.sub(r"fill:\s*white\b", f"fill:{BG}", s, flags=re.I)
     s = re.sub(r"fill:\s*#fff\b", f"fill:{BG}", s, flags=re.I)
     s = re.sub(r"fill:\s*#ffffff\b", f"fill:{BG}", s, flags=re.I)
+    s = re.sub(
+        r"fill:\s*rgb\s*\(\s*255\s*,\s*255\s*,\s*255\s*\)",
+        f"fill:{BG}",
+        s,
+        flags=re.I,
+    )
     return s
 
 
