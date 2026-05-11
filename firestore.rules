@@ -151,6 +151,17 @@ service cloud.firestore {
       allow read, write: if request.auth.uid == uid;
     }
 
+    // Institutional credential write requests (Phase 4.3)
+    match /passportCredentialRequests/{requestId} {
+      // Institution submits with token-in-payload (no Firebase auth session required).
+      allow create: if true;
+      // Holder reads pending requests client-side by passport_id.
+      allow read: if true;
+      // Holder accepts/rejects request status.
+      allow update: if request.auth != null;
+      allow delete: if false;
+    }
+
     // Default rule - require authentication for all other reads (except research_b_events — excluded below).
     match /{document=**} {
       allow read: if isAuthenticated()
