@@ -79,7 +79,7 @@ export function AboutMechanism({ clockHex }: { clockHex: string }) {
                 ['W6 Third Eye', 'Vision, Insight, Perception',      '221.23 Hz (A3)',  '57'],
                 ['W7 Crown (M)', 'Law, Devotion, Structure',         '172.06 Hz (F3)',  '53'],
                 ['W8 Crown (F)', 'Wisdom, Integration, Synthesis',   '194.18 Hz (G3)',  '55'],
-                ['W9 Earth',     'Sovereignty, Grounding, Return',   '136.10 Hz (C#3)', '49'],
+                ['W9 Etheric Heart', 'Earth · sovereignty, grounding, return',   '136.10 Hz (C#3)', '49'],
               ].map(([wheel, domain, freq, midi]) => (
                 <tr key={wheel} className="border-b border-gray-100 dark:border-gray-900">
                   <td className="px-3 py-2 font-semibold text-gray-800 dark:text-gray-200">{wheel}</td>
@@ -93,7 +93,7 @@ export function AboutMechanism({ clockHex }: { clockHex: string }) {
         </div>
 
         <P>All frequencies are tuned to the 432 Hz standard (A4 = 432 Hz). The 432 Hz choice is not conventional — standard Western tuning sets A4 at 440 Hz. The deliberate deviation positions the system outside the industrial tuning standard and aligns it with a frequency architecture historically associated with resonance with natural harmonic series. It is a philosophical as much as an acoustic decision.</P>
-        <P><Strong>The 136.10 Hz recurrence</Strong> across Wheels 1, 4, and 9 is intentional and structurally significant. Ground (W1), Heart (W4), and Sovereignty (W9) share the same base frequency because they are not three different states but the same state encountered at three different depths of the journey. You begin in the body (W1 — physical anchor, the first safety). You pass through relation (W4 — love as equilibrium, the heart as the system's regulating centre). You arrive at sovereignty (W9 — the integrated ground that is no longer received from outside but generated from within). The frequency does not change. What changes is the Architect's relationship to it. This is the system's encoded claim about the nature of transformation: you do not transcend the ground; you learn to generate it from inside.</P>
+        <P><Strong>Etheric Heart</Strong> is the ninth wheel — <Strong>Earth</Strong> as planet and OM tone. <Strong>The 136.10 Hz recurrence</Strong> across Wheels 1, 4, and 9 is intentional and structurally significant: it encodes a Trinity in frequency — Ground (W1), Heart (W4), and Etheric Heart (W9) share the same base tone because they are not three unrelated states but one ground encountered at three depths. You begin in the body (W1 — physical anchor, the first safety). You pass through relation (W4 — love as equilibrium, the heart as the system's regulating centre). You arrive at sovereignty (W9 — the integrated ground that is no longer received from outside but generated from within). The frequency does not change. What changes is the Architect's relationship to it. This is the system's encoded claim about the nature of transformation: you do not transcend the ground; you learn to generate it from inside.</P>
 
         <H3>4.2 The Relational Architecture of the Nine Wheels</H3>
         <P>The nine wheels are not nine independent instruments. They are an integrated map, traversed according to the principle of <em className="italic text-gray-500 dark:text-gray-400">somatic availability</em>: you begin where your nervous system can make contact, not where a curriculum dictates you should.</P>
@@ -105,7 +105,7 @@ export function AboutMechanism({ clockHex }: { clockHex: string }) {
 
         <H3>4.3 Entry Orientation</H3>
         <P>A new practitioner does not select a wheel arbitrarily. The entry protocol follows a simple logic: <Strong>begin where resistance is least, not where ambition is greatest.</Strong></P>
-        <P>The most reliable entry point for most practitioners is W9 — the Earth wheel — for the same reason that a builder's first act is to establish the foundation. W9 (Sovereignty, Grounding, Return) at 136.10 Hz (the OM/Earth frequency) creates the somatic stability from which all other wheel-work becomes accessible. A short W9 session before engaging any other wheel is the recommended orientation for new and returning practitioners alike.</P>
+        <P>The most reliable entry point for most practitioners is W9 — Etheric Heart / Earth — for the same reason that a builder's first act is to establish the foundation. W9 (Sovereignty, Grounding, Return) at 136.10 Hz (the OM/Earth frequency) creates the somatic stability from which all other wheel-work becomes accessible. A short W9 session before engaging any other wheel is the recommended orientation for new and returning practitioners alike.</P>
         <P>The second reliable entry point is the wheel that is currently generating the most friction in the practitioner's life — the domain where the body is most defended, the language most blocked. This is the Conceptual Blockade's address. Entering there with the right frequency substrate and the right vocabulary can begin the resolution faster than any amount of indirect approach.</P>
         <P>What does not work is beginning with the wheel the practitioner most <em className="italic text-gray-500 dark:text-gray-400">wants</em> to be at — the aspirational wheel rather than the present one. The Mechanism operates on the present interior state. It has no purchase on the imagined future self.</P>
 
@@ -135,7 +135,7 @@ export function AboutMechanism({ clockHex }: { clockHex: string }) {
           <li>For the Parent — relational framing for caregiving contexts</li>
         </ul>
         <P>A toggle <em className="italic text-gray-500 dark:text-gray-400">fires</em> when the Marker state is recognised — not as a thought but as a somatic event: a shift in breath, a release of held tension, the sense of something that was opaque becoming legible. The firing is not engineered; it is recognised. The practitioner does not force a toggle by will. They create the conditions — frequency, vocabulary, Architect posture — in which the toggle's resolution becomes available. The Mechanism then presents it. The Architect takes it.</P>
-        <P>The 162 toggles span all nine Wheels, from the foundational (T001: Chaos→Stability, W1 Root) to the terminal (T162: Wickedness→Goodness, W9 Earth). Together they form a complete map of the emotional interior's most common transformation pathways.</P>
+        <P>The 162 toggles span all nine Wheels, from the foundational (T001: Chaos→Stability, W1 Root) to the terminal (T162: Wickedness→Goodness, W9 Etheric Heart). Together they form a complete map of the emotional interior's most common transformation pathways.</P>
 
         <H3>4.6 The Emotive Prerequisite Hypothesis</H3>
         <P>The Mechanism's central pedagogical and clinical claim is that durable acquisition — whether of a word, a psychological state, or a behavioural pattern — requires a specific sequence:</P>
@@ -155,7 +155,7 @@ export function AboutMechanism({ clockHex }: { clockHex: string }) {
           <li><Strong>Acoustic Anchoring</Strong> — Bypassing the Conceptual Blockade through frequency-matched sound</li>
           <li><Strong>Lexical Pivot</Strong> — Identifying agency nodes that serve as entry points to blocked registers</li>
           <li><Strong>Linguistic Integration</Strong> — Deploying high-magnitude nodes that activate surrounding vocabulary</li>
-          <li><Strong>Language Grounding</Strong> — Returning to the W9 Earth anchor to stabilise the acquisition</li>
+          <li><Strong>Language Grounding</Strong> — Returning to the W9 Etheric Heart anchor to stabilise the acquisition</li>
         </ol>
         <P>The protocol functions across all nine Wheels and is designed to operate within the <em className="italic text-gray-500 dark:text-gray-400">somatic ZPD</em> — the gap between what the nervous system currently produces and what it can be scaffolded to produce.</P>
 

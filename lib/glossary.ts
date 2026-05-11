@@ -183,8 +183,8 @@ export const FEMALE_CROWN_DEFAULT_WORDS: readonly string[] = [
   'Heritage'
 ];
 
-/** Words that appear under Default > ETHERAL HEART in the glossary (clock_id 8). */
-export const ETHERAL_HEART_DEFAULT_WORDS: readonly string[] = [
+/** Words that appear under Default > ETHERIC HEART in the glossary (clock_id 8). */
+export const ETHERIC_HEART_DEFAULT_WORDS: readonly string[] = [
   'Father',
   'Son',
   'Spirit'
@@ -199,7 +199,7 @@ function assignDefaultClockIds(words: GlossaryWord[]): GlossaryWord[] {
   const thirdEyeSet = new Set(THIRD_EYE_DEFAULT_WORDS.map(w => w.toLowerCase()));
   const maleCrownSet = new Set(MALE_CROWN_DEFAULT_WORDS.map(w => w.toLowerCase()));
   const femaleCrownSet = new Set(FEMALE_CROWN_DEFAULT_WORDS.map(w => w.toLowerCase()));
-  const etherealHeartSet = new Set(ETHERAL_HEART_DEFAULT_WORDS.map(w => w.toLowerCase()));
+  const ethericHeartSet = new Set(ETHERIC_HEART_DEFAULT_WORDS.map(w => w.toLowerCase()));
   return words.map(w => {
     const lower = w.word.toLowerCase();
     if (rootSet.has(lower)) return { ...w, clock_id: 0 };
@@ -210,7 +210,7 @@ function assignDefaultClockIds(words: GlossaryWord[]): GlossaryWord[] {
     if (thirdEyeSet.has(lower)) return { ...w, clock_id: 5 };
     if (maleCrownSet.has(lower)) return { ...w, clock_id: 6 };
     if (femaleCrownSet.has(lower)) return { ...w, clock_id: 7 };
-    if (etherealHeartSet.has(lower)) return { ...w, clock_id: 8 };
+    if (ethericHeartSet.has(lower)) return { ...w, clock_id: 8 };
     return w;
   });
 }

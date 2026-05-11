@@ -119,13 +119,13 @@ export const MANDALA_NODES: MandalaNode[] = [
   { id: 'effort', term: 'Effort', phonetic: '/ˈɛf.ərt/', grade: 3, rate: '~', definition: 'A vigorous or determined attempt.', wheel: 8, wheelName: 'Female Crown', nodeId: 14 },
   { id: 'innovating', term: 'Innovating', phonetic: '/ˈɪn.ə.veɪt.ɪŋ/', grade: 4, rate: '+', definition: 'The act of introducing new ideas or methods.', wheel: 8, wheelName: 'Female Crown', nodeId: 15 },
   { id: 'heritage', term: 'Heritage', phonetic: '/ˈhɛr.ɪ.tɪdʒ/', grade: 4, rate: '+', definition: 'Property that is or may be inherited.', wheel: 8, wheelName: 'Female Crown', nodeId: 16 },
-  // Wheel 9 — Etheral Heart
-  { id: 'father', term: 'Father', phonetic: '/ˈfɑː.ðər/', grade: 3, rate: '~', definition: 'A male parent.', wheel: 9, wheelName: 'Etheral Heart', nodeId: 1 },
-  { id: 'son', term: 'Son', phonetic: '/sʌn/', grade: 3, rate: '~', definition: 'A male child in relation to his parents.', wheel: 9, wheelName: 'Etheral Heart', nodeId: 2 },
-  { id: 'spirit', term: 'Spirit', phonetic: '/ˈspɪr.ɪt/', grade: 3, rate: '~', definition: 'The non-physical part of a person regarded as their true self.', wheel: 9, wheelName: 'Etheral Heart', nodeId: 3 },
-  { id: 'brother', term: 'Brother', phonetic: '/ˈbrʌð.ər/', grade: 3, rate: '~', definition: 'A male sibling.', wheel: 9, wheelName: 'Etheral Heart', nodeId: 4 },
-  { id: 'mother', term: 'Mother', phonetic: '/ˈmʌð.ər/', grade: 3, rate: '~', definition: 'A female parent.', wheel: 9, wheelName: 'Etheral Heart', nodeId: 5 },
-  { id: 'daughter', term: 'Daughter', phonetic: '/ˈdɔː.tər/', grade: 3, rate: '~', definition: 'A female child in relation to her parents.', wheel: 9, wheelName: 'Etheral Heart', nodeId: 6 },
-  { id: 'sister', term: 'Sister', phonetic: '/ˈsɪs.tər/', grade: 3, rate: '~', definition: 'A female sibling.', wheel: 9, wheelName: 'Etheral Heart', nodeId: 7 },
-  { id: 'source', term: 'Source', phonetic: '/sɔːrs/', grade: 3, rate: '~', definition: 'A place, person, or thing from which something originates.', wheel: 9, wheelName: 'Etheral Heart', nodeId: 8 },
+  // Wheel 9 — Etheric Heart (Earth; Trinity tone with W1 + W4 at 136.10 Hz)
+  { id: 'father', term: 'Father', phonetic: '/ˈfɑː.ðər/', grade: 3, rate: '~', definition: 'A male parent.', wheel: 9, wheelName: 'Etheric Heart', nodeId: 1 },
+  { id: 'son', term: 'Son', phonetic: '/sʌn/', grade: 3, rate: '~', definition: 'A male child in relation to his parents.', wheel: 9, wheelName: 'Etheric Heart', nodeId: 2 },
+  { id: 'spirit', term: 'Spirit', phonetic: '/ˈspɪr.ɪt/', grade: 3, rate: '~', definition: 'The non-physical part of a person regarded as their true self.', wheel: 9, wheelName: 'Etheric Heart', nodeId: 3 },
+  { id: 'brother', term: 'Brother', phonetic: '/ˈbrʌð.ər/', grade: 3, rate: '~', definition: 'A male sibling.', wheel: 9, wheelName: 'Etheric Heart', nodeId: 4 },
+  { id: 'mother', term: 'Mother', phonetic: '/ˈmʌð.ər/', grade: 3, rate: '~', definition: 'A female parent.', wheel: 9, wheelName: 'Etheric Heart', nodeId: 5 },
+  { id: 'daughter', term: 'Daughter', phonetic: '/ˈdɔː.tər/', grade: 3, rate: '~', definition: 'A female child in relation to her parents.', wheel: 9, wheelName: 'Etheric Heart', nodeId: 6 },
+  { id: 'sister', term: 'Sister', phonetic: '/ˈsɪs.tər/', grade: 3, rate: '~', definition: 'A female sibling.', wheel: 9, wheelName: 'Etheric Heart', nodeId: 7 },
+  { id: 'source', term: 'Source', phonetic: '/sɔːrs/', grade: 3, rate: '~', definition: 'A place, person, or thing from which something originates.', wheel: 9, wheelName: 'Etheric Heart', nodeId: 8 },
 ]

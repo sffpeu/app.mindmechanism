@@ -1,7 +1,7 @@
 /**
  * Prescribed display hex for the nine somatic wheels (Mind Mechanism clock).
  *
- * Wheel numbers in deck / node data are **1–9** (Root … Ehteric heart).
+ * Wheel numbers in deck / node data are **1–9** (Root … Etheric Heart).
  * Clock / glossary indices are **0–8** — same order: index = wheel − 1.
  *
  * 1. Root           #fd290a
@@ -12,7 +12,7 @@
  * 6. Third eye      #941952
  * 7. Male crown     #541b96
  * 8. Female crown   #ee5fa7
- * 9. Ehteric heart  #56c1ff
+ * 9. Etheric Heart (Earth)  #56c1ff
  */
 export const WHEEL_HEX = [
   '#fd290a',

@@ -11,7 +11,7 @@
 
 import { WHEEL_HEX } from '@/lib/wheelColors'
 
-/** One colour per clock (index 0 = ROOT … 8 = ETHERAL HEART). Same as {@link WHEEL_HEX}. */
+/** One colour per clock (index 0 = ROOT … 8 = ETHERIC HEART). Same as {@link WHEEL_HEX}. */
 export const CLOCK_HEX = WHEEL_HEX
 
 export interface HueLightState {

@@ -8,7 +8,7 @@ export const clockTitles: readonly string[] = [
   'THIRD EYE',
   'MALE CROWN',
   'FEMALE CROWN',
-  'ETHERAL HEART'
+  'ETHERIC HEART'
 ] as const
 
 export type ClockTitleKey = (typeof clockTitles)[number]

@@ -491,7 +491,7 @@ const DEFINITIONS = [
     definition: `Lineage is the psychological and historical connection to one's ancestors, heritage, and the generational flow of values and identity. Positively, a strong sense of lineage provides a profound grounding in time, fostering a deep feeling of belonging and a realization that one's life is part of a larger, enduring narrative. Negatively, an obsession with lineage or the refusal to move beyond ancestral trauma can trap individuals in the past, preventing the necessary growth and individualization required for authentic selfhood. In summary, understanding one's lineage is essential for psychological stability; by honoring the past while building the future, individuals can achieve a deeper, more integrated and lasting sense of purpose.`,
   },
 
-  // ── WHEEL 9: ETHERAL HEART (clock_id 8) ──────────────────────────────────
+  // ── WHEEL 9: ETHERIC HEART (clock_id 8) ──────────────────────────────────
   // Father, Son, Spirit already exist. Brother, Mother, Daughter, Sister, Source are new.
   {
     word: 'Father',

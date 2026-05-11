@@ -86,7 +86,7 @@ How do you say it?  (optional)
 Where do you feel it in your body?  (optional)
   [○] Root    [○] Sacral   [●] Solar Plexus
   [○] Heart   [○] Throat   [○] Third Eye
-  [○] M Crown [○] F Crown  [○] Etheral Heart
+  [○] M Crown [○] F Crown  [○] Etheric Heart
 
 What's your relationship to it?
   [+] I use it   [~] It's complicated   [-] I'm moving away from it

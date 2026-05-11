@@ -210,10 +210,10 @@ at the top of the instrument, floating above the others.
 
 ---
 
-### W9 — ETHERAL HEART | Earth | 136.1 Hz
+### W9 — ETHERIC HEART | Earth (planet) | 136.1 Hz
 **Character: Integration. Balanced. Complete.**
 
-The ETHERAL HEART is the synthesis of all nine wheels — the point where the full taxonomy comes together. It should sound as if it contains everything. Not in a louder or more complex sense, but in a sense of completeness.
+The ninth wheel is **Etheric Heart**: planetary correspondence **Earth**, same OM / Earth tonic as Root and Heart at **136.10 Hz** — the closing vertex of the built-in Trinity (body → relation → sovereignty). It is the synthesis of all nine wheels — the point where the full taxonomy comes together. It should sound as if it contains everything. Not in a louder or more complex sense, but in a sense of completeness.
 
 ```
 Processing chain:
