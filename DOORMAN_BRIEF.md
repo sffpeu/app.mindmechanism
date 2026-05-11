@@ -6,9 +6,27 @@
 
 ## What This Is
 
-Doorman is a master-access role assigned to a single account — the operator. A Doorman account moves freely across all three portal identities, sees all 482 nodes, has every feature enabled, and can switch portal view in real time. It is not a portal — it is a key that opens all of them.
+Doorman is a dedicated standalone account — separate from Sean's personal login — that moves freely across all three portal identities, sees all 482 nodes, has every feature enabled, and can switch portal view in real time. It is not a portal. It is a key that opens all of them.
 
-There is one Doorman. It cannot be self-assigned. It is set directly in Firestore against a specific UID.
+There is one Doorman account. The credentials are operator-held and never stored in the codebase. The account is a standard Firebase Auth user; its elevated access comes entirely from a `role` field in its Firestore document.
+
+---
+
+## Setup (One-Time — Operator Does This, Not Cursor)
+
+1. Create a Firebase Auth account manually in the Firebase console (Authentication → Add user)
+   - Username (email): `doorman@mindmechanism.com` (or any email the operator chooses)
+   - Password: operator-held — **never committed to the codebase or any brief**
+2. Note the UID assigned to this account
+3. In Firestore → `users/{that UID}`, create the document with:
+
+```
+role: 'doorman'
+username: 'doorman'
+tier: 'open'
+```
+
+That is all. From that point, logging in with the Doorman credentials on any portal gives full access across all three identities.
 
 ---
 
@@ -16,13 +34,11 @@ There is one Doorman. It cannot be self-assigned. It is set directly in Firestor
 
 ### Firestore — `users/{uid}`
 
-Add a `role` field to the user profile document:
-
 ```
-role: 'doorman' | 'user'    — default 'user', set manually in Firestore console
+role: 'doorman' | 'user'    — default 'user' for all regular accounts
 ```
 
-This is the only role that matters at this stage. One field. Set it to `'doorman'` on Sean's account directly in the Firestore console. No UI for role assignment — it is operator-only.
+The `role` field is checked client-side after login. `'doorman'` unlocks the full override. No other accounts should ever have this value — it is set manually by the operator in the Firestore console only.
 
 ---
 
@@ -259,7 +275,9 @@ lib/lexiconAnchor.ts
 
 ## After the Build
 
-Once Cursor has shipped this, go to the Firestore console and set `role: doorman` on your account. You will see the Doorman bar appear at the top of the app. From there you can switch between Consumer, Academic, and Corporate views in real time and see the system as each portal sees it — while always having full node access and every feature enabled.
+Once Cursor has shipped this, follow the one-time setup steps above — create the Firebase Auth account and set `role: doorman` in its Firestore document. Log in with the Doorman credentials on any portal and the bar appears at the top. Switch between Consumer, Academic, and Corporate views in real time and see the system as each portal sees it — while always holding all 482 nodes and every feature enabled.
+
+The Doorman credentials are yours alone. They do not appear anywhere in the codebase.
 
 ---
 
