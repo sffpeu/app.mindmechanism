@@ -1,11 +1,17 @@
 'use client'
 
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Shield, Mail } from 'lucide-react'
+import { Shield, Mail, KeyRound } from 'lucide-react'
 import { ExportButton } from '@/components/record/ExportButton'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { cn } from '@/lib/utils'
+import { downloadKeyBackup, exportKeyAsBase64, hasPassportKey, importKeyFromBase64, loadKey } from '@/lib/passportCrypto'
+import { syncPassportKeyMeta } from '@/lib/passportSilo'
+import { PASSPORT_BACKUP_REMINDER_KEY } from '@/lib/passportCipherUi'
+import { collection, getCountFromServer, query, where, type Firestore } from 'firebase/firestore'
+import { db } from '@/lib/firebase'
 
 const TIER_CONFIG = {
   open:      { label: 'Open',      color: 'text-gray-500 dark:text-gray-400' },
@@ -17,9 +23,87 @@ export function AccountSettings() {
   const { user, profile } = useAuth()
   const tier = profile?.tier ?? 'open'
   const tierCfg = TIER_CONFIG[tier]
+  const [keyMsg, setKeyMsg] = useState<string | null>(null)
+  const [hasKey, setHasKey] = useState<boolean | null>(null)
+  const [personalWordCount, setPersonalWordCount] = useState<number | null>(null)
+  const restoreInputRef = useRef<HTMLInputElement>(null)
+
+  const refreshKeyState = useCallback(async () => {
+    setHasKey(await hasPassportKey())
+  }, [])
+
+  useEffect(() => {
+    void refreshKeyState()
+  }, [refreshKeyState])
+
+  const uid = user?.uid
+
+  useEffect(() => {
+    if (!uid || !db) {
+      setPersonalWordCount(0)
+      return
+    }
+    let cancelled = false
+    void (async () => {
+      try {
+        const glossaryRef = collection(db as Firestore, 'glossary')
+        const q = query(
+          glossaryRef,
+          where('source', '==', 'user'),
+          where('user_id', '==', uid),
+          where('personal', '==', true)
+        )
+        const snap = await getCountFromServer(q)
+        if (!cancelled) setPersonalWordCount(snap.data().count)
+      } catch {
+        if (!cancelled) setPersonalWordCount(0)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [uid])
 
   const handleManageAccount = () => {
     window.open('https://myaccount.google.com/security', '_blank')
+  }
+
+  const handleDownloadKeyBackup = async () => {
+    setKeyMsg(null)
+    const key = await loadKey()
+    if (!key) {
+      setKeyMsg('No encryption key found in this browser.')
+      return
+    }
+    const b64 = await exportKeyAsBase64(key)
+    downloadKeyBackup(b64)
+    try {
+      localStorage.setItem(PASSPORT_BACKUP_REMINDER_KEY, 'dismissed')
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const handleRestoreKeyFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setKeyMsg(null)
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file || !uid) return
+    try {
+      const text = await file.text()
+      const parsed = JSON.parse(text) as { mm_passport_key?: string }
+      const b64 = typeof parsed.mm_passport_key === 'string' ? parsed.mm_passport_key : ''
+      if (!b64.trim()) {
+        setKeyMsg('That file does not contain a valid mm_passport_key field.')
+        return
+      }
+      const key = await importKeyFromBase64(b64)
+      await syncPassportKeyMeta(uid, key)
+      setHasKey(true)
+      setKeyMsg('Key restored. Your personal definitions are now readable.')
+    } catch {
+      setKeyMsg('Could not read that backup file. Check the format and try again.')
+    }
   }
 
   return (
@@ -59,6 +143,55 @@ export function AccountSettings() {
           one JSON file (GDPR Art.&nbsp;20 portability).
         </p>
         <ExportButton variant="full" />
+      </Card>
+
+      {/* ── Encryption key (personal lexicon) ───────────────────────── */}
+      <Card className="space-y-3 border-neutral-200 bg-neutral-100 p-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="flex items-center gap-2">
+          <KeyRound className="h-4 w-4 text-gray-500 dark:text-gray-400" aria-hidden />
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400 dark:text-neutral-500">
+            Encryption key
+          </p>
+        </div>
+        <p className="text-xs text-neutral-300 dark:text-neutral-700">──────────────────────────────────────────────</p>
+        <p className="text-sm leading-relaxed text-gray-600 dark:text-neutral-300">
+          Your personal vocabulary definitions are encrypted on your device.
+        </p>
+        {hasKey === null || (uid && personalWordCount === null) ? (
+          <p className="text-xs text-gray-500 dark:text-neutral-400">Checking encryption state…</p>
+        ) : hasKey === false && personalWordCount === 0 ? (
+          <p className="text-sm text-gray-600 dark:text-neutral-400">
+            Your encryption key will be generated when you add your first personal word.
+          </p>
+        ) : (
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={hasKey !== true}
+              onClick={() => void handleDownloadKeyBackup()}
+            >
+              Download key backup
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => restoreInputRef.current?.click()}
+            >
+              Restore from backup file
+            </Button>
+            <input
+              ref={restoreInputRef}
+              type="file"
+              accept=".json,application/json"
+              className="hidden"
+              onChange={(e) => void handleRestoreKeyFile(e)}
+            />
+          </div>
+        )}
+        {keyMsg && <p className="text-sm text-gray-700 dark:text-neutral-200">{keyMsg}</p>}
       </Card>
 
       {/* ── Authentication ────────────────────────────────────────────── */}

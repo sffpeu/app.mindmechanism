@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { clockTitles } from '@/lib/clockTitles'
 import type { GlossaryWord } from '@/types/Glossary'
 import { SpeakButton } from '@/components/glossary/SpeakButton'
+import { displayPersonalLexiconField } from '@/lib/passportCipherUi'
 
 export type LetterSection = [string, GlossaryWord[]]
 
@@ -75,7 +76,9 @@ export function GlossaryWordScrollList({
                   const isUserOnly = word.source === 'user'
                   const isPersonal = word.personal === true
                   const useClockCard = tint != null && !isUserOnly
-                  const displayDefinition = isPersonal ? (word.own_definition || word.definition) : word.definition
+                  const displayDefinition = isPersonal
+                    ? displayPersonalLexiconField(word.own_definition, word) || word.definition
+                    : word.definition
 
                   return (
                     <button

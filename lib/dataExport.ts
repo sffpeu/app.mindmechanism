@@ -10,6 +10,8 @@ import {
 } from 'firebase/firestore'
 import { db } from './firebase'
 import { getUserPhraseSummaries, getPhraseSessionHistory } from './phraseProgress'
+import { decryptPersonalWord } from './glossary'
+import type { GlossaryWord } from '@/types/Glossary'
 import { RESEARCH_PROTOCOL_VERSION } from './researchProtocol'
 import type { ResearchConsent, UserProfile } from './FirebaseAuthContext'
 
@@ -107,30 +109,36 @@ export async function exportUserData(
   )
   const lexiconSnap = await getDocs(lexiconQuery)
 
-  const personalLexicon: PersonalLexiconEntry[] = lexiconSnap.docs
-    .map((d) => d.data())
-    .map((d) => {
-      const rating = d.rating
-      const rel: '+' | '-' | '~' | null =
-        rating === '+' || rating === '-' || rating === '~' ? rating : null
-      const cid = typeof d.clock_id === 'number' ? d.clock_id : null
-      return {
-        word: typeof d.word === 'string' ? d.word : '',
-        own_definition: typeof d.own_definition === 'string' ? d.own_definition : null,
-        context: typeof d.context === 'string' ? d.context : null,
-        phonetic:
-          typeof d.phonetic_spelling === 'string'
-            ? d.phonetic_spelling
-            : typeof (d as { phonetic?: string }).phonetic === 'string'
-              ? (d as { phonetic: string }).phonetic
-              : null,
-        wheel: cid !== null && cid >= 0 && cid <= 8 ? cid : null,
-        language: typeof d.language === 'string' ? d.language : null,
-        relationship: rel,
-        created_at: typeof d.created_at === 'string' ? d.created_at : '',
-      }
-    })
-    .sort((a, b) => a.created_at.localeCompare(b.created_at))
+  const personalLexicon: PersonalLexiconEntry[] = (
+    await Promise.all(
+      lexiconSnap.docs.map(async (docSnap) => {
+        const d = docSnap.data()
+        const w = await decryptPersonalWord({
+          id: docSnap.id,
+          ...d,
+        } as GlossaryWord)
+        const rating = d.rating
+        const rel: '+' | '-' | '~' | null =
+          rating === '+' || rating === '-' || rating === '~' ? rating : null
+        const cid = typeof d.clock_id === 'number' ? d.clock_id : null
+        return {
+          word: typeof w.word === 'string' ? w.word : '',
+          own_definition: typeof w.own_definition === 'string' ? w.own_definition : null,
+          context: typeof w.context === 'string' ? w.context : null,
+          phonetic:
+            typeof w.phonetic_spelling === 'string'
+              ? w.phonetic_spelling
+              : typeof (d as { phonetic?: string }).phonetic === 'string'
+                ? (d as { phonetic: string }).phonetic
+                : null,
+          wheel: cid !== null && cid >= 0 && cid <= 8 ? cid : null,
+          language: typeof w.language === 'string' ? w.language : null,
+          relationship: rel,
+          created_at: typeof d.created_at === 'string' ? d.created_at : '',
+        }
+      })
+    )
+  ).sort((a, b) => a.created_at.localeCompare(b.created_at))
 
   const summaries = await getUserPhraseSummaries(uid)
   const phraseProgressExport: PhraseProgressExport[] = await Promise.all(

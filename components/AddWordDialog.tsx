@@ -14,6 +14,9 @@ import {
 } from '@/components/ui/select'
 import { addUserWord, updateUserWord, fetchIpaPhonetic } from '@/lib/glossary';
 import { useAuth } from '@/lib/FirebaseAuthContext';
+import { hasPassportKey } from '@/lib/passportCrypto';
+import { PASSPORT_BACKUP_REMINDER_KEY } from '@/lib/passportCipherUi';
+import { PassportKeySetup } from '@/components/record/PassportKeySetup';
 import { toast } from 'sonner';
 import { useSoundEffects } from '@/lib/sounds';
 import { GlossaryWord, SUPPORTED_LANGUAGES } from '@/types/Glossary';
@@ -44,6 +47,8 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord, mode 
   const [isFetchingPhonetic, setIsFetchingPhonetic] = useState(false);
   const [showOverwriteChoice, setShowOverwriteChoice] = useState(false);
   const isEditMode = Boolean(editWord?.id);
+  const pendingSaveKindRef = useRef<'add' | 'overwrite' | null>(null);
+  const [passportKeySetupOpen, setPassportKeySetupOpen] = useState(false);
 
   // Voice input
   const [isListening, setIsListening] = useState(false);
@@ -171,11 +176,26 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord, mode 
     await doAddWord();
   };
 
+  const needsPersonalEncryptionGate = () =>
+    isPersonal && Boolean(definition.trim() || context.trim());
+
+  const runAfterPassportKeySetup = async () => {
+    const kind = pendingSaveKindRef.current;
+    pendingSaveKindRef.current = null;
+    if (kind === 'overwrite') await doOverwrite();
+    else if (kind === 'add') await doAddWord();
+  };
+
   const doOverwrite = async () => {
     if (!editWord?.id || !user?.uid) return;
     setIsLoading(true);
     setShowOverwriteChoice(false);
     try {
+      if (needsPersonalEncryptionGate() && !(await hasPassportKey())) {
+        pendingSaveKindRef.current = 'overwrite';
+        setPassportKeySetupOpen(true);
+        return;
+      }
       const updates: Partial<GlossaryWord> = {
         word: word.trim(),
         definition: isPersonal ? (definition.trim() || word.trim()) : definition.trim(),
@@ -214,6 +234,11 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord, mode 
     setIsLoading(true);
     if (showOverwriteChoice) setShowOverwriteChoice(false);
     try {
+      if (needsPersonalEncryptionGate() && !(await hasPassportKey())) {
+        pendingSaveKindRef.current = 'add';
+        setPassportKeySetupOpen(true);
+        return;
+      }
       const newWord: Omit<GlossaryWord, 'id' | 'created_at'> = {
         word: word.trim(),
         definition: isPersonal ? (definition.trim() || word.trim()) : definition.trim(),
@@ -512,6 +537,20 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord, mode 
         <Button type="button" variant="ghost" onClick={() => setShowOverwriteChoice(false)} className="w-full mt-2">Cancel</Button>
       </DialogContent>
     </Dialog>
+
+    <PassportKeySetup
+      open={passportKeySetupOpen && Boolean(user?.uid)}
+      onOpenChange={setPassportKeySetupOpen}
+      userUid={user?.uid ?? ''}
+      onSkipWithoutBackup={() => {
+        try {
+          localStorage.setItem(PASSPORT_BACKUP_REMINDER_KEY, 'active')
+        } catch {
+          /* ignore */
+        }
+      }}
+      onCompleted={() => void runAfterPassportKeySetup()}
+    />
     </>
   );
 }

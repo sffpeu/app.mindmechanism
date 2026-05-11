@@ -18,6 +18,8 @@ export interface GlossaryWord {
   own_definition?: string;
   /** Personal provenance/context for where the word lives for the user. */
   context?: string;
+  /** True when own_definition and context are stored as AES-GCM ciphertext. */
+  encrypted?: boolean;
   created_at: string;
   /** Optional pre-recorded pronunciation file. Falls back to Web Speech API when absent. */
   audio_url?: string;

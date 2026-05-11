@@ -1,7 +1,10 @@
 import { db } from './firebase';
-import { GlossaryWord, GlossaryDefinition, WordRating } from '@/types/Glossary';
+import { GlossaryWord, GlossaryDefinition } from '@/types/Glossary';
 import type { UserProfile } from '@/lib/FirebaseAuthContext';
 import { logWheelAssignment } from '@/lib/researchLogging';
+import { getOrCreatePassportKey, encryptField, loadKey, decryptField } from '@/lib/passportCrypto';
+import { bumpPassportLexiconCount, syncPassportKeyMeta } from '@/lib/passportSilo';
+import { testWords } from '@/lib/testWords';
 import {
   collection,
   query as firestoreQuery,
@@ -61,7 +64,6 @@ export async function getWordDefinition(wordId: string): Promise<GlossaryDefinit
     return null
   }
 }
-import { testWords } from '@/lib/testWords';
 
 /** Words that appear under Default > ROOT in the glossary (clock_id 0). */
 export const ROOT_DEFAULT_WORDS: readonly string[] = [
@@ -251,6 +253,33 @@ async function retryOperation<T>(
   }
 }
 
+export async function decryptPersonalWord(word: GlossaryWord): Promise<GlossaryWord> {
+  if (!word.encrypted || (!word.own_definition && !word.context)) return word
+  const key = await loadKey()
+  if (!key) return word
+
+  const decrypted = { ...word }
+  if (word.own_definition) {
+    try {
+      decrypted.own_definition = await decryptField(word.own_definition, key)
+    } catch {
+      /* leave ciphertext */
+    }
+  }
+  if (word.context) {
+    try {
+      decrypted.context = await decryptField(word.context, key)
+    } catch {
+      /* leave ciphertext */
+    }
+  }
+  return decrypted
+}
+
+async function decryptPersonalWordsInList(words: GlossaryWord[]): Promise<GlossaryWord[]> {
+  return Promise.all(words.map((w) => (w.personal === true ? decryptPersonalWord(w) : w)))
+}
+
 export async function getAllWords(): Promise<GlossaryWord[]> {
   try {
     if (!db) {
@@ -275,7 +304,8 @@ export async function getAllWords(): Promise<GlossaryWord[]> {
       return assignDefaultClockIds(words);
     };
 
-    return await retryOperation(operation);
+    const raw = await retryOperation(operation);
+    return assignDefaultClockIds(await decryptPersonalWordsInList(raw));
   } catch (error) {
     console.error('Error fetching words:', error);
     return createDefaultGlossaryWords();
@@ -310,7 +340,8 @@ export async function getWordsByRating(rating: string): Promise<GlossaryWord[]> 
       return assignDefaultClockIds(words);
     };
 
-    return await retryOperation(operation);
+    const raw = await retryOperation(operation);
+    return assignDefaultClockIds(await decryptPersonalWordsInList(raw));
   } catch (error) {
     console.error('Error fetching words by rating:', error);
     return createDefaultGlossaryWords().filter(word => word.rating === rating);
@@ -344,7 +375,8 @@ export async function getClockWords(): Promise<GlossaryWord[]> {
       return assignDefaultClockIds(words);
     };
 
-    return await retryOperation(operation);
+    const raw = await retryOperation(operation);
+    return assignDefaultClockIds(await decryptPersonalWordsInList(raw));
   } catch (error) {
     console.error('Error fetching clock words:', error);
     return createDefaultGlossaryWords();
@@ -359,10 +391,34 @@ export async function addUserWord(
     if (!db) throw new Error('Firestore is not initialized');
 
     const glossaryRef = collection(db as Firestore, 'glossary');
+    let payload: Record<string, unknown> = { ...word };
+    let storedEncrypted = false;
+
+    if (word.personal === true && (word.own_definition || word.context)) {
+      const key = await getOrCreatePassportKey();
+      const uid = word.user_id ?? researchContext?.uid;
+      if (uid) await syncPassportKeyMeta(uid, key);
+      if (word.own_definition) {
+        payload.own_definition = await encryptField(word.own_definition, key);
+      }
+      if (word.context) {
+        payload.context = await encryptField(word.context, key);
+      }
+      payload.encrypted = true;
+      storedEncrypted = true;
+    } else if (word.personal === true) {
+      payload.encrypted = false;
+    }
+
+    const created_at = new Date().toISOString();
     const docRef = await addDoc(glossaryRef, {
-      ...word,
-      created_at: new Date().toISOString()
+      ...payload,
+      created_at,
     });
+
+    if (word.personal === true && typeof word.user_id === 'string') {
+      await bumpPassportLexiconCount(word.user_id, 1);
+    }
 
     if (researchContext && word.clock_id != null) {
       await logWheelAssignment(researchContext.uid, researchContext.profile, {
@@ -375,7 +431,8 @@ export async function addUserWord(
     return {
       id: docRef.id,
       ...word,
-      created_at: new Date().toISOString()
+      created_at,
+      ...(storedEncrypted ? { encrypted: true as const } : word.personal ? { encrypted: false as const } : {}),
     };
   } catch (error) {
     console.error('Error adding word:', error);
@@ -392,7 +449,27 @@ export async function updateUserWord(
     if (!db) throw new Error('Firestore is not initialized');
 
     const docRef = doc(db as Firestore, 'glossary', id);
-    await updateDoc(docRef, updates);
+    let patch: Record<string, unknown> = { ...updates };
+
+    if (updates.personal === true && (updates.own_definition !== undefined || updates.context !== undefined)) {
+      const own = updates.own_definition ?? '';
+      const ctx = updates.context ?? '';
+      if (own || ctx) {
+        const key = await getOrCreatePassportKey();
+        const uid = researchContext?.uid;
+        if (uid) await syncPassportKeyMeta(uid, key);
+        patch = { ...updates };
+        patch.own_definition = own ? await encryptField(own, key) : '';
+        patch.context = ctx ? await encryptField(ctx, key) : '';
+        patch.encrypted = true;
+      } else {
+        patch = { ...updates, encrypted: false, own_definition: '', context: '' };
+      }
+    } else if (updates.personal === false) {
+      patch = { ...updates, encrypted: false };
+    }
+
+    await updateDoc(docRef, patch as Partial<GlossaryWord> & Record<string, unknown>);
 
     if (researchContext && updates.clock_id != null) {
       await logWheelAssignment(researchContext.uid, researchContext.profile, {
@@ -405,6 +482,7 @@ export async function updateUserWord(
     return {
       id,
       ...updates,
+      ...(typeof patch.encrypted === 'boolean' ? { encrypted: patch.encrypted } : {}),
     } as GlossaryWord;
   } catch (error) {
     console.error('Error updating word:', error);
@@ -417,7 +495,12 @@ export async function deleteUserWord(id: string): Promise<boolean> {
     if (!db) throw new Error('Firestore is not initialized');
 
     const docRef = doc(db as Firestore, 'glossary', id);
+    const snap = await getDoc(docRef);
+    const data = snap.data() as { personal?: boolean; user_id?: string } | undefined;
     await deleteDoc(docRef);
+    if (data?.personal === true && typeof data.user_id === 'string') {
+      await bumpPassportLexiconCount(data.user_id, -1);
+    }
     return true;
   } catch (error) {
     console.error('Error deleting word:', error);
@@ -448,7 +531,7 @@ export async function searchWords(searchText: string): Promise<GlossaryWord[]> {
         (word.own_definition ?? '').toLowerCase().includes(searchQuery) ||
         (word.context ?? '').toLowerCase().includes(searchQuery)
       );
-    return assignDefaultClockIds(results);
+    return assignDefaultClockIds(await decryptPersonalWordsInList(results));
   } catch (error) {
     console.error('Error searching words:', error);
     return [];

@@ -142,9 +142,13 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // Per-user Category B contribution summary (incremented when logging research events).
-    match /users/{userId}/researchContribution/{docId} {
-      allow read, write: if isUserAuthenticated(userId);
+    // Passport / personal lexicon silo (metadata only — client writes)
+    match /passport/{uid} {
+      allow read, write: if request.auth.uid == uid;
+    }
+
+    match /passport/{uid}/{document=**} {
+      allow read, write: if request.auth.uid == uid;
     }
 
     // Default rule - require authentication for all other reads (except research_b_events — excluded below).

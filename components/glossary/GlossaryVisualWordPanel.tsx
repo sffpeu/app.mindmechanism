@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import type { GlossaryWord, GlossaryDefinition } from '@/types/Glossary'
 import { getWordDefinition } from '@/lib/glossary'
 import { SUPPORTED_LANGUAGES } from '@/types/Glossary'
+import { displayPersonalLexiconField } from '@/lib/passportCipherUi'
 import { SpeakButton } from '@/components/glossary/SpeakButton'
 import { deleteVoiceNote, getVoiceNoteAudioUrl, getVoiceNotesForTarget, type VoiceNote } from '@/lib/voiceNoteStorage'
 
@@ -145,7 +146,9 @@ export function GlossaryVisualWordPanel({ word, clockHexPalette, onClose }: Glos
             {isPersonal ? 'What this means to you' : 'Definition'}
           </h3>
           <p className="text-sm leading-relaxed text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
-            {(isPersonal ? word.own_definition : word.definition) || word.definition || '—'}
+            {isPersonal
+              ? displayPersonalLexiconField(word.own_definition, word) || word.definition || '—'
+              : word.definition || '—'}
           </p>
         </div>
 
@@ -155,7 +158,7 @@ export function GlossaryVisualWordPanel({ word, clockHexPalette, onClose }: Glos
               Context
             </h3>
             <p className="text-sm leading-relaxed text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
-              {word.context}
+              {displayPersonalLexiconField(word.context, word)}
             </p>
           </div>
         )}
