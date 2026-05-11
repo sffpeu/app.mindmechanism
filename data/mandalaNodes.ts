@@ -1,3 +1,5 @@
+import { WHEEL_HEX } from '@/lib/wheelColors'
+
 export type NodeRate = '+' | '~' | '-'
 
 export interface MandalaNode {
@@ -12,17 +14,10 @@ export interface MandalaNode {
   nodeId: number
 }
 
-export const WHEEL_COLORS: Record<number, string> = {
-  1: '#fd290a',
-  2: '#fba63b',
-  3: '#f7da5f',
-  4: '#6dc037',
-  5: '#156fde',
-  6: '#941952',
-  7: '#541b96',
-  8: '#ee5fa7',
-  9: '#56c1ff',
-}
+/** Wheel numbers 1–9 → prescribed hex (from {@link WHEEL_HEX}). */
+export const WHEEL_COLORS: Record<number, string> = Object.fromEntries(
+  WHEEL_HEX.map((hex, i) => [i + 1, hex])
+) as Record<number, string>
 
 export const CARD_W = 240
 export const CARD_H = 339

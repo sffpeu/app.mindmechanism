@@ -9,18 +9,10 @@
  * node's colour, grounding the physical space in the wheel context.
  */
 
-/** One colour per clock (index 0 = ROOT … 8 = ETHERAL HEART). */
-export const CLOCK_HEX = [
-  '#fd290a', // 0 ROOT          — deep red
-  '#fba63b', // 1 SACRAL         — amber
-  '#f7da5f', // 2 SOLAR PLEXUS   — gold
-  '#6dc037', // 3 HEART          — green
-  '#156fde', // 4 THROAT         — sky blue
-  '#941952', // 5 THIRD EYE      — deep rose / indigo
-  '#541b96', // 6 MALE CROWN     — violet
-  '#ee5fa7', // 7 FEMALE CROWN   — soft pink
-  '#56c1ff', // 8 ETHERAL HEART  — ice blue
-] as const
+import { WHEEL_HEX } from '@/lib/wheelColors'
+
+/** One colour per clock (index 0 = ROOT … 8 = ETHERAL HEART). Same as {@link WHEEL_HEX}. */
+export const CLOCK_HEX = WHEEL_HEX
 
 export interface HueLightState {
   on: true

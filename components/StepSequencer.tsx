@@ -46,6 +46,7 @@ import type { GlossaryWord } from '@/types/Glossary'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { logSequencerSession } from '@/lib/researchLogging'
 import { logNodeAffinitySession } from '@/lib/nodeAffinity'
+import { WHEEL_HEX } from '@/lib/wheelColors'
 
 export const STEPS = 16
 /** One lane per mandala / wheel (0–8). */
@@ -69,7 +70,7 @@ const PAD_SUSTAIN_DEFAULT_MS = 85
 const POOL_RECORD_MS = 10000
 const PRACTICE_POOLS = 3
 /** Accent for the three independent phrase channels (no stacking). */
-const POOL_COLORS = ['#fd290a', '#156fde', '#ee5fa7'] as const
+const POOL_COLORS = [WHEEL_HEX[0], WHEEL_HEX[4], WHEEL_HEX[7]] as const
 
 function sparkPolylinePoints(curve: number[], width: number, height: number): string {
   if (!curve.length) return ''
@@ -104,18 +105,8 @@ type StepSequencerProps = {
   onNodeAffinityLogged?: () => void
 }
 
-/** Rough chromatic alignment with planet drones / wheels */
-export const TRACK_COLORS = [
-  '#fd290a',
-  '#fba63b',
-  '#f7da5f',
-  '#6dc037',
-  '#156fde',
-  '#941952',
-  '#541b96',
-  '#ee5fa7',
-  '#56c1ff',
-] as const
+/** Rough chromatic alignment with planet drones / wheels (prescribed wheel hex). */
+export const TRACK_COLORS = WHEEL_HEX
 
 export type SequencerTrack = {
   steps: boolean[]
