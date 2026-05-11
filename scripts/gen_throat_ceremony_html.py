@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate throat_ceremony.html from public/4.svg (one-off ceremony scaffold)."""
+"""Generate throat_ceremony.html from public/clock_5.svg (Throat wheel on route /4)."""
 from __future__ import annotations
 
 import copy
@@ -11,7 +11,6 @@ from pathlib import Path
 SVG_NS = "http://www.w3.org/2000/svg"
 CEREMONY = "#156fde"
 BG = "#0d0d0d"
-CX, CY = 3189, 3189
 
 
 def q(tag: str) -> str:
@@ -28,6 +27,7 @@ def fix_style(style: str | None) -> str | None:
         s,
         flags=re.I,
     )
+    s = re.sub(r"stroke:\s*#3c6db5\b", f"stroke:{CEREMONY}", s, flags=re.I)
     s = re.sub(r"stroke:\s*#fff(?:fff)?\b", f"stroke:{CEREMONY}", s, flags=re.I)
     s = re.sub(r"stroke:\s*white\b", f"stroke:{CEREMONY}", s, flags=re.I)
     s = re.sub(r"fill:\s*white\b", f"fill:{BG}", s, flags=re.I)
@@ -44,11 +44,22 @@ def walk_restyle(el: ET.Element) -> None:
         walk_restyle(c)
 
 
+def strip_ns_prefix(tag: str) -> str:
+    return tag.split("}")[-1] if "}" in tag else tag
+
+
+def strip_legacy_layer_ids(elem: ET.Element) -> None:
+    for node in elem.iter():
+        i = node.attrib.get("id")
+        if i and (i.startswith("Layer") or i.startswith("layer") or i == "_5"):
+            del node.attrib["id"]
+
+
 def first_drawable(el: ET.Element) -> ET.Element | None:
     for node in el.iter():
         if node is el:
             continue
-        tag = node.tag.split("}")[-1]
+        tag = strip_ns_prefix(node.tag)
         if tag in ("path", "circle", "ellipse"):
             return node
     return None
@@ -62,173 +73,170 @@ def add_class_on_first_drawable(wrapper: ET.Element, cls: str) -> None:
     node.set("class", f"{prev} {cls}".strip() if prev else cls)
 
 
-def strip_ns_prefix(tag: str) -> str:
-    return tag.split("}")[-1] if "}" in tag else tag
-
-
-def strip_legacy_layer_ids(elem: ET.Element) -> None:
-    """Remove Serif export ids from nested groups (invalid duplicate ids in HTML)."""
+def count_drawables(elem: ET.Element) -> int:
+    n = 0
     for node in elem.iter():
-        i = node.attrib.get("id")
-        if i and (i.startswith("Layer") or i.startswith("layer")):
-            del node.attrib["id"]
-
-
-def count_drawables(blob: str) -> int:
-    return len(re.findall(r"<(?:path|circle|ellipse)\b", blob))
+        if strip_ns_prefix(node.tag) in ("path", "circle", "ellipse"):
+            n += 1
+    return n
 
 
 def serialize_fragment(elem: ET.Element) -> str:
     ET.register_namespace("", SVG_NS)
     ET.register_namespace("xlink", "http://www.w3.org/1999/xlink")
     ET.register_namespace("serif", "http://www.serif.com/")
-    xml = ET.tostring(elem, encoding="unicode", default_namespace=None)
-    return xml
+    return ET.tostring(elem, encoding="unicode")
 
 
-def build_outer(root: ET.Element) -> ET.Element:
-    g = ET.Element(q("g"))
-    # stray ellipse wrapper (child 1)
-    ch1 = root[1]
-    g.append(copy.deepcopy(ch1))
-    walk_restyle(g[-1])
-    # Layer-2 inside scaled wrapper (child 9)
-    ch9 = root[9]
-    g.append(copy.deepcopy(ch9))
-    walk_restyle(g[-1])
-    return g
-
-
-def wrap_layer_children(
-    layer: ET.Element, start: int, stop: int, add_ring: bool, add_spoke: bool
+def wrap_with_main_transform(
+    main: ET.Element, start: int, stop: int, add_ring: bool, add_spoke: bool, add_petal: bool
 ) -> ET.Element:
     wrap = ET.Element(q("g"))
-    if "transform" in layer.attrib:
-        wrap.set("transform", layer.attrib["transform"])
-    kids = list(layer)[start:stop]
-    for i, c in enumerate(kids):
+    if "transform" in main.attrib:
+        wrap.set("transform", main.attrib["transform"])
+    for c in list(main)[start:stop]:
         node = copy.deepcopy(c)
         walk_restyle(node)
         if add_ring:
             add_class_on_first_drawable(node, "ring")
         if add_spoke:
             add_class_on_first_drawable(node, "spoke")
+        if add_petal:
+            add_class_on_first_drawable(node, "petal")
         wrap.append(node)
     return wrap
 
 
-def patch_center(layer6: ET.Element) -> None:
-    kids = list(layer6)
-    for i, w in enumerate(kids):
-        node = first_drawable(w)
-        if node is None:
+def split_glyph_iris(main: ET.Element) -> tuple[ET.Element, ET.Element, ET.Element]:
+    """Group 89: first 16 children = perimeter glyphs; rest = inner iris; child 90 = stray."""
+    g89 = list(main)[89]
+    ch = list(g89)
+    tr = g89.attrib.get("transform", "")
+
+    per = ET.Element(q("g"))
+    per.set("transform", tr)
+    for c in ch[:16]:
+        node = copy.deepcopy(c)
+        walk_restyle(node)
+        add_class_on_first_drawable(node, "perimeter-circle")
+        per.append(node)
+
+    iris = ET.Element(q("g"))
+    iris.set("transform", tr)
+    for c in ch[16:]:
+        node = copy.deepcopy(c)
+        walk_restyle(node)
+        iris.append(node)
+
+    stray = ET.Element(q("g"))
+    stray.append(copy.deepcopy(list(main)[90]))
+    walk_restyle(stray[-1])
+    return per, iris, stray
+
+
+def tag_flower_ids(elem: ET.Element) -> None:
+    seen_mask = False
+    seen_ring = False
+    for node in elem.iter():
+        if strip_ns_prefix(node.tag) != "path":
             continue
-        tag = strip_ns_prefix(node.tag)
-        if i == 0 and tag == "path":
+        d = node.attrib.get("d", "")
+        st = node.attrib.get("style", "")
+        if not seen_mask and "fill:#0d0d0d" in st and "M0,-31.603" in d:
             node.set("id", "mask-circle")
-        elif i == 1 and tag == "circle":
+            seen_mask = True
+        elif not seen_ring and "fill:none" in st and "M0,-31.603" in d and "ZM" in d:
             node.set("id", "center-ring")
-        elif i == 2 and tag == "path":
+            seen_ring = True
+        if seen_mask and seen_ring:
+            break
+
+
+def tag_triangle_ids(elem: ET.Element) -> None:
+    seen_w = False
+    seen_s = False
+    for node in elem.iter():
+        if strip_ns_prefix(node.tag) != "path":
+            continue
+        d = node.attrib.get("d", "")
+        st = node.attrib.get("style", "")
+        if not seen_w and "fill:#0d0d0d" in st and "68.55" in d:
+            node.set("id", "mask-triangle")
+            seen_w = True
+        elif not seen_s and "fill:none" in st and "68.55" in d:
             node.set("id", "inner-star")
-        elif i == 3 and tag == "path":
-            node.set("id", "hex-inner")
-
-
-def add_perimeter_classes(layer8: ET.Element) -> None:
-    for w in layer8:
-        node = first_drawable(w)
-        if node is not None and strip_ns_prefix(node.tag) == "circle":
-            prev = node.attrib.get("class", "").strip()
-            node.set("class", f"{prev} perimeter-circle".strip())
+            seen_s = True
+        if seen_w and seen_s:
+            break
 
 
 def main() -> None:
     repo = Path(__file__).resolve().parents[1]
-    svg_path = repo / "public" / "4.svg"
+    svg_path = repo / "public" / "clock_5.svg"
     out_arg = Path(sys.argv[1]) if len(sys.argv) > 1 else repo / "throat_ceremony.html"
 
     tree = ET.parse(svg_path)
     root = tree.getroot()
-    by_id = {c.attrib.get("id"): c for c in root if c.attrib.get("id")}
+    vb = root.attrib.get("viewBox", "0 0 3544 3544").split()
+    w, h = float(vb[2]), float(vb[3])
+    cx, cy = int(round(w / 2)), int(round(h / 2))
 
-    L4 = by_id["Layer-4"]
-    L10 = by_id["Layer-10"]
-    L5 = by_id["Layer-5"]
-    L7 = by_id["Layer-7"]
-    L8 = by_id["Layer-8"]
-    L6 = by_id["Layer-6"]
+    main = list(root)[0]
 
-    rings_wrap = wrap_layer_children(L4, 0, 8, add_ring=True, add_spoke=False)
-    spokes_l4 = wrap_layer_children(L4, 8, 20, add_ring=False, add_spoke=True)
+    rings = wrap_with_main_transform(main, 0, 3, True, False, False)
+    spokes = wrap_with_main_transform(main, 3, 19, False, True, False)
+    web = wrap_with_main_transform(main, 19, 35, False, True, False)
+    petals = wrap_with_main_transform(main, 35, 51, False, False, True)
 
-    l10 = copy.deepcopy(L10)
-    walk_restyle(l10)
-    del l10.attrib["id"]
-    for w in list(l10):
-        add_class_on_first_drawable(w, "spoke")
+    flower = ET.Element(q("g"))
+    if "transform" in main.attrib:
+        flower.set("transform", main.attrib["transform"])
+    fol = ET.Element(q("g"))
+    fol.set("id", "flower-of-life")
+    for i in range(51, 87):
+        node = copy.deepcopy(list(main)[i])
+        walk_restyle(node)
+        add_class_on_first_drawable(node, "ring")
+        fol.append(node)
+    flower.append(fol)
+    tag_flower_ids(fol)
 
-    l5 = copy.deepcopy(L5)
-    walk_restyle(l5)
-    del l5.attrib["id"]
-    for w in list(l5):
-        add_class_on_first_drawable(w, "petal")
+    center = wrap_with_main_transform(main, 87, 89, False, False, False)
+    tag_triangle_ids(center)
 
-    l7 = copy.deepcopy(L7)
-    walk_restyle(l7)
-    del l7.attrib["id"]
-    for w in list(l7):
-        add_class_on_first_drawable(w, "spoke")
+    per_g, iris_g, stray_g = split_glyph_iris(main)
 
-    l8 = copy.deepcopy(L8)
-    walk_restyle(l8)
-    del l8.attrib["id"]
-    add_perimeter_classes(l8)
-
-    l6 = copy.deepcopy(L6)
-    walk_restyle(l6)
-    del l6.attrib["id"]
-    patch_center(l6)
-
-    outer = build_outer(root)
-    strip_legacy_layer_ids(outer)
-
-    # Assemble named groups (bottom → top paint order)
     pieces: list[tuple[str, ET.Element, str]] = [
-        ("g-outer", outer, "stray ellipse layer + outer yantra (Layer-2)"),
-        ("g-rings", rings_wrap, "concentric rings under Layer-4 transform"),
-        ("g-spokes", ET.Element(q("g")), "Layer-4 radial lines + Layer-10 grid"),
-        ("g-arcs", l7, "curved radial arcs"),
-        ("g-perimeter", l8, "outer perimeter circles"),
-        ("g-petals", l5, "lotus petals"),
-        ("g-center", l6, "mask, center ring, triangle, hexagram"),
+        ("g-rings", rings, "outer ellipse + two ring paths"),
+        ("g-spokes", spokes, "16 primary radials"),
+        ("g-web", web, "16 chord / web lines"),
+        ("g-petals", petals, "16 lotus petal outlines"),
+        ("g-flower", flower, "overlapping annuli / circles (#flower-of-life)"),
+        ("g-center", center, "triangle mask + outline"),
+        ("g-perimeter", per_g, "16 outer glyph disks"),
+        ("g-iris", iris_g, "nested iris / sunburst circles"),
+        ("g-stray", stray_g, "single small ellipse (export tail)"),
     ]
 
-    spokes_parent = pieces[2][1]
-    spokes_parent.append(spokes_l4)
-    spokes_parent.append(l10)
-    strip_legacy_layer_ids(rings_wrap)
-    strip_legacy_layer_ids(spokes_parent)
-    strip_legacy_layer_ids(l5)
-    strip_legacy_layer_ids(l7)
-    strip_legacy_layer_ids(l8)
-    strip_legacy_layer_ids(l6)
+    for _, frag, _ in pieces:
+        strip_legacy_layer_ids(frag)
 
     svg_open = (
         '<svg class="mandala" xmlns="http://www.w3.org/2000/svg" '
-        'xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 6378 6378" '
+        'xmlns:xlink="http://www.w3.org/1999/xlink" '
+        f'viewBox="{root.attrib.get("viewBox", "0 0 3544 3544")}" '
         'xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-miterlimit:10;">'
     )
 
-    body_parts: list[str] = [svg_open, f'    <rect width="6378" height="6378" fill="{BG}"/>']
-
-    report_groups: list[str] = []
+    body: list[str] = [svg_open, f'    <rect width="{int(w)}" height="{int(h)}" fill="{BG}"/>']
+    report_lines: list[str] = []
     for gid, frag, desc in pieces:
         xml = serialize_fragment(frag)
-        n = count_drawables(xml)
-        body_parts.append(f'    <g id="{gid}">\n{xml}\n    </g>')
-        report_groups.append(f"  {gid}: {n} paths — {desc}")
+        n = count_drawables(frag)
+        body.append(f'    <g id="{gid}">\n{xml}\n    </g>')
+        report_lines.append(f"  {gid}: {n} paths — {desc}")
 
-    body_parts.append("  </svg>")
+    body.append("  </svg>")
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -255,18 +263,18 @@ def main() -> None:
       height: 100vh;
       display: block;
     }}
-    #g-outer, #g-rings, #g-spokes, #g-arcs, #g-perimeter, #g-petals, #g-center {{
+    #g-rings, #g-spokes, #g-web, #g-petals, #g-flower, #g-center, #g-perimeter, #g-iris, #g-stray {{
       transform-box: view-box;
-      transform-origin: {CX}px {CY}px;
+      transform-origin: {cx}px {cy}px;
     }}
-    .perimeter-circle, .petal, #center-ring, #hex-inner, #star-outer, #inner-star {{
+    .perimeter-circle, .petal, #center-ring, #mask-circle, #mask-triangle, #hex-inner, #star-outer, #inner-star {{
       transform-box: fill-box;
       transform-origin: center;
     }}
   </style>
 </head>
 <body>
-{chr(10).join(body_parts)}
+{chr(10).join(body)}
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   <script>
   // ANIMATION PLACEHOLDER — Claude writes this block
@@ -278,18 +286,7 @@ def main() -> None:
     out_arg.parent.mkdir(parents=True, exist_ok=True)
     out_arg.write_text(html, encoding="utf-8")
     print(out_arg)
-
-    # stdout structure hints for agent
-    full_xml = "\n".join(serialize_fragment(p[1]) for p in pieces)
-    ids = re.findall(r'\bid="([^"]+)"', full_xml)
-    ids = [i for i in ids if not (i.startswith("Layer") or i.startswith("layer"))]
-    classes: dict[str, int] = {}
-    for m in re.finditer(r'class="([^"]+)"', full_xml):
-        for c in m.group(1).split():
-            classes[c] = classes.get(c, 0) + 1
-    print("IDS", sorted(set(ids)))
-    print("CLASSES", classes)
-    for line in report_groups:
+    for line in report_lines:
         print(line)
 
 
