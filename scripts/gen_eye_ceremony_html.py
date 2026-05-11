@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Build eye_ceremony.html from public/clock_7_colour.svg (not 7.svg — different art).
+"""Build eye_ceremony.html from public/clock_7_colour.svg.
 
 Default write: ~/Desktop/Closing Ceremony/eye_ceremony.html — pass argv[1] for another path.
 
-Strokes #552d8e and rgb(35,31,32) (etc.) → #941952. White fills → #0d0d0d knockouts.
+Strokes #552d8e and rgb(35,31,32) (etc.) → #941952. White fills in the source SVG → page
+fill for knockouts. clock_7_colour.svg has no filled hub disc; we append a white disc and
+downward triangle after restyle so the centre matches your reference (triangle in #941952).
 """
 from __future__ import annotations
 
@@ -17,7 +19,7 @@ from ceremony_paths import closing_ceremony_dir
 
 SVG_NS = "http://www.w3.org/2000/svg"
 CEREMONY = "#941952"
-BG = "#0d0d0d"
+BG = "#000000"
 
 
 def q(tag: str) -> str:
@@ -81,6 +83,46 @@ def count_drawables(elem: ET.Element) -> int:
     return n
 
 
+def hub_center_from_radials(eye_wrap: ET.Element, vb_w: float, vb_h: float) -> tuple[float, float]:
+    for ch in eye_wrap:
+        if strip_ns_prefix(ch.tag) != "path":
+            continue
+        d = ch.attrib.get("d", "")
+        m = re.match(r"^M\s*([\d.]+)\s*,\s*([\d.]+)", d)
+        if m:
+            return float(m.group(1)), float(m.group(2))
+    return vb_w / 2.0, vb_h / 2.0
+
+
+def append_hub_disc_and_triangle(
+    eye_wrap: ET.Element, hx: float, hy: float, hub_r: float = 118.0
+) -> None:
+    """Bright white hub disc over the crossing (after line art); downward triangle in ceremony stroke."""
+    disc = ET.Element(q("circle"))
+    disc.set("cx", f"{hx:.3f}")
+    disc.set("cy", f"{hy:.3f}")
+    disc.set("r", f"{hub_r:.1f}")
+    disc.set("style", f"fill:#ffffff;stroke:none")
+    eye_wrap.append(disc)
+
+    tri_h = 52.0
+    tri_w = 62.0
+    apex_y = hy + tri_h * 0.55
+    base_y = hy - tri_h * 0.42
+    tri_d = (
+        f"M{hx:.3f},{apex_y:.3f}"
+        f"L{hx - tri_w * 0.5:.3f},{base_y:.3f}"
+        f"L{hx + tri_w * 0.5:.3f},{base_y:.3f}Z"
+    )
+    tri = ET.Element(q("path"))
+    tri.set("d", tri_d)
+    tri.set(
+        "style",
+        f"fill:none;fill-rule:nonzero;stroke:{CEREMONY};stroke-width:5px;stroke-linejoin:miter",
+    )
+    eye_wrap.append(tri)
+
+
 def serialize_fragment(elem: ET.Element) -> str:
     ET.register_namespace("", SVG_NS)
     ET.register_namespace("xlink", "http://www.w3.org/1999/xlink")
@@ -101,7 +143,6 @@ def main() -> None:
     root = tree.getroot()
     vb = root.attrib.get("viewBox", "0 0 3297 3295").split()
     w, h = float(vb[2]), float(vb[3])
-    cx, cy = int(round(w / 2)), int(round(h / 2))
 
     ceremony = copy.deepcopy(root)
     original_children = list(ceremony)
@@ -123,6 +164,11 @@ def main() -> None:
     walk_restyle(ceremony)
     strip_legacy_layer_ids(ceremony)
 
+    hx, hy = hub_center_from_radials(eye_wrap, w, h)
+    append_hub_disc_and_triangle(eye_wrap, hx, hy)
+
+    cx, cy = int(round(hx)), int(round(hy))
+
     prev_cls = ceremony.attrib.get("class", "").strip()
     ceremony.set("class", f"{prev_cls} mandala".strip() if prev_cls else "mandala")
 
@@ -139,7 +185,7 @@ def main() -> None:
     html, body {{
       margin: 0;
       height: 100%;
-      background: #0d0d0d;
+      background: {BG};
     }}
     body {{
       display: flex;
