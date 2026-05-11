@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Build eye_ceremony.html from public/7.svg.
+"""Build eye_ceremony.html from public/clock_7_colour.svg (not 7.svg — different art).
 
 Default write: ~/Desktop/Closing Ceremony/eye_ceremony.html — pass argv[1] for another path.
 
-White fills in the SVG hide construction lines; they map to #0d0d0d. Strokes map to #941952.
-No hub mask (fills already handle the centre).
+Strokes #552d8e and rgb(35,31,32) (etc.) → #941952. White fills → #0d0d0d knockouts.
 """
 from __future__ import annotations
 
@@ -36,6 +35,7 @@ def fix_style(style: str | None) -> str | None:
         flags=re.I,
     )
     s = re.sub(r"stroke:\s*#3c6db5\b", f"stroke:{CEREMONY}", s, flags=re.I)
+    s = re.sub(r"stroke:\s*#552d8e\b", f"stroke:{CEREMONY}", s, flags=re.I)
     s = re.sub(r"stroke:\s*#fff(?:fff)?\b", f"stroke:{CEREMONY}", s, flags=re.I)
     s = re.sub(r"stroke:\s*white\b", f"stroke:{CEREMONY}", s, flags=re.I)
     s = re.sub(r"fill:\s*white\b", f"fill:{BG}", s, flags=re.I)
@@ -90,7 +90,7 @@ def serialize_fragment(elem: ET.Element) -> str:
 
 def main() -> None:
     repo = Path(__file__).resolve().parents[1]
-    svg_path = repo / "public" / "7.svg"
+    svg_path = repo / "public" / "clock_7_colour.svg"
     out_arg = (
         Path(sys.argv[1])
         if len(sys.argv) > 1
@@ -99,7 +99,7 @@ def main() -> None:
 
     tree = ET.parse(svg_path)
     root = tree.getroot()
-    vb = root.attrib.get("viewBox", "0 0 6378 6378").split()
+    vb = root.attrib.get("viewBox", "0 0 3297 3295").split()
     w, h = float(vb[2]), float(vb[3])
     cx, cy = int(round(w / 2)), int(round(h / 2))
 
