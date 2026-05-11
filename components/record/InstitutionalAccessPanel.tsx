@@ -6,10 +6,11 @@ import { toast } from 'sonner'
 import {
   approveAccessRequest,
   denyAccessRequest,
+  listAccessHistory,
   listAccessGrants,
   listAccessRequests,
 } from '@/lib/institutionalAccess'
-import type { AccessGrantDoc, AccessRequestDoc } from '@/types/InstitutionalAccess'
+import type { AccessGrantDoc, AccessLogEntry, AccessRequestDoc } from '@/types/InstitutionalAccess'
 import { cn } from '@/lib/utils'
 
 const SCOPE_LABELS: Record<string, string> = {
@@ -29,15 +30,17 @@ function fmtShort(iso?: string): string {
 export function InstitutionalAccessPanel({ uid }: { uid: string }) {
   const [requests, setRequests] = useState<Array<{ id: string; data: AccessRequestDoc }>>([])
   const [grants, setGrants] = useState<Array<{ id: string; data: AccessGrantDoc }>>([])
+  const [history, setHistory] = useState<Array<{ id: string; data: AccessLogEntry }>>([])
   const [loading, setLoading] = useState(true)
   const [busyId, setBusyId] = useState<string | null>(null)
 
   const refresh = useCallback(async () => {
     setLoading(true)
     try {
-      const [r, g] = await Promise.all([listAccessRequests(uid), listAccessGrants(uid)])
+      const [r, g, h] = await Promise.all([listAccessRequests(uid), listAccessGrants(uid), listAccessHistory(uid)])
       setRequests(r)
       setGrants(g)
+      setHistory(h)
     } catch {
       toast.error('Could not load institutional access data.')
     } finally {
@@ -51,6 +54,14 @@ export function InstitutionalAccessPanel({ uid }: { uid: string }) {
 
   const pending = requests.filter((x) => x.data.status === 'pending')
   const decided = requests.filter((x) => x.data.status !== 'pending')
+  const latestReadByRequest = new Map<string, string>()
+  history.forEach(({ data }) => {
+    if (data.action !== 'read') return
+    const seen = latestReadByRequest.get(data.request_id)
+    if (!seen || new Date(data.action_at).getTime() > new Date(seen).getTime()) {
+      latestReadByRequest.set(data.request_id, data.action_at)
+    }
+  })
 
   const onApprove = async (requestId: string) => {
     setBusyId(requestId)
@@ -189,6 +200,11 @@ export function InstitutionalAccessPanel({ uid }: { uid: string }) {
                     <span className="ml-2">
                       until {fmtShort(data.expires_at)} · {data.scopes.length} scope{data.scopes.length === 1 ? '' : 's'}
                     </span>
+                    {latestReadByRequest.get(data.request_id) ? (
+                      <span className="ml-2 text-gray-500">
+                        · Last read: {fmtShort(latestReadByRequest.get(data.request_id))}
+                      </span>
+                    ) : null}
                   </li>
                 ))}
               </ul>
@@ -196,6 +212,24 @@ export function InstitutionalAccessPanel({ uid }: { uid: string }) {
                 Partners retrieve the full token using the institutional API after you approve — not shown here in full for
                 clipboard safety.
               </p>
+            </div>
+          )}
+
+          {history.length > 0 && (
+            <div className="mt-6 space-y-2">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400 dark:text-neutral-500">
+                History
+              </p>
+              <ul className="space-y-2 text-[11px] text-gray-600 dark:text-neutral-400">
+                {history.slice(0, 10).map(({ id, data }) => (
+                  <li key={id} className="flex flex-wrap justify-between gap-2 border-b border-black/5 pb-2 dark:border-white/10">
+                    <span className="text-gray-800 dark:text-neutral-200">{data.requester_name}</span>
+                    <span>
+                      {data.action === 'approved' ? 'Approved' : data.action === 'denied' ? 'Denied' : data.action === 'read' ? 'Read' : 'Revoked'} · {fmtShort(data.action_at)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </>

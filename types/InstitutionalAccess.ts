@@ -28,3 +28,16 @@ export interface AccessGrantDoc {
   expires_at: string
   approved_at: string
 }
+
+export type AccessLogAction = 'approved' | 'denied' | 'revoked' | 'read'
+
+export interface AccessLogEntry {
+  request_id: string
+  requester_name: string
+  requester_email?: string
+  scope: string[]
+  action: AccessLogAction
+  action_at: string
+  expires_at?: string | null
+  token_fingerprint?: string
+}

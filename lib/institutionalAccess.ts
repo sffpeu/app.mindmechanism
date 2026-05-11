@@ -9,7 +9,7 @@ import {
   type Firestore,
 } from 'firebase/firestore'
 import { db } from './firebase'
-import type { AccessGrantDoc, AccessRequestDoc } from '@/types/InstitutionalAccess'
+import type { AccessGrantDoc, AccessLogEntry, AccessRequestDoc } from '@/types/InstitutionalAccess'
 import { INSTITUTION_ACCESS_SCOPES } from '@/types/InstitutionalAccess'
 import { getOrCreatePassportId } from './passportIdentity'
 import { anchorInstitutionalAccessDecision } from './institutionalAccessAnchor'
@@ -60,6 +60,16 @@ export async function approveAccessRequest(uid: string, requestId: string): Prom
   const batch = writeBatch(db as Firestore)
   batch.update(reqRef, { status: 'approved' as const, responded_at: respondedAt })
   batch.set(doc(db as Firestore, 'passport', uid, 'accessGrants', grantId), grant)
+  batch.set(doc(db as Firestore, 'passport', uid, 'accessLog', crypto.randomUUID()), {
+    request_id: requestId,
+    requester_name: data.institution_name,
+    requester_email: data.institution_contact_email,
+    scope: data.scopes,
+    action: 'approved',
+    action_at: respondedAt,
+    expires_at: grant.expires_at,
+    token_fingerprint: grantToken.slice(0, 8),
+  } as AccessLogEntry)
 
   await batch.commit()
 
@@ -79,6 +89,14 @@ export async function listAccessGrants(uid: string): Promise<Array<{ id: string;
   return snap.docs.map((d) => ({ id: d.id, data: d.data() as AccessGrantDoc }))
 }
 
+export async function listAccessHistory(uid: string): Promise<Array<{ id: string; data: AccessLogEntry }>> {
+  if (!db) return []
+  const cref = collection(db as Firestore, 'passport', uid, 'accessLog')
+  const q = query(cref, orderBy('action_at', 'desc'))
+  const snap = await getDocs(q)
+  return snap.docs.map((d) => ({ id: d.id, data: d.data() as AccessLogEntry }))
+}
+
 export async function denyAccessRequest(uid: string, requestId: string): Promise<boolean> {
   if (!db) return false
   const reqRef = doc(db as Firestore, 'passport', uid, 'accessRequests', requestId)
@@ -94,6 +112,15 @@ export async function denyAccessRequest(uid: string, requestId: string): Promise
     status: 'denied' as const,
     responded_at: respondedAt,
   })
+  batch.set(doc(db as Firestore, 'passport', uid, 'accessLog', crypto.randomUUID()), {
+    request_id: requestId,
+    requester_name: data.institution_name,
+    requester_email: data.institution_contact_email,
+    scope: data.scopes,
+    action: 'denied',
+    action_at: respondedAt,
+    expires_at: null,
+  } as AccessLogEntry)
   await batch.commit()
 
   const passportId = await getOrCreatePassportId(uid)
