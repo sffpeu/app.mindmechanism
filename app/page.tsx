@@ -1,6 +1,5 @@
-import { redirect } from 'next/navigation'
+import { RootPortalLanding } from '@/components/landing/RootPortalLanding'
 
 export default function RootPage() {
-  redirect('/home/')
+  return <RootPortalLanding />
 }
-

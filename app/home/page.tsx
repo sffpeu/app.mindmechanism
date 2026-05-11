@@ -11,8 +11,10 @@ import {
   createUserWithEmailAndPassword,
   sendSignInLinkToEmail,
   sendEmailVerification,
+  getAdditionalUserInfo,
 } from 'firebase/auth'
-import { auth, waitForFirebaseAuth } from '@/lib/firebase'
+import { auth, db, waitForFirebaseAuth } from '@/lib/firebase'
+import { doc, setDoc, type Firestore } from 'firebase/firestore'
 import { syncFirebaseAuthCookie } from '@/lib/syncFirebaseAuthCookie'
 import {
   FIREBASE_EMAIL_LINK_STORAGE_KEY,
@@ -25,6 +27,16 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { HeroSection } from '@/components/landing/HeroSection'
+import { FeatureStrip } from '@/components/landing/FeatureStrip'
+import { ResearchCallout } from '@/components/landing/ResearchCallout'
+import { usePortal } from '@/contexts/PortalContext'
+import type { Portal } from '@/lib/portalConfig'
+
+async function persistRegistrationPortal(uid: string, portalId: Portal) {
+  if (!db) return
+  await setDoc(doc(db as Firestore, 'user_profiles', uid), { portal: portalId }, { merge: true })
+}
 
 function hasAuthCookie(): boolean {
   if (typeof document === 'undefined') return false
@@ -61,6 +73,7 @@ function HomeLoginContent() {
   const [emailLinkBusy, setEmailLinkBusy] = useState(false)
   const searchParams = useSearchParams()
   const { user } = useAuth()
+  const { config } = usePortal()
   const rawCallback = searchParams.get('callbackUrl') || '/welcome'
   // Avoid redirect loop: never send logged-in user back to /home or auth
   const callbackUrl =
@@ -71,6 +84,12 @@ function HomeLoginContent() {
     rawCallback.startsWith('/auth/')
       ? '/welcome'
       : rawCallback
+
+  useEffect(() => {
+    if (searchParams.get('signup') === '1') {
+      setEmailAuthMode('signup')
+    }
+  }, [searchParams])
 
   useEffect(() => {
     // Full navigation so middleware always sees the cookie (client router alone can race).
@@ -89,6 +108,10 @@ function HomeLoginContent() {
       const provider = new GoogleAuthProvider()
       const result = await signInWithPopup(authInstance, provider)
       await syncFirebaseAuthCookie(result.user)
+      const info = getAdditionalUserInfo(result)
+      if (info?.isNewUser) {
+        await persistRegistrationPortal(result.user.uid, config.id)
+      }
 
       toast.success('Successfully signed in!')
       window.location.assign(callbackUrl)
@@ -189,6 +212,7 @@ function HomeLoginContent() {
       await syncFirebaseAuthCookie(credential.user)
 
       if (emailAuthMode === 'signup') {
+        await persistRegistrationPortal(credential.user.uid, config.id)
         await sendEmailVerification(credential.user, {
           url: getVerifyEmailContinueUrl(),
           handleCodeInApp: false,
@@ -241,7 +265,13 @@ function HomeLoginContent() {
   }
 
   return (
-    <div className="h-full flex bg-transparent">
+    <div className="flex min-h-full flex-col bg-transparent">
+      <div className="shrink-0">
+        <HeroSection showCtas={false} className="min-h-0 py-10 md:py-14" />
+        <FeatureStrip />
+        <ResearchCallout />
+      </div>
+      <div className="flex min-h-0 flex-1 flex-col bg-transparent md:flex-row">
       {/* Left: 60% - Dashboard preview image */}
       <div className="hidden md:block md:w-[60%] relative overflow-hidden bg-gray-100 dark:bg-black/80">
         <Image
@@ -424,6 +454,7 @@ function HomeLoginContent() {
             </div>
           ) : null}
         </motion.div>
+      </div>
       </div>
     </div>
   )

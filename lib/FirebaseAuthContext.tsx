@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation';
 import { syncFirebaseAuthCookie } from '@/lib/syncFirebaseAuthCookie';
 import { doc, getDoc, setDoc, Firestore } from 'firebase/firestore';
 import { normalizeWheelFaceOverlays, emptyWheelFaceOverlays, type WheelFaceMedia } from '@/lib/wheelFaceOverlays';
+import type { Portal } from '@/lib/portalConfig';
 
 /** Prefer non-empty `users/{uid}.bannerUrl`; if missing or empty, use `user_profiles` (avoids empty string masking a valid profile URL). */
 function mergeBannerUrl(
@@ -60,6 +61,8 @@ export interface UserProfile {
     neverAsk?: boolean;
     lastPromptedAt?: string;
   };
+  /** Portal the user registered through (consumer / academic / corporate). */
+  portal?: Portal;
 }
 
 export interface ResearchConsent {
@@ -167,6 +170,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             typeof usersDocData.researchConsent === 'object' &&
             usersDocData.researchConsent !== null
               ? (usersDocData.researchConsent as UserProfile['researchConsent'])
+              : undefined,
+          portal:
+            raw.portal === 'consumer' || raw.portal === 'academic' || raw.portal === 'corporate'
+              ? raw.portal
               : undefined,
         };
         setProfile(profileData);
