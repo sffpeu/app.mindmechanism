@@ -11,9 +11,12 @@ import { EmailVerificationGate } from '@/components/auth/EmailVerificationGate';
 import { AppDock } from '@/components/AppDock';
 import { ResearchConsentTrigger } from '@/components/research/ResearchConsentTrigger';
 import { PassportKeyProvider } from '@/components/passport/PassportKeyProvider';
+import { Footer } from '@/components/layout/Footer';
 
 function isShellPublic(pathname: string): boolean {
   if (pathname === '/' || pathname === '/home' || pathname === '/home/') return true
+  if (pathname === '/datenschutz' || pathname === '/datenschutz/') return true
+  if (pathname === '/register' || pathname === '/register/') return true
   if (pathname.startsWith('/auth/')) return true
   return false
 }
@@ -42,6 +45,7 @@ function LayoutContentInner({ children }: { children: React.ReactNode }) {
         <div className="flex-1 min-h-0 overflow-auto">
           {content}
         </div>
+        <Footer />
       </div>
       <AppDock />
       <ResearchConsentTrigger />

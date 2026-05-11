@@ -36,6 +36,8 @@ function isPublicAuthPath(pathname: string | null) {
   if (!pathname) return true;
   if (pathname === '/' || pathname === '/home' || pathname === '/home/') return true;
   if (pathname === '/welcome' || pathname === '/welcome/') return true;
+  if (pathname === '/datenschutz' || pathname === '/datenschutz/') return true;
+  if (pathname === '/register' || pathname === '/register/') return true;
   return pathname.startsWith('/auth/');
 }
 

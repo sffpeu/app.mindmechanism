@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { doc, Firestore, setDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
@@ -238,6 +239,19 @@ export function ResearchConsentFlow({ open, onClose }: ResearchConsentFlowProps)
             </button>
           </div>
         )}
+        <div className="mt-5 border-t border-neutral-200 pt-4 dark:border-neutral-800">
+          <p className="mt-0 text-xs text-gray-400 dark:text-gray-500">
+            Weitere Informationen:{' '}
+            <Link
+              href="/datenschutz"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2"
+            >
+              Datenschutzerklärung
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   )
