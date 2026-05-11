@@ -8,6 +8,9 @@ drawn above the masked content.
 Do not peel inner paths into a separate group: duplicates + mask interaction made
 larger centre regions disappear. Keep one masked Layer-17 clone (minus triangle only)
 and tune the hub hole size instead.
+
+The overlay triangle must wrap with Layer-17’s root scale (4.16667); the branch only
+has a translate — without the parent scale it draws ~¼ size off the hub (black disc, no triangles).
 """
 from __future__ import annotations
 
@@ -160,16 +163,23 @@ def main() -> None:
         raise SystemExit("Triangle missing in copy")
     masked_body.remove(tri_branch)
 
-    tri_only = copy.deepcopy(tri_src)
-    walk_restyle(tri_only)
-    tag_triangle_id(tri_only)
+    tri_branch_inner = copy.deepcopy(tri_src)
+    walk_restyle(tri_branch_inner)
+    tag_triangle_id(tri_branch_inner)
+
+    # The triangle <g> only has translate(764.77,731.6); Layer-17's scale(4.16667) must apply
+    # or the path lands ~4× too small and away from the hub — reads as a black hole with no triangles.
+    tri_scaled = ET.Element(q("g"))
+    l17_tf = layer17.attrib.get("transform")
+    if l17_tf:
+        tri_scaled.set("transform", l17_tf)
+    tri_scaled.append(tri_branch_inner)
 
     hub_masked = ET.Element(q("g"))
     hub_masked.set("mask", "url(#hub-mask)")
     hub_masked.append(masked_body)
 
-    g_tri = ET.Element(q("g"))
-    g_tri.append(tri_only)
+    g_tri = tri_scaled
 
     pieces: list[tuple[str, ET.Element, str]] = [
         ("g-hub-masked", hub_masked, "full Layer-17 minus triangle, hub mask"),
