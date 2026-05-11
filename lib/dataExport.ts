@@ -13,6 +13,7 @@ import { getUserPhraseSummaries, getPhraseSessionHistory } from './phraseProgres
 import { decryptPersonalWord } from './glossary'
 import type { GlossaryWord } from '@/types/Glossary'
 import { loadKey } from './passportCrypto'
+import { getOrCreatePassportId } from './passportIdentity'
 import { RESEARCH_PROTOCOL_VERSION } from './researchProtocol'
 import type { ResearchConsent, UserProfile } from './FirebaseAuthContext'
 
@@ -73,6 +74,7 @@ export interface UserDataExport {
     username: string
     tier: string
     member_since: string | null
+    passport_id: string | null
   }
   personal_lexicon: PersonalLexiconEntry[]
   phrase_progress: PhraseProgressExport[]
@@ -198,6 +200,8 @@ export async function exportUserData(
       'Research data contributed under these consent records is held separately in anonymised, aggregated form and is not included in this export.',
   }
 
+  const passportId = await getOrCreatePassportId(uid)
+
   const exportData: UserDataExport = {
     exported_at: new Date().toISOString(),
     protocol_version: RESEARCH_PROTOCOL_VERSION,
@@ -205,6 +209,7 @@ export async function exportUserData(
       username: profile?.username ?? '',
       tier: profile?.tier ?? 'open',
       member_since: authCreationTime ?? null,
+      passport_id: passportId ?? null,
     },
     personal_lexicon: personalLexicon,
     phrase_progress: phraseProgressExport,

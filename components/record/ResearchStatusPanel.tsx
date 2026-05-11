@@ -1,9 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { UserProfile } from '@/lib/FirebaseAuthContext'
 import { ResearchConsentFlow } from '@/components/research/ResearchConsentFlow'
+import { getOrCreatePassportId } from '@/lib/passportIdentity'
 
 function fmtConsentDate(iso?: string): string {
   if (!iso) return ''
@@ -12,8 +13,37 @@ function fmtConsentDate(iso?: string): string {
   return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-export function ResearchStatusPanel({ consentRecord }: { consentRecord: UserProfile['researchConsent'] }) {
+export function ResearchStatusPanel({
+  consentRecord,
+  userId,
+  passportKey,
+}: {
+  consentRecord: UserProfile['researchConsent']
+  userId?: string
+  /** Re-fetch Passport ID when the holder unlocks their key in-session. */
+  passportKey?: CryptoKey | null
+}) {
   const [flowOpen, setFlowOpen] = useState(false)
+  const [passportId, setPassportId] = useState<string | null>(null)
+
+  const b = consentRecord?.categoryB
+  const c = consentRecord?.categoryC
+  const hasDecision = b !== undefined || c !== undefined
+  const contributing = b?.granted === true || c?.granted === true
+
+  useEffect(() => {
+    if (!userId || !contributing) {
+      setPassportId(null)
+      return
+    }
+    let cancelled = false
+    void getOrCreatePassportId(userId).then((id) => {
+      if (!cancelled) setPassportId(id)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [userId, contributing, passportKey])
 
   if (consentRecord?.neverAsk === true) {
     return (
@@ -28,10 +58,6 @@ export function ResearchStatusPanel({ consentRecord }: { consentRecord: UserProf
       </section>
     )
   }
-
-  const b = consentRecord?.categoryB
-  const c = consentRecord?.categoryC
-  const hasDecision = b !== undefined || c !== undefined
 
   if (!hasDecision) {
     return (
@@ -117,6 +143,25 @@ export function ResearchStatusPanel({ consentRecord }: { consentRecord: UserProf
           Your wheel assignments and session patterns are contributing anonymously to a cross-linguistic study of
           somatic-semantic associations.
         </p>
+      )}
+
+      {passportId && contributing && (
+        <div className="mt-4 rounded-lg border border-black/6 bg-white/50 px-3 py-3 dark:border-white/10 dark:bg-neutral-900/40">
+          <p className="text-xs text-gray-800 dark:text-neutral-200">
+            <span className="font-medium">Your Passport ID:</span>{' '}
+            <span className="font-mono tracking-wider">{passportId}</span>
+            <button
+              type="button"
+              onClick={() => void navigator.clipboard.writeText(passportId)}
+              className="ml-2 text-[10px] text-gray-400 underline underline-offset-2 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              Copy
+            </button>
+          </p>
+          <p className="mt-2 text-[11px] leading-relaxed text-gray-500 dark:text-neutral-400">
+            This identifier links your research contributions to your Passport without revealing your identity.
+          </p>
+        </div>
       )}
 
       <p className="mt-3 text-xs text-gray-500 dark:text-neutral-500">

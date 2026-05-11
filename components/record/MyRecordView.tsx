@@ -15,6 +15,7 @@ import { ResearchDashboard } from '@/components/record/ResearchDashboard'
 import { ExportButton } from '@/components/record/ExportButton'
 import { downloadKeyBackup, exportKeyAsBase64, loadKey } from '@/lib/passportCrypto'
 import { PASSPORT_BACKUP_REMINDER_KEY } from '@/lib/passportCipherUi'
+import { getOrCreatePassportId } from '@/lib/passportIdentity'
 
 export function MyRecordView() {
   const { user, profile } = useAuth()
@@ -23,6 +24,7 @@ export function MyRecordView() {
   const [affinity, setAffinity] = useState<NodeAffinityProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [showPassportBackupBanner, setShowPassportBackupBanner] = useState(false)
+  const [passportId, setPassportId] = useState<string | null>(null)
 
   useEffect(() => {
     try {
@@ -54,6 +56,10 @@ export function MyRecordView() {
 
     let cancelled = false
     setLoading(true)
+
+    void getOrCreatePassportId(user.uid).then((id) => {
+      if (!cancelled) setPassportId(id)
+    })
 
     void (async () => {
       try {
@@ -96,6 +102,22 @@ export function MyRecordView() {
         <p className="mt-1 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
           Everything the platform holds that belongs to you.
         </p>
+        {passportId && (
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400 dark:text-neutral-500">
+              Passport ID
+            </span>
+            <span className="font-mono text-xs tracking-wider text-gray-700 dark:text-gray-300">{passportId}</span>
+            <button
+              type="button"
+              onClick={() => void navigator.clipboard.writeText(passportId)}
+              className="text-[10px] text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300"
+              title="Copy to clipboard"
+            >
+              Copy
+            </button>
+          </div>
+        )}
         {showPassportBackupBanner && (
           <div
             role="status"
@@ -133,7 +155,11 @@ export function MyRecordView() {
       <LexiconPanel />
       <PhraseHistoryPanel rows={phraseRows} loading={loading} />
       <AffinityPanel profile={affinity} loading={loading} />
-      <ResearchStatusPanel consentRecord={profile?.researchConsent} />
+      <ResearchStatusPanel
+        consentRecord={profile?.researchConsent}
+        userId={user?.uid}
+        passportKey={passportKey}
+      />
       <ResearchDashboard />
     </div>
   )
