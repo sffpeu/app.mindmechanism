@@ -63,6 +63,11 @@ export interface UserProfile {
   };
   /** Portal the user registered through (consumer / academic / corporate). */
   portal?: Portal;
+  /**
+   * Access role — `'doorman'` is assigned only by the operator in Firestore (`users/{uid}`).
+   * Client writes to `role` are rejected by security rules.
+   */
+  role?: 'doorman' | 'user';
 }
 
 export interface ResearchConsent {
@@ -120,7 +125,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const mergeProfilePatch = (partial: Partial<UserProfile>) => {
     setProfile((prev) => {
       const base = prev ?? emptyProfileShell()
-      return { ...base, ...partial }
+      const { role: _roleIgnored, ...safe } = partial as Partial<UserProfile>
+      return { ...base, ...safe }
     })
   }
 
@@ -175,6 +181,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             raw.portal === 'consumer' || raw.portal === 'academic' || raw.portal === 'corporate'
               ? raw.portal
               : undefined,
+          role:
+            usersDocData?.role === 'doorman'
+              ? 'doorman'
+              : usersDocData?.role === 'user'
+                ? 'user'
+                : undefined,
         };
         setProfile(profileData);
         return profileData;
@@ -200,6 +212,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             usersDocData.researchConsent !== null
               ? (usersDocData.researchConsent as UserProfile['researchConsent'])
               : undefined,
+          role:
+            usersDocData?.role === 'doorman'
+              ? 'doorman'
+              : usersDocData?.role === 'user'
+                ? 'user'
+                : undefined,
         };
         await setDoc(profileRef, defaultProfile);
         setProfile(defaultProfile);

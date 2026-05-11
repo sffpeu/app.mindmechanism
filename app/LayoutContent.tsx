@@ -12,6 +12,8 @@ import { AppDock } from '@/components/AppDock';
 import { ResearchConsentTrigger } from '@/components/research/ResearchConsentTrigger';
 import { PassportKeyProvider } from '@/components/passport/PassportKeyProvider';
 import { Footer } from '@/components/layout/Footer';
+import { PortalProvider } from '@/contexts/PortalContext';
+import { DoormanBar } from '@/components/doorman/DoormanBar';
 
 function isShellPublic(pathname: string): boolean {
   if (pathname === '/' || pathname === '/home' || pathname === '/home/') return true
@@ -42,6 +44,7 @@ function LayoutContentInner({ children }: { children: React.ReactNode }) {
   return (
     <>
       <div className="h-screen overflow-hidden flex flex-col">
+        <DoormanBar />
         <div className="flex-1 min-h-0 overflow-auto">
           {content}
         </div>
@@ -57,15 +60,17 @@ export function LayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <PassportKeyProvider>
-          <TimeTrackingProvider>
-            <NotesProvider>
-              <ToastProvider>
-                <LayoutContentInner>{children}</LayoutContentInner>
-              </ToastProvider>
-            </NotesProvider>
-          </TimeTrackingProvider>
-        </PassportKeyProvider>
+        <PortalProvider>
+          <PassportKeyProvider>
+            <TimeTrackingProvider>
+              <NotesProvider>
+                <ToastProvider>
+                  <LayoutContentInner>{children}</LayoutContentInner>
+                </ToastProvider>
+              </NotesProvider>
+            </TimeTrackingProvider>
+          </PassportKeyProvider>
+        </PortalProvider>
       </AuthProvider>
     </ThemeProvider>
   );
