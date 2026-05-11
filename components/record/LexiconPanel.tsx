@@ -1,18 +1,68 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { doc, getDoc, type Firestore } from 'firebase/firestore'
 import { useAuth } from '@/lib/FirebaseAuthContext'
+import { db } from '@/lib/firebase'
 import { fetchPersonalLexiconWheelCounts } from '@/lib/personalLexiconStats'
 import { clockTitles } from '@/lib/clockTitles'
 import { TRACK_COLORS } from '@/components/StepSequencer'
 import { cn } from '@/lib/utils'
+import {
+  anchorLexicon,
+  verifyLexiconAnchor,
+  type LexiconAnchorRecord,
+} from '@/lib/lexiconAnchor'
+import { RESEARCH_PROTOCOL_VERSION } from '@/lib/researchProtocol'
+
+function fmtAnchorDate(iso?: string): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+type PassportLexMeta = {
+  merkleRoot: string
+  wordCount: number
+  at: string
+  tx: string | null
+}
+
+function readLexMeta(data: Record<string, unknown> | undefined): PassportLexMeta | null {
+  if (!data) return null
+  const merkleRoot = data.latest_lexicon_anchor
+  const at = data.latest_lexicon_anchor_at
+  if (typeof merkleRoot !== 'string' || merkleRoot.length !== 64 || typeof at !== 'string') return null
+  const wordCount = data.latest_lexicon_word_count
+  const tx = data.latest_lexicon_anchor_tx
+  return {
+    merkleRoot,
+    at,
+    wordCount: typeof wordCount === 'number' ? wordCount : 0,
+    tx: typeof tx === 'string' && tx.length > 0 ? tx : null,
+  }
+}
 
 export function LexiconPanel() {
   const { user } = useAuth()
   const [total, setTotal] = useState(0)
   const [byWheel, setByWheel] = useState<number[]>(() => Array(9).fill(0))
   const [loading, setLoading] = useState(true)
+  const [lexMeta, setLexMeta] = useState<PassportLexMeta | null>(null)
+  const [anchorBusy, setAnchorBusy] = useState(false)
+  const [anchorHint, setAnchorHint] = useState<string | null>(null)
+  const [verifyResult, setVerifyResult] = useState<'match' | 'changed' | null>(null)
+
+  const loadPassportMeta = useCallback(async () => {
+    if (!user?.uid || !db) {
+      setLexMeta(null)
+      return
+    }
+    const snap = await getDoc(doc(db as Firestore, 'passport', user.uid))
+    setLexMeta(readLexMeta(snap.data() as Record<string, unknown> | undefined))
+  }, [user?.uid])
 
   useEffect(() => {
     if (!user?.uid) {
@@ -32,7 +82,41 @@ export function LexiconPanel() {
     }
   }, [user?.uid])
 
+  useEffect(() => {
+    void loadPassportMeta()
+  }, [loadPassportMeta, total])
+
   const wheelsWithWords = byWheel.filter((n) => n > 0).length
+
+  const handleAnchor = async () => {
+    if (!user?.uid) return
+    setAnchorBusy(true)
+    setAnchorHint(null)
+    setVerifyResult(null)
+    try {
+      const r = await anchorLexicon(user.uid)
+      if (r && !r.txHash) {
+        setAnchorHint('Anchored locally on record — chain confirmation pending.')
+      }
+      await loadPassportMeta()
+    } finally {
+      setAnchorBusy(false)
+    }
+  }
+
+  const handleVerify = async () => {
+    if (!user?.uid || !lexMeta) return
+    const anchor: LexiconAnchorRecord = {
+      merkleRoot: lexMeta.merkleRoot,
+      wordCount: lexMeta.wordCount,
+      anchoredAt: lexMeta.at,
+      txHash: lexMeta.tx,
+      chainId: 137,
+      protocolVersion: RESEARCH_PROTOCOL_VERSION,
+    }
+    const ok = await verifyLexiconAnchor(user.uid, anchor)
+    setVerifyResult(ok ? 'match' : 'changed')
+  }
 
   return (
     <section className="rounded-2xl border border-black/8 bg-white/60 px-5 py-5 shadow-sm dark:border-white/8 dark:bg-neutral-950/60">
@@ -91,6 +175,67 @@ export function LexiconPanel() {
               )
             })}
           </ul>
+
+          <div className="mt-4 rounded-xl border border-black/6 bg-white/40 px-3 py-3 dark:border-white/10 dark:bg-neutral-900/40">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400 dark:text-neutral-500">
+              Ownership record
+            </p>
+            {lexMeta ? (
+              <p className="mt-2 text-xs leading-relaxed text-gray-600 dark:text-neutral-300">
+                Last anchored: {fmtAnchorDate(lexMeta.at)} · {lexMeta.wordCount} word{lexMeta.wordCount === 1 ? '' : 's'}
+                {lexMeta.tx ? (
+                  <>
+                    {' · '}
+                    <a
+                      href={`https://polygonscan.com/tx/${lexMeta.tx}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-violet-600 underline underline-offset-2 hover:text-violet-500 dark:text-violet-400"
+                    >
+                      Verify on Polygon ↗
+                    </a>
+                  </>
+                ) : null}
+              </p>
+            ) : (
+              <p className="mt-2 text-xs leading-relaxed text-gray-600 dark:text-neutral-300">
+                No on-chain anchor yet. Anchor a merkle fingerprint of your word identities (not encrypted notes) on
+                Polygon.
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={() => void handleAnchor()}
+              disabled={anchorBusy}
+              className="mt-2 text-left text-sm font-medium text-violet-600 underline underline-offset-2 hover:text-violet-500 disabled:opacity-50 dark:text-violet-400"
+            >
+              {anchorBusy ? 'Anchoring…' : lexMeta ? 'Anchor now' : 'Anchor my lexicon'}
+            </button>
+            {anchorHint && (
+              <p className="mt-1 text-[11px] text-amber-700 dark:text-amber-400">{anchorHint}</p>
+            )}
+            {lexMeta && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => void handleVerify()}
+                  className="mt-2 block text-left text-[11px] text-gray-500 underline underline-offset-2 hover:text-gray-700 dark:text-neutral-400 dark:hover:text-neutral-200"
+                >
+                  Verify integrity →
+                </button>
+                {verifyResult === 'match' && (
+                  <p className="mt-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
+                    Lexicon matches anchor.
+                  </p>
+                )}
+                {verifyResult === 'changed' && (
+                  <p className="mt-1 text-[11px] text-amber-800 dark:text-amber-400">
+                    Lexicon has changed since last anchor. Use &quot;Anchor now&quot; to record an updated snapshot.
+                  </p>
+                )}
+              </>
+            )}
+          </div>
 
           <Link
             href="/glossary?tab=personal"

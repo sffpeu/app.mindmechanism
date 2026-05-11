@@ -4,6 +4,7 @@ import type { UserProfile } from '@/lib/FirebaseAuthContext';
 import { logWheelAssignment } from '@/lib/researchLogging';
 import { encryptField, loadKey, decryptField } from '@/lib/passportCrypto';
 import { bumpPassportLexiconCount, syncPassportKeyMeta } from '@/lib/passportSilo';
+import { maybeAutoAnchor } from '@/lib/lexiconAnchor';
 import { testWords } from '@/lib/testWords';
 import {
   collection,
@@ -426,6 +427,11 @@ export async function addUserWord(
 
     if (word.personal === true && typeof word.user_id === 'string') {
       await bumpPassportLexiconCount(word.user_id, 1);
+      const pref = doc(db as Firestore, 'passport', word.user_id);
+      const psnap = await getDoc(pref);
+      const rawCount = psnap.data()?.lexicon_count;
+      const count = typeof rawCount === 'number' ? rawCount : 0;
+      maybeAutoAnchor(word.user_id, count);
     }
 
     const researchContext = options?.researchContext;
