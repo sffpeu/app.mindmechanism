@@ -76,11 +76,39 @@ export function ResearchStatusPanel({ consentRecord }: { consentRecord: UserProf
       <dl className="space-y-2 text-sm">
         <div className="flex flex-wrap justify-between gap-2">
           <dt className="text-gray-500 dark:text-neutral-400">Usage patterns</dt>
-          <dd className="text-right text-gray-800 dark:text-neutral-200">{bLine}</dd>
+          <dd className="text-right text-gray-800 dark:text-neutral-200">
+            <div className="flex flex-col items-end gap-1">
+              <span>{bLine}</span>
+              {b?.txHash && (
+                <a
+                  href={`https://polygonscan.com/tx/${b.txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 underline underline-offset-2"
+                >
+                  Verify on Polygon ↗
+                </a>
+              )}
+            </div>
+          </dd>
         </div>
         <div className="flex flex-wrap justify-between gap-2">
           <dt className="text-gray-500 dark:text-neutral-400">Practice progress</dt>
-          <dd className="text-right text-gray-800 dark:text-neutral-200">{cLine}</dd>
+          <dd className="text-right text-gray-800 dark:text-neutral-200">
+            <div className="flex flex-col items-end gap-1">
+              <span>{cLine}</span>
+              {c?.txHash && (
+                <a
+                  href={`https://polygonscan.com/tx/${c.txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 underline underline-offset-2"
+                >
+                  Verify on Polygon ↗
+                </a>
+              )}
+            </div>
+          </dd>
         </div>
       </dl>
 

@@ -5,6 +5,8 @@ import { doc, Firestore, setDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { RESEARCH_PROTOCOL_VERSION } from '@/lib/researchProtocol'
+import { anchorConsentEvent } from '@/lib/consentAnchor'
+import { hashUid, updateConsentAnchor } from '@/lib/researchLogging'
 
 type ConsentStep = 1 | 2 | 3 | 4
 
@@ -72,6 +74,40 @@ export function ResearchConsentFlow({ open, onClose }: ResearchConsentFlowProps)
           neverAsk: false,
         },
       })
+
+      if (user?.uid) {
+        const userHash = await hashUid(user.uid)
+        const anchors: Promise<unknown>[] = []
+
+        if (consentB !== null) {
+          anchors.push(
+            anchorConsentEvent(
+              userHash,
+              'B',
+              consentB ? 'grant' : 'withdraw',
+              RESEARCH_PROTOCOL_VERSION
+            ).then((txHash) => {
+              if (txHash) void updateConsentAnchor(user.uid, 'categoryB', txHash)
+              return txHash
+            })
+          )
+        }
+        if (consentC !== null) {
+          anchors.push(
+            anchorConsentEvent(
+              userHash,
+              'C',
+              consentC ? 'grant' : 'withdraw',
+              RESEARCH_PROTOCOL_VERSION
+            ).then((txHash) => {
+              if (txHash) void updateConsentAnchor(user.uid, 'categoryC', txHash)
+              return txHash
+            })
+          )
+        }
+        void Promise.allSettled(anchors)
+      }
+
       closeAndReset()
     } finally {
       setSaving(false)

@@ -8,7 +8,8 @@ import { doc, Firestore, setDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { RESEARCH_PROTOCOL_VERSION } from '@/lib/researchProtocol'
-import { excludeUserResearchData } from '@/lib/researchLogging'
+import { anchorConsentEvent } from '@/lib/consentAnchor'
+import { excludeUserResearchData, hashUid, updateConsentAnchor } from '@/lib/researchLogging'
 import { ResearchConsentFlow } from '@/components/research/ResearchConsentFlow'
 
 function fmtDate(value?: string): string {
@@ -50,6 +51,14 @@ export function ResearchParticipationSettings() {
         await excludeUserResearchData(user.uid)
       }
       await refreshProfile()
+
+      const userHash = await hashUid(user.uid)
+      const letter = category === 'categoryB' ? 'B' : 'C'
+      void anchorConsentEvent(userHash, letter, granted ? 'grant' : 'withdraw', RESEARCH_PROTOCOL_VERSION).then(
+        (txHash) => {
+          if (txHash) void updateConsentAnchor(user.uid, category, txHash)
+        }
+      )
     } finally {
       setUpdating(null)
     }

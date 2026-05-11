@@ -7,6 +7,7 @@ import {
   increment,
   query,
   setDoc,
+  updateDoc,
   where,
   limit,
   writeBatch,
@@ -25,12 +26,29 @@ function binToWeek(isoString: string): string {
   return d.toISOString().slice(0, 10)
 }
 
-async function hashUid(uid: string): Promise<string> {
+export async function hashUid(uid: string): Promise<string> {
   const encoder = new TextEncoder()
   const data = encoder.encode(uid + '_mm_b_2026')
   const hashBuffer = await crypto.subtle.digest('SHA-256', data)
   const hashArray = Array.from(new Uint8Array(hashBuffer))
   return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 24)
+}
+
+export async function updateConsentAnchor(
+  uid: string,
+  category: 'categoryB' | 'categoryC',
+  txHash: string
+): Promise<void> {
+  if (!db) return
+  try {
+    const ref = doc(db as Firestore, 'users', uid)
+    await updateDoc(ref, {
+      [`researchConsent.${category}.txHash`]: txHash,
+      [`researchConsent.${category}.chainId`]: 137,
+    })
+  } catch (e) {
+    console.error('updateConsentAnchor:', e)
+  }
 }
 
 function hasConsentB(profile: UserProfile | null): boolean {

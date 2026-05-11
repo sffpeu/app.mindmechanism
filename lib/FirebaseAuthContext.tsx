@@ -66,6 +66,10 @@ export interface ResearchConsent {
   granted: boolean;
   timestamp: string;
   protocolVersion: string;
+  /** Polygon transaction hash when on-chain anchor succeeded */
+  txHash?: string;
+  /** 137 = Polygon PoS */
+  chainId?: number;
 }
 
 export interface AuthContextType {
