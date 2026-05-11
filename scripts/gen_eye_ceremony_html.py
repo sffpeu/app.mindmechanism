@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
-"""Build eye_ceremony.html from *your* artwork file (path you pass in — not guessed from the repo).
+"""Build eye_ceremony.html from your reference art (pixel-identical for raster).
 
 Usage:
-  python3 scripts/gen_eye_ceremony_html.py <path-to.svg-or-image> [out.html]
+  python3 scripts/gen_eye_ceremony_html.py [path-to.svg-or-image] [out.html]
+
+With no arguments: uses public/eye_reference.png (your supplied Correct_image export —
+replace that file if you update the art).
 
 Default out.html: ~/Desktop/Closing Ceremony/eye_ceremony.html
 
-SVG: restyles strokes (#552d8e, rgb(35,31,32), etc.) → #941952; white fills → page black for knockouts.
-Raster (.png, .jpg, .webp): embedded as-is (no stroke recolour — pixels are unchanged).
+SVG: restyles strokes (#552d8e, rgb(35,31,32), etc.) → #941952; white fills in style → page black.
+Raster (.png, .jpg, .webp): embedded as-is (exact pixels, no recolour).
 """
 from __future__ import annotations
 
@@ -94,20 +97,26 @@ def serialize_fragment(elem: ET.Element) -> str:
     return ET.tostring(elem, encoding="unicode")
 
 
-def parse_args() -> tuple[Path, Path]:
+def parse_args(repo: Path) -> tuple[Path, Path]:
+    """Resolve source (default: public/eye_reference.png) and output HTML paths."""
+    default_src = repo / "public" / "eye_reference.png"
+    default_out = closing_ceremony_dir() / "eye_ceremony.html"
+
     if len(sys.argv) < 2:
-        print(
-            "Usage: gen_eye_ceremony_html.py <path-to-your.svg-or-image> [out.html]\n"
-            "  Example: gen_eye_ceremony_html.py ~/Desktop/my-eye-export.svg\n"
-            "  Default output: ~/Desktop/Closing Ceremony/eye_ceremony.html",
-            file=sys.stderr,
-        )
-        raise SystemExit(2)
+        if not default_src.is_file():
+            print(
+                "Missing public/eye_reference.png — add your reference PNG, or pass a path:\n"
+                "  gen_eye_ceremony_html.py <path-to.svg-or-image> [out.html]",
+                file=sys.stderr,
+            )
+            raise SystemExit(2)
+        return default_src, default_out
+
     src = Path(sys.argv[1]).expanduser().resolve()
     out = (
         Path(sys.argv[2]).expanduser().resolve()
         if len(sys.argv) > 2
-        else closing_ceremony_dir() / "eye_ceremony.html"
+        else default_out
     )
     return src, out
 
@@ -196,7 +205,8 @@ def build_html_raster(data_uri: str) -> str:
 
 
 def main() -> None:
-    svg_path, out_arg = parse_args()
+    repo = Path(__file__).resolve().parents[1]
+    svg_path, out_arg = parse_args(repo)
     if not svg_path.is_file():
         print(f"Not a file: {svg_path}", file=sys.stderr)
         raise SystemExit(1)
