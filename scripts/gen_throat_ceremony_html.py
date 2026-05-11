@@ -3,6 +3,8 @@
 
 White (or rgb(255,255,255)) filled knockouts in the SVG stay knockouts on dark pages
 via fix_style mapping fills to the page background.
+
+Default output: ~/Desktop/Closing Ceremony/throat_ceremony.html (override with argv[1]).
 """
 from __future__ import annotations
 
@@ -11,6 +13,8 @@ import re
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
+
+from ceremony_paths import closing_ceremony_dir
 
 SVG_NS = "http://www.w3.org/2000/svg"
 CEREMONY = "#156fde"
@@ -196,7 +200,11 @@ def tag_triangle_ids(elem: ET.Element) -> None:
 def main() -> None:
     repo = Path(__file__).resolve().parents[1]
     svg_path = repo / "public" / "clock_5.svg"
-    out_arg = Path(sys.argv[1]) if len(sys.argv) > 1 else repo / "throat_ceremony.html"
+    out_arg = (
+        Path(sys.argv[1])
+        if len(sys.argv) > 1
+        else closing_ceremony_dir() / "throat_ceremony.html"
+    )
 
     tree = ET.parse(svg_path)
     root = tree.getroot()

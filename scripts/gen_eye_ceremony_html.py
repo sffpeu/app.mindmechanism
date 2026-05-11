@@ -7,6 +7,8 @@ same layering still reads as knockouts. No separate hub mask: the artwork alread
 relies on filled shapes at the centre.
 
 Stroke / accent colour for the ceremony view is #941952.
+
+Default output: ~/Desktop/Closing Ceremony/eye_ceremony.html (override with argv[1]).
 """
 from __future__ import annotations
 
@@ -15,6 +17,8 @@ import re
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
+
+from ceremony_paths import closing_ceremony_dir
 
 SVG_NS = "http://www.w3.org/2000/svg"
 CEREMONY = "#941952"
@@ -91,7 +95,11 @@ def serialize_fragment(elem: ET.Element) -> str:
 def main() -> None:
     repo = Path(__file__).resolve().parents[1]
     svg_path = repo / "public" / "7.svg"
-    out_arg = Path(sys.argv[1]) if len(sys.argv) > 1 else repo / "eye_ceremony.html"
+    out_arg = (
+        Path(sys.argv[1])
+        if len(sys.argv) > 1
+        else closing_ceremony_dir() / "eye_ceremony.html"
+    )
 
     tree = ET.parse(svg_path)
     root = tree.getroot()

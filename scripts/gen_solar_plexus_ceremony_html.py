@@ -4,6 +4,8 @@
 Hub lines are clipped at the inner disc using an SVG mask so strokes do not meet at
 the centre; the triangle outline is drawn above the hub fill. White knockout fills in
 the source (if any) map to the page background so author “cover” strokes still work.
+
+Default output: ~/Desktop/Closing Ceremony/solar_plexus_ceremony.html (override with argv[1]).
 """
 from __future__ import annotations
 
@@ -12,6 +14,8 @@ import re
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
+
+from ceremony_paths import closing_ceremony_dir
 
 SVG_NS = "http://www.w3.org/2000/svg"
 CEREMONY = "#f7da5f"
@@ -155,7 +159,11 @@ def tag_hub_ids(inner_disc: ET.Element, inner_ring: ET.Element, triangle: ET.Ele
 def main() -> None:
     repo = Path(__file__).resolve().parents[1]
     svg_path = repo / "public" / "3.svg"
-    out_arg = Path(sys.argv[1]) if len(sys.argv) > 1 else repo / "solar_plexus_ceremony.html"
+    out_arg = (
+        Path(sys.argv[1])
+        if len(sys.argv) > 1
+        else closing_ceremony_dir() / "solar_plexus_ceremony.html"
+    )
 
     tree = ET.parse(svg_path)
     root = tree.getroot()

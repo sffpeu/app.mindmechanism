@@ -16,6 +16,8 @@ and tune the hub hole size instead.
 
 The overlay triangle must wrap with Layer-17’s root scale (4.16667); the branch only
 has a translate — without the parent scale it draws ~¼ size off the hub (black disc, no triangles).
+
+Default output: ~/Desktop/Closing Ceremony/root_ceremony.html (override with argv[1]).
 """
 from __future__ import annotations
 
@@ -24,6 +26,8 @@ import re
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
+
+from ceremony_paths import closing_ceremony_dir
 
 SVG_NS = "http://www.w3.org/2000/svg"
 CEREMONY = "#fd290a"
@@ -152,7 +156,11 @@ def tag_triangle_id(branch: ET.Element) -> None:
 def main() -> None:
     repo = Path(__file__).resolve().parents[1]
     svg_path = repo / "public" / "1.svg"
-    out_arg = Path(sys.argv[1]) if len(sys.argv) > 1 else repo / "root_ceremony.html"
+    out_arg = (
+        Path(sys.argv[1])
+        if len(sys.argv) > 1
+        else closing_ceremony_dir() / "root_ceremony.html"
+    )
 
     tree = ET.parse(svg_path)
     root = tree.getroot()
