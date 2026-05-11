@@ -107,8 +107,20 @@ def wrap_with_main_transform(
     return wrap
 
 
+def under_main_transform(main: ET.Element, inner: ET.Element) -> ET.Element:
+    """Apply the Serif root _5 matrix so inner coords match other ceremony layers."""
+    out = ET.Element(q("g"))
+    if "transform" in main.attrib:
+        out.set("transform", main.attrib["transform"])
+    out.append(inner)
+    return out
+
+
 def split_glyph_iris(main: ET.Element) -> tuple[ET.Element, ET.Element, ET.Element]:
-    """Group 89: first 16 children = perimeter glyphs; rest = inner iris; child 90 = stray."""
+    """Group 89: first 16 children = perimeter glyphs; rest = inner iris; child 90 = stray.
+
+    Returned groups carry only the inner T4 matrix; caller must wrap with under_main_transform.
+    """
     g89 = list(main)[89]
     ch = list(g89)
     tr = g89.attrib.get("transform", "")
@@ -128,10 +140,10 @@ def split_glyph_iris(main: ET.Element) -> tuple[ET.Element, ET.Element, ET.Eleme
         walk_restyle(node)
         iris.append(node)
 
-    stray = ET.Element(q("g"))
-    stray.append(copy.deepcopy(list(main)[90]))
-    walk_restyle(stray[-1])
-    return per, iris, stray
+    stray_inner = ET.Element(q("g"))
+    stray_inner.append(copy.deepcopy(list(main)[90]))
+    walk_restyle(stray_inner[-1])
+    return per, iris, stray_inner
 
 
 def tag_flower_ids(elem: ET.Element) -> None:
@@ -204,17 +216,21 @@ def main() -> None:
     center = wrap_with_main_transform(main, 87, 89, False, False, False)
     tag_triangle_ids(center)
 
-    per_g, iris_g, stray_g = split_glyph_iris(main)
+    per_inner, iris_inner, stray_inner = split_glyph_iris(main)
+    per_g = under_main_transform(main, per_inner)
+    iris_g = under_main_transform(main, iris_inner)
+    stray_g = under_main_transform(main, stray_inner)
 
+    # Lotus first, then outer nodes on top of it; triangle and tail follow (see clock_5 indices 51–90).
     pieces: list[tuple[str, ET.Element, str]] = [
         ("g-rings", rings, "outer ellipse + two ring paths"),
         ("g-spokes", spokes, "16 primary radials"),
         ("g-web", web, "16 chord / web lines"),
         ("g-petals", petals, "16 lotus petal outlines"),
         ("g-flower", flower, "overlapping annuli / circles (#flower-of-life)"),
-        ("g-center", center, "triangle mask + outline"),
         ("g-perimeter", per_g, "16 outer glyph disks"),
         ("g-iris", iris_g, "nested iris / sunburst circles"),
+        ("g-center", center, "triangle mask + outline"),
         ("g-stray", stray_g, "single small ellipse (export tail)"),
     ]
 
@@ -263,7 +279,7 @@ def main() -> None:
       height: 100vh;
       display: block;
     }}
-    #g-rings, #g-spokes, #g-web, #g-petals, #g-flower, #g-center, #g-perimeter, #g-iris, #g-stray {{
+    #g-rings, #g-spokes, #g-web, #g-petals, #g-flower, #g-perimeter, #g-iris, #g-center, #g-stray {{
       transform-box: view-box;
       transform-origin: {cx}px {cy}px;
     }}
