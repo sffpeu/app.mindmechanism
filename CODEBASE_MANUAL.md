@@ -6,7 +6,29 @@
 
 ---
 
-## Part 1 — Architecture
+## Part 1 — Architecture overview
+
+### What Mind Mechanism is
+
+Mind Mechanism is a TypeScript web application for structured inner practice: a nine-clock mandala (“wheel”), a personal glossary / lexicon (with optional passport encryption), a mantra **sequencer**, collaborative **lobby** sessions and timers, optional **research** participation, and an institutional **Passport** layer so users can approve scoped reads of their data. One codebase serves multiple **portals** (consumer, academic, corporate) driven mainly by config (`lib/portalConfig.ts`) and URL detection (`lib/detectPortal.ts`).
+
+### How the codebase is organised
+
+| Area | Role |
+|------|------|
+| `app/` | Next.js App Router: pages, layouts, `app/AuthContext.tsx`, and `app/api/*/route.ts` HTTP handlers. |
+| `components/` | React UI: mandala, glossary, sequencer, settings, record (“My Record”), landing, legal, and shadcn-based primitives under `components/ui/`. |
+| `lib/` | Shared logic: Firebase, glossary CRUD, passport crypto, audio/Hue/Spotify/MusicKit, sessions, lobby, research logging, hooks. |
+| `contexts/` | Cross-cutting React context — e.g. **`PortalProvider`** resolves portal from pathname and `academic.*` / `corporate.*` hostnames (`contexts/PortalContext.tsx`). |
+| `types/` | Shared TypeScript types (imported as `@/types/...`). |
+
+### Passport silo concept
+
+Firestore stores many user-facing documents under familiar collections (`users`, `glossary`, …). The **Passport** silo groups holder-specific institutional flows under **`passport/{firebaseUid}/...`**: for example `accessRequests`, `accessGrants`, `accessLog`, phrases, and credential-related data. That separation keeps institutional approval tokens, audit logs, and scoped exports easier to reason about than mixing them into general profile docs. **Personal lexicon ciphertext** still lives where glossary rows live; the passport layer governs *who may read* aggregated or exported views.
+
+### Portal system
+
+**Consumer**, **Academic**, and **Corporate** portals share one app; behavior differs by tier limits (`lib/nodeTiers.ts`, `lib/portalAccess.ts`), visible chrome, and marketing routes under `components/landing/`. The active portal is derived from the URL/path and/or portal context.
 
 ### Stack and layout
 
@@ -25,12 +47,33 @@
 
 ### Modules referenced in the brief but not present as standalone files
 
-- **`urbanPatwa.ts`:** Not present in this repository — treat as not yet implemented if you were expecting Urban Patwa helpers here.
-- **`accessRequests.ts`:** No file by that name; institutional access requests and grants are implemented in **`lib/institutionalAccess.ts`** and server routes **`app/api/institutional-access-request`**, **`app/api/passport-read`**, and **`app/api/credential-requests`**.
+See explicit stubs below in Part 2.
 
 ---
 
-## Part 2 — `lib/` modules
+## Part 2 — Library functions (`lib/`)
+
+Documentation uses this template for exports (constants and types are grouped in prose where listing every symbol would be noisy):
+
+- **Phase:** Feature phases are **not recorded in source**; this manual uses *Unknown* unless a comment in code states otherwise.
+- **Purpose:** What it does in plain language.
+- **Parameters / returns:** Described in the file table or under the function where non-obvious.
+- **Side effects:** Firestore, IndexedDB, `fetch`, Web Crypto, AudioContext, third-party APIs, or on-chain calls — noted explicitly when central to the API.
+- **Called by:** Not exhaustively traced; use your editor’s “find references” on the symbol.
+
+### Brief-listed stubs (missing or consolidated files)
+
+### `lib/urbanPatwa.ts`
+
+*Not yet built — see [URBAN_PATWA_BRIEF.md](./URBAN_PATWA_BRIEF.md).*
+
+### `lib/accessRequests.ts`
+
+*No standalone module — institutional **access requests** are persisted under Firestore `passport/{uid}/accessRequests` and handled in application code via **`lib/institutionalAccess.ts`** and HTTP APIs **`app/api/institutional-access-request`**, **`app/api/passport-read`**, and **`app/api/credential-requests`**.**
+
+---
+
+### Inventory tables
 
 Exports are summarized by file. Types are mentioned where they clarify behavior.
 
@@ -142,7 +185,15 @@ Exports are summarized by file. Types are mentioned where they clarify behavior.
 
 ---
 
-## Part 3 — `components/`
+## Part 3 — Components (`components/`)
+
+Convention for each entry:
+
+- **Portal:** **All** unless the component is only reachable from a single portal route (most components are shared).
+- **Phase:** *Unknown — not tracked in repository metadata.*
+- **Purpose / Props / Data sources / Writes:** Captured in the table where helpful; many primitives only wrap Radix/shadcn **props** (`className`, `children`, etc.).
+
+The brief referenced **`components/academic/`** (e.g. UrbanPatwaMatrix). That folder **does not exist yet** — align future work with `URBAN_PATWA_BRIEF.md`.
 
 Convention: **Purpose** describes user-visible or architectural behavior. **Props** lists notable props when non-obvious; many leaf components rely on children or standard Radix/shadcn patterns.
 
@@ -351,7 +402,12 @@ Convention: **Purpose** describes user-visible or architectural behavior. **Prop
 
 ---
 
-## Part 4 — `app/api/` routes
+## Part 4 — API routes (`app/api/`)
+
+Per route:
+
+- **Phase:** *Unknown — not tracked in repository metadata.*
+- **Auth**, **request**, **response**, **errors**, and **external calls** are summarized below.
 
 Runtime defaults to Edge unless `export const runtime = 'nodejs'` is set on the route module.
 
