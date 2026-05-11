@@ -1,4 +1,4 @@
-"""Default export location for standalone ceremony HTML (authoring on macOS)."""
+"""Where ceremony HTML generators write by default (macOS)."""
 from __future__ import annotations
 
 from pathlib import Path

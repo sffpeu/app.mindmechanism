@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Generate root_ceremony.html from public/1.svg (Root wheel, route /0, clockSettings[0]).
+"""Build root_ceremony.html from public/1.svg.
+
+Default write: ~/Desktop/Closing Ceremony/root_ceremony.html — pass argv[1] for another path.
 
 Keeps the entire Layer-17 subtree intact (avoids misaligned node clusters). Applies an
 SVG hub mask so strokes do not meet at the centre; the central triangle outline is
@@ -16,8 +18,6 @@ and tune the hub hole size instead.
 
 The overlay triangle must wrap with Layer-17’s root scale (4.16667); the branch only
 has a translate — without the parent scale it draws ~¼ size off the hub (black disc, no triangles).
-
-Default output: ~/Desktop/Closing Ceremony/root_ceremony.html (override with argv[1]).
 """
 from __future__ import annotations
 

@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Generate throat_ceremony.html from public/clock_5.svg (Throat wheel on route /4).
+"""Build throat_ceremony.html from public/clock_5.svg.
 
-White (or rgb(255,255,255)) filled knockouts in the SVG stay knockouts on dark pages
-via fix_style mapping fills to the page background.
+Default write: ~/Desktop/Closing Ceremony/throat_ceremony.html — pass argv[1] for another path.
 
-Default output: ~/Desktop/Closing Ceremony/throat_ceremony.html (override with argv[1]).
+White knockout fills map to the page background via fix_style.
 """
 from __future__ import annotations
 

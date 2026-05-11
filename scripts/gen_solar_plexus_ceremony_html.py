@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
-"""Generate solar_plexus_ceremony.html from public/3.svg (vector solar plexus wheel).
+"""Build solar_plexus_ceremony.html from public/3.svg.
 
-Hub lines are clipped at the inner disc using an SVG mask so strokes do not meet at
-the centre; the triangle outline is drawn above the hub fill. White knockout fills in
-the source (if any) map to the page background so author “cover” strokes still work.
+Default write: ~/Desktop/Closing Ceremony/solar_plexus_ceremony.html — pass argv[1] for another path.
 
-Default output: ~/Desktop/Closing Ceremony/solar_plexus_ceremony.html (override with argv[1]).
+Hub mask clips spokes at the centre; triangle outline above. White knockouts map to page fill.
 """
 from __future__ import annotations
 

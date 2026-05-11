@@ -1,14 +1,10 @@
 #!/usr/bin/env python3
-"""Generate eye_ceremony.html from public/7.svg (Third Eye wheel, route /6, clockSettings[6]).
+"""Build eye_ceremony.html from public/7.svg.
 
-The source uses solid white fills stacked above strokes to hide construction lines. On a
-dark ceremony page, fix_style maps those fills to the page background (#0d0d0d) so the
-same layering still reads as knockouts. No separate hub mask: the artwork already
-relies on filled shapes at the centre.
+Default write: ~/Desktop/Closing Ceremony/eye_ceremony.html — pass argv[1] for another path.
 
-Stroke / accent colour for the ceremony view is #941952.
-
-Default output: ~/Desktop/Closing Ceremony/eye_ceremony.html (override with argv[1]).
+White fills in the SVG hide construction lines; they map to #0d0d0d. Strokes map to #941952.
+No hub mask (fills already handle the centre).
 """
 from __future__ import annotations
 
