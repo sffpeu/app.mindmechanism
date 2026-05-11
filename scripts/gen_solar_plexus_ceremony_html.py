@@ -118,6 +118,16 @@ def build_hub_mask(w: float, h: float) -> ET.Element:
     return defs_el
 
 
+def wrap_with_transform(transform: str | None, *nodes: ET.Element) -> ET.Element:
+    """Re-apply a parent <g> matrix when only child fragments were deep-copied."""
+    wrap = ET.Element(q("g"))
+    if transform:
+        wrap.set("transform", transform)
+    for n in nodes:
+        wrap.append(n)
+    return wrap
+
+
 def tag_hub_ids(inner_disc: ET.Element, inner_ring: ET.Element, triangle: ET.Element) -> None:
     p = first_drawable(inner_disc)
     if p is not None:
@@ -159,21 +169,32 @@ def main() -> None:
     hub_masked = ET.Element(q("g"))
     hub_masked.set("mask", "url(#hub-mask)")
 
+    l2_outer_tf = layer2.attrib.get("transform", "")
+    l6_outer_tf = layer6.attrib.get("transform", "")
+
     l5c = copy.deepcopy(layer5)
     walk_restyle(l5c)
     for g in l5c:
         add_class_on_first_drawable(g, "spoke")
     hub_masked.append(l5c)
 
+    l2_frag = ET.Element(q("g"))
+    if l2_outer_tf:
+        l2_frag.set("transform", l2_outer_tf)
     for c in l2_ch[:-2]:
         node = copy.deepcopy(c)
         walk_restyle(node)
-        hub_masked.append(node)
+        l2_frag.append(node)
+    hub_masked.append(l2_frag)
 
+    l6_frag = ET.Element(q("g"))
+    if l6_outer_tf:
+        l6_frag.set("transform", l6_outer_tf)
     for c in l6_ch[:-1]:
         node = copy.deepcopy(c)
         walk_restyle(node)
-        hub_masked.append(node)
+        l6_frag.append(node)
+    hub_masked.append(l6_frag)
 
     inner_disc = copy.deepcopy(l2_ch[-2])
     walk_restyle(inner_disc)
@@ -196,18 +217,22 @@ def main() -> None:
     tag_hub_ids(inner_disc, inner_ring, triangle_only)
 
     g_disc = ET.Element(q("g"))
-    g_disc.append(inner_disc)
+    g_disc.append(wrap_with_transform(l2_outer_tf, inner_disc))
     g_ring = ET.Element(q("g"))
-    g_ring.append(inner_ring)
+    g_ring.append(wrap_with_transform(l2_outer_tf, inner_ring))
     g_petals = ET.Element(q("g"))
     g_petals.append(petals)
     g_off = ET.Element(q("g"))
     g_off.append(offset_cluster)
     g_tri = ET.Element(q("g"))
-    g_tri.append(triangle_only)
+    g_tri.append(wrap_with_transform(l6_outer_tf, triangle_only))
 
     pieces: list[tuple[str, ET.Element, str]] = [
-        ("g-hub-masked", hub_masked, "masked hub: Layer-5 + Layer-2 (except disc) + Layer-6 (except triangle)"),
+        (
+            "g-hub-masked",
+            hub_masked,
+            "masked hub: Layer-5; Layer-2/Layer-6 child fragments each re-wrapped with source parent scale",
+        ),
         ("g-inner-disc", g_disc, "inner disc fill (#mask-circle)"),
         ("g-inner-ring", g_ring, "inner circle stroke (#center-ring)"),
         ("g-petals", g_petals, "Layer-3 lotus petals"),
