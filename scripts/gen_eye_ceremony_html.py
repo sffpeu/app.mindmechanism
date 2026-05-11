@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
-"""Build eye_ceremony.html from public/clock_7_colour.svg.
+"""Build eye_ceremony.html from *your* artwork file (path you pass in — not guessed from the repo).
 
-Default write: ~/Desktop/Closing Ceremony/eye_ceremony.html — pass argv[1] for another path.
+Usage:
+  python3 scripts/gen_eye_ceremony_html.py <path-to.svg-or-image> [out.html]
 
-Strokes #552d8e and rgb(35,31,32) (etc.) → #941952. Any white fills in the source map to
-the page colour so construction knockouts stay invisible on black. The SVG is used as-is
-(stroke-only hub like your editor with fills turned off — no extra filled disc in HTML).
+Default out.html: ~/Desktop/Closing Ceremony/eye_ceremony.html
+
+SVG: restyles strokes (#552d8e, rgb(35,31,32), etc.) → #941952; white fills → page black for knockouts.
+Raster (.png, .jpg, .webp): embedded as-is (no stroke recolour — pixels are unchanged).
 """
 from __future__ import annotations
 
+import base64
 import copy
+import mimetypes
 import re
 import sys
 import xml.etree.ElementTree as ET
@@ -90,49 +94,26 @@ def serialize_fragment(elem: ET.Element) -> str:
     return ET.tostring(elem, encoding="unicode")
 
 
-def main() -> None:
-    repo = Path(__file__).resolve().parents[1]
-    svg_path = repo / "public" / "clock_7_colour.svg"
-    out_arg = (
-        Path(sys.argv[1])
-        if len(sys.argv) > 1
+def parse_args() -> tuple[Path, Path]:
+    if len(sys.argv) < 2:
+        print(
+            "Usage: gen_eye_ceremony_html.py <path-to-your.svg-or-image> [out.html]\n"
+            "  Example: gen_eye_ceremony_html.py ~/Desktop/my-eye-export.svg\n"
+            "  Default output: ~/Desktop/Closing Ceremony/eye_ceremony.html",
+            file=sys.stderr,
+        )
+        raise SystemExit(2)
+    src = Path(sys.argv[1]).expanduser().resolve()
+    out = (
+        Path(sys.argv[2]).expanduser().resolve()
+        if len(sys.argv) > 2
         else closing_ceremony_dir() / "eye_ceremony.html"
     )
+    return src, out
 
-    tree = ET.parse(svg_path)
-    root = tree.getroot()
-    vb = root.attrib.get("viewBox", "0 0 3297 3295").split()
-    w, h = float(vb[2]), float(vb[3])
 
-    ceremony = copy.deepcopy(root)
-    original_children = list(ceremony)
-    for c in original_children:
-        ceremony.remove(c)
-
-    rect_el = ET.Element(q("rect"))
-    rect_el.set("width", str(int(w)))
-    rect_el.set("height", str(int(h)))
-    rect_el.set("fill", BG)
-    ceremony.insert(0, rect_el)
-
-    eye_wrap = ET.Element(q("g"))
-    eye_wrap.set("id", "g-eye")
-    for c in original_children:
-        eye_wrap.append(c)
-    ceremony.append(eye_wrap)
-
-    walk_restyle(ceremony)
-    strip_legacy_layer_ids(ceremony)
-
-    cx, cy = int(round(w / 2)), int(round(h / 2))
-
-    prev_cls = ceremony.attrib.get("class", "").strip()
-    ceremony.set("class", f"{prev_cls} mandala".strip() if prev_cls else "mandala")
-
-    svg_inner = serialize_fragment(ceremony)
-    n_draw = count_drawables(eye_wrap)
-
-    html = f"""<!DOCTYPE html>
+def build_html_svg(svg_inner: str, cx: int, cy: int) -> str:
+    return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -172,6 +153,109 @@ def main() -> None:
 </body>
 </html>
 """
+
+
+def build_html_raster(data_uri: str) -> str:
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eye ceremony</title>
+  <style>
+    html, body {{
+      margin: 0;
+      height: 100%;
+      background: {BG};
+    }}
+    body {{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }}
+    img.mandala {{
+      width: 100vh;
+      height: 100vh;
+      object-fit: contain;
+      display: block;
+    }}
+  </style>
+</head>
+<body>
+  <img class="mandala" id="g-eye" alt="" src="{data_uri}" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  <script>
+  // ANIMATION PLACEHOLDER — Claude writes this block
+  </script>
+</body>
+</html>
+"""
+
+
+def main() -> None:
+    svg_path, out_arg = parse_args()
+    if not svg_path.is_file():
+        print(f"Not a file: {svg_path}", file=sys.stderr)
+        raise SystemExit(1)
+
+    suf = svg_path.suffix.lower()
+    raster_suffixes = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
+
+    if suf in raster_suffixes:
+        raw = svg_path.read_bytes()
+        mime = mimetypes.guess_type(svg_path.name)[0] or "application/octet-stream"
+        b64 = base64.standard_b64encode(raw).decode("ascii")
+        data_uri = f"data:{mime};base64,{b64}"
+        html = build_html_raster(data_uri)
+        out_arg.parent.mkdir(parents=True, exist_ok=True)
+        out_arg.write_text(html, encoding="utf-8")
+        print(out_arg)
+        print(f"  raster: {len(raw)} bytes embedded ({mime})")
+        return
+
+    if suf not in (".svg", ".svgz"):
+        print(
+            f"Unsupported type {suf!r}. Use .svg or a raster: {', '.join(sorted(raster_suffixes))}",
+            file=sys.stderr,
+        )
+        raise SystemExit(1)
+
+    tree = ET.parse(svg_path)
+    root = tree.getroot()
+    vb = root.attrib.get("viewBox", "0 0 100 100").split()
+    w, h = float(vb[2]), float(vb[3])
+
+    ceremony = copy.deepcopy(root)
+    original_children = list(ceremony)
+    for c in original_children:
+        ceremony.remove(c)
+
+    rect_el = ET.Element(q("rect"))
+    rect_el.set("width", str(int(w)))
+    rect_el.set("height", str(int(h)))
+    rect_el.set("fill", BG)
+    ceremony.insert(0, rect_el)
+
+    eye_wrap = ET.Element(q("g"))
+    eye_wrap.set("id", "g-eye")
+    for c in original_children:
+        eye_wrap.append(c)
+    ceremony.append(eye_wrap)
+
+    walk_restyle(ceremony)
+    strip_legacy_layer_ids(ceremony)
+
+    cx, cy = int(round(w / 2)), int(round(h / 2))
+
+    prev_cls = ceremony.attrib.get("class", "").strip()
+    ceremony.set("class", f"{prev_cls} mandala".strip() if prev_cls else "mandala")
+
+    svg_inner = serialize_fragment(ceremony)
+    n_draw = count_drawables(eye_wrap)
+    html = build_html_svg(svg_inner, cx, cy)
 
     out_arg.parent.mkdir(parents=True, exist_ok=True)
     out_arg.write_text(html, encoding="utf-8")
