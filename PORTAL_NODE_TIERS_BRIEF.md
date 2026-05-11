@@ -12,10 +12,10 @@ The 482-node taxonomy is not available to all users. Access to nodes is tiered b
 
 ## The Four Node Sets
 
-| Tier | Portal / Level | Node Set | Approx. Count |
+| Tier | Portal / Level | Node Set | Count |
 |---|---|---|---|
 | **Wheel** | Consumer | 91 wheel nodes only | 91 |
-| **Extended** | Academic · Corporate | Wheel + To A Quiet Place Within nodes | ~200+ |
+| **Extended** | Academic · Corporate | Wheel + 97 TAQPW nodes | ~188 (deduped) |
 | **Corporate** | Corporate (future) | Extended + corporate-specific customisations | TBD |
 | **Full** | Academic Pro | All 482 taxonomy nodes | 482 |
 
@@ -23,7 +23,7 @@ The 482-node taxonomy is not available to all users. Access to nodes is tiered b
 The 91 nodes that power the sequencer wheels. These are the complete consumer product. No other taxonomy nodes are visible or accessible.
 
 ### Extended (Academic + Corporate base)
-The 91 wheel nodes plus the nodes from *To A Quiet Place Within* — a specific body of work within the taxonomy. Exact node IDs to be confirmed by Sean against the master taxonomy. Combined total approximately 200+ nodes.
+The 91 wheel nodes plus the 97 nodes from *To A Quiet Place Within* — 5 stories, each with Recognition and Sovereign/Neutral nodes. Some names may overlap with wheel nodes; the union is deduped. Actual combined count will be confirmed once clock_id cross-reference is done against the master taxonomy.
 
 ### Corporate (future customisation)
 The Extended set plus corporate-specific wheel configurations and materials. Specification deferred — to be defined when the first corporate package is designed.
@@ -35,53 +35,95 @@ All 482 nodes. The complete taxonomy. No gates.
 
 ## Node Identification
 
-Nodes are identified by `clock_id` (integer) in the existing data model. The 91 wheel nodes use `clock_id` values 1–91.
-
-The *To A Quiet Place Within* node IDs need to be confirmed and listed. Until Sean provides the definitive list, the Extended set is defined by a named constant that is easy to populate:
+The 91 wheel nodes are identified by `clock_id` 1–91. The *To A Quiet Place Within* nodes are identified by name — the `clock_id` cross-reference against the full 482-node taxonomy is deferred. The filter uses normalised lowercase name matching, which is unambiguous and can be upgraded to clock_id lookup once the mapping is confirmed.
 
 ```typescript
 // lib/nodeTiers.ts
 
-// The 91 wheel nodes — always clock_id 1–91
-export const WHEEL_NODE_IDS: number[] = Array.from({ length: 91 }, (_, i) => i + 1)
+// ── Wheel tier — clock_id 1–91 ────────────────────────────────────────────────
+export const WHEEL_MAX_CLOCK_ID = 91
 
-// To A Quiet Place Within — node IDs TBC
-// Sean to provide the definitive list from the master taxonomy
-// Placeholder: empty array — replace with actual clock_ids
-export const TAQPW_NODE_IDS: number[] = [
-  // TODO: populate from master taxonomy
-  // These are the nodes from "To A Quiet Place Within"
-]
+// ── To A Quiet Place Within — 97 unique nodes across 5 stories ───────────────
+// Source: 3.5_Integrated_Node_Mapping — Diagnostic Narratology
+// Normalised to lowercase for matching against taxonomy word field
 
-// Extended = Wheel + TAQPW
-export const EXTENDED_NODE_IDS: number[] = [
-  ...WHEEL_NODE_IDS,
-  ...TAQPW_NODE_IDS,
-]
+export const TAQPW_NODE_NAMES: Set<string> = new Set([
+  // Story 1 — Lily and the Garden of Light (Existential Joy & Grounding)
+  'restlessness', 'apprehension', 'alarm', 'doubt', 'uncomfortable', 'hesitation', 'unsure',
+  'seeking', 'awareness', 'curiosity', 'spiritual', 'presence', 'spontaneity', 'radiance',
+  'bliss', 'joyousness', 'weightless', 'union', 'source', 'infinity',
 
-// Full = all 482 nodes
-export const FULL_NODE_IDS: number[] = Array.from({ length: 482 }, (_, i) => i + 1)
+  // Story 2 — Sam and the Book of Calm (ADHD & Environmental Agency)
+  'distraction', 'aggravation', 'disorientation', 'limitation', 'jitteriness', 'misgivings',
+  'deplorability', 'left behind',
+  'grounded', 'core cantering', 'stability', 'steady', 'reflection', 'calm', 'peaceful',
+  'assuredness', 'self-care', 'sanctuary', 'process', 'repetition',
+
+  // Story 3 — Max and the Pulse of Life (Social Connection & Somatic Drum)
+  'isolation', 'alienation', 'loneliness', 'overbearing', 'complexity', 'compulsion', 'apathetic',
+  'resonating', 'empathy', 'connection', 'vitality', 'wholeness', 'heartbeat', 'insight',
+  'belonging', 'authentic', 'discourse', 'universal',
+  // union, curiosity already included above
+
+  // Story 4 — Mia and the Soaring Soul (Trauma-Release & Generational Light)
+  'grief', 'sorrow', 'heavy', 'crippling', 'ordeal', 'trapped', 'pathetic',
+  'flight', 'imagination', 'freedom', 'release', 'relief', 'soaring', 'liberty', 'majesty',
+  'grace', 'rebirth', 'uplifted', 'transcultural', 'reminiscence',
+
+  // Story 5 — Emma and the Light of Freedom (Identity Resilience & Resisting Conformity)
+  'chaos', 'outrageousness', 'pretentions', 'confusion', 'disdain', 'shamefulness', 'forbidden',
+  'boldness', 'daring', 'achievement', 'motivation', 'resistance', 'authority', 'solid',
+  'transform', 'cherished', 'excellence', 'inherent right', 'sovereignty',
+  // authentic already included above
+])
 
 export type NodeTier = 'wheel' | 'extended' | 'corporate' | 'full'
 
-export const NODE_TIER_IDS: Record<NodeTier, number[]> = {
-  wheel: WHEEL_NODE_IDS,
-  extended: EXTENDED_NODE_IDS,
-  corporate: EXTENDED_NODE_IDS,   // same as extended until corporate spec is defined
-  full: FULL_NODE_IDS,
+// Check if a node is in the wheel tier (by clock_id)
+function isWheelNode(clockId: number | null | undefined): boolean {
+  return clockId != null && clockId >= 1 && clockId <= WHEEL_MAX_CLOCK_ID
+}
+
+// Check if a node is in the TAQPW set (by name)
+function isTAQPWNode(word: string | null | undefined): boolean {
+  if (!word) return false
+  return TAQPW_NODE_NAMES.has(word.trim().toLowerCase())
 }
 
 // Check if a node is accessible for a given tier
-export function isNodeAccessible(clockId: number, tier: NodeTier): boolean {
-  return NODE_TIER_IDS[tier].includes(clockId)
+export function isNodeAccessible(
+  clockId: number | null | undefined,
+  word: string | null | undefined,
+  tier: NodeTier
+): boolean {
+  switch (tier) {
+    case 'wheel':
+      return isWheelNode(clockId)
+    case 'extended':
+    case 'corporate':
+      return isWheelNode(clockId) || isTAQPWNode(word)
+    case 'full':
+      return true
+  }
 }
 
 // Filter a list of nodes to only those accessible in a given tier
-export function filterNodesByTier<T extends { clock_id?: number | null }>(
-  nodes: T[],
-  tier: NodeTier
-): T[] {
-  return nodes.filter(n => n.clock_id != null && isNodeAccessible(n.clock_id, tier))
+export function filterNodesByTier<T extends {
+  clock_id?: number | null
+  word?: string | null
+}>(nodes: T[], tier: NodeTier): T[] {
+  if (tier === 'full') return nodes
+  return nodes.filter(n => isNodeAccessible(n.clock_id, n.word, tier))
+}
+
+// Resolve the effective node tier for a user
+// Subscription level overrides portal default
+export function resolveNodeTier(
+  portalTier: NodeTier,
+  subscriptionTier: string | null | undefined
+): NodeTier {
+  if (subscriptionTier === 'academic_pro') return 'full'
+  return portalTier
 }
 ```
 
@@ -145,6 +187,7 @@ const { profile } = useAuth()  // or however subscription tier is accessed
 
 const nodeTier = resolveNodeTier(config.nodeTier, profile?.tier)
 const visibleNodes = filterNodesByTier(allNodes, nodeTier)
+// filterNodesByTier checks both clock_id (wheel gate) and word name (TAQPW gate)
 ```
 
 ---
@@ -165,13 +208,9 @@ Do **not** filter:
 
 ---
 
-## Action Required from Sean
+## Note on Clock ID Cross-Reference
 
-Before the Extended set can be fully activated, provide the `clock_id` values for the *To A Quiet Place Within* nodes. These should be pulled from the master 482-node taxonomy document.
-
-Format needed: a list of integers, e.g. `[92, 93, 94, 107, 108, ...]`
-
-Until that list is provided, the `TAQPW_NODE_IDS` array is empty and the Extended tier behaves identically to the Wheel tier. The architecture is in place — it just needs the data.
+The TAQPW filter currently uses node name matching. Once the master taxonomy clock_ids for these 97 nodes are confirmed, `isNodeAccessible` can be upgraded to a pure integer set lookup (faster, unambiguous). The function signature is already designed for this — just add clock_id checks alongside the name checks. Not urgent; name matching is precise for now.
 
 ---
 
@@ -221,4 +260,4 @@ Activities between tiers are decided later. Right now: the separation exists, th
 
 *Prepared by Claude Code (EIC) for Sean Fortune (Creative Authority)*
 *Phase 5.1 Addendum — companion to PORTAL_SEPARATION_BRIEF.md*
-*Awaiting: TAQPW node ID list from master taxonomy*
+*TAQPW node names sourced from: 3.5_Integrated_Node_Mapping.html (Diagnostic Narratology, MM-INTEG-2026)*
