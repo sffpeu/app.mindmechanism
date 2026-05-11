@@ -4,6 +4,10 @@
 Keeps the entire Layer-17 subtree intact (avoids misaligned node clusters). Applies an
 SVG hub mask so strokes do not meet at the centre; the central triangle outline is
 drawn above the masked content.
+
+Do not peel inner paths into a separate group: duplicates + mask interaction made
+larger centre regions disappear. Keep one masked Layer-17 clone (minus triangle only)
+and tune the hub hole size instead.
 """
 from __future__ import annotations
 
@@ -16,27 +20,16 @@ from pathlib import Path
 SVG_NS = "http://www.w3.org/2000/svg"
 CEREMONY = "#fd290a"
 BG = "#0d0d0d"
-# Hub at square centre (Layer-17 local → world via S). Mask radius is intentionally *small*:
-# the inner concentric circle in the art is r≈258 local (~1078 world); masking that whole
-# disc wipes the lotus / diamond / inner squares (they read as “lost in the background”).
-# We only punch a small hole so crossing spokes vanish at the middle, not the whole inner ring.
+# Hub at square centre (Layer-17 local → world via S). Black mask hole = transparent.
+# Use a *small* radius only to clip crossing spokes; a large radius wipes the inner
+# lotus / diamond (same colour as page → looks “missing”).
 S = 4.16667
 HUB_CX = 764.41 * S
 HUB_CY = 765.716 * S
-HUB_R_LOCAL = 58.0  # layer units under Layer-17 scale; ~240px world
+HUB_R_LOCAL = 46.0  # layer units; ~195px world — clears hub without eating the diamond
 HUB_R = HUB_R_LOCAL * S + 4.0
 
 TRIANGLE_D_PREFIX = "M0,70.433L40.664,0"
-# Inner diamond frame + centre glyph paths (1.svg Layer-17). These sit under later
-# concentric rings in DOM order and can fall inside the hub mask — lift copies to the front.
-CENTER_PATH_PREFIXES = (
-    "M0,-87L-65.384",
-    "M0,33.833C-25.188",
-    "M0,-186.176C-21.113",
-    "M0,-33.833C25.188",
-    "M0,-186.176L0,0C21.114",
-)
-INNER_RECT_W = "85.039"
 
 
 def q(tag: str) -> str:
@@ -118,25 +111,6 @@ def build_hub_mask(w: float, h: float) -> ET.Element:
     return defs_el
 
 
-def first_path_d(elem: ET.Element) -> str:
-    for node in elem.iter():
-        if strip_ns_prefix(node.tag) == "path":
-            return node.attrib.get("d", "")
-    return ""
-
-
-def is_inner_small_rect_branch(ch: ET.Element) -> bool:
-    for node in ch.iter():
-        if strip_ns_prefix(node.tag) == "rect" and node.attrib.get("width") == INNER_RECT_W:
-            return True
-    return False
-
-
-def is_center_glyph_branch(ch: ET.Element) -> bool:
-    d = first_path_d(ch)
-    return any(d.startswith(p) for p in CENTER_PATH_PREFIXES)
-
-
 def find_triangle_branch(layer17: ET.Element) -> ET.Element | None:
     """Direct child <g> of Layer-17 that holds the central triangle path."""
     for ch in list(layer17):
@@ -156,15 +130,6 @@ def tag_triangle_id(branch: ET.Element) -> None:
         d = node.attrib.get("d", "")
         if d.startswith(TRIANGLE_D_PREFIX):
             node.set("id", "inner-triangle")
-            return
-
-
-def tag_center_jewel_id(front: ET.Element) -> None:
-    for node in front.iter():
-        if strip_ns_prefix(node.tag) != "rect":
-            continue
-        if node.attrib.get("width") == INNER_RECT_W:
-            node.set("id", "center-jewel-frame")
             return
 
 
@@ -190,20 +155,10 @@ def main() -> None:
 
     masked_body = copy.deepcopy(layer17)
     walk_restyle(masked_body)
-
-    promoted: list[ET.Element] = []
-    for ch in list(masked_body):
-        if is_inner_small_rect_branch(ch) or is_center_glyph_branch(ch):
-            promoted.append(copy.deepcopy(ch))
-
     tri_branch = find_triangle_branch(masked_body)
     if tri_branch is None:
         raise SystemExit("Triangle missing in copy")
     masked_body.remove(tri_branch)
-
-    for ch in list(masked_body):
-        if is_inner_small_rect_branch(ch) or is_center_glyph_branch(ch):
-            masked_body.remove(ch)
 
     tri_only = copy.deepcopy(tri_src)
     walk_restyle(tri_only)
@@ -216,15 +171,9 @@ def main() -> None:
     g_tri = ET.Element(q("g"))
     g_tri.append(tri_only)
 
-    g_center_front = ET.Element(q("g"))
-    for frag in promoted:
-        g_center_front.append(frag)
-    tag_center_jewel_id(g_center_front)
-
     pieces: list[tuple[str, ET.Element, str]] = [
-        ("g-hub-masked", hub_masked, "Layer-17 minus triangle and centre jewel, hub mask"),
-        ("g-inner-triangle", g_tri, "triangle outline (#inner-triangle)"),
-        ("g-center-front", g_center_front, "inner diamond + centre glyph on top (#center-jewel-frame)"),
+        ("g-hub-masked", hub_masked, "full Layer-17 minus triangle, hub mask"),
+        ("g-inner-triangle", g_tri, "triangle outline above hub (#inner-triangle)"),
     ]
 
     for _, frag, _ in pieces:
@@ -278,11 +227,11 @@ def main() -> None:
       height: 100vh;
       display: block;
     }}
-    #g-hub-masked, #g-inner-triangle, #g-center-front {{
+    #g-hub-masked, #g-inner-triangle {{
       transform-box: view-box;
       transform-origin: {cx}px {cy}px;
     }}
-    #inner-triangle, #center-jewel-frame {{
+    #inner-triangle {{
       transform-box: fill-box;
       transform-origin: center;
     }}
