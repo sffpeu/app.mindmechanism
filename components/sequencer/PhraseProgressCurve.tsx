@@ -7,6 +7,7 @@ import {
   getPhraseSummaryDoc,
   type PhraseSession,
 } from '@/lib/phraseProgress'
+import { usePassportKey } from '@/components/passport/PassportKeyProvider'
 
 const CHART_H = 80
 const VIEW_W = 400
@@ -30,6 +31,7 @@ export function PhraseProgressCurve({
   phraseText,
   strokeClassName = 'text-violet-500',
 }: PhraseProgressCurveProps) {
+  const { key: passportKey } = usePassportKey()
   const [loading, setLoading] = useState(true)
   const [sessions, setSessions] = useState<PhraseSession[]>([])
   const [bestScore, setBestScore] = useState(0)
@@ -41,7 +43,7 @@ export function PhraseProgressCurve({
     ;(async () => {
       try {
         const [hist, summary] = await Promise.all([
-          getPhraseSessionHistory(uid, phraseHash, 40),
+          getPhraseSessionHistory(uid, phraseHash, 40, passportKey),
           getPhraseSummaryDoc(uid, phraseHash),
         ])
         if (cancelled) return
@@ -59,7 +61,7 @@ export function PhraseProgressCurve({
     return () => {
       cancelled = true
     }
-  }, [uid, phraseHash, refreshKey])
+  }, [uid, phraseHash, refreshKey, passportKey])
 
   const plotInnerH = CHART_H - PAD_TOP - PAD_BOTTOM
 

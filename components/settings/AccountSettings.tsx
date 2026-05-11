@@ -9,8 +9,10 @@ import { useAuth } from '@/lib/FirebaseAuthContext'
 import { cn } from '@/lib/utils'
 import { downloadKeyBackup, exportKeyAsBase64, hasPassportKey, importKeyFromBase64, loadKey } from '@/lib/passportCrypto'
 import { syncPassportKeyMeta } from '@/lib/passportSilo'
+import { rotatePassportKey } from '@/lib/passportKeyRotation'
 import { PASSPORT_BACKUP_REMINDER_KEY } from '@/lib/passportCipherUi'
-import { collection, getCountFromServer, query, where, type Firestore } from 'firebase/firestore'
+import { usePassportKey } from '@/components/passport/PassportKeyProvider'
+import { collection, getCountFromServer, query, where, getDocs, type Firestore } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 
 const TIER_CONFIG = {
@@ -21,11 +23,13 @@ const TIER_CONFIG = {
 
 export function AccountSettings() {
   const { user, profile } = useAuth()
+  const { refreshFromIdb } = usePassportKey()
   const tier = profile?.tier ?? 'open'
   const tierCfg = TIER_CONFIG[tier]
   const [keyMsg, setKeyMsg] = useState<string | null>(null)
   const [hasKey, setHasKey] = useState<boolean | null>(null)
   const [personalWordCount, setPersonalWordCount] = useState<number | null>(null)
+  const [rotateBusy, setRotateBusy] = useState(false)
   const restoreInputRef = useRef<HTMLInputElement>(null)
 
   const refreshKeyState = useCallback(async () => {
@@ -100,9 +104,56 @@ export function AccountSettings() {
       const key = await importKeyFromBase64(b64)
       await syncPassportKeyMeta(uid, key)
       setHasKey(true)
+      await refreshFromIdb()
+      await refreshKeyState()
       setKeyMsg('Key restored. Your personal definitions are now readable.')
     } catch {
       setKeyMsg('Could not read that backup file. Check the format and try again.')
+    }
+  }
+
+  const handleRotateEncryptionKey = async () => {
+    setKeyMsg(null)
+    if (!uid) return
+    if (!window.confirm('Rotate your encryption key? All encrypted personal fields will be re-encrypted.')) return
+    if (!window.confirm('Confirm again: without a fresh backup you could lose access if something fails.')) return
+    const oldKey = await loadKey()
+    if (!oldKey) {
+      setKeyMsg('No key in this browser to rotate.')
+      return
+    }
+    setRotateBusy(true)
+    try {
+      const newKey = await rotatePassportKey(oldKey, async () => {
+        const glossaryRef = collection(db as Firestore, 'glossary')
+        const q = query(
+          glossaryRef,
+          where('source', '==', 'user'),
+          where('user_id', '==', uid),
+          where('personal', '==', true)
+        )
+        const snap = await getDocs(q)
+        return snap.docs
+          .filter((d) => d.data().encrypted === true)
+          .map((d) => {
+            const data = d.data()
+            const fields: Record<string, string> = {}
+            if (typeof data.own_definition === 'string' && data.own_definition)
+              fields.own_definition = data.own_definition
+            if (typeof data.context === 'string' && data.context) fields.context = data.context
+            return { ref: d.ref, fields }
+          })
+          .filter((r) => Object.keys(r.fields).length > 0)
+      })
+      await syncPassportKeyMeta(uid, newKey)
+      await refreshFromIdb()
+      await refreshKeyState()
+      setKeyMsg('Encryption key rotated. Download a new backup immediately.')
+    } catch (e) {
+      console.error(e)
+      setKeyMsg('Key rotation failed. If your data looks wrong, restore from your most recent backup file.')
+    } finally {
+      setRotateBusy(false)
     }
   }
 
@@ -189,6 +240,25 @@ export function AccountSettings() {
               className="hidden"
               onChange={(e) => void handleRestoreKeyFile(e)}
             />
+            <details className="w-full border-t border-neutral-200 pt-3 text-xs text-gray-500 dark:border-neutral-800 dark:text-neutral-500">
+              <summary className="cursor-pointer select-none text-gray-600 dark:text-neutral-400">
+                Advanced: rotate encryption key
+              </summary>
+              <p className="mt-2 leading-relaxed">
+                Generates a new key and re-encrypts encrypted personal lexicon fields in Firestore. Download a fresh
+                backup immediately afterward. Only use if you understand the risk.
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-2"
+                disabled={hasKey !== true || rotateBusy}
+                onClick={() => void handleRotateEncryptionKey()}
+              >
+                {rotateBusy ? 'Rotating…' : 'Rotate encryption key…'}
+              </Button>
+            </details>
           </div>
         )}
         {keyMsg && <p className="text-sm text-gray-700 dark:text-neutral-200">{keyMsg}</p>}

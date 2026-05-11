@@ -12,6 +12,7 @@ import { db } from './firebase'
 import { getUserPhraseSummaries, getPhraseSessionHistory } from './phraseProgress'
 import { decryptPersonalWord } from './glossary'
 import type { GlossaryWord } from '@/types/Glossary'
+import { loadKey } from './passportCrypto'
 import { RESEARCH_PROTOCOL_VERSION } from './researchProtocol'
 import type { ResearchConsent, UserProfile } from './FirebaseAuthContext'
 
@@ -41,6 +42,7 @@ export interface PhraseProgressExport {
     stress_hit_count: number
     stress_miss_count: number
     recorded_at: string
+    notes?: string | null
   }[]
 }
 
@@ -140,10 +142,12 @@ export async function exportUserData(
     )
   ).sort((a, b) => a.created_at.localeCompare(b.created_at))
 
+  const passportKeyForExport = await loadKey()
+
   const summaries = await getUserPhraseSummaries(uid)
   const phraseProgressExport: PhraseProgressExport[] = await Promise.all(
     summaries.map(async (s) => {
-      const sessions = await getPhraseSessionHistory(uid, s.phraseHash, 200)
+      const sessions = await getPhraseSessionHistory(uid, s.phraseHash, 200, passportKeyForExport)
       return {
         phrase: s.phrase,
         ipa_text: s.ipaText,
@@ -159,6 +163,7 @@ export async function exportUserData(
           stress_hit_count: sess.stressHitCount,
           stress_miss_count: sess.stressMissCount,
           recorded_at: new Date(sess.createdAt).toISOString(),
+          ...(sess.notes != null && sess.notes !== '' ? { notes: sess.notes } : {}),
         })),
       }
     })

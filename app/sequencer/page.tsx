@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { useAuth } from '@/lib/FirebaseAuthContext'
+import { usePassportKey } from '@/components/passport/PassportKeyProvider'
 import { cn } from '@/lib/utils'
 import StepSequencer from '@/components/StepSequencer'
 import { useSequencer } from '@/lib/hooks/useSequencer'
@@ -19,6 +20,7 @@ import { analyzePhraseBlob, type PhraseAcousticReport } from '@/lib/phraseAcoust
 import { db } from '@/lib/firebase'
 import { doc, setDoc, getDoc, increment, type Firestore } from 'firebase/firestore'
 import { phraseHash } from '@/lib/phraseProgress'
+import { encryptField } from '@/lib/passportCrypto'
 import { PhraseProgressCurve } from '@/components/sequencer/PhraseProgressCurve'
 import { NodeAffinityMap } from '@/components/sequencer/NodeAffinityMap'
 import { computeNodeAffinityProfile, type NodeAffinityProfile } from '@/lib/nodeAffinity'
@@ -130,6 +132,7 @@ export default function SequencerPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user, profile, loading } = useAuth()
+  const { key: passportKey } = usePassportKey()
   const { sequences, saveSequence, deleteSequence, loading: sequencesLoading } = useSequencerStorage()
   const toneMode = useSettings((s) => s.toneMode)
   const setToneMode = useSettings((s) => s.setToneMode)
@@ -197,7 +200,17 @@ export default function SequencerPage() {
     return phraseHash(`${m}|${sequencer.sequence.ipaText.trim()}`)
   }, [sequencer.sequence.mantraText, sequencer.sequence.ipaText])
 
-  const handlePoolFinished = async ({ blob }: { poolIndex: number; blob: Blob; durationSec: number }) => {
+  const handlePoolFinished = async ({
+    blob,
+    poolIndex: _poolIndex,
+    durationSec: _durationSec,
+    notes,
+  }: {
+    poolIndex: number
+    blob: Blob
+    durationSec: number
+    notes: string
+  }) => {
     const report = await analyzePhraseBlob(blob)
     const activeStepIndices = sequencer.sequence.steps
       .map((s, i) => (s.active ? i : -1))
@@ -209,42 +222,69 @@ export default function SequencerPage() {
       const ph = phraseHash(`${sequencer.sequence.mantraText.trim()}|${sequencer.sequence.ipaText.trim()}`)
       const sessionId = new Date().toISOString()
       try {
-        await setDoc(
-          doc(db as Firestore, 'users', user.uid, 'phraseProgress', ph, 'sessions', sessionId),
-          {
-            phrase: sequencer.sequence.mantraText,
-            ipaText: sequencer.sequence.ipaText,
-            consistencyScore: compare.consistencyScore,
-            rhythmMatchPct: compare.rhythmMatchPct,
-            stressHitCount: compare.stressHitCount,
-            stressMissCount: compare.stressMissCount,
-            targetPattern: compare.targetPattern,
-            userPattern: compare.userPattern,
-            prominencePeaks: report.prominencePeaks.map((p) => p.tSec),
-            speechSegments: report.speechSegments.map((s) => [s.startSec, s.endSec]),
-            createdAt: Date.now(),
-          }
-        )
+        let encryptedNotes: string | undefined
+        let notesEncrypted = false
+        if (notes.trim() && passportKey) {
+          encryptedNotes = await encryptField(notes.trim(), passportKey)
+          notesEncrypted = true
+        }
 
-        const summaryRef = doc(db as Firestore, 'users', user.uid, 'phraseProgress', ph)
-        const summarySnap = await getDoc(summaryRef)
-        const prev = summarySnap.exists() ? summarySnap.data() : {}
-        const currentBest =
-          typeof prev.bestScore === 'number' && !Number.isNaN(prev.bestScore) ? prev.bestScore : 0
+        const sessionData: Record<string, unknown> = {
+          phrase: sequencer.sequence.mantraText,
+          ipaText: sequencer.sequence.ipaText,
+          consistencyScore: compare.consistencyScore,
+          rhythmMatchPct: compare.rhythmMatchPct,
+          stressHitCount: compare.stressHitCount,
+          stressMissCount: compare.stressMissCount,
+          targetPattern: compare.targetPattern,
+          userPattern: compare.userPattern,
+          prominencePeaks: report.prominencePeaks.map((p) => p.tSec),
+          speechSegments: report.speechSegments.map((s) => [s.startSec, s.endSec]),
+          createdAt: Date.now(),
+          notes: encryptedNotes ?? (notes.trim() || null),
+          notesEncrypted,
+        }
 
-        await setDoc(
-          summaryRef,
-          {
-            phrase: sequencer.sequence.mantraText.trim(),
-            ipaText: sequencer.sequence.ipaText.trim(),
-            latestScore: compare.consistencyScore,
-            latestSessionAt: Date.now(),
-            sessionCount: increment(1),
-            bestScore: Math.max(currentBest, compare.consistencyScore),
-            ...(summarySnap.exists() ? {} : { firstSessionAt: Date.now() }),
-          },
-          { merge: true }
+        const siloSessionRef = doc(db as Firestore, 'passport', user.uid, 'phrases', ph, 'sessions', sessionId)
+        const legacySessionRef = doc(
+          db as Firestore,
+          'users',
+          user.uid,
+          'phraseProgress',
+          ph,
+          'sessions',
+          sessionId
         )
+        await Promise.all([setDoc(siloSessionRef, sessionData), setDoc(legacySessionRef, sessionData)])
+
+        const summarySiloRef = doc(db as Firestore, 'passport', user.uid, 'phrases', ph)
+        const summaryLegacyRef = doc(db as Firestore, 'users', user.uid, 'phraseProgress', ph)
+        const [summarySiloSnap, summaryLegacySnap] = await Promise.all([
+          getDoc(summarySiloRef),
+          getDoc(summaryLegacyRef),
+        ])
+        const prevSilo = summarySiloSnap.exists() ? summarySiloSnap.data() : {}
+        const prevLegacy = summaryLegacySnap.exists() ? summaryLegacySnap.data() : {}
+        const bestSilo = typeof prevSilo.bestScore === 'number' && !Number.isNaN(prevSilo.bestScore) ? prevSilo.bestScore : 0
+        const bestLegacy =
+          typeof prevLegacy.bestScore === 'number' && !Number.isNaN(prevLegacy.bestScore) ? prevLegacy.bestScore : 0
+        const currentBest = Math.max(bestSilo, bestLegacy)
+        const existed = summarySiloSnap.exists() || summaryLegacySnap.exists()
+
+        const summaryPayload: Record<string, unknown> = {
+          phrase: sequencer.sequence.mantraText.trim(),
+          ipaText: sequencer.sequence.ipaText.trim(),
+          latestScore: compare.consistencyScore,
+          latestSessionAt: Date.now(),
+          sessionCount: increment(1),
+          bestScore: Math.max(currentBest, compare.consistencyScore),
+          ...(!existed ? { firstSessionAt: Date.now() } : {}),
+        }
+
+        await Promise.all([
+          setDoc(summarySiloRef, summaryPayload, { merge: true }),
+          setDoc(summaryLegacyRef, summaryPayload, { merge: true }),
+        ])
       } catch {
         /* Firestore unavailable — comparison UI still works locally */
       }

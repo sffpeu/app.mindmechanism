@@ -100,7 +100,7 @@ type PhrasePool = {
 
 type StepSequencerProps = {
   mantraText?: string
-  onPoolFinished?: (payload: { poolIndex: number; blob: Blob; durationSec: number }) => void
+  onPoolFinished?: (payload: { poolIndex: number; blob: Blob; durationSec: number; notes: string }) => void
   /** Called after Category A node-affinity session is logged (main transport stop). */
   onNodeAffinityLogged?: () => void
 }
@@ -662,6 +662,7 @@ export default function StepSequencer({
           POOL_RECORD_MS / 1000,
           recordedMsRef.current / 1000
         )
+        const poolNotes = pools[activePool]?.notes ?? ''
         setPools((prev) =>
           prev.map((pool, idx) => {
             if (idx !== activePool) return pool
@@ -680,7 +681,12 @@ export default function StepSequencer({
             }
           })
         )
-        onPoolFinished?.({ poolIndex: activePool, blob, durationSec: nextDurationSec })
+        onPoolFinished?.({
+          poolIndex: activePool,
+          blob,
+          durationSec: nextDurationSec,
+          notes: poolNotes,
+        })
         setPhrasePos(0)
         setPhraseDuration(Math.min(POOL_RECORD_MS / 1000, recordedMs / 1000))
         setPhraseRecActive(false)

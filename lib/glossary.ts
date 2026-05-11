@@ -2,7 +2,7 @@ import { db } from './firebase';
 import { GlossaryWord, GlossaryDefinition } from '@/types/Glossary';
 import type { UserProfile } from '@/lib/FirebaseAuthContext';
 import { logWheelAssignment } from '@/lib/researchLogging';
-import { getOrCreatePassportKey, encryptField, loadKey, decryptField } from '@/lib/passportCrypto';
+import { encryptField, loadKey, decryptField } from '@/lib/passportCrypto';
 import { bumpPassportLexiconCount, syncPassportKeyMeta } from '@/lib/passportSilo';
 import { testWords } from '@/lib/testWords';
 import {
@@ -18,6 +18,12 @@ import {
   orderBy,
   Firestore
 } from 'firebase/firestore';
+
+export type SaveUserWordOptions = {
+  researchContext?: { uid: string; profile: UserProfile | null }
+  /** When set, used to encrypt personal fields; if omitted, personal narrative is stored plaintext (legacy). */
+  passportKey?: CryptoKey | null
+}
 
 /**
  * Fetch IPA phonetic spelling from the Free Dictionary API.
@@ -385,7 +391,7 @@ export async function getClockWords(): Promise<GlossaryWord[]> {
 
 export async function addUserWord(
   word: Omit<GlossaryWord, 'id' | 'created_at'>,
-  researchContext?: { uid: string; profile: UserProfile | null }
+  options?: SaveUserWordOptions
 ): Promise<GlossaryWord | null> {
   try {
     if (!db) throw new Error('Firestore is not initialized');
@@ -395,17 +401,19 @@ export async function addUserWord(
     let storedEncrypted = false;
 
     if (word.personal === true && (word.own_definition || word.context)) {
-      const key = await getOrCreatePassportKey();
-      const uid = word.user_id ?? researchContext?.uid;
-      if (uid) await syncPassportKeyMeta(uid, key);
-      if (word.own_definition) {
-        payload.own_definition = await encryptField(word.own_definition, key);
+      const key = options?.passportKey ?? null;
+      if (key) {
+        const uid = word.user_id ?? options?.researchContext?.uid;
+        if (uid) await syncPassportKeyMeta(uid, key);
+        if (word.own_definition) {
+          payload.own_definition = await encryptField(word.own_definition, key);
+        }
+        if (word.context) {
+          payload.context = await encryptField(word.context, key);
+        }
+        payload.encrypted = true;
+        storedEncrypted = true;
       }
-      if (word.context) {
-        payload.context = await encryptField(word.context, key);
-      }
-      payload.encrypted = true;
-      storedEncrypted = true;
     } else if (word.personal === true) {
       payload.encrypted = false;
     }
@@ -420,6 +428,7 @@ export async function addUserWord(
       await bumpPassportLexiconCount(word.user_id, 1);
     }
 
+    const researchContext = options?.researchContext;
     if (researchContext && word.clock_id != null) {
       await logWheelAssignment(researchContext.uid, researchContext.profile, {
         wheelIndex: word.clock_id,
@@ -443,7 +452,7 @@ export async function addUserWord(
 export async function updateUserWord(
   id: string,
   updates: Partial<GlossaryWord>,
-  researchContext?: { uid: string; profile: UserProfile | null }
+  options?: SaveUserWordOptions
 ): Promise<GlossaryWord | null> {
   try {
     if (!db) throw new Error('Firestore is not initialized');
@@ -454,14 +463,19 @@ export async function updateUserWord(
     if (updates.personal === true && (updates.own_definition !== undefined || updates.context !== undefined)) {
       const own = updates.own_definition ?? '';
       const ctx = updates.context ?? '';
+      const key = options?.passportKey ?? null;
       if (own || ctx) {
-        const key = await getOrCreatePassportKey();
-        const uid = researchContext?.uid;
-        if (uid) await syncPassportKeyMeta(uid, key);
-        patch = { ...updates };
-        patch.own_definition = own ? await encryptField(own, key) : '';
-        patch.context = ctx ? await encryptField(ctx, key) : '';
-        patch.encrypted = true;
+        if (key) {
+          const uid = options?.researchContext?.uid;
+          if (uid) await syncPassportKeyMeta(uid, key);
+          patch = { ...updates };
+          patch.own_definition = own ? await encryptField(own, key) : '';
+          patch.context = ctx ? await encryptField(ctx, key) : '';
+          patch.encrypted = true;
+        } else {
+          patch = { ...updates };
+          patch.encrypted = false;
+        }
       } else {
         patch = { ...updates, encrypted: false, own_definition: '', context: '' };
       }
@@ -471,6 +485,7 @@ export async function updateUserWord(
 
     await updateDoc(docRef, patch as Partial<GlossaryWord> & Record<string, unknown>);
 
+    const researchContext = options?.researchContext;
     if (researchContext && updates.clock_id != null) {
       await logWheelAssignment(researchContext.uid, researchContext.profile, {
         wheelIndex: updates.clock_id,

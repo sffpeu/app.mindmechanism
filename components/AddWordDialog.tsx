@@ -14,9 +14,9 @@ import {
 } from '@/components/ui/select'
 import { addUserWord, updateUserWord, fetchIpaPhonetic } from '@/lib/glossary';
 import { useAuth } from '@/lib/FirebaseAuthContext';
-import { hasPassportKey } from '@/lib/passportCrypto';
 import { PASSPORT_BACKUP_REMINDER_KEY } from '@/lib/passportCipherUi';
 import { PassportKeySetup } from '@/components/record/PassportKeySetup';
+import { usePassportKey } from '@/components/passport/PassportKeyProvider';
 import { toast } from 'sonner';
 import { useSoundEffects } from '@/lib/sounds';
 import { GlossaryWord, SUPPORTED_LANGUAGES } from '@/types/Glossary';
@@ -33,6 +33,7 @@ interface AddWordDialogProps {
 
 export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord, mode = 'formal' }: AddWordDialogProps) {
   const { user, profile } = useAuth();
+  const { key: passportKey, ready: passportKeyReady, refreshFromIdb } = usePassportKey();
   const { playSuccess } = useSoundEffects();
   const [word, setWord] = useState('');
   const [definition, setDefinition] = useState('');
@@ -191,7 +192,7 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord, mode 
     setIsLoading(true);
     setShowOverwriteChoice(false);
     try {
-      if (needsPersonalEncryptionGate() && !(await hasPassportKey())) {
+      if (needsPersonalEncryptionGate() && passportKeyReady && !passportKey) {
         pendingSaveKindRef.current = 'overwrite';
         setPassportKeySetupOpen(true);
         return;
@@ -211,7 +212,10 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord, mode 
       };
       if (clockId !== 'none') updates.clock_id = Number(clockId);
       const researchContext = user ? { uid: user.uid, profile } : undefined
-      const result = await updateUserWord(editWord.id, updates, researchContext);
+      const result = await updateUserWord(editWord.id, updates, {
+        researchContext,
+        passportKey: passportKey ?? undefined,
+      });
       if (result) {
         playSuccess();
         toast.success('Word updated successfully');
@@ -234,7 +238,7 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord, mode 
     setIsLoading(true);
     if (showOverwriteChoice) setShowOverwriteChoice(false);
     try {
-      if (needsPersonalEncryptionGate() && !(await hasPassportKey())) {
+      if (needsPersonalEncryptionGate() && passportKeyReady && !passportKey) {
         pendingSaveKindRef.current = 'add';
         setPassportKeySetupOpen(true);
         return;
@@ -256,7 +260,10 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord, mode 
       };
       if (clockId !== 'none') newWord.clock_id = Number(clockId);
       const researchContext = user ? { uid: user.uid, profile } : undefined
-      const result = await addUserWord(newWord, researchContext);
+      const result = await addUserWord(newWord, {
+        researchContext,
+        passportKey: passportKey ?? undefined,
+      });
       if (result) {
         playSuccess();
         toast.success('Word added successfully');
@@ -549,7 +556,9 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord, mode 
           /* ignore */
         }
       }}
-      onCompleted={() => void runAfterPassportKeySetup()}
+      onCompleted={() => {
+        void refreshFromIdb().then(() => runAfterPassportKeySetup())
+      }}
     />
     </>
   );

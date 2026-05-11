@@ -10,6 +10,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { EmailVerificationGate } from '@/components/auth/EmailVerificationGate';
 import { AppDock } from '@/components/AppDock';
 import { ResearchConsentTrigger } from '@/components/research/ResearchConsentTrigger';
+import { PassportKeyProvider } from '@/components/passport/PassportKeyProvider';
 
 function isShellPublic(pathname: string): boolean {
   if (pathname === '/' || pathname === '/home' || pathname === '/home/') return true
@@ -52,13 +53,15 @@ export function LayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <TimeTrackingProvider>
-          <NotesProvider>
-            <ToastProvider>
-              <LayoutContentInner>{children}</LayoutContentInner>
-            </ToastProvider>
-          </NotesProvider>
-        </TimeTrackingProvider>
+        <PassportKeyProvider>
+          <TimeTrackingProvider>
+            <NotesProvider>
+              <ToastProvider>
+                <LayoutContentInner>{children}</LayoutContentInner>
+              </ToastProvider>
+            </NotesProvider>
+          </TimeTrackingProvider>
+        </PassportKeyProvider>
       </AuthProvider>
     </ThemeProvider>
   );

@@ -10,6 +10,7 @@ import { collection, doc, getDocs, setDoc, deleteDoc, query, orderBy, type Fires
 import { addUserWord } from '@/lib/glossary'
 import { getFirebaseStorage, db } from '@/lib/firebase'
 import { useAuth } from '@/lib/FirebaseAuthContext'
+import { usePassportKey } from '@/components/passport/PassportKeyProvider'
 import { cn } from '@/lib/utils'
 import { playDeckSessionLoadTone, playDeckSessionSaveTone } from '@/lib/deckSessionTone'
 
@@ -102,6 +103,7 @@ const DECK_STRIP_BTN_DRAW =
 
 export function CardTable() {
   const { user, profile } = useAuth()
+  const { key: passportKey } = usePassportKey()
   const tableRef = useRef<HTMLDivElement>(null)
   const bgInputRef = useRef<HTMLInputElement>(null)
   const [cards, setCards] = useState<CardState[]>([])
@@ -267,7 +269,7 @@ export function CardTable() {
           language: 'en',
           user_id: user?.uid,
         },
-        researchContext
+        { researchContext, passportKey: passportKey ?? undefined }
       )
       showToast(result ? `"${term.trim()}" added to My Words` : 'Failed to add — try again')
       return
@@ -275,7 +277,7 @@ export function CardTable() {
     const node = MANDALA_NODES.find(n => n.id === nodeId)
     if (!node) return
     showToast(`"${node.term}" sent to Glossary`)
-  }, [cards, showToast, user, profile])
+  }, [cards, showToast, user, profile, passportKey])
 
   const handleCustomContentChange = useCallback((nodeId: string, field: 'term' | 'definition' | 'phonetic', value: string) => {
     setCards(prev => prev.map(c =>

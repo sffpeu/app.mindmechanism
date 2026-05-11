@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ScrollText } from 'lucide-react'
 import { useAuth } from '@/lib/FirebaseAuthContext'
+import { usePassportKey } from '@/components/passport/PassportKeyProvider'
 import { getUserPhraseSummaries, getPhraseSessionHistory } from '@/lib/phraseProgress'
 import { computeNodeAffinityProfile, type NodeAffinityProfile } from '@/lib/nodeAffinity'
 import { LexiconPanel } from '@/components/record/LexiconPanel'
@@ -17,6 +18,7 @@ import { PASSPORT_BACKUP_REMINDER_KEY } from '@/lib/passportCipherUi'
 
 export function MyRecordView() {
   const { user, profile } = useAuth()
+  const { key: passportKey } = usePassportKey()
   const [phraseRows, setPhraseRows] = useState<PhraseHistoryRow[]>([])
   const [affinity, setAffinity] = useState<NodeAffinityProfile | null>(null)
   const [loading, setLoading] = useState(true)
@@ -63,7 +65,7 @@ export function MyRecordView() {
 
         const top = phrases.slice(0, 15)
         const histories = await Promise.all(
-          top.map((p) => getPhraseSessionHistory(user.uid, p.phraseHash, 24))
+          top.map((p) => getPhraseSessionHistory(user.uid, p.phraseHash, 24, passportKey))
         )
         if (cancelled) return
 
@@ -81,7 +83,7 @@ export function MyRecordView() {
     return () => {
       cancelled = true
     }
-  }, [user?.uid])
+  }, [user?.uid, passportKey])
 
   return (
     <div className="space-y-8">
