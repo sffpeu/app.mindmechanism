@@ -12,6 +12,7 @@ import { PhraseHistoryPanel, type PhraseHistoryRow } from '@/components/record/P
 import { AffinityPanel } from '@/components/record/AffinityPanel'
 import { ResearchStatusPanel } from '@/components/record/ResearchStatusPanel'
 import { ResearchDashboard } from '@/components/record/ResearchDashboard'
+import { InstitutionalAccessPanel } from '@/components/record/InstitutionalAccessPanel'
 import { ExportButton } from '@/components/record/ExportButton'
 import { downloadKeyBackup, exportKeyAsBase64, loadKey } from '@/lib/passportCrypto'
 import { PASSPORT_BACKUP_REMINDER_KEY } from '@/lib/passportCipherUi'
@@ -161,6 +162,7 @@ export function MyRecordView() {
         passportKey={passportKey}
       />
       <ResearchDashboard />
+      {user?.uid ? <InstitutionalAccessPanel uid={user.uid} /> : null}
     </div>
   )
 }
