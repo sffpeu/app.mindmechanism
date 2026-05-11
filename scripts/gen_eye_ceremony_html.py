@@ -10,7 +10,8 @@ replace that file if you update the art).
 Default out.html: ~/Desktop/Closing Ceremony/eye_ceremony.html
 
 SVG: restyles strokes (#552d8e, rgb(35,31,32), etc.) → #941952; white fills in style → page black.
-Raster (.png, .jpg, .webp): embedded as-is (exact pixels, no recolour).
+Raster (.png, .jpg, .webp): drawn to a canvas on black — transparent and near-white pixels
+become black so only linework reads (no filled white hub).
 """
 from __future__ import annotations
 
@@ -165,6 +166,48 @@ def build_html_svg(svg_inner: str, cx: int, cy: int) -> str:
 
 
 def build_html_raster(data_uri: str) -> str:
+    """Raster page: black page, canvas draws art with near-white / transparent pixels flattened to black."""
+    js = """
+(function () {
+  var img = document.getElementById('eye-src');
+  var canvas = document.getElementById('g-eye');
+  if (!img || !canvas) return;
+
+  function isWhiteish(r, g, b) {
+    var mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+    if (mx < 218) return false;
+    if (mx - mn < 45) return true;
+    if (r > 238 && g > 238 && b > 238) return true;
+    return false;
+  }
+
+  function paint() {
+    var w = img.naturalWidth, h = img.naturalHeight;
+    if (!w || !h) return;
+    canvas.width = w;
+    canvas.height = h;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    var imageData = ctx.getImageData(0, 0, w, h);
+    var d = imageData.data;
+    for (var i = 0; i < d.length; i += 4) {
+      var r = d[i], g = d[i + 1], b = d[i + 2], a = d[i + 3];
+      if (a < 28) {
+        d[i] = d[i + 1] = d[i + 2] = 0;
+        d[i + 3] = 255;
+      } else if (isWhiteish(r, g, b)) {
+        d[i] = d[i + 1] = d[i + 2] = 0;
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
+    img.style.display = 'none';
+    canvas.style.display = 'block';
+  }
+
+  if (img.complete) paint();
+  else img.addEventListener('load', paint);
+})();
+"""
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -185,17 +228,23 @@ def build_html_raster(data_uri: str) -> str:
       height: 100vh;
       overflow: hidden;
     }}
-    img.mandala {{
-      width: 100vh;
-      height: 100vh;
-      object-fit: contain;
+    img.mandala, canvas.mandala {{
+      max-width: 100vmin;
+      max-height: 100vmin;
+      width: auto;
+      height: auto;
       display: block;
+    }}
+    canvas.mandala {{
+      display: none;
     }}
   </style>
 </head>
 <body>
-  <img class="mandala" id="g-eye" alt="" src="{data_uri}" />
+  <img class="mandala" id="eye-src" alt="" src="{data_uri}" />
+  <canvas class="mandala" id="g-eye" aria-label="Eye mandala"></canvas>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  <script>{js}</script>
   <script>
   // ANIMATION PLACEHOLDER — Claude writes this block
   </script>
