@@ -305,7 +305,7 @@ export function DeckCard({
 
           <div style={{
             position: 'relative', flex: 1,
-            padding: '12px 15px 12px',
+            padding: '14px 16px 12px',
             display: 'flex', flexDirection: 'column',
           }}>
             {/* Top row: wheel label + controls */}
@@ -491,7 +491,7 @@ export function DeckCard({
         }}>
           <div style={{ height: 6, background: wheelColor, flexShrink: 0 }} />
 
-          <div style={{ padding: '9px 13px 7px', borderBottom: '1px solid #252528', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid #252528', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ fontSize: 9, color: '#555', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                 {isBlank ? 'New card ·' : 'Your take ·'}
@@ -506,7 +506,7 @@ export function DeckCard({
             </button>
           </div>
 
-          <div style={{ flex: 1, padding: '8px 13px', display: 'flex', flexDirection: 'column', gap: 6, overflow: 'hidden' }}>
+          <div style={{ flex: 1, padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 7, overflow: 'hidden' }}>
 
             {/* Blank card: Term + Phonetic inputs */}
             {isBlank && (
@@ -582,7 +582,7 @@ export function DeckCard({
                 onPointerDown={stopProp}
                 placeholder={isBlank ? 'Write a definition...' : (isRecording ? 'Listening...' : 'Write or speak your definition...')}
                 style={{
-                  width: '100%', height: isBlank ? 50 : 60, background: '#252528',
+                  width: '100%', height: isBlank ? 60 : 72, background: '#252528',
                   border: `1px solid ${isRecording ? '#ef4444' : '#363638'}`,
                   borderRadius: 6, color: '#ddd', fontSize: 11,
                   padding: '6px 8px', resize: 'none', outline: 'none',
@@ -604,7 +604,7 @@ export function DeckCard({
                   onPointerDown={stopProp}
                   placeholder="Add a note..."
                   style={{
-                    width: '100%', height: 44, background: '#252528',
+                    width: '100%', height: 52, background: '#252528',
                     border: '1px solid #363638', borderRadius: 6,
                     color: '#ddd', fontSize: 11, padding: '6px 8px',
                     resize: 'none', outline: 'none', fontFamily: 'inherit',
@@ -758,15 +758,15 @@ export function DeckCard({
             </div>
           </div>
 
-          <div style={{ padding: '7px 13px', borderTop: '1px solid #252528', display: 'flex', gap: 6 }}>
+          <div style={{ padding: '9px 14px', borderTop: '1px solid #252528', display: 'flex', gap: 6 }}>
             <button
               onPointerDown={stopProp} onClick={onSendToGlossary}
               style={{
-                flex: 1, padding: '6px 8px',
+                flex: 1, padding: '8px 10px',
                 background: isBlank ? '#2d6e4a' : wheelColor,
                 color: '#fff', border: isBlank ? '1px solid #3d9e6a' : 'none',
                 borderRadius: 6,
-                fontSize: 10, fontWeight: 600, cursor: 'pointer',
+                fontSize: 11, fontWeight: 600, cursor: 'pointer',
                 letterSpacing: '0.05em', textTransform: 'uppercase',
               }}
             >
@@ -775,9 +775,9 @@ export function DeckCard({
             <button
               onPointerDown={stopProp} onClick={onExpand}
               style={{
-                padding: '6px 10px', background: '#252528',
+                padding: '8px 12px', background: '#252528',
                 color: '#666', border: '1px solid #363638', borderRadius: 6,
-                fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                fontSize: 12, fontWeight: 600, cursor: 'pointer',
               }}
             >
               ↗

@@ -33,8 +33,8 @@ export function getMandalaNodes(language: string): MandalaNode[] {
   return MANDALA_NODES
 }
 
-export const CARD_W = 240
-export const CARD_H = 339
+export const CARD_W = 270
+export const CARD_H = 390
 
 export const MANDALA_NODES: MandalaNode[] = [
   // Wheel 1 — Root
