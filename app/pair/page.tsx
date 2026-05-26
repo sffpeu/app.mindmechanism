@@ -24,6 +24,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { cn } from '@/lib/utils'
 import Timer from '@/components/Timer'
 import { useIdleFade } from '@/lib/hooks/useIdleFade'
+import { useLanguage } from '@/lib/i18n'
 
 const CLOCK_HEX = [
   '#fd290a', '#fba63b', '#f7da5f', '#6dc037',
@@ -260,6 +261,7 @@ function PairedFace({
 // ─────────────────────────────────────────────────────────────────────────────
 function SessionPhase({
   idA, idB, duration, continuous, colourMode, onColourModeChange, onEnd,
+  labelEndSession, labelMuteTones, labelUnmuteTones,
 }: {
   idA: number
   idB: number
@@ -270,6 +272,9 @@ function SessionPhase({
   colourMode: ColourMode
   onColourModeChange: (m: ColourMode) => void
   onEnd: () => void
+  labelEndSession: string
+  labelMuteTones: string
+  labelUnmuteTones: string
 }) {
   const clockTitles = useClockTitles()
   const [muted, setMuted] = useState(false)
@@ -338,7 +343,7 @@ function SessionPhase({
             onClick={onEnd}
             className="mt-1 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-[10px] font-medium uppercase tracking-widest text-white/60 transition-colors hover:border-white/25 hover:bg-white/10 hover:text-white/85"
           >
-            End session
+            {labelEndSession}
           </button>
         )}
       </div>
@@ -364,7 +369,7 @@ function SessionPhase({
           'transition-colors hover:bg-black/90',
           isIdle && 'pointer-events-none opacity-0',
         )}
-        aria-label={muted ? 'Unmute tones' : 'Mute tones'}
+        aria-label={muted ? labelUnmuteTones : labelMuteTones}
       >
         {muted
           ? <VolumeX className="h-5 w-5" aria-hidden />
@@ -511,6 +516,7 @@ function PairPreview({ idA, idB, colourMode }: { idA: number | null; idB: number
 // ─────────────────────────────────────────────────────────────────────────────
 function PairPageContent() {
   const clockTitles = useClockTitles()
+  const { t } = useLanguage()
   const router = useRouter()
   const [phase, setPhase] = useState<Phase>('select')
   const [wheelA, setWheelA] = useState<number | null>(null)
@@ -568,6 +574,9 @@ function PairPageContent() {
         colourMode={colourMode}
         onColourModeChange={setColourMode}
         onEnd={handleSessionEnd}
+        labelEndSession={t('common', 'pair.endSession')}
+        labelMuteTones={t('common', 'pair.muteTones')}
+        labelUnmuteTones={t('common', 'pair.unmuteTones')}
       />
     )
   }
@@ -585,8 +594,8 @@ function PairPageContent() {
           <ArrowLeft className="w-4 h-4" />
         </Link>
         <div className="flex-1">
-          <p className="text-[9px] tracking-widest uppercase text-white/25">Mind Mechanism</p>
-          <h1 className="text-sm font-semibold tracking-wide text-white/80">Paired Session</h1>
+          <p className="text-[9px] tracking-widest uppercase text-white/25">{t('common', 'deck.mindMechanism')}</p>
+          <h1 className="text-sm font-semibold tracking-wide text-white/80">{t('common', 'pair.title')}</h1>
         </div>
         <ColourToggle mode={colourMode} onChange={setColourMode} />
       </div>
@@ -647,7 +656,7 @@ function PairPageContent() {
                 color: bothSelected ? '#fff' : 'rgba(255,255,255,0.3)',
               }}
             >
-              Continue
+              {t('common', 'pair.startSession')}
             </button>
           </motion.div>
         )}
@@ -676,7 +685,7 @@ function PairPageContent() {
             {/* Duration options */}
             <div className="w-full max-w-xs">
               <p className="text-[9px] tracking-widest uppercase text-white/25 mb-4 text-center">
-                Set Duration
+                {t('common', 'pair.durationTitle')}
               </p>
               <div className="grid grid-cols-2 gap-2">
                 {DURATION_OPTIONS.map(({ label, ms }) => (
@@ -755,7 +764,7 @@ function PairPageContent() {
                 }}
                 className="px-5 py-2.5 rounded-full text-xs font-medium text-white/40 border border-white/10 hover:border-white/20 hover:text-white/60 transition-all"
               >
-                Back
+                {t('common', 'pair.back')}
               </button>
               <button
                 type="button"
@@ -770,7 +779,7 @@ function PairPageContent() {
                   color: duration !== null || continuousPlay ? '#fff' : 'rgba(255,255,255,0.3)',
                 }}
               >
-                Begin
+                {t('common', 'sessionDialog.begin')}
               </button>
             </div>
           </motion.div>

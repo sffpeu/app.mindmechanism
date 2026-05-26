@@ -24,6 +24,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { cn } from '@/lib/utils'
 import Timer from '@/components/Timer'
 import { useIdleFade } from '@/lib/hooks/useIdleFade'
+import { useLanguage } from '@/lib/i18n'
 
 const CLOCK_HEX = [
   '#fd290a', '#fba63b', '#f7da5f', '#6dc037',
@@ -288,6 +289,7 @@ function TrioFace({
 // ─────────────────────────────────────────────────────────────────────────────
 function SessionPhase({
   idA, idB, idC, duration, continuous, colourMode, onColourModeChange, onEnd,
+  labelEndSession, labelMuteTones, labelUnmuteTones,
 }: {
   idA: number
   idB: number
@@ -297,6 +299,9 @@ function SessionPhase({
   colourMode: ColourMode
   onColourModeChange: (m: ColourMode) => void
   onEnd: () => void
+  labelEndSession: string
+  labelMuteTones: string
+  labelUnmuteTones: string
 }) {
   const clockTitles = useClockTitles()
   const [muted, setMuted] = useState(false)
@@ -368,7 +373,7 @@ function SessionPhase({
             onClick={onEnd}
             className="mt-1 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-[10px] font-medium uppercase tracking-widest text-white/60 transition-colors hover:border-white/25 hover:bg-white/10 hover:text-white/85"
           >
-            End session
+            {labelEndSession}
           </button>
         )}
       </div>
@@ -392,7 +397,7 @@ function SessionPhase({
           'transition-colors hover:bg-black/90',
           isIdle && 'pointer-events-none opacity-0',
         )}
-        aria-label={muted ? 'Unmute tones' : 'Mute tones'}
+        aria-label={muted ? labelUnmuteTones : labelMuteTones}
       >
         {muted
           ? <VolumeX className="h-5 w-5" aria-hidden />
@@ -549,6 +554,7 @@ function TrioPreview({
 // ─────────────────────────────────────────────────────────────────────────────
 function TrioPageContent() {
   const clockTitles = useClockTitles()
+  const { t } = useLanguage()
   const router = useRouter()
   const [phase, setPhase] = useState<Phase>('select')
   const [wheelA, setWheelA] = useState<number | null>(null)
@@ -617,6 +623,9 @@ function TrioPageContent() {
         colourMode={colourMode}
         onColourModeChange={setColourMode}
         onEnd={handleSessionEnd}
+        labelEndSession={t('common', 'trio.endSession')}
+        labelMuteTones={t('common', 'trio.muteTones')}
+        labelUnmuteTones={t('common', 'trio.unmuteTones')}
       />
     )
   }
@@ -634,8 +643,8 @@ function TrioPageContent() {
           <ArrowLeft className="w-4 h-4" />
         </Link>
         <div className="flex-1">
-          <p className="text-[9px] tracking-widest uppercase text-white/25">Mind Mechanism</p>
-          <h1 className="text-sm font-semibold tracking-wide text-white/80">Trio Session</h1>
+          <p className="text-[9px] tracking-widest uppercase text-white/25">{t('common', 'deck.mindMechanism')}</p>
+          <h1 className="text-sm font-semibold tracking-wide text-white/80">{t('common', 'trio.title')}</h1>
         </div>
         <ColourToggle mode={colourMode} onChange={setColourMode} />
       </div>
@@ -694,7 +703,7 @@ function TrioPageContent() {
                 color: allSelected ? '#fff' : 'rgba(255,255,255,0.3)',
               }}
             >
-              Continue
+              {t('common', 'trio.startSession')}
             </button>
           </motion.div>
         )}
@@ -722,7 +731,7 @@ function TrioPageContent() {
 
             <div className="w-full max-w-xs">
               <p className="text-[9px] tracking-widest uppercase text-white/25 mb-4 text-center">
-                Set Duration
+                {t('common', 'trio.durationTitle')}
               </p>
               <div className="grid grid-cols-2 gap-2">
                 {DURATION_OPTIONS.map(({ label, ms }) => (
@@ -800,7 +809,7 @@ function TrioPageContent() {
                 }}
                 className="px-5 py-2.5 rounded-full text-xs font-medium text-white/40 border border-white/10 hover:border-white/20 hover:text-white/60 transition-all"
               >
-                Back
+                {t('common', 'trio.back')}
               </button>
               <button
                 type="button"
@@ -815,7 +824,7 @@ function TrioPageContent() {
                   color: duration !== null || continuousPlay ? '#fff' : 'rgba(255,255,255,0.3)',
                 }}
               >
-                Begin
+                {t('common', 'sessionDialog.begin')}
               </button>
             </div>
           </motion.div>

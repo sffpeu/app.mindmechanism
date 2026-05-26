@@ -219,7 +219,7 @@ export default function SessionsPage() {
           <div className="mb-8">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 mb-1">The Mind Mechanism</p>
             <h1 className="text-4xl font-black tracking-tight text-gray-900 dark:text-white">{t('common', 'nav.sessions')}</h1>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Configure and launch your focused practice sessions.</p>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('common', 'sessions.subtitle')}</p>
           </div>
           <div className="space-y-8">
             {/* Create Session Section */}
@@ -227,7 +227,7 @@ export default function SessionsPage() {
               <div>
                 <div className="mb-4">
                   <div className="flex items-center justify-between mb-2">
-                    <h2 className="text-xl font-medium text-gray-900 dark:text-white">Create Session</h2>
+                    <h2 className="text-xl font-medium text-gray-900 dark:text-white">{t('common', 'sessions.createSection')}</h2>
                     <button
                       onClick={() => setIsCreateListView(!isCreateListView)}
                       className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-black/40 backdrop-blur-lg border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all"
@@ -235,18 +235,18 @@ export default function SessionsPage() {
                       {isCreateListView ? (
                         <>
                           <LayoutGrid className="h-4 w-4 text-gray-600 dark:text-white" />
-                          <span className="text-sm text-gray-600 dark:text-white">Grid</span>
+                          <span className="text-sm text-gray-600 dark:text-white">{t('common', 'sessions.grid')}</span>
                         </>
                       ) : (
                         <>
                           <List className="h-4 w-4 text-gray-600 dark:text-white" />
-                          <span className="text-sm text-gray-600 dark:text-white">List</span>
+                          <span className="text-sm text-gray-600 dark:text-white">{t('common', 'sessions.list')}</span>
                         </>
                       )}
                     </button>
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400 max-w-lg">
-                    Choose from nine unique clock designs to begin your meditation practice.
+                    {t('common', 'sessions.createSectionDesc')}
                   </p>
                 </div>
 
@@ -266,10 +266,10 @@ export default function SessionsPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-gray-700 dark:group-hover:text-white/90 transition-colors">
-                        Paired Session
+                        {t('common', 'sessions.pairedSession')}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                        Two wheels. Two tones. One meditation.
+                        {t('common', 'sessions.pairedSessionDesc')}
                       </p>
                     </div>
                     <div className="text-gray-300 dark:text-white/20 group-hover:text-gray-400 dark:group-hover:text-white/40 transition-colors text-xs tracking-widest shrink-0">
@@ -294,10 +294,10 @@ export default function SessionsPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-gray-700 dark:group-hover:text-white/90 transition-colors">
-                        Trio Session
+                        {t('common', 'sessions.trioSession')}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                        Three wheels. Three tones. One meditation.
+                        {t('common', 'sessions.trioSessionDesc')}
                       </p>
                     </div>
                     <div className="text-gray-300 dark:text-white/20 group-hover:text-gray-400 dark:group-hover:text-white/40 transition-colors text-xs tracking-widest shrink-0">
@@ -394,9 +394,9 @@ export default function SessionsPage() {
                           className="flex items-center justify-center gap-1 mx-auto mt-3 px-3 py-1 rounded-full text-[10px] tracking-widest uppercase transition-colors text-gray-400 dark:text-white/25 hover:text-gray-600 dark:hover:text-white/50 border border-transparent hover:border-black/10 dark:hover:border-white/10"
                         >
                           {expandedCards.has(i) ? (
-                            <><ChevronUp className="h-3 w-3" />details</>
+                            <><ChevronUp className="h-3 w-3" />{t('common', 'sessions.details')}</>
                           ) : (
-                            <><ChevronDown className="h-3 w-3" />details</>
+                            <><ChevronDown className="h-3 w-3" />{t('common', 'sessions.details')}</>
                           )}
                         </button>
 
@@ -405,7 +405,7 @@ export default function SessionsPage() {
                             <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
                               <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
                                 <Clock className="h-3 w-3 text-gray-400 dark:text-gray-500" />
-                                Elapsed
+                                {t('common', 'sessions.elapsed')}
                               </span>
                               <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
                                 {clock.timeElapsed}
@@ -414,7 +414,7 @@ export default function SessionsPage() {
                             <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
                               <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
                                 <RotateCw className={`h-3 w-3 text-gray-400 dark:text-gray-500 ${clock.rotationDirection === 'counterclockwise' ? 'transform -scale-x-100' : ''}`} />
-                                Rotations
+                                {t('common', 'sessions.rotations')}
                               </span>
                               <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
                                 {clock.totalRotations.toLocaleString()}
@@ -423,7 +423,7 @@ export default function SessionsPage() {
                             <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
                               <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
                                 <Compass className="h-3 w-3 text-gray-400 dark:text-gray-500" />
-                                Rotation
+                                {t('common', 'sessions.rotation')}
                               </span>
                               <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
                                 {clock.currentDegree.toFixed(3)}°
@@ -435,7 +435,7 @@ export default function SessionsPage() {
                                   className="w-1 h-1 rounded-full shrink-0"
                                   style={{ backgroundColor: clockHex }}
                                 />
-                                Focus Nodes
+                                {t('common', 'sessions.focusNodes')}
                               </span>
                               <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
                                 {clock.focusNodes}
@@ -444,7 +444,7 @@ export default function SessionsPage() {
                             <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
                               <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
                                 <div className="w-1 h-1 rounded-full border border-gray-900 dark:border-white/40" />
-                                Satellites
+                                {t('common', 'sessions.satellites')}
                               </span>
                               <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
                                 {clock.satellites.length}
@@ -453,7 +453,7 @@ export default function SessionsPage() {
                             <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/5">
                               <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
                                 <Compass className="h-3 w-3 text-gray-400 dark:text-gray-500" />
-                                Start °
+                                {t('common', 'sessions.startDeg')}
                               </span>
                               <span className="text-xs font-medium text-gray-900 dark:text-white block text-center">
                                 {clock.startingDegree}°
@@ -472,7 +472,7 @@ export default function SessionsPage() {
                               boxShadow: hoveredCardIndex === i ? `0 0 15px ${hexToRgba(clockHex, 0.1)}` : undefined,
                             }}
                           >
-                            Start Session
+                            {t('common', 'sessions.startSession')}
                           </button>
                           <Link
                             href={`/${clock.id}`}

@@ -24,8 +24,18 @@ import {
 } from '@/components/DashboardRecentSessions'
 import { useClockTitles } from '@/lib/hooks/useClockTitles'
 import { useLanguage } from '@/lib/i18n'
+import type { SupportedLocale } from '@/lib/i18n/types'
 import { cn } from '@/lib/utils'
 import { useSettings } from '@/lib/hooks/useSettings'
+
+const LOCALE_OPTIONS: { code: SupportedLocale; label: string }[] = [
+  { code: 'en', label: 'EN' },
+  { code: 'de', label: 'DE' },
+  { code: 'fi', label: 'FI' },
+  { code: 'fr', label: 'FR' },
+  { code: 'es', label: 'ES' },
+  { code: 'it', label: 'IT' },
+]
 
 interface TimeStats {
   totalTime: number
@@ -89,7 +99,7 @@ const TIER_CONFIG = {
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
-  const { t } = useLanguage()
+  const { t, locale, setLocale } = useLanguage()
   const clockTitles = useClockTitles()
   const { user, profile, loading: authLoading, signOut } = useAuth()
   const [timeStats, setTimeStats] = useState<TimeStats>({
@@ -285,7 +295,7 @@ export default function DashboardPage() {
                         <p className="flex flex-wrap gap-x-2 gap-y-0.5">
                           {memberSince ? (
                             <span>
-                              Member since{' '}
+                              {t('common', 'dashboardExtra.memberSince')}{' '}
                               <span className="font-medium text-gray-700 dark:text-gray-300">{memberSince}</span>
                             </span>
                           ) : null}
@@ -296,7 +306,7 @@ export default function DashboardPage() {
                           ) : null}
                           {timeStats.lastSignInTime ? (
                             <span>
-                              Last sign-in{' '}
+                              {t('common', 'dashboardExtra.lastSignIn')}{' '}
                               <span className="font-medium tabular-nums text-gray-700 dark:text-gray-300">
                                 {timeStats.lastSignInTime.toLocaleString(undefined, {
                                   dateStyle: 'short',
@@ -308,7 +318,7 @@ export default function DashboardPage() {
                         </p>
                       ) : null}
                       <p className={cn('font-medium', tierCfg.color)}>
-                        Membership · {tierCfg.label}
+                        {t('common', 'dashboardExtra.membership')} · {tierCfg.label}
                       </p>
                     </div>
 
@@ -316,7 +326,7 @@ export default function DashboardPage() {
                       <Button variant="outline" size="sm" asChild className="h-8 gap-1.5 rounded-full px-3 text-xs">
                         <Link href="/settings">
                           <Pencil className="h-3.5 w-3.5" />
-                          Edit profile
+                          {t('common', 'dashboardExtra.editProfile')}
                         </Link>
                       </Button>
                       <Button
@@ -326,7 +336,7 @@ export default function DashboardPage() {
                         className="h-8 gap-1.5 rounded-full px-3 text-xs text-gray-600 hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-950/30 dark:hover:text-red-400"
                       >
                         <LogOut className="h-3.5 w-3.5" />
-                        Sign out
+                        {t('common', 'dashboardExtra.signOut')}
                       </Button>
                     </div>
                   </div>
@@ -335,7 +345,28 @@ export default function DashboardPage() {
             </Card>
 
             <div className="flex items-center justify-between rounded-xl border border-black/10 dark:border-white/15 bg-white/70 dark:bg-black/30 px-3 py-2">
-              <p className="text-sm font-medium text-gray-800 dark:text-gray-100">Accessibility Interface</p>
+              <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{t('common', 'dashboardExtra.language')}</p>
+              <div className="flex gap-1.5">
+                {LOCALE_OPTIONS.map(opt => (
+                  <button
+                    key={opt.code}
+                    type="button"
+                    onClick={() => setLocale(opt.code)}
+                    className={cn(
+                      'px-2.5 py-1 rounded-lg text-xs font-bold tracking-wide transition-all',
+                      locale === opt.code
+                        ? 'bg-violet-600 text-white'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 border border-black/10 dark:border-white/15'
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between rounded-xl border border-black/10 dark:border-white/15 bg-white/70 dark:bg-black/30 px-3 py-2">
+              <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{t('common', 'dashboardExtra.accessibilityInterface')}</p>
               <button
                 type="button"
                 onClick={() => setAccessibilityEnabled(!accessibilityEnabled)}
@@ -365,7 +396,7 @@ export default function DashboardPage() {
                     {t('common', 'dashboard.recentSessions')}
                   </h2>
                   <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 sm:text-sm">
-                    Continue or restart from your latest sessions.
+                    {t('common', 'dashboardExtra.continueRestart')}
                   </p>
                 </div>
                 <button
@@ -384,7 +415,7 @@ export default function DashboardPage() {
                   <span className="flex min-w-0 items-center gap-2">
                     <CalendarDays className="h-5 w-5 shrink-0 text-violet-700 dark:text-violet-300" aria-hidden />
                     <span className="text-sm font-semibold leading-tight">
-                      Scheduled <span className="font-normal opacity-80">&amp;</span> Group
+                      {t('common', 'dashboardExtra.scheduledGroup')}
                     </span>
                     {scheduledActivityCount > 0 ? (
                       <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-violet-600 px-1.5 text-xs font-bold text-white dark:bg-violet-500">
@@ -414,7 +445,7 @@ export default function DashboardPage() {
                         <div className="flex items-center gap-2">
                           <CalendarClock className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                           <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Upcoming scheduled
+                            {t('common', 'dashboardExtra.upcomingScheduled')}
                           </h3>
                         </div>
                         <Button
@@ -424,7 +455,7 @@ export default function DashboardPage() {
                           className="h-7 rounded-full px-3 text-xs"
                           onClick={() => recentSessionsRef.current?.openOpenSessionsDialog('waiting')}
                         >
-                          View all
+                          {t('common', 'dashboardExtra.viewAll')}
                         </Button>
                       </div>
                       {upcomingScheduledSessions.length > 0 ? (
@@ -447,7 +478,7 @@ export default function DashboardPage() {
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-sm text-gray-500 dark:text-gray-400">No upcoming sessions.</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{t('common', 'dashboardExtra.noUpcoming')}</p>
                       )}
                     </div>
 
@@ -457,7 +488,7 @@ export default function DashboardPage() {
                         <div className="flex items-center gap-2">
                           <Users className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                           <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Group sessions
+                            {t('common', 'dashboardExtra.groupSessions')}
                           </h3>
                         </div>
                         <Button asChild type="button" variant="ghost" size="sm" className="h-7 rounded-full px-3 text-xs">
@@ -466,13 +497,13 @@ export default function DashboardPage() {
                       </div>
                       <div className="mb-3 grid grid-cols-2 gap-2">
                         <div className="rounded-xl border border-black/5 bg-gray-50/80 px-3 py-3 dark:border-white/10 dark:bg-white/[0.03]">
-                          <p className="text-xs text-gray-500 dark:text-gray-400">Planned</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{t('common', 'dashboardExtra.planned')}</p>
                           <p className="mt-0.5 text-xl font-semibold tabular-nums text-gray-900 dark:text-white">
                             {groupPlannedSessionsCount}
                           </p>
                         </div>
                         <div className="rounded-xl border border-black/5 bg-gray-50/80 px-3 py-3 dark:border-white/10 dark:bg-white/[0.03]">
-                          <p className="text-xs text-gray-500 dark:text-gray-400">Upcoming</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{t('common', 'dashboardExtra.upcoming')}</p>
                           <p className="mt-0.5 text-xl font-semibold tabular-nums text-gray-900 dark:text-white">
                             {groupUpcomingSessionsCount}
                           </p>
@@ -480,7 +511,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center justify-between gap-3">
-                          <span className="text-gray-500 dark:text-gray-400">Mandala</span>
+                          <span className="text-gray-500 dark:text-gray-400">{t('common', 'dashboardExtra.mandala')}</span>
                           <span className="font-medium text-gray-900 dark:text-white">
                             {groupSessionSummary
                               ? clockTitles[groupSessionSummary.clockId] ?? `Clock ${groupSessionSummary.clockId + 1}`
@@ -488,13 +519,13 @@ export default function DashboardPage() {
                           </span>
                         </div>
                         <div className="flex items-center justify-between gap-3">
-                          <span className="text-gray-500 dark:text-gray-400">Session length</span>
+                          <span className="text-gray-500 dark:text-gray-400">{t('common', 'dashboardExtra.sessionLength')}</span>
                           <span className="font-medium tabular-nums text-gray-900 dark:text-white">
                             {groupSessionSummary ? `${groupSessionSummary.durationMinutes} min` : 'Not set'}
                           </span>
                         </div>
                         <div className="flex items-center justify-between gap-3">
-                          <span className="text-gray-500 dark:text-gray-400">Focus nodes</span>
+                          <span className="text-gray-500 dark:text-gray-400">{t('common', 'dashboardExtra.focusNodes')}</span>
                           <span className="font-medium tabular-nums text-gray-900 dark:text-white">
                             {groupSessionSummary ? groupSessionSummary.focusNodeCount : 0}
                           </span>

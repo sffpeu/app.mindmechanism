@@ -1,5 +1,7 @@
 'use client'
 
+import { useLanguage } from '@/lib/i18n'
+
 export interface SavedSession {
   id: string
   name: string
@@ -43,6 +45,7 @@ function formatDate(ts: number) {
 }
 
 export function SessionsPanel({ sessions, onLoad, onDelete, onClose }: Props) {
+  const { t } = useLanguage()
   return (
     <div
       style={{
@@ -69,9 +72,9 @@ export function SessionsPanel({ sessions, onLoad, onDelete, onClose }: Props) {
         }}>
           <div>
             <div style={{ fontSize: 10, color: '#444', textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: 5 }}>
-              Mind Mechanism
+              {t('common', 'deck.mindMechanism')}
             </div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: '#eee' }}>Saved Sessions</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: '#eee' }}>{t('common', 'deck.savedSessions')}</div>
             <div style={{ fontSize: 12, color: '#444', marginTop: 3 }}>
               {sessions.length} session{sessions.length !== 1 ? 's' : ''} stored
             </div>
@@ -94,8 +97,8 @@ export function SessionsPanel({ sessions, onLoad, onDelete, onClose }: Props) {
               padding: '40px 22px', textAlign: 'center',
               color: '#333', fontSize: 13, lineHeight: 1.6,
             }}>
-              No sessions saved yet.<br />
-              Use the Save button to capture the current table.
+              {t('common', 'deck.noSessionsYet')}<br />
+              {t('common', 'deck.noSessionsHint')}
             </div>
           ) : (
             sessions.map(session => (
@@ -154,7 +157,7 @@ export function SessionsPanel({ sessions, onLoad, onDelete, onClose }: Props) {
                     cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
                   }}
                 >
-                  Load
+                  {t('common', 'deck.load')}
                 </button>
                 <button
                   onClick={() => onDelete(session.id)}

@@ -26,6 +26,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
+import { useLanguage } from '@/lib/i18n'
 
 interface SettingsDialogProps {
   isOpen: boolean
@@ -35,22 +36,42 @@ interface SettingsDialogProps {
 
 type TabId = 'profile' | 'wheel' | 'appearance' | 'accessibility' | 'sound' | 'smart-home' | 'research' | 'account' | 'language' | 'access'
 
-const TABS: { id: TabId; label: string; Icon: React.ElementType }[] = [
-  { id: 'profile',       label: 'Profile',               Icon: User          },
-  { id: 'wheel',         label: 'Wheel',                 Icon: LayoutGrid    },
-  { id: 'appearance',    label: 'Appearance',            Icon: Palette       },
-  { id: 'accessibility', label: 'Accessibility',         Icon: Accessibility },
-  { id: 'sound',         label: 'Sound',                 Icon: Music2        },
-  { id: 'smart-home',    label: 'Smart Home',            Icon: Home          },
-  { id: 'language',      label: 'Language',              Icon: Globe         },
-  { id: 'research',      label: 'Research Participation', Icon: Microscope   },
-  { id: 'access',        label: 'Beta Access',           Icon: KeyRound      },
-  { id: 'account',       label: 'Account',               Icon: Shield        },
+const TAB_ICONS: { id: TabId; Icon: React.ElementType }[] = [
+  { id: 'profile',       Icon: User          },
+  { id: 'wheel',         Icon: LayoutGrid    },
+  { id: 'appearance',    Icon: Palette       },
+  { id: 'accessibility', Icon: Accessibility },
+  { id: 'sound',         Icon: Music2        },
+  { id: 'smart-home',    Icon: Home          },
+  { id: 'language',      Icon: Globe         },
+  { id: 'research',      Icon: Microscope    },
+  { id: 'access',        Icon: KeyRound      },
+  { id: 'account',       Icon: Shield        },
 ]
 
 export function SettingsDialog({ isOpen, onClose, initialTab }: SettingsDialogProps) {
+  const { t } = useLanguage()
   const [hasChanges, setHasChanges] = useState(false)
   const [activeTab, setActiveTab] = useState<TabId>(initialTab ?? 'accessibility')
+
+  const TAB_LABEL_KEYS: Record<TabId, string> = {
+    profile:       'settingsTabs.profile',
+    wheel:         'settingsTabs.wheel',
+    appearance:    'settingsTabs.appearance',
+    accessibility: 'settingsTabs.accessibility',
+    sound:         'settingsTabs.sound',
+    'smart-home':  'settingsTabs.smartHome',
+    language:      'settingsTabs.language',
+    research:      'settingsTabs.research',
+    access:        'settingsTabs.access',
+    account:       'settingsTabs.account',
+  }
+
+  const TABS = TAB_ICONS.map(({ id, Icon }) => ({
+    id,
+    label: t('common', TAB_LABEL_KEYS[id]),
+    Icon,
+  }))
 
   useEffect(() => {
     if (isOpen && initialTab) setActiveTab(initialTab)

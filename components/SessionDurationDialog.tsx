@@ -215,7 +215,7 @@ export function SessionDurationDialog({
       const focusNodesCount = clockSettings[clockId]?.focusNodes || 0
       const allAssigned = words.length === focusNodesCount && words.every(w => w.trim() !== '')
       if (!allAssigned) {
-        setLoadError('Assign a word to every focus node to continue.')
+        setLoadError(t('common', 'sessionDialog.assignWord'))
         return
       }
       onNext(
@@ -505,7 +505,7 @@ export function SessionDurationDialog({
                     >
                       {scope === 'Default' && <Layers className="w-3 h-3 shrink-0" />}
                       {scope === 'My Words' && <UserCircle2 className="w-3 h-3 shrink-0" />}
-                      {scope === 'All' ? t('common', 'glossary.scopeAll') : scope === 'Default' ? t('common', 'glossary.scopeDefault') : t('common', 'glossary.scopeMyWords')}
+                      {scope === 'All' ? t('common', 'sessionDialog.allWords') : scope === 'Default' ? t('common', 'sessionDialog.defaultWords') : t('common', 'sessionDialog.myWords')}
                     </button>
                   ))}
                 </div>
@@ -584,7 +584,7 @@ export function SessionDurationDialog({
               >
               <div className="p-4 space-y-6">
                     {isLoadingWords ? (
-                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">Loading words...</div>
+                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">{t('common', 'sessionDialog.loadingWords')}</div>
                     ) : loadError ? (
                       <div className="text-center py-8">
                         <p className="text-amber-500 dark:text-amber-400">{loadError}</p>
@@ -673,7 +673,7 @@ export function SessionDurationDialog({
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Search words or definitions"
+                  placeholder={t('common', 'sessionDialog.searchPlaceholder')}
                   className="w-full pl-10 pr-24 py-2 rounded-lg bg-white hover:bg-gray-50 dark:bg-black/40 dark:hover:bg-black/20 border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 transition-all text-sm text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -895,9 +895,9 @@ export function SessionDurationDialog({
         step === 'confirm' && "sm:h-[500px]"
       )}>
         <DialogTitle className="sr-only">
-          {step === 'duration' && 'Set Session Duration'}
-          {step === 'words' && 'Assign Words'}
-          {step === 'confirm' && 'Confirm Session'}
+          {step === 'duration' && t('common', 'sessionDialog.title')}
+          {step === 'words' && t('common', 'sessionDialog.stepWords')}
+          {step === 'confirm' && t('common', 'sessionDialog.stepConfirm')}
         </DialogTitle>
         <div className={cn(
           "relative w-full h-full min-h-0 flex flex-col overflow-hidden",
@@ -970,9 +970,9 @@ export function SessionDurationDialog({
             {step === 'words' && <PenLine className="w-4 h-4 mr-2 text-black/70 dark:text-white" />}
             {step === 'confirm' && <Check className="w-4 h-4 mr-2 text-black/70 dark:text-white" />}
             <h2 className="text-base font-medium text-black/90 dark:text-white">
-              {step === 'duration' && 'Set Duration'}
-              {step === 'words' && 'Assign Words'}
-              {step === 'confirm' && 'Confirm Session'}
+              {step === 'duration' && t('common', 'sessionDialog.stepDuration')}
+              {step === 'words' && t('common', 'sessionDialog.stepWords')}
+              {step === 'confirm' && t('common', 'sessionDialog.stepConfirm')}
             </h2>
           </div>
 
@@ -1073,7 +1073,7 @@ export function SessionDurationDialog({
                       <div className="flex items-center justify-between">
                         <div>
                           <h3 className="text-sm font-medium text-black dark:text-white">Endless Session</h3>
-                          <p className="text-xs text-gray-400 dark:text-gray-300">No time limit</p>
+                          <p className="text-xs text-gray-400 dark:text-gray-300">{t('common', 'sessionDialog.noTimeLimit')}</p>
                         </div>
                         <Switch
                           checked={isEndless}

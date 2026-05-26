@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { getMandalaNodes, WHEEL_COLORS } from '@/data/mandalaNodes'
+import { useLanguage } from '@/lib/i18n'
 
 const DECK_LANGUAGES = [
   { code: 'en', label: 'EN' },
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export function CreateSessionModal({ onStart, onClose, defaultLanguage = 'en' }: Props) {
+  const { t } = useLanguage()
   const [count, setCount] = useState(9)
   const [blankCount, setBlankCount] = useState(0)
   const [sessionName, setSessionName] = useState('')
@@ -79,13 +81,13 @@ export function CreateSessionModal({ onStart, onClose, defaultLanguage = 'en' }:
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
             <div>
               <div style={{ fontSize: 10, color: '#444', textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: 6 }}>
-                Mind Mechanism
+                {t('common', 'deck.mindMechanism')}
               </div>
               <div style={{ fontSize: 22, fontWeight: 800, color: '#eee', letterSpacing: '0.01em' }}>
-                Create Session
+                {t('common', 'deck.createSession')}
               </div>
               <div style={{ fontSize: 13, color: '#444', marginTop: 4 }}>
-                Initial wheel cards (0–16), plus up to 8 blank cards. Set wheel draw to 0 for blanks only — then use Draw to add wheel cards from the deck.
+                {t('common', 'deck.createSessionDesc')}
               </div>
             </div>
             {/* Language picker */}
@@ -123,12 +125,12 @@ export function CreateSessionModal({ onStart, onClose, defaultLanguage = 'en' }:
                 fontSize: 10, color: '#555', textTransform: 'uppercase',
                 letterSpacing: '0.1em', display: 'block', marginBottom: 8,
               }}>
-                Session name
+                {t('common', 'deck.sessionName')}
               </label>
               <input
                 value={sessionName}
                 onChange={e => setSessionName(e.target.value)}
-                placeholder="e.g. Morning reflection"
+                placeholder={t('common', 'deck.sessionNamePlaceholder')}
                 style={{
                   width: '100%', background: '#252527',
                   border: '1px solid #363638', borderRadius: 8,
@@ -144,7 +146,7 @@ export function CreateSessionModal({ onStart, onClose, defaultLanguage = 'en' }:
                 fontSize: 10, color: '#555', textTransform: 'uppercase',
                 letterSpacing: '0.1em', display: 'block', marginBottom: 14,
               }}>
-                Wheel cards on table
+                {t('common', 'deck.wheelCards')}
               </label>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <button
@@ -174,7 +176,7 @@ export function CreateSessionModal({ onStart, onClose, defaultLanguage = 'en' }:
                     fontSize: 10, color: '#3a3a3a', marginTop: 6,
                     letterSpacing: '0.1em', textTransform: 'uppercase',
                   }}>
-                    min 0 · max 16
+                    {t('common', 'deck.minMax')}
                   </div>
                 </div>
 
@@ -201,7 +203,7 @@ export function CreateSessionModal({ onStart, onClose, defaultLanguage = 'en' }:
                 fontSize: 10, color: '#555', textTransform: 'uppercase',
                 letterSpacing: '0.1em', display: 'block', marginBottom: 10,
               }}>
-                Blank cards <span style={{ color: '#3a3a3a', fontStyle: 'italic', textTransform: 'none' }}>— fill in your own words</span>
+                {t('common', 'deck.blankCards')} <span style={{ color: '#3a3a3a', fontStyle: 'italic', textTransform: 'none' }}>— {t('common', 'deck.blankCardsHint')}</span>
               </label>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <button
@@ -228,7 +230,7 @@ export function CreateSessionModal({ onStart, onClose, defaultLanguage = 'en' }:
                     {blankCount}
                   </div>
                   <div style={{ fontSize: 10, color: '#3a3a3a', marginTop: 4, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                    max 8
+                    {t('common', 'deck.blankMax')}
                   </div>
                 </div>
                 <button
@@ -260,7 +262,7 @@ export function CreateSessionModal({ onStart, onClose, defaultLanguage = 'en' }:
               fontSize: 10, color: '#555', textTransform: 'uppercase',
               letterSpacing: '0.1em', marginBottom: 10,
             }}>
-              Wheels
+              {t('common', 'deck.wheels')}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
               {wheels.map(w => {
@@ -316,7 +318,7 @@ export function CreateSessionModal({ onStart, onClose, defaultLanguage = 'en' }:
               borderRadius: 8, fontSize: 13, cursor: 'pointer',
             }}
           >
-            Cancel
+            {t('common', 'deck.cancel')}
           </button>
           <button
             onClick={handleStart}
@@ -332,7 +334,7 @@ export function CreateSessionModal({ onStart, onClose, defaultLanguage = 'en' }:
               transition: 'background 0.18s, color 0.18s',
             }}
           >
-            Start Session →
+            {t('common', 'deck.startSession')}
           </button>
         </div>
       </div>
