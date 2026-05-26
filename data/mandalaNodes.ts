@@ -1,6 +1,9 @@
 import { WHEEL_HEX } from '@/lib/wheelColors'
 import { MANDALA_NODES_DE } from './mandalaNodes.de'
 import { MANDALA_NODES_FI } from './mandalaNodes.fi'
+import { MANDALA_NODES_FR } from './mandalaNodes.fr'
+import { MANDALA_NODES_ES } from './mandalaNodes.es'
+import { MANDALA_NODES_IT } from './mandalaNodes.it'
 
 export type NodeRate = '+' | '~' | '-'
 
@@ -24,6 +27,9 @@ export const WHEEL_COLORS: Record<number, string> = Object.fromEntries(
 export function getMandalaNodes(language: string): MandalaNode[] {
   if (language === 'de') return MANDALA_NODES_DE
   if (language === 'fi') return MANDALA_NODES_FI
+  if (language === 'fr') return MANDALA_NODES_FR
+  if (language === 'es') return MANDALA_NODES_ES
+  if (language === 'it') return MANDALA_NODES_IT
   return MANDALA_NODES
 }
 

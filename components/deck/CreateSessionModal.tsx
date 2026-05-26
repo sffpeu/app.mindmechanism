@@ -7,6 +7,9 @@ const DECK_LANGUAGES = [
   { code: 'en', label: 'EN' },
   { code: 'de', label: 'DE' },
   { code: 'fi', label: 'FI' },
+  { code: 'fr', label: 'FR' },
+  { code: 'es', label: 'ES' },
+  { code: 'it', label: 'IT' },
 ]
 
 interface Props {
