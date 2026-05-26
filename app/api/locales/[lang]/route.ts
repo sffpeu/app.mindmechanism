@@ -68,9 +68,14 @@ export async function GET(
   }
 
   const bundle = await loadLocaleBundle(locale)
-  return NextResponse.json(bundle, {
+  // Add a bundle version so clients can detect when namespaces change
+  const BUNDLE_VERSION = 2 // increment when namespaces are added/removed
+  return NextResponse.json({ ...bundle, _v: BUNDLE_VERSION }, {
     headers: {
-      'Cache-Control': 'private, max-age=3600',
+      // no-store: never cache locale bundles — they are small, auth-gated,
+      // and stale bundles cause missing-namespace failures (key paths shown
+      // instead of translations).
+      'Cache-Control': 'no-store',
     },
   })
 }

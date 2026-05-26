@@ -22,10 +22,21 @@ const LanguageContext = createContext<LanguageContextValue | null>(null)
 /** Locale bundles are fetched from the gated API route, keyed by locale. */
 const _bundleCache: Partial<Record<SupportedLocale, Record<string, TranslationDict>>> = {}
 
+/** Namespaces the client always expects to be present in a bundle. */
+const REQUIRED_NAMESPACES = ['common', 'portal', 'grammar-transit', 'info'] as const
+
+function isBundleComplete(bundle: Record<string, TranslationDict>): boolean {
+  return REQUIRED_NAMESPACES.every((ns) => ns in bundle)
+}
+
 async function fetchLocaleBundle(
   locale: SupportedLocale,
 ): Promise<Record<string, TranslationDict>> {
-  if (_bundleCache[locale]) return _bundleCache[locale]!
+  const cached = _bundleCache[locale]
+  // Evict stale cache entries that are missing namespaces added since the last fetch
+  if (cached && isBundleComplete(cached)) return cached
+  if (cached) delete _bundleCache[locale]
+
   try {
     const res = await fetch(`/api/locales/${locale}`, { credentials: 'include' })
     if (!res.ok) throw new Error(`${res.status}`)
