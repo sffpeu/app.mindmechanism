@@ -63,5 +63,16 @@
     "colour": "FARBE",
     "mono": "MONO",
     "loading": "Wird geladen…"
+  },
+  "clockTitles": {
+    "0": "WURZEL",
+    "1": "SAKRAL",
+    "2": "SOLARPLEXUS",
+    "3": "HERZ",
+    "4": "KEHLE",
+    "5": "DRITTES AUGE",
+    "6": "MÄNNLICHE KRONE",
+    "7": "WEIBLICHE KRONE",
+    "8": "ÄTHERISCHES HERZ"
   }
 }

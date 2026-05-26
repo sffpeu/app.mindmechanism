@@ -66,5 +66,16 @@
     "colour": "COLOR",
     "mono": "MONO",
     "loading": "Cargando…"
+  },
+  "clockTitles": {
+    "0": "RAÍZ",
+    "1": "SACRAL",
+    "2": "PLEXO SOLAR",
+    "3": "CORAZÓN",
+    "4": "GARGANTA",
+    "5": "TERCER OJO",
+    "6": "CORONA MASCULINA",
+    "7": "CORONA FEMENINA",
+    "8": "CORAZÓN ETÉRICO"
   }
 }

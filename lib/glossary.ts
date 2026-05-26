@@ -287,7 +287,7 @@ async function decryptPersonalWordsInList(words: GlossaryWord[]): Promise<Glossa
   return Promise.all(words.map((w) => (w.personal === true ? decryptPersonalWord(w) : w)))
 }
 
-export async function getAllWords(): Promise<GlossaryWord[]> {
+export async function getAllWords(language: string = 'en'): Promise<GlossaryWord[]> {
   try {
     if (!db) {
       console.warn('Firestore is not initialized, using default words');
@@ -298,7 +298,7 @@ export async function getAllWords(): Promise<GlossaryWord[]> {
       const glossaryRef = collection(db as Firestore, 'glossary');
       const q = firestoreQuery(glossaryRef, orderBy('word'));
       const querySnapshot = await getDocs(q);
-      const words = querySnapshot.docs.map(doc => ({
+      let words = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       })) as GlossaryWord[];
@@ -306,6 +306,16 @@ export async function getAllWords(): Promise<GlossaryWord[]> {
       if (words.length === 0) {
         console.warn('No words found in glossary, using default words');
         return createDefaultGlossaryWords();
+      }
+
+      // Language filter: system words must match requested language; user words always included.
+      // Falls back to EN system words when no language-specific words exist.
+      if (language !== 'en') {
+        const langSystemWords = words.filter(w => w.source === 'system' && w.language === language)
+        const userWords = words.filter(w => w.source === 'user')
+        if (langSystemWords.length > 0) {
+          words = [...langSystemWords, ...userWords]
+        }
       }
 
       return assignDefaultClockIds(words);

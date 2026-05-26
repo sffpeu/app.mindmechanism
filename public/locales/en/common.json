@@ -63,5 +63,16 @@
     "colour": "COLOUR",
     "mono": "MONO",
     "loading": "Loading…"
+  },
+  "clockTitles": {
+    "0": "ROOT",
+    "1": "SACRAL",
+    "2": "SOLAR PLEXUS",
+    "3": "HEART",
+    "4": "THROAT",
+    "5": "THIRD EYE",
+    "6": "MALE CROWN",
+    "7": "FEMALE CROWN",
+    "8": "ETHERIC HEART"
   }
 }

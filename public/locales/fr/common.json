@@ -66,5 +66,16 @@
     "colour": "COULEUR",
     "mono": "MONO",
     "loading": "Chargement…"
+  },
+  "clockTitles": {
+    "0": "RACINE",
+    "1": "SACRÉ",
+    "2": "PLEXUS SOLAIRE",
+    "3": "CŒUR",
+    "4": "GORGE",
+    "5": "TROISIÈME ŒIL",
+    "6": "COURONNE MASCULINE",
+    "7": "COURONNE FÉMININE",
+    "8": "CŒUR ÉTHÉRIQUE"
   }
 }

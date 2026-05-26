@@ -96,7 +96,7 @@ const satelliteConfigs = defaultSatelliteConfigs[CLOCK_INDEX] ?? []
 function NodesPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const { t } = useLanguage()
+  const { t, locale } = useLanguage()
   useHueSync(CLOCK_INDEX)
   const { isIdle } = useIdleFade()
   const { user, signOut } = useAuth()
@@ -346,7 +346,7 @@ function NodesPageContent() {
   useEffect(() => {
     const loadGlossaryWords = async () => {
       try {
-        const words = await getAllWords()
+        const words = await getAllWords(locale)
         setGlossaryWords(words)
       } catch (error) {
         console.error('Error loading glossary words:', error)

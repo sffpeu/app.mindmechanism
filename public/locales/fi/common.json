@@ -56,5 +56,16 @@
     "colour": "VÄRI",
     "mono": "MONO",
     "loading": "Ladataan…"
+  },
+  "clockTitles": {
+    "0": "JUURI",
+    "1": "SAKRAALI",
+    "2": "AURINKOPUNOS",
+    "3": "SYDÄN",
+    "4": "KURKKU",
+    "5": "KOLMAS SILMÄ",
+    "6": "MIEHINEN KRUUNU",
+    "7": "NAISELLINEN KRUUNU",
+    "8": "EETTERINEN SYDÄN"
   }
 }

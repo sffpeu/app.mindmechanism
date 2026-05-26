@@ -9,6 +9,7 @@ import { filterGlossaryWordsByTier } from '@/lib/nodeTiers'
 import { AddWordDialog } from '@/components/AddWordDialog'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { usePortal } from '@/contexts/PortalContext'
+import { useLanguage } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { GlossaryRadialTree } from '@/components/GlossaryRadialTree'
 import { GlossarySearchBar } from '@/components/glossary/GlossarySearchBar'
@@ -27,6 +28,7 @@ function GlossaryPageInner() {
   const searchParams = useSearchParams()
   const { user } = useAuth()
   const { config } = usePortal()
+  const { locale } = useLanguage()
   const nodeTier = useEffectiveNodeTier()
   const [searchQuery, setSearchQuery] = useState('')
   const [scopeFilter, setScopeFilter] = useState<'All' | 'Default' | 'Mine' | 'My Words'>('All')
@@ -95,7 +97,7 @@ function GlossaryPageInner() {
   const loadWords = async () => {
     setLoading(true)
     try {
-      const allWords = await getAllWords()
+      const allWords = await getAllWords(locale)
       const tiered = filterGlossaryWordsByTier(allWords, nodeTier, user?.uid)
       setWords(tiered)
       setFullWordList(tiered)

@@ -94,7 +94,7 @@ const satelliteConfigs = defaultSatelliteConfigs[CLOCK_INDEX] ?? []
 
 function NodesPageContent() {
   const searchParams = useSearchParams()
-  const { t } = useLanguage()
+  const { t, locale } = useLanguage()
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -346,7 +346,7 @@ function NodesPageContent() {
   useEffect(() => {
     const loadGlossaryWords = async () => {
       try {
-        const words = await getAllWords()
+        const words = await getAllWords(locale)
         setGlossaryWords(words)
       } catch (error) {
         console.error('Error loading glossary words:', error)
