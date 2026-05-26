@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Dock, DockIcon, DockItem } from '@/components/ui/dock'
-import { clockTitles } from '@/lib/clockTitles'
+import { useClockTitles } from '@/lib/hooks/useClockTitles'
 
 interface DotNavigationProps {
   activeDot: number
@@ -30,6 +30,7 @@ const DOT_HEX = [
 const DotNavigation: React.FC<DotNavigationProps> = ({ activeDot, onDotHover }) => {
   const [isVisible, setIsVisible] = useState(false)
   const pathname = usePathname()
+  const titles = useClockTitles()
   const isSessionsPage = pathname === '/sessions'
 
   useEffect(() => {
@@ -67,7 +68,7 @@ const DotNavigation: React.FC<DotNavigationProps> = ({ activeDot, onDotHover }) 
           key={index}
           href={`/${index}`}
           className="outline-none border-none no-underline"
-          aria-label={clockTitles[index] ?? `Clock ${index + 1}`}
+          aria-label={titles[index] ?? `Clock ${index + 1}`}
           onMouseEnter={() => onDotHover?.(index)}
           onMouseLeave={() => onDotHover?.(null)}
           onTouchStart={() => onDotHover?.(index)}

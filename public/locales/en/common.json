@@ -74,5 +74,47 @@
     "6": "MALE CROWN",
     "7": "FEMALE CROWN",
     "8": "ETHERIC HEART"
+  },
+  "glossary": {
+    "title": "Glossary",
+    "description": "The vocabulary of the interior. Browse, search, and build your own word set.",
+    "loading": "Loading words...",
+    "noWords": "No words found",
+    "allDefaultWords": "All default words",
+    "myWord": "My Word",
+    "myPersonalWord": "◆ My Word",
+    "myWordLabel": "Your word",
+    "myPersonalWordLabel": "◆ Your personal word",
+    "scopeAll": "All",
+    "scopeDefault": "Default",
+    "scopeMine": "Mine",
+    "scopeMyWords": "My Words"
+  },
+  "word": {
+    "definition": "Definition",
+    "context": "Context",
+    "whatThisMeansToYou": "What this means to you",
+    "openInSequencer": "Open in Sequencer",
+    "voiceNotes": "Voice Notes",
+    "standardDefinition": "Standard Definition",
+    "sovereignDefinition": "Sovereign Definition",
+    "grade": "Grade",
+    "positive": "Positive",
+    "negative": "Negative",
+    "neutral": "Neutral"
+  },
+  "session": {
+    "positive": "Positive",
+    "neutral": "Neutral",
+    "negative": "Negative",
+    "loading": "Loading..."
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "totalTime": "Total time",
+    "thisMonth": "This month",
+    "recentSessions": "Recent sessions",
+    "noSessions": "No sessions yet",
+    "startFirst": "Start your first session from the clock pages."
   }
 }

@@ -77,5 +77,47 @@
     "6": "CORONA MASCULINA",
     "7": "CORONA FEMENINA",
     "8": "CORAZÓN ETÉRICO"
+  },
+  "glossary": {
+    "title": "Glosario",
+    "description": "El vocabulario del interior. Navega, busca y construye tu propio conjunto de palabras.",
+    "loading": "Cargando palabras…",
+    "noWords": "No se encontraron palabras",
+    "allDefaultWords": "Todas las palabras predeterminadas",
+    "myWord": "Mi palabra",
+    "myPersonalWord": "◆ Mi palabra",
+    "myWordLabel": "Tu palabra",
+    "myPersonalWordLabel": "◆ Tu palabra personal",
+    "scopeAll": "Todo",
+    "scopeDefault": "Predeterminado",
+    "scopeMine": "Los míos",
+    "scopeMyWords": "Mis palabras"
+  },
+  "word": {
+    "definition": "Definición",
+    "context": "Contexto",
+    "whatThisMeansToYou": "Lo que esto significa para ti",
+    "openInSequencer": "Abrir en el secuenciador",
+    "voiceNotes": "Notas de voz",
+    "standardDefinition": "Definición estándar",
+    "sovereignDefinition": "Definición soberana",
+    "grade": "Nivel",
+    "positive": "Positivo",
+    "negative": "Negativo",
+    "neutral": "Neutral"
+  },
+  "session": {
+    "positive": "Positivo",
+    "neutral": "Neutral",
+    "negative": "Negativo",
+    "loading": "Cargando…"
+  },
+  "dashboard": {
+    "title": "Panel de control",
+    "totalTime": "Tiempo total",
+    "thisMonth": "Este mes",
+    "recentSessions": "Sesiones recientes",
+    "noSessions": "Aún no hay sesiones",
+    "startFirst": "Inicia tu primera sesión desde las páginas del reloj."
   }
 }

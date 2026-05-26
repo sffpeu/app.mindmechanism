@@ -22,7 +22,8 @@ import {
   DashboardRecentSessions,
   type DashboardRecentSessionsHandle,
 } from '@/components/DashboardRecentSessions'
-import { clockTitles } from '@/lib/clockTitles'
+import { useClockTitles } from '@/lib/hooks/useClockTitles'
+import { useLanguage } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { useSettings } from '@/lib/hooks/useSettings'
 
@@ -88,6 +89,8 @@ const TIER_CONFIG = {
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
+  const { t } = useLanguage()
+  const clockTitles = useClockTitles()
   const { user, profile, loading: authLoading, signOut } = useAuth()
   const [timeStats, setTimeStats] = useState<TimeStats>({
     totalTime: 0,
@@ -359,7 +362,7 @@ export default function DashboardPage() {
                     id="recent-sessions-heading"
                     className="text-base font-semibold text-gray-900 dark:text-white sm:text-lg"
                   >
-                    Recent Sessions
+                    {t('common', 'dashboard.recentSessions')}
                   </h2>
                   <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 sm:text-sm">
                     Continue or restart from your latest sessions.
@@ -433,7 +436,7 @@ export default function DashboardPage() {
                             >
                               <div className="min-w-0">
                                 <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
-                                  {clockTitles[s.clockId] ?? `Clock ${s.clockId}`} session
+                                  {clockTitles[s.clockId] ?? `Clock ${s.clockId + 1}`} session
                                 </p>
                                 <p className="text-xs text-gray-500 dark:text-gray-400">
                                   {s.startsAt.toLocaleString()}
@@ -480,8 +483,8 @@ export default function DashboardPage() {
                           <span className="text-gray-500 dark:text-gray-400">Mandala</span>
                           <span className="font-medium text-gray-900 dark:text-white">
                             {groupSessionSummary
-                              ? clockTitles[groupSessionSummary.clockId] ?? `Clock ${groupSessionSummary.clockId}`
-                              : 'Not set'}
+                              ? clockTitles[groupSessionSummary.clockId] ?? `Clock ${groupSessionSummary.clockId + 1}`
+                              : '—'}
                           </span>
                         </div>
                         <div className="flex items-center justify-between gap-3">

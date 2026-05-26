@@ -28,7 +28,7 @@ function GlossaryPageInner() {
   const searchParams = useSearchParams()
   const { user } = useAuth()
   const { config } = usePortal()
-  const { locale } = useLanguage()
+  const { locale, t } = useLanguage()
   const nodeTier = useEffectiveNodeTier()
   const [searchQuery, setSearchQuery] = useState('')
   const [scopeFilter, setScopeFilter] = useState<'All' | 'Default' | 'Mine' | 'My Words'>('All')
@@ -351,8 +351,8 @@ function GlossaryPageInner() {
               {config.name}
             </p>
             <p className="mb-2 text-[11px] leading-snug text-gray-500 dark:text-neutral-500">{config.tagline}</p>
-            <h1 className="text-4xl font-black tracking-tight text-gray-900 dark:text-white mb-2">Glossary</h1>
-            <p className="text-gray-600 dark:text-gray-400">The vocabulary of the interior. Browse, search, and build your own word set.</p>
+            <h1 className="text-4xl font-black tracking-tight text-gray-900 dark:text-white mb-2">{t('common', 'glossary.title')}</h1>
+            <p className="text-gray-600 dark:text-gray-400">{t('common', 'glossary.description')}</p>
           </div>
 
           <div className="flex-1 min-h-0 flex flex-row overflow-hidden gap-0 rounded-xl border border-black/10 dark:border-white/15 bg-white dark:bg-neutral-950 shadow-sm">
@@ -370,8 +370,8 @@ function GlossaryPageInner() {
                   hasVoiceNoteWordIds={voiceNoteWordIds}
                   emptyMessage={
                     scopeFilter === 'My Words'
-                      ? 'This is your space. Any word you use belongs here.'
-                      : 'No words found'
+                      ? t('common', 'glossary.scopeMyWords')
+                      : t('common', 'glossary.noWords')
                   }
                 />
               </div>

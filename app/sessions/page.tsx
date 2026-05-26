@@ -16,7 +16,8 @@ import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useTimeTracking } from '@/lib/hooks/useTimeTracking'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { useSoundEffects } from '@/lib/sounds'
-import { clockTitles } from '@/lib/clockTitles'
+import { useClockTitles } from '@/lib/hooks/useClockTitles'
+import { useLanguage } from '@/lib/i18n'
 
 interface Session {
   title: string
@@ -67,6 +68,8 @@ const clockColors = CLOCK_HEX.map((hex) => `text-[${hex}] bg-[${hex}]`)
 
 export default function SessionsPage() {
   const { isDarkMode } = useTheme()
+  const { t } = useLanguage()
+  const clockTitles = useClockTitles()
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(false)
   const [isListView, setIsListView] = useState(false)
@@ -215,7 +218,7 @@ export default function SessionsPage() {
           <div className="max-w-7xl mx-auto pl-16 pr-4 py-6">
           <div className="mb-8">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 mb-1">The Mind Mechanism</p>
-            <h1 className="text-4xl font-black tracking-tight text-gray-900 dark:text-white">Sessions</h1>
+            <h1 className="text-4xl font-black tracking-tight text-gray-900 dark:text-white">{t('common', 'nav.sessions')}</h1>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Configure and launch your focused practice sessions.</p>
           </div>
           <div className="space-y-8">

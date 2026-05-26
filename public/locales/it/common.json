@@ -77,5 +77,47 @@
     "6": "CORONA MASCHILE",
     "7": "CORONA FEMMINILE",
     "8": "CUORE ETERICO"
+  },
+  "glossary": {
+    "title": "Glossario",
+    "description": "Il vocabolario dell’interiorità. Esplora, cerca e costruisci il tuo insieme di parole.",
+    "loading": "Caricamento parole…",
+    "noWords": "Nessuna parola trovata",
+    "allDefaultWords": "Tutte le parole predefinite",
+    "myWord": "La mia parola",
+    "myPersonalWord": "◆ La mia parola",
+    "myWordLabel": "La tua parola",
+    "myPersonalWordLabel": "◆ La tua parola personale",
+    "scopeAll": "Tutto",
+    "scopeDefault": "Predefinito",
+    "scopeMine": "I miei",
+    "scopeMyWords": "Le mie parole"
+  },
+  "word": {
+    "definition": "Definizione",
+    "context": "Contesto",
+    "whatThisMeansToYou": "Cosa significa questo per te",
+    "openInSequencer": "Apri nel sequencer",
+    "voiceNotes": "Note vocali",
+    "standardDefinition": "Definizione standard",
+    "sovereignDefinition": "Definizione sovrana",
+    "grade": "Livello",
+    "positive": "Positivo",
+    "negative": "Negativo",
+    "neutral": "Neutro"
+  },
+  "session": {
+    "positive": "Positivo",
+    "neutral": "Neutro",
+    "negative": "Negativo",
+    "loading": "Caricamento…"
+  },
+  "dashboard": {
+    "title": "Pannello di controllo",
+    "totalTime": "Tempo totale",
+    "thisMonth": "Questo mese",
+    "recentSessions": "Sessioni recenti",
+    "noSessions": "Ancora nessuna sessione",
+    "startFirst": "Inizia la tua prima sessione dalle pagine dell’orologio."
   }
 }

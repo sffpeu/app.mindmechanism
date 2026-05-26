@@ -11,7 +11,8 @@ import { clockSettings } from '@/lib/clockSettings'
 import { DEFAULT_WORDS_BY_CLOCK } from '@/lib/defaultWordsByClock'
 import { GlossaryWord } from '@/types/Glossary'
 import { getAllWords, searchWords } from '@/lib/glossary'
-import { clockTitles } from '@/lib/clockTitles'
+import { useClockTitle, useClockTitles } from '@/lib/hooks/useClockTitles'
+import { useLanguage } from '@/lib/i18n'
 import { useSoundEffects } from '@/lib/sounds'
 import { useRouter } from 'next/navigation'
 import { createSession } from '@/lib/sessions'
@@ -49,6 +50,9 @@ export function SessionDurationDialog({
   onNext 
 }: SessionDurationDialogProps) {
   const { user } = useAuth()
+  const { t, locale } = useLanguage()
+  const clockTitle = useClockTitle(clockId)
+  const allClockTitles = useClockTitles()
   const nodeTier = useEffectiveNodeTier()
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null)
   const [customDuration, setCustomDuration] = useState('')
@@ -135,7 +139,7 @@ export function SessionDurationDialog({
     try {
       setIsLoadingWords(true)
       setLoadError(null)
-      const words = await getAllWords()
+      const words = await getAllWords(locale)
       const tiered = filterGlossaryWordsByTier(words ?? [], nodeTier, user?.uid)
       if (!tiered || tiered.length === 0) {
         console.log('No words found in glossary')
@@ -501,17 +505,19 @@ export function SessionDurationDialog({
                     >
                       {scope === 'Default' && <Layers className="w-3 h-3 shrink-0" />}
                       {scope === 'My Words' && <UserCircle2 className="w-3 h-3 shrink-0" />}
-                      {scope}
+                      {scope === 'All' ? t('common', 'glossary.scopeAll') : scope === 'Default' ? t('common', 'glossary.scopeDefault') : t('common', 'glossary.scopeMyWords')}
                     </button>
                   ))}
                 </div>
                 <span className="w-px h-4 bg-gray-200 dark:bg-white/10 shrink-0" aria-hidden />
                 <div className="flex items-center gap-1 shrink-0">
                   {([
-                    { value: '+' as const, icon: 'plus' as const, label: 'Positive' },
-                    { value: '~' as const, icon: 'tilde' as const, label: 'Neutral' },
-                    { value: '-' as const, icon: 'minus' as const, label: 'Negative' },
-                  ] as const).map(({ value, icon, label }) => (
+                    { value: '+' as const, icon: 'plus' as const, labelKey: 'session.positive' },
+                    { value: '~' as const, icon: 'tilde' as const, labelKey: 'session.neutral' },
+                    { value: '-' as const, icon: 'minus' as const, labelKey: 'session.negative' },
+                  ] as const).map(({ value, icon, labelKey }) => {
+                    const label = t('common', labelKey)
+                    return (
                     <button
                       key={value}
                       type="button"
@@ -536,7 +542,8 @@ export function SessionDurationDialog({
                     >
                       {icon === 'plus' ? <Plus className="w-4 h-4" strokeWidth={2.5} /> : icon === 'minus' ? <Minus className="w-4 h-4" strokeWidth={2.5} /> : <span className="text-base leading-none">~</span>}
                     </button>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -646,7 +653,7 @@ export function SessionDurationDialog({
                                           className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium shrink-0"
                                           style={getDefaultIconStyle(word.clock_id)}
                                         >
-                                          {clockTitles[word.clock_id!]?.[0] ?? ''}
+                                          {allClockTitles[word.clock_id!]?.[0] ?? ''}
                                         </div>
                                       ) : null}
                                     </div>

@@ -77,5 +77,47 @@
     "6": "COURONNE MASCULINE",
     "7": "COURONNE FÉMININE",
     "8": "CŒUR ÉTHÉRIQUE"
+  },
+  "glossary": {
+    "title": "Glossaire",
+    "description": "Le vocabulaire de l’intérieur. Parcourez, cherchez et construisez votre propre ensemble de mots.",
+    "loading": "Chargement des mots…",
+    "noWords": "Aucun mot trouvé",
+    "allDefaultWords": "Tous les mots par défaut",
+    "myWord": "Mon mot",
+    "myPersonalWord": "◆ Mon mot",
+    "myWordLabel": "Votre mot",
+    "myPersonalWordLabel": "◆ Votre mot personnel",
+    "scopeAll": "Tout",
+    "scopeDefault": "Défaut",
+    "scopeMine": "Les miens",
+    "scopeMyWords": "Mes mots"
+  },
+  "word": {
+    "definition": "Définition",
+    "context": "Contexte",
+    "whatThisMeansToYou": "Ce que cela signifie pour vous",
+    "openInSequencer": "Ouvrir dans le séquenceur",
+    "voiceNotes": "Notes vocales",
+    "standardDefinition": "Définition standard",
+    "sovereignDefinition": "Définition souveraine",
+    "grade": "Niveau",
+    "positive": "Positif",
+    "negative": "Négatif",
+    "neutral": "Neutre"
+  },
+  "session": {
+    "positive": "Positif",
+    "neutral": "Neutre",
+    "negative": "Négatif",
+    "loading": "Chargement…"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "totalTime": "Temps total",
+    "thisMonth": "Ce mois-ci",
+    "recentSessions": "Sessions récentes",
+    "noSessions": "Pas encore de sessions",
+    "startFirst": "Démarrez votre première session depuis les pages d’horloge."
   }
 }

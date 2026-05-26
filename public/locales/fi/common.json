@@ -67,5 +67,47 @@
     "6": "MIEHINEN KRUUNU",
     "7": "NAISELLINEN KRUUNU",
     "8": "EETTERINEN SYDÄN"
+  },
+  "glossary": {
+    "title": "Sanasto",
+    "description": "Sisäisyyden sanasto. Selaa, etsi ja rakenna oma sanavalikoima.",
+    "loading": "Ladataan sanoja…",
+    "noWords": "Sanoja ei löydy",
+    "allDefaultWords": "Kaikki oletussanat",
+    "myWord": "Oma sana",
+    "myPersonalWord": "◆ Oma sana",
+    "myWordLabel": "Sinun sanasi",
+    "myPersonalWordLabel": "◆ Henkilökohtainen sanasi",
+    "scopeAll": "Kaikki",
+    "scopeDefault": "Oletukset",
+    "scopeMine": "Minun",
+    "scopeMyWords": "Omat sanat"
+  },
+  "word": {
+    "definition": "Määritelmä",
+    "context": "Asiayhteys",
+    "whatThisMeansToYou": "Mitä tämä merkitsee sinulle",
+    "openInSequencer": "Avaa sekvensoijassa",
+    "voiceNotes": "Äänimuistiinpanot",
+    "standardDefinition": "Vakiomääritelmä",
+    "sovereignDefinition": "Suvereeni määritelmä",
+    "grade": "Taso",
+    "positive": "Positiivinen",
+    "negative": "Negatiivinen",
+    "neutral": "Neutraali"
+  },
+  "session": {
+    "positive": "Positiivinen",
+    "neutral": "Neutraali",
+    "negative": "Negatiivinen",
+    "loading": "Ladataan…"
+  },
+  "dashboard": {
+    "title": "Kojelauta",
+    "totalTime": "Kokonaisaika",
+    "thisMonth": "Tässä kuussa",
+    "recentSessions": "Viimeisimmät istunnot",
+    "noSessions": "Ei vielä istuntoja",
+    "startFirst": "Aloita ensimmäinen istuntosi kellonsivuilta."
   }
 }

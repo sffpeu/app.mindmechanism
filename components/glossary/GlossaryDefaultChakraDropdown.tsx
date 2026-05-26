@@ -2,7 +2,8 @@
 
 import type { CSSProperties } from 'react'
 import { ChevronDown, Layers } from 'lucide-react'
-import { clockTitles } from '@/lib/clockTitles'
+import { useClockTitles } from '@/lib/hooks/useClockTitles'
+import { useLanguage } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import {
   DropdownMenu,
@@ -26,12 +27,14 @@ export function GlossaryDefaultChakraDropdown({
   onSelectAllDefault,
   onSelectChakra,
 }: GlossaryDefaultChakraDropdownProps) {
+  const titles = useClockTitles()
+  const { t } = useLanguage()
   const isDefault = scopeFilter === 'Default'
   const clockHex =
     isDefault && selectedClockId != null ? (CLOCK_HEX[selectedClockId] ?? '#6b7280') : '#6b7280'
 
   const label =
-    isDefault && selectedClockId != null ? clockTitles[selectedClockId] ?? 'Default' : 'Default'
+    isDefault && selectedClockId != null ? titles[selectedClockId] ?? t('common', 'glossary.scopeDefault') : t('common', 'glossary.scopeDefault')
 
   const chakraHover =
     isDefault && selectedClockId != null
@@ -68,9 +71,9 @@ export function GlossaryDefaultChakraDropdown({
           onClick={() => onSelectAllDefault()}
           className={cn(isDefault && selectedClockId === null && 'bg-accent')}
         >
-          All default words
+          {t('common', 'glossary.allDefaultWords')}
         </DropdownMenuItem>
-        {clockTitles.map((title, id) => {
+        {titles.map((title, id) => {
           const hex = CLOCK_HEX[id]
           return (
             <DropdownMenuItem

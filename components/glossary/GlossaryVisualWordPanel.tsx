@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { clockTitles } from '@/lib/clockTitles'
+import { useClockTitle } from '@/lib/hooks/useClockTitles'
+import { useLanguage } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import type { GlossaryWord, GlossaryDefinition } from '@/types/Glossary'
 import { getWordDefinition } from '@/lib/glossary'
@@ -25,7 +26,9 @@ function languageName(code: string | undefined): string | null {
 
 export function GlossaryVisualWordPanel({ word, clockHexPalette, onClose }: GlossaryVisualWordPanelProps) {
   const router = useRouter()
+  const { t } = useLanguage()
   const cid = word.clock_id
+  const clockTitle = useClockTitle(cid ?? -1)
   const hex = cid != null && cid >= 0 && cid < clockHexPalette.length ? clockHexPalette[cid] : '#6b7280'
   const [extDef, setExtDef] = useState<GlossaryDefinition | null>(null)
   const [loadingExt, setLoadingExt] = useState(false)
@@ -95,7 +98,7 @@ export function GlossaryVisualWordPanel({ word, clockHexPalette, onClose }: Glos
                 className="text-[10px] font-semibold uppercase tracking-widest"
                 style={{ color: hex }}
               >
-                {clockTitles[cid] ?? 'Glossary'}
+                {clockTitle || t('common', 'nav.glossary')}
               </p>
             )}
             {lang && (
@@ -130,12 +133,12 @@ export function GlossaryVisualWordPanel({ word, clockHexPalette, onClose }: Glos
             className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
             style={{ backgroundColor: `${hex}22`, color: hex }}
           >
-            {word.rating === '+' ? 'Positive' : word.rating === '-' ? 'Negative' : 'Neutral'}
+            {word.rating === '+' ? t('common', 'word.positive') : word.rating === '-' ? t('common', 'word.negative') : t('common', 'word.neutral')}
           </span>
-          <span className="text-xs text-gray-500 dark:text-gray-400">Grade {word.grade}</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">{t('common', 'word.grade')} {word.grade}</span>
           {word.source === 'user' && (
             <span className="text-xs font-medium text-purple-600 dark:text-purple-400">
-              {isPersonal ? '◆ Your personal word' : 'Your word'}
+              {isPersonal ? t('common', 'glossary.myPersonalWordLabel') : t('common', 'glossary.myWordLabel')}
             </span>
           )}
         </div>
@@ -143,7 +146,7 @@ export function GlossaryVisualWordPanel({ word, clockHexPalette, onClose }: Glos
         {/* Base definition */}
         <div>
           <h3 className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">
-            {isPersonal ? 'What this means to you' : 'Definition'}
+            {isPersonal ? t('common', 'word.whatThisMeansToYou') : t('common', 'word.definition')}
           </h3>
           <p className="text-sm leading-relaxed text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
             {isPersonal
@@ -155,7 +158,7 @@ export function GlossaryVisualWordPanel({ word, clockHexPalette, onClose }: Glos
         {isPersonal && word.context && (
           <div>
             <h3 className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">
-              Context
+              {t('common', 'word.context')}
             </h3>
             <p className="text-sm leading-relaxed text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
               {displayPersonalLexiconField(word.context, word)}
@@ -169,7 +172,7 @@ export function GlossaryVisualWordPanel({ word, clockHexPalette, onClose }: Glos
             onClick={openInSequencer}
             className="w-full rounded-md border border-black/10 dark:border-white/15 px-3 py-2 text-sm font-medium text-gray-800 dark:text-gray-100 hover:bg-black/5 dark:hover:bg-white/10"
           >
-            Open in Sequencer
+            {t('common', 'word.openInSequencer')}
           </button>
         )}
 
@@ -182,7 +185,7 @@ export function GlossaryVisualWordPanel({ word, clockHexPalette, onClose }: Glos
           <div>
             <div className="flex items-center gap-2 mb-2">
               <h3 className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: hex }}>
-                Standard Definition
+                {t('common', 'word.standardDefinition')}
               </h3>
               <span
                 className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold uppercase tracking-wide"
@@ -201,7 +204,7 @@ export function GlossaryVisualWordPanel({ word, clockHexPalette, onClose }: Glos
           <div>
             <div className="flex items-center gap-2 mb-2">
               <h3 className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: hex }}>
-                Sovereign Definition
+                {t('common', 'word.sovereignDefinition')}
               </h3>
               <span
                 className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold uppercase tracking-wide"
@@ -219,7 +222,7 @@ export function GlossaryVisualWordPanel({ word, clockHexPalette, onClose }: Glos
         {voiceNotes.length > 0 && (
           <div>
             <h3 className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">
-              Voice Notes
+              {t('common', 'word.voiceNotes')}
             </h3>
             <div className="space-y-2">
               {voiceNotes.map((note) => (

@@ -74,5 +74,47 @@
     "6": "MÄNNLICHE KRONE",
     "7": "WEIBLICHE KRONE",
     "8": "ÄTHERISCHES HERZ"
+  },
+  "glossary": {
+    "title": "Glossar",
+    "description": "Das Vokabular des Inneren. Durchsuchen, erkunden und dein eigenes Wortset aufbauen.",
+    "loading": "Wörter laden…",
+    "noWords": "Keine Wörter gefunden",
+    "allDefaultWords": "Alle Standardwörter",
+    "myWord": "Mein Wort",
+    "myPersonalWord": "◆ Mein Wort",
+    "myWordLabel": "Dein Wort",
+    "myPersonalWordLabel": "◆ Dein persönliches Wort",
+    "scopeAll": "Alle",
+    "scopeDefault": "Standard",
+    "scopeMine": "Meine",
+    "scopeMyWords": "Meine Wörter"
+  },
+  "word": {
+    "definition": "Definition",
+    "context": "Kontext",
+    "whatThisMeansToYou": "Was das für dich bedeutet",
+    "openInSequencer": "Im Sequencer öffnen",
+    "voiceNotes": "Sprachnotizen",
+    "standardDefinition": "Standarddefinition",
+    "sovereignDefinition": "Soüveräne Definition",
+    "grade": "Stufe",
+    "positive": "Positiv",
+    "negative": "Negativ",
+    "neutral": "Neutral"
+  },
+  "session": {
+    "positive": "Positiv",
+    "neutral": "Neutral",
+    "negative": "Negativ",
+    "loading": "Laden…"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "totalTime": "Gesamtzeit",
+    "thisMonth": "Diesen Monat",
+    "recentSessions": "Letzte Sitzungen",
+    "noSessions": "Noch keine Sitzungen",
+    "startFirst": "Starte deine erste Sitzung von den Uhrenseiten."
   }
 }

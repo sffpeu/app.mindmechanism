@@ -3,7 +3,8 @@
 import type { MutableRefObject, Ref } from 'react'
 import { UserCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { clockTitles } from '@/lib/clockTitles'
+import { useClockTitles } from '@/lib/hooks/useClockTitles'
+import { useLanguage } from '@/lib/i18n'
 import type { GlossaryWord } from '@/types/Glossary'
 import { SpeakButton } from '@/components/glossary/SpeakButton'
 import { displayPersonalLexiconField } from '@/lib/passportCipherUi'
@@ -45,8 +46,11 @@ export function GlossaryWordScrollList({
   onSelectCard,
   clockHexPalette,
   hasVoiceNoteWordIds,
-  emptyMessage = 'No words found',
+  emptyMessage,
 }: GlossaryWordScrollListProps) {
+  const titles = useClockTitles()
+  const { t } = useLanguage()
+  const resolvedEmptyMessage = emptyMessage ?? t('common', 'glossary.noWords')
   return (
     <div
       ref={scrollContainerRef}
@@ -55,9 +59,9 @@ export function GlossaryWordScrollList({
     >
       <div className="pb-2 pt-1 space-y-6">
         {loading ? (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">Loading words...</div>
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">{t('common', 'glossary.loading')}</div>
         ) : letterSections.length === 0 ? (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">{emptyMessage}</div>
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">{resolvedEmptyMessage}</div>
         ) : (
           letterSections.map(([letter, sectionWords]) => (
             <div
@@ -127,11 +131,11 @@ export function GlossaryWordScrollList({
                             className="text-[10px] font-semibold uppercase tracking-widest truncate"
                             style={{ color: tint.hex }}
                           >
-                            {clockTitles[word.clock_id]}
+                            {titles[word.clock_id]}
                           </p>
                         ) : word.source === 'user' ? (
                           <span className="text-[10px] font-semibold uppercase tracking-widest text-purple-500 dark:text-purple-400">
-                            {isPersonal ? '◆ My Word' : 'My Word'}
+                            {isPersonal ? t('common', 'glossary.myPersonalWord') : t('common', 'glossary.myWord')}
                           </span>
                         ) : (
                           <span />
