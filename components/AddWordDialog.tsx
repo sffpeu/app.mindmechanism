@@ -88,7 +88,6 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord, mode 
   // Auto-fetch IPA when word field loses focus — uses API + rule-based fallback
   // so every word in every supported language gets a phonetic representation.
   const handleWordBlur = async () => {
-    if (isPersonal) return;
     if (!word.trim() || phoneticSpelling) return;
     setIsFetchingPhonetic(true);
     const ipa = await getIpaPhonetic(word.trim(), language);
