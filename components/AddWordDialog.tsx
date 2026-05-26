@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { addUserWord, updateUserWord, fetchIpaPhonetic } from '@/lib/glossary';
+import { addUserWord, updateUserWord, getIpaPhonetic } from '@/lib/glossary';
 import { useAuth } from '@/lib/FirebaseAuthContext';
 import { PASSPORT_BACKUP_REMINDER_KEY } from '@/lib/passportCipherUi';
 import { PassportKeySetup } from '@/components/record/PassportKeySetup';
@@ -85,12 +85,13 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord, mode 
     if (!editWord) setIsPersonal(mode === 'personal');
   }, [mode, editWord]);
 
-  // Auto-fetch IPA when word field loses focus
+  // Auto-fetch IPA when word field loses focus — uses API + rule-based fallback
+  // so every word in every supported language gets a phonetic representation.
   const handleWordBlur = async () => {
     if (isPersonal) return;
     if (!word.trim() || phoneticSpelling) return;
     setIsFetchingPhonetic(true);
-    const ipa = await fetchIpaPhonetic(word.trim(), language);
+    const ipa = await getIpaPhonetic(word.trim(), language);
     if (ipa) setPhoneticSpelling(ipa);
     setIsFetchingPhonetic(false);
   };
@@ -100,7 +101,7 @@ export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord, mode 
     if (!open || !word.trim() || phoneticSpelling) return;
     let cancelled = false;
     setIsFetchingPhonetic(true);
-    fetchIpaPhonetic(word.trim(), language).then((ipa) => {
+    getIpaPhonetic(word.trim(), language).then((ipa) => {
       if (!cancelled && ipa) setPhoneticSpelling(ipa);
       if (!cancelled) setIsFetchingPhonetic(false);
     });

@@ -50,11 +50,13 @@ export async function fetchIpaPhonetic(word: string, language: string = 'en'): P
   }
 }
 
-// ─── Phonetics enrichment ──────────────────────────────────────────────────
-// Supported by the Free Dictionary API (dictionaryapi.dev)
+// ─── IPA phonetics layer ──────────────────────────────────────────────────
+// Free Dictionary API (dictionaryapi.dev) supported language codes
 const IPA_API_LANGS = new Set(['en', 'es', 'fr', 'de', 'it', 'pt-BR', 'ru', 'ar', 'hi', 'ja', 'ko', 'tr'])
-const IPA_CACHE_NS = 'mm_ipa_v1'
-const IPA_MISS = '\x00' // sentinel: "tried, got nothing"
+// v2: bumped from v1 to discard old API-only miss sentinels so rule-based
+//     fallback is now applied to previously-missed words on next load.
+const IPA_CACHE_NS = 'mm_ipa_v2'
+const IPA_MISS = '\x00' // sentinel: both API and rule-based returned nothing
 
 function ipaKey(lang: string, word: string) {
   return `${IPA_CACHE_NS}:${lang}:${word.toLowerCase()}`
@@ -70,7 +72,12 @@ function setIpaCached(lang: string, word: string, ipa: string) {
   try { window.localStorage.setItem(ipaKey(lang, word), ipa || IPA_MISS) } catch { /* quota */ }
 }
 
-// Finnish has near-perfect phoneme-grapheme correspondence — rule-based is reliable.
+// ─── Rule-based phonemic transcription ────────────────────────────────────
+// Used as fallback when the Dictionary API has no entry for a word — covers
+// user-invented terms, technical vocabulary, and languages with sparse API
+// coverage. Accuracy is practical rather than academic.
+
+/** Finnish: near-perfect phoneme-grapheme correspondence */
 function finnishPhonemic(word: string): string {
   const s = word.toLowerCase()
     .replace(/aa/g, 'aː').replace(/ee/g, 'eː').replace(/ii/g, 'iː')
@@ -80,6 +87,177 @@ function finnishPhonemic(word: string): string {
     .replace(/ng/g, 'ŋ').replace(/nk/g, 'ŋk')
     .replace(/ä/g, 'æ').replace(/ö/g, 'ø')
   return `/${s}/`
+}
+
+/** German: covers major letter-sound correspondences */
+function germanPhonemic(word: string): string {
+  let s = word.toLowerCase()
+  // Multi-char clusters — longest first
+  s = s.replace(/tsch/g, 'tʃ')
+  s = s.replace(/sch/g, 'ʃ')
+  s = s.replace(/chs/g, 'ks')
+  s = s.replace(/pf/g, 'pf')
+  s = s.replace(/qu/g, 'kv')
+  s = s.replace(/tz/g, 'ts')
+  // Diphthongs
+  s = s.replace(/ei|ai|ay|ey/g, 'aɪ')
+  s = s.replace(/eu|äu/g, 'ɔɪ')
+  s = s.replace(/au/g, 'aʊ')
+  s = s.replace(/ie/g, 'iː')
+  // ch: after back vowels → x, elsewhere → ç
+  s = s.replace(/([aouaɪɔɪaʊ])ch/g, '$1x')
+  s = s.replace(/ch/g, 'ç')
+  // Word-initial sp/st → ʃp/ʃt
+  s = s.replace(/\bsp/g, 'ʃp')
+  s = s.replace(/\bst/g, 'ʃt')
+  // ng/nk
+  s = s.replace(/nk/g, 'ŋk')
+  s = s.replace(/ng/g, 'ŋ')
+  // Umlauts and ß
+  s = s.replace(/ä/g, 'ɛ').replace(/ö/g, 'ø').replace(/ü/g, 'y')
+  s = s.replace(/ß/g, 's')
+  // Common word endings
+  s = s.replace(/ung\b/g, 'ʊŋ')
+  s = s.replace(/ig\b/g, 'ɪç')
+  s = s.replace(/er\b/g, 'ɐ')
+  // Single-letter correspondences
+  s = s.replace(/w/g, 'v')
+  s = s.replace(/\bv/g, 'f')
+  s = s.replace(/z/g, 'ts')
+  // Final -e → schwa
+  s = s.replace(/e\b/g, 'ə')
+  return `/${s}/`
+}
+
+/** French: covers major grapheme-phoneme rules including nasal vowels */
+function frenchPhonemic(word: string): string {
+  let s = word.toLowerCase()
+  // Accented vowels first (before digraph rules)
+  s = s.replace(/é/g, 'e').replace(/[èêë]/g, 'ɛ')
+  s = s.replace(/â/g, 'ɑ').replace(/à/g, 'a')
+  s = s.replace(/ô/g, 'o')
+  s = s.replace(/[îï]/g, 'i')
+  s = s.replace(/[ûù]/g, 'y')
+  s = s.replace(/ü/g, 'y')
+  s = s.replace(/ç/g, 's')
+  // Nasal vowels — check before consuming vowel letters
+  s = s.replace(/ain|aim|ein|ien/g, 'ɛ̃')
+  s = s.replace(/un\b|um\b/g, 'œ̃')
+  s = s.replace(/[ae]n\b|[ae]m\b/g, 'ɑ̃')
+  s = s.replace(/on\b|om\b/g, 'ɔ̃')
+  // Vocalic digraphs
+  s = s.replace(/eau|au/g, 'o')
+  s = s.replace(/ou/g, 'u')
+  s = s.replace(/oeu|eu/g, 'ø')
+  s = s.replace(/oi/g, 'wa')
+  s = s.replace(/ai|ei/g, 'ɛ')
+  // Consonant digraphs
+  s = s.replace(/ch/g, 'ʃ')
+  s = s.replace(/ph/g, 'f')
+  s = s.replace(/gn/g, 'ɲ')
+  s = s.replace(/qu/g, 'k')
+  s = s.replace(/ill/g, 'ij')
+  // r → uvular
+  s = s.replace(/r/g, 'ʁ')
+  // g/c before front vowels
+  s = s.replace(/g([eɛi])/g, 'ʒ$1')
+  s = s.replace(/c([eɛi])/g, 's$1')
+  // j → ʒ
+  s = s.replace(/j/g, 'ʒ')
+  // Silent final consonants
+  s = s.replace(/[dtsxz]\b/g, '')
+  // Final -er/-ez → e
+  s = s.replace(/[eɛ]ʁ\b/g, 'e')
+  return `/${s}/`
+}
+
+/** Spanish: very regular — one of the most phonemically consistent languages */
+function spanishPhonemic(word: string): string {
+  let s = word.toLowerCase()
+  // Strip accent diacritics (mark stress only, same phoneme)
+  s = s.replace(/á/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i')
+    .replace(/ó/g, 'o').replace(/[úü]/g, 'u')
+  // Special digraphs
+  s = s.replace(/ñ/g, 'ɲ')
+  s = s.replace(/ll/g, 'ʎ')
+  s = s.replace(/ch/g, 'tʃ')
+  s = s.replace(/rr/g, 'r')
+  // qu/gu before e/i → k/g
+  s = s.replace(/qu([ei])/g, 'k$1')
+  s = s.replace(/gu([ei])/g, 'g$1')
+  // c before e/i → s (broad; Castilian uses θ)
+  s = s.replace(/c([ei])/g, 's$1')
+  // g before e/i → x
+  s = s.replace(/g([ei])/g, 'x$1')
+  // Single-letter correspondences
+  s = s.replace(/j/g, 'x')
+  s = s.replace(/h/g, '')
+  s = s.replace(/v/g, 'b')
+  s = s.replace(/z/g, 's')
+  s = s.replace(/x/g, 'ks')
+  s = s.replace(/y/g, 'j')
+  return `/${s}/`
+}
+
+/** Italian: regular with key palatal and affricate rules */
+function italianPhonemic(word: string): string {
+  let s = word.toLowerCase()
+  // Geminate clusters
+  s = s.replace(/cch/g, 'kː')
+  s = s.replace(/ggh/g, 'gː')
+  // sci/sce → ʃ
+  s = s.replace(/sci([aeiou])/g, 'ʃ$1')
+  s = s.replace(/sce/g, 'ʃe').replace(/sci/g, 'ʃi')
+  s = s.replace(/sch/g, 'sk')
+  // ch → k, gh → g (hard sounds before front vowels)
+  s = s.replace(/ch/g, 'k')
+  s = s.replace(/gh/g, 'g')
+  // ci/ce → tʃ
+  s = s.replace(/ci([aou])/g, 'tʃ$1')
+  s = s.replace(/ce/g, 'tʃe').replace(/ci/g, 'tʃi')
+  // gi/ge → dʒ
+  s = s.replace(/gi([aou])/g, 'dʒ$1')
+  s = s.replace(/ge/g, 'dʒe').replace(/gi/g, 'dʒi')
+  // gli → ʎ, gn → ɲ
+  s = s.replace(/gli/g, 'ʎ')
+  s = s.replace(/gn/g, 'ɲ')
+  // zz/z → ts
+  s = s.replace(/zz/g, 'tsː')
+  s = s.replace(/z/g, 'ts')
+  // Double consonants → long
+  s = s.replace(/([bcdfglmnprst])\1/g, '$1ː')
+  return `/${s}/`
+}
+
+/**
+ * Rule-based IPA transliteration — fi/de/fr/es/it.
+ * Returns empty string for English (too irregular for reliable rules) and
+ * unsupported languages — those fall back to the Dictionary API only.
+ */
+function ruleBasedIpa(word: string, language: string): string {
+  const clean = word.trim()
+  if (!clean) return ''
+  switch (language) {
+    case 'fi': return finnishPhonemic(clean)
+    case 'de': return germanPhonemic(clean)
+    case 'fr': return frenchPhonemic(clean)
+    case 'es': return spanishPhonemic(clean)
+    case 'it': return italianPhonemic(clean)
+    default: return ''
+  }
+}
+
+/**
+ * Get IPA phonetic for a word: Dictionary API first, rule-based fallback.
+ * Guaranteed to return a phonetic string for fi/de/fr/es/it even for
+ * user-invented terms the dictionary has never seen.
+ * Exported so AddWordDialog can call it directly on word entry.
+ */
+export async function getIpaPhonetic(word: string, language: string): Promise<string> {
+  if (!word.trim()) return ''
+  const apiResult = await fetchIpaPhonetic(word, language)
+  if (apiResult) return apiResult
+  return ruleBasedIpa(word, language)
 }
 
 async function enrichWithPhonetics(words: GlossaryWord[], language: string): Promise<GlossaryWord[]> {
@@ -92,26 +270,35 @@ async function enrichWithPhonetics(words: GlossaryWord[], language: string): Pro
   for (const w of needsIpa) {
     const cached = getIpaCached(language, w.word)
     if (cached !== null) {
+      // cached === '' means both API and rule-based returned nothing — skip
       if (cached) resolved.set(w.id, cached)
     } else if (language === 'fi') {
+      // Finnish: always rule-based, no API call needed
       const ipa = finnishPhonemic(w.word)
       resolved.set(w.id, ipa)
       setIpaCached(language, w.word, ipa)
-    } else if (IPA_API_LANGS.has(language)) {
+    } else {
       toFetch.push(w)
     }
   }
 
-  // Batch API calls, max 20 concurrent
+  // Batch API + rule-based fallback for remaining words
   const BATCH = 20
   for (let i = 0; i < toFetch.length; i += BATCH) {
     const batch = toFetch.slice(i, i + BATCH)
-    const results = await Promise.allSettled(
-      batch.map(w => fetchIpaPhonetic(w.word, language))
-    )
-    results.forEach((r, j) => {
-      const w = batch[j]
-      const ipa = r.status === 'fulfilled' ? r.value : ''
+    // Only attempt API for languages the API supports
+    const apiResults: PromiseSettledResult<string>[] = IPA_API_LANGS.has(language)
+      ? await Promise.allSettled(batch.map(w => fetchIpaPhonetic(w.word, language)))
+      : []
+
+    batch.forEach((w, j) => {
+      const apiResult = apiResults[j]
+      let ipa = apiResult?.status === 'fulfilled' ? apiResult.value : ''
+      if (!ipa) {
+        // Rule-based fallback: covers de/fr/es/it and any API miss
+        ipa = ruleBasedIpa(w.word, language)
+      }
+      // Cache whatever we ended up with (IPA_MISS stored when ipa === '')
       setIpaCached(language, w.word, ipa)
       if (ipa) resolved.set(w.id, ipa)
     })
