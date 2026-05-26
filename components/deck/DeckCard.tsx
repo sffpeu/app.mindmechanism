@@ -36,6 +36,7 @@ interface DeckCardProps {
   onExpand: () => void
   customContent?: { term: string; definition: string; phonetic: string }
   onCustomContentChange?: (field: 'term' | 'definition' | 'phonetic', value: string) => void
+  language?: string
 }
 
 const RATE_COLOR: Record<string, string> = {
@@ -71,11 +72,20 @@ function resolveFontSizes(annotation: Annotation): { term: number; body: number;
   }
 }
 
-function speakTerm(term: string) {
+const LANG_LOCALE: Record<string, string> = {
+  en: 'en-GB',
+  de: 'de-DE',
+  fi: 'fi-FI',
+  fr: 'fr-FR',
+  es: 'es-ES',
+  it: 'it-IT',
+}
+
+function speakTerm(term: string, language = 'en') {
   if (typeof window === 'undefined' || !window.speechSynthesis) return
   window.speechSynthesis.cancel()
   const utterance = new SpeechSynthesisUtterance(term)
-  utterance.lang = 'en-GB'
+  utterance.lang = LANG_LOCALE[language] ?? language
   utterance.rate = 0.85
   window.speechSynthesis.speak(utterance)
 }
@@ -85,6 +95,7 @@ export function DeckCard({
   annotation, onFlip, onBringToFront, onPositionChange,
   onAnnotationChange, onSendToGlossary, onExpand,
   customContent, onCustomContentChange,
+  language = 'en',
 }: DeckCardProps) {
   const isBlank = !!customContent
   const wheelColor = WHEEL_COLORS[node.wheel] ?? '#555'
@@ -167,7 +178,7 @@ export function DeckCard({
 
   const handleSpeak = (e: React.MouseEvent) => {
     e.stopPropagation()
-    speakTerm(displayTerm)
+    speakTerm(displayTerm, language)
   }
 
   const handleMicToggle = (e: React.PointerEvent) => {

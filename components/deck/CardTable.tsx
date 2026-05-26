@@ -562,6 +562,7 @@ export function CardTable() {
             onExpand={() => setExpandedNode(effectiveNode)}
             customContent={card.customContent}
             onCustomContentChange={isBlank ? (field, value) => handleCustomContentChange(card.nodeId, field, value) : undefined}
+            language={sessionLanguage}
           />
         )
       })}
@@ -780,6 +781,7 @@ export function CardTable() {
           annotation={annotations[expandedNode.id] ?? EMPTY_ANNOTATION}
           onAnnotationChange={(field, value) => handleAnnotationChange(expandedNode.id, field, value)}
           onClose={() => setExpandedNode(null)}
+          language={sessionLanguage}
         />
       )}
     </div>
@@ -908,7 +910,7 @@ function HelpPanel({ onClose }: { onClose: () => void }) {
         { label: 'Flip', desc: 'Click any card to flip it between the front face and your personal side.' },
         { label: 'Drag', desc: 'Hold and drag to reposition a card anywhere on the table.' },
         { label: 'Expand ↗', desc: 'On the card back, tap the ↗ button for a full-screen view of the node.' },
-        { label: 'Speak 🔊', desc: 'Tap the speaker icon to hear the term spoken aloud in British English.' },
+        { label: 'Speak 🔊', desc: 'Tap the speaker icon to hear the term spoken aloud in the session language.' },
         { label: 'Text mode A', desc: 'When a card has a background image, tap the A circle to toggle between dark and light text.' },
       ],
     },
@@ -1044,12 +1046,13 @@ function HelpPanel({ onClose }: { onClose: () => void }) {
 }
 
 function ExpandedView({
-  node, annotation, onAnnotationChange, onClose,
+  node, annotation, onAnnotationChange, onClose, language = 'en',
 }: {
   node: MandalaNode
   annotation: Annotation
   onAnnotationChange: (field: keyof Annotation, value: string | boolean | number | null) => void
   onClose: () => void
+  language?: string
 }) {
   const wheelColor = WHEEL_COLORS[node.wheel]
   const hasImage = !!annotation.imageUrl
@@ -1064,11 +1067,15 @@ function ExpandedView({
     e.target.value = ''
   }
 
+  const LANG_LOCALE: Record<string, string> = {
+    en: 'en-GB', de: 'de-DE', fi: 'fi-FI', fr: 'fr-FR', es: 'es-ES', it: 'it-IT',
+  }
+
   const handleSpeak = () => {
     if (typeof window === 'undefined' || !window.speechSynthesis) return
     window.speechSynthesis.cancel()
     const utterance = new SpeechSynthesisUtterance(node.term)
-    utterance.lang = 'en-GB'
+    utterance.lang = LANG_LOCALE[language] ?? language
     utterance.rate = 0.85
     window.speechSynthesis.speak(utterance)
   }
