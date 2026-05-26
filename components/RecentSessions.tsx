@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useState } from 'react';
 import { Session, getUserSessions } from '@/lib/sessions';
 import { useAuth } from '@/lib/FirebaseAuthContext';
@@ -6,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
 import { useRouter } from 'next/navigation';
 
-import { clockTitles } from '@/lib/clockTitles';
+import { useClockTitles } from '@/lib/hooks/useClockTitles';
 
 // Clock colors (text + fill for mini clock)
 const clockColors = [
@@ -76,6 +78,7 @@ function MiniClock({ progress, strokeColor }: { progress: number; strokeColor: s
 }
 
 export function RecentSessions() {
+  const clockTitles = useClockTitles()
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAllSessions, setShowAllSessions] = useState(false);

@@ -43,7 +43,7 @@ import {
 } from '@/lib/lobbyGroups'
 import { LobbySatelliteField } from '@/components/LobbySatelliteField'
 import { clockSettings } from '@/lib/clockSettings'
-import { clockTitles } from '@/lib/clockTitles'
+import { useClockTitles } from '@/lib/hooks/useClockTitles'
 import { DEFAULT_WORDS_BY_CLOCK } from '@/lib/defaultWordsByClock'
 import {
   LOBBY_SESSION_DURATION_CHOICES,
@@ -70,7 +70,7 @@ function focusNodeLabel(clockId: number, nodeIndex: number): string {
   return w ?? `Node ${nodeIndex + 1}`
 }
 
-function gatheringEventTitle(clockId: number, label: string | undefined): string {
+function gatheringEventTitle(clockId: number, label: string | undefined, clockTitles: readonly string[]): string {
   const mandala = clockTitles[clockId] ?? 'Meditation'
   const base = label?.trim() ? label.trim() : `Lobby gathering — ${mandala}`
   return base
@@ -80,7 +80,7 @@ function gatheringEventDescription(opts: {
   clockId: number
   focusLabels: string[]
   friendsCode: string | null
-}): string {
+}, clockTitles: readonly string[]): string {
   const lines = [
     'Symbolic lobby meditation. There is no chat in the lobby.',
     `Mandala: ${clockTitles[opts.clockId] ?? '—'}`,
@@ -92,6 +92,7 @@ function gatheringEventDescription(opts: {
 }
 
 export function SymbolicLobby() {
+  const clockTitles = useClockTitles()
   const { user } = useAuth()
   const [groups, setGroups] = useState<LobbyGroup[]>([])
   const [loading, setLoading] = useState(true)
@@ -414,24 +415,24 @@ export function SymbolicLobby() {
   }
 
   const exportGatheringIcs = (g: LobbyScheduledGathering) => {
-    const title = gatheringEventTitle(calendarClockId, g.label)
+    const title = gatheringEventTitle(calendarClockId, g.label, clockTitles)
     const details = gatheringEventDescription({
       clockId: calendarClockId,
       focusLabels: calendarFocusLabels,
       friendsCode: calendarFriendsCode,
-    })
+    }, clockTitles)
     const ics = buildGatheringIcs(g, { title, description: details, productId: 'app.mindmechanism' })
     downloadIcsFile(`lobby-gathering-${g.id.slice(0, 8)}.ics`, ics)
     toast.success('Calendar file downloaded — open it to add to Apple Calendar, Outlook, etc.')
   }
 
   const openGatheringGoogle = (g: LobbyScheduledGathering) => {
-    const title = gatheringEventTitle(calendarClockId, g.label)
+    const title = gatheringEventTitle(calendarClockId, g.label, clockTitles)
     const details = gatheringEventDescription({
       clockId: calendarClockId,
       focusLabels: calendarFocusLabels,
       friendsCode: calendarFriendsCode,
-    })
+    }, clockTitles)
     const url = googleCalendarUrlForGathering(g, { title, details })
     window.open(url, '_blank', 'noopener,noreferrer')
   }

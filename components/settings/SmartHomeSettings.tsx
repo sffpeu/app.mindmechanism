@@ -17,7 +17,7 @@ import {
 } from 'lucide-react'
 import { useSettings } from '@/lib/hooks/useSettings'
 import { CLOCK_HEX, clockIndexToHueState } from '@/lib/hueColors'
-import { clockTitles } from '@/lib/clockTitles'
+import { useClockTitles } from '@/lib/hooks/useClockTitles'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { HUE_CLOUD_LAN_MESSAGE, isHueLanUiAllowedHostname } from '@/lib/hueLanReachability'
@@ -30,6 +30,7 @@ type HueDiscoveryEntry = {
 type HueRoomRow = { id: string; name: string; lightIds: string[] }
 
 export function SmartHomeSettings() {
+  const clockTitles = useClockTitles()
   const {
     smartHomeHub,
     setSmartHomeHub,

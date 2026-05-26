@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { GlossaryWord } from '@/types/Glossary'
-import { clockTitles } from '@/lib/clockTitles'
+import { useClockTitles } from '@/lib/hooks/useClockTitles'
 import { cn } from '@/lib/utils'
 import { GlossaryVisualMagnifier } from '@/components/glossary/GlossaryVisualMagnifier'
 
@@ -299,6 +299,7 @@ export function GlossaryRadialTree({
   rotationSnapClockId = null,
   variant = 'card',
 }: GlossaryRadialTreeProps) {
+  const clockTitles = useClockTitles()
   const scopeFilter = visualFilters?.scopeFilter ?? 'All'
   const filterClockId = visualFilters?.selectedClockId ?? null
   const selectedSentiment = visualFilters?.selectedSentiment ?? null

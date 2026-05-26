@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import { cn } from '@/lib/utils'
-import { clockTitles } from '@/lib/clockTitles'
+import { useClockTitles } from '@/lib/hooks/useClockTitles'
 import type { NodeAffinityProfile } from '@/lib/nodeAffinity'
 import { TRACK_COLORS } from '@/components/StepSequencer'
 
@@ -14,6 +14,7 @@ export interface NodeAffinityMapProps {
 }
 
 export function NodeAffinityMap({ profile }: NodeAffinityMapProps) {
+  const clockTitles = useClockTitles()
   const dominantIdx = useMemo(() => {
     let best = 0
     let max = -1

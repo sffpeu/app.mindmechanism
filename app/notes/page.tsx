@@ -65,7 +65,7 @@ import {
 } from "@/components/ui/select"
 import { getUserSessions } from '@/lib/sessions'
 import { Session } from '@/lib/sessions'
-import { clockTitles } from '@/lib/clockTitles'
+import { useClockTitles } from '@/lib/hooks/useClockTitles'
 import { useLocation } from '@/lib/hooks/useLocation'
 import { useSoundEffects } from '@/lib/sounds'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -522,6 +522,7 @@ function NotesFloatingPanel({
 }
 
 export default function NotesPage() {
+  const clockTitles = useClockTitles()
   const { user } = useAuth()
   const { notes, isLoading, addNote, editNote, removeNote } = useNotes()
   const { location } = useLocation()

@@ -6,7 +6,7 @@ import { doc, getDoc, type Firestore } from 'firebase/firestore'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { db } from '@/lib/firebase'
 import { fetchPersonalLexiconWheelCounts } from '@/lib/personalLexiconStats'
-import { clockTitles } from '@/lib/clockTitles'
+import { useClockTitles } from '@/lib/hooks/useClockTitles'
 import { TRACK_COLORS } from '@/components/StepSequencer'
 import { cn } from '@/lib/utils'
 import {
@@ -47,6 +47,7 @@ function readLexMeta(data: Record<string, unknown> | undefined): PassportLexMeta
 }
 
 export function LexiconPanel() {
+  const clockTitles = useClockTitles()
   const { user } = useAuth()
   const { config } = usePortal()
   const [total, setTotal] = useState(0)

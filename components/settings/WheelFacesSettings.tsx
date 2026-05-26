@@ -10,9 +10,10 @@ import { db, getFirebaseStorage } from '@/lib/firebase'
 import { doc, setDoc, Firestore } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import { emptyWheelFaceOverlays, WHEEL_FACE_COUNT, type WheelFaceMedia } from '@/lib/wheelFaceOverlays'
-import { clockTitles } from '@/lib/clockTitles'
+import { useClockTitles } from '@/lib/hooks/useClockTitles'
 
 export function WheelFacesSettings() {
+  const clockTitles = useClockTitles()
   const { user, profile, refreshProfile, mergeProfilePatch } = useAuth()
   const [busyIndex, setBusyIndex] = useState<number | null>(null)
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])

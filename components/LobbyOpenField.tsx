@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { Radio } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
-import { clockTitles } from '@/lib/clockTitles'
+import { useClockTitles } from '@/lib/hooks/useClockTitles'
 import { subscribePresence, joinPresence, type PresenceDoc } from '@/lib/lobbyPresence'
 
 const CLOCK_HEX = [
@@ -24,6 +24,7 @@ type Props = {
 }
 
 export function LobbyOpenField({ currentUid }: Props) {
+  const clockTitles = useClockTitles()
   const [presences, setPresences] = useState<PresenceDoc[]>([])
   const [joiningUid, setJoiningUid] = useState<string | null>(null)
   const [joined, setJoined] = useState<Set<string>>(new Set())

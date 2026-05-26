@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import { useSettings } from '@/lib/hooks/useSettings'
 import { useAuth } from '@/lib/FirebaseAuthContext'
-import { clockTitles } from '@/lib/clockTitles'
+import { useClockTitles } from '@/lib/hooks/useClockTitles'
 import { MM_DRONE_PATH, MM_DRONE_PLANET_LABELS } from '@/lib/mmDroneTones'
 import { cn } from '@/lib/utils'
 import { startSpotifyAuth, spotifyTokensValid } from '@/lib/spotify'
@@ -115,6 +115,7 @@ function ServiceButton({
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function SoundSettings() {
+  const clockTitles = useClockTitles()
   const {
     soundEnabled, setSoundEnabled,
     tonesEnabled, setTonesEnabled,

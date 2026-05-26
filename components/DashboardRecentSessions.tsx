@@ -1,3 +1,5 @@
+'use client'
+
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { Session, getUserSessions, deleteSession } from '@/lib/sessions';
 import { useAuth } from '@/lib/FirebaseAuthContext';
@@ -13,7 +15,7 @@ import { useRouter } from 'next/navigation';
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
 import { toast } from 'react-hot-toast';
 
-import { clockTitles } from '@/lib/clockTitles';
+import { useClockTitles } from '@/lib/hooks/useClockTitles';
 import { clockSettings } from '@/lib/clockSettings';
 
 const clockColors = [
@@ -156,6 +158,7 @@ export const DashboardRecentSessions = forwardRef<
   DashboardRecentSessionsHandle,
   DashboardRecentSessionsProps
 >(function DashboardRecentSessions({ sessions: propSessions }, ref) {
+  const clockTitles = useClockTitles()
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(!propSessions);
   const [openSessionsDialogOpen, setOpenSessionsDialogOpen] = useState(false);

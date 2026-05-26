@@ -16,7 +16,7 @@ import { useRouter } from 'next/navigation'
 import { Volume2, VolumeX, ArrowLeft } from 'lucide-react'
 import { useSessionTimer } from '@/lib/useSessionTimer'
 import { clockSettings } from '@/lib/clockSettings'
-import { clockTitles } from '@/lib/clockTitles'
+import { useClockTitles } from '@/lib/hooks/useClockTitles'
 import { useClockRotation } from '@/lib/hooks/useClockRotation'
 import { useTripleBreathingTone } from '@/lib/hooks/useTripleBreathingTone'
 import { MandalaCeremony } from '@/components/MandalaCeremony'
@@ -298,6 +298,7 @@ function SessionPhase({
   onColourModeChange: (m: ColourMode) => void
   onEnd: () => void
 }) {
+  const clockTitles = useClockTitles()
   const [muted, setMuted] = useState(false)
   const [showCeremony, setShowCeremony] = useState(false)
   const hexA = CLOCK_HEX[idA]
@@ -419,6 +420,7 @@ function WheelThumb({
   onDragLeave: () => void
   onDrop: (id: number) => void
 }) {
+  const clockTitles = useClockTitles()
   const hex = CLOCK_HEX[id]
   const isDropTarget = dragSource !== null && dragSource !== id && dragOver === id
   const isSelected = selectedAs !== null
@@ -546,6 +548,7 @@ function TrioPreview({
 // Main page
 // ─────────────────────────────────────────────────────────────────────────────
 function TrioPageContent() {
+  const clockTitles = useClockTitles()
   const router = useRouter()
   const [phase, setPhase] = useState<Phase>('select')
   const [wheelA, setWheelA] = useState<number | null>(null)

@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { clockTitles } from '@/lib/clockTitles'
+import { useClockTitles } from '@/lib/hooks/useClockTitles'
 import type { NodeAffinityProfile } from '@/lib/nodeAffinity'
 import { NodeAffinityMap } from '@/components/sequencer/NodeAffinityMap'
 
@@ -12,6 +12,7 @@ export function AffinityPanel({
   profile: NodeAffinityProfile | null
   loading: boolean
 }) {
+  const clockTitles = useClockTitles()
   const interpretive = useMemo(() => {
     if (!profile || profile.totalSessions < 3 || profile.totalFires === 0) return null
     const dominant = profile.vector

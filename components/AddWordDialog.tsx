@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -21,7 +23,7 @@ import { toast } from 'sonner';
 import { useSoundEffects } from '@/lib/sounds';
 import { GlossaryWord, SUPPORTED_LANGUAGES } from '@/types/Glossary';
 import { cn } from '@/lib/utils';
-import { clockTitles } from '@/lib/clockTitles';
+import { useClockTitles } from '@/lib/hooks/useClockTitles';
 
 interface AddWordDialogProps {
   open: boolean;
@@ -32,6 +34,7 @@ interface AddWordDialogProps {
 }
 
 export function AddWordDialog({ open, onOpenChange, onWordAdded, editWord, mode = 'formal' }: AddWordDialogProps) {
+  const clockTitles = useClockTitles()
   const { user, profile } = useAuth();
   const { key: passportKey, ready: passportKeyReady, refreshFromIdb } = usePassportKey();
   const { playSuccess } = useSoundEffects();

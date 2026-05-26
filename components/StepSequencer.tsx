@@ -29,7 +29,7 @@ import {
   loadCompositions,
   MAX_COMPOSITIONS,
 } from '@/lib/userCompositionsStorage'
-import { clockTitles } from '@/lib/clockTitles'
+import { useClockTitles } from '@/lib/hooks/useClockTitles'
 import { MM_DRONE_PATH, MM_DRONE_PLANET_LABELS } from '@/lib/mmDroneTones'
 import {
   analyzePhraseBlob,
@@ -211,6 +211,7 @@ export default function StepSequencer({
   onPoolFinished,
   onNodeAffinityLogged,
 }: StepSequencerProps = {}) {
+  const clockTitles = useClockTitles()
   const [tracks, setTracks] = useState<SequencerTrack[]>(() => initialTracks())
   const [bpm, setBpm] = useState(() => loadPersistedPattern().bpm)
   const [isPlaying, setIsPlaying] = useState(false)
