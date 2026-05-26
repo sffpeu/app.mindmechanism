@@ -1,0 +1,466 @@
+{
+  "overlay": {
+    "close": "Chiudi",
+    "escBefore": "Premi",
+    "escAfter": "per chiudere"
+  },
+  "footer": "Mind Mechanism · The One-Legged Poet · SFFP · Versione 1.0 Beta · Aprile 2026",
+  "tabs": {
+    "mechanism": {
+      "label": "Il Meccanismo",
+      "desc": "Cos'è il Mind Mechanism e come funziona."
+    },
+    "developer": {
+      "label": "Lo Sviluppatore",
+      "desc": "La persona dietro la pratica."
+    },
+    "esl": {
+      "label": "L'ESL",
+      "desc": "Il Linguaggio dello Spettro Emotivo (ESL) — il vocabolario dell'interiorità."
+    },
+    "guide": {
+      "label": "Per Iniziare",
+      "desc": "I primi passi con i nove mandala."
+    },
+    "faq": {
+      "label": "Domande Frequenti",
+      "desc": "Le domande più frequenti."
+    },
+    "privacy": {
+      "label": "Privacy e Dati",
+      "desc": "Cosa raccogliamo, cosa non raccogliamo e a chi appartiene la sua pratica."
+    },
+    "legal": {
+      "label": "Note Legali e Contatti",
+      "desc": "Termini, avvertenze e come contattarci."
+    }
+  },
+  "mechanism": {
+    "title": "Il Meccanismo",
+    "subtitle": "Mind Mechanism: un quadro clinico-contemplativo per l'acquisizione emotiva e la Sovranità linguistica",
+    "i": {
+      "title": "I. Cos'è",
+      "p1": "Il Mind Mechanism è uno strumento digitale di pratica contemplativa — ma questa descrizione, pur essendo accurata, è deliberatamente riduttiva. È più precisamente un quadro clinico-interiore: un sistema strutturato per identificare, nominare e appropriarsi degli stati emotivi che costituiscono l'esperienza interiore umana. Opera all'intersezione di psicologia clinica, teoria dell'acquisizione della seconda lingua, somatica e pratica contemplativa.",
+      "p2": "Il quadro si fonda su un'unica proposizione: che l'interiorità può essere mappata con la stessa precisione dell'esteriorità. Che tra la vaga sensazione di «sentire qualcosa» e la precisa capacità di nominarlo esiste un divario — e quel divario non è una limitazione ma un territorio. Il Mind Mechanism è la mappa di quel territorio e lo strumento per attraversarlo.",
+      "p3": "È stato sviluppato nel corso di trent'anni da Sean Fortune — artista, scrittore ed educatore linguistico il cui lavoro in tassonomia clinica, installazione interattiva e pratica contemplativa è convergito in un'unica domanda: cosa significherebbe dare a qualcuno un linguaggio per ciò che sente ma non riesce a dire?"
+    },
+    "ii": {
+      "title": "II. l'Architetto",
+      "p1": "La proposizione identitaria centrale del Mind Mechanism è questa: Lei non è un utente passivo del sistema. Lei è l'Architetto.",
+      "p2": "Questa non è una metafora incoraggiante. È un'affermazione strutturale sulla natura del lavoro. l'Architetto non riceve una mappa e la segue. l'Architetto usa la mappa per costruire qualcosa — uno spazio interiore strutturato dal quale diventa possibile essere pienamente se stessi in qualsiasi registro, sotto qualsiasi pressione, in qualsiasi lingua.",
+      "p3": "Il Meccanismo fornisce la tassonomia, le frequenze, i percorsi di Toggle. l'Architetto fornisce l'incontro. Senza il genuino coinvolgimento interiore dell'Architetto, il sistema è un catalogo. Con esso, è un cantiere.",
+      "p4": "Questa distinzione ha peso clinico. Un apprendente che si avvicina al quadro come studente — ricevendo informazioni — attiva una via neurologica diversa rispetto a un apprendente che vi si avvicina come costruttore, riconoscendo e posizionando materiale che già gli appartiene. La postura dell'Architetto non è una motivazione psicologica; è il corretto orientamento epistemologico affinché il lavoro funzioni."
+    },
+    "iii": {
+      "title": "III. Lignaggio Teorico",
+      "p1": "Il Mind Mechanism non è costruito ex nihilo. Si fonda su un lignaggio e completa ciò che ogni antecedente ha iniziato.",
+      "jung": "**Carl Jung** riconobbe il mandala come simbolo della ricerca di completezza del sé — una struttura attraverso cui l'inconscio emerge nella coscienza tramite la forma simbolica. I nove mandala del Mind Mechanism funzionano secondo questo principio: non sono decorativi. Sono punti di accesso.",
+      "kellogg": "**Joan Kellogg** estese il lavoro di Jung mappando dodici stadi archetipici dello sviluppo psicologico, radicando il mandala nel momento presente piuttosto che nel passato simbolico. La sua enfasi sulla presenza — la primazia diagnostica e terapeutica dell'«adesso» — è una corrente fondante nel design del Meccanismo.",
+      "krashen": "**L'Ipotesi del Filtro Affettivo di Krashen** identificò che l'acquisizione è mediata da una barriera affettiva (ansia, motivazione, fiducia in se stessi). Il Mind Mechanism accetta questo e inverte la freccia causale di Krashen: l'emozione non è l'ambiente in cui la parola viene ricevuta — è il _significato_ che la parola viene acquisita per portare. Il filtro non è una variabile di sfondo da abbassare. È il fondamento costitutivo da attraversare _lavorandoci_.",
+      "vygotsky": "**La Zona di Sviluppo Prossimale di Vygotsky** — il divario tra ciò che un apprendente può fare autonomamente e ciò che diventa possibile attraverso l'impalcatura — è estesa alla _Somatic ZPD_: il divario tra ciò che il sistema nervoso produce senza resistenza e ciò che diventa possibile attraverso la mediazione somatica strutturata. Il corpo non è un contenitore per la cognizione. È un sistema mediatore.",
+      "cummins": "**La distinzione BICS/CALP di Cummins** — il divario tra la fluidità sociale e la competenza nel linguaggio accademico — riceve il suo meccanismo mancante: il Protocollo di Triage Linguistico, che fa da ponte tra i registri di Chiavi false (vocabolario socialmente fluente ma istituzionalmente insufficiente) e il possesso a livello CALP attraverso l'ancoraggio somatico.",
+      "swain": "**L'Ipotesi della Produzione di Swain** fondò l'intuizione che la lotta produttiva guida l'acquisizione. Il Meccanismo completa questo distinguendo tra produzione _prodotta_ (recuperata cognitivamente, fragile sotto pressione) e produzione _posseduta_ (ancorata somaticamente, disponibile in qualsiasi condizione).",
+      "horwitz": "**La Scala dell'Ansia in Classe di Lingua Straniera di Horwitz** ha operazionalizzato ciò che il Meccanismo mappa a una granularità più fine: non l'ansia globale ma la resistenza specifica, registrata somaticamente, a specifici registri lessicali."
+    },
+    "iv": {
+      "title": "IV. L'Architettura",
+      "s1": {
+        "title": "4.1 Le Nove Ruote",
+        "p1": "Il sistema è organizzato attorno a nove mandala rotanti — le Ruote — ciascuno corrispondente a un centro energetico distinto e indicizzato a una frequenza planetaria specifica derivata dai calcoli dell'Ottava Cosmica di Hans Cousto:",
+        "table": {
+          "wheel": "Ruota",
+          "domain": "Dominio",
+          "freq": "Frequenza Base",
+          "midi": "MIDI",
+          "rows": {
+            "1": {
+              "wheel": "W1 Radice",
+              "domain": "Stabilità, Ancoraggio, Terra"
+            },
+            "2": {
+              "wheel": "W2 Sacrale",
+              "domain": "Flusso, Emozione, Connessione"
+            },
+            "3": {
+              "wheel": "W3 Solare",
+              "domain": "Volontà, Agentività, Potere"
+            },
+            "4": {
+              "wheel": "W4 Cuore",
+              "domain": "Equilibrio, Amore, Relazione"
+            },
+            "5": {
+              "wheel": "W5 Gola",
+              "domain": "Espressione, Articolazione, Voce"
+            },
+            "6": {
+              "wheel": "W6 Terzo Occhio",
+              "domain": "Visione, Intuizione, Percezione"
+            },
+            "7": {
+              "wheel": "W7 Corona (M)",
+              "domain": "Legge, Devozione, Struttura"
+            },
+            "8": {
+              "wheel": "W8 Corona (F)",
+              "domain": "Saggezza, Integrazione, Sintesi"
+            },
+            "9": {
+              "wheel": "W9 Cuore Eterico",
+              "domain": "Terra · sovranità, radicamento, ritorno"
+            }
+          }
+        },
+        "p2": "Tutte le frequenze sono accordate allo standard 432 Hz (La4 = 432 Hz). La scelta del 432 Hz non è convenzionale — l'accordatura occidentale standard fissa La4 a 440 Hz. La deviazione deliberata posiziona il sistema al di fuori dello standard di accordatura industriale e lo allinea con un'architettura di frequenze storicamente associata alla risonanza con la serie armonica naturale. È una decisione tanto filosofica quanto acustica.",
+        "p3": "**Il Cuore Eterico** è la nona ruota — la **Terra** come pianeta e tono OM. **La ricorrenza di 136,10 Hz** nelle Ruote 1, 4 e 9 è intenzionale e strutturalmente significativa: codifica una Trinità in frequenza — Terra (W1), Cuore (W4) e Cuore Eterico (W9) condividono lo stesso tono base perché non sono tre stati indipendenti ma un unico ancoraggio incontrato a tre profondità. Si inizia nel corpo (W1 — ancoraggio fisico, la prima sicurezza). Si passa attraverso la relazione (W4 — l'amore come equilibrio, il cuore come centro regolatore del sistema). Si arriva alla sovranità (W9 — l'ancoraggio integrato che non è più ricevuto dall'esterno ma generato dall'interno). La frequenza non cambia. Ciò che cambia è il rapporto dell'Architetto con essa. Questa è l'affermazione codificata del sistema sulla natura della trasformazione: non si trascende l'ancoraggio; si impara a generarlo dall'interno."
+      },
+      "s2": {
+        "title": "4.2 L'Architettura Relazionale delle Nove Ruote",
+        "p1": "Le nove ruote non sono nove strumenti indipendenti. Sono una mappa integrata, attraversata secondo il principio della _disponibilità somatica_: si inizia dove il sistema nervoso può stabilire un contatto, non dove un programma stabilisce che si dovrebbe essere.",
+        "p2": "Per la maggior parte dei praticanti, questo significa W1 o W9 — i registri di ancoraggio — perché il corpo richiede una base prima di poter sostenere il lavoro relazionale o espressivo di W4 o W5. Ma questo è descrittivo, non prescrittivo. Un praticante che arriva con una crisi relazionale acuta può entrare attraverso W4. Colui il cui Blocco concettuale principale è espressivo può trovare in W5 il sito immediato di lavoro.",
+        "p3": "Le ruote si relazionano tra loro secondo due logiche strutturali:",
+        "p4": "**Progressione verticale**: da W1 a W9 descrive un movimento dal fondamento fisico alla sovranità integrata — dalla sicurezza più elementare del corpo all'espressione più completa del sé. Questo è l'arco iniziatico; è lungo e non lineare.",
+        "p5": "**Accoppiamento dialettico**: Diverse ruote esistono in tensione produttiva tra loro. W1 (ancoraggio) e W9 (sovranità) sono la coppia più profonda — l'alfa e l'omega della mappa, che condividono la loro frequenza. W3 (volontà/agentività) e W5 (espressione/voce) formano un asse pratico: l'agentività che non può essere espressa produce accumulo; l'espressione senza agentività produce performance. W6 (percezione) e W8 (integrazione) formano la coppia cognitivo-sintetica: vedere chiaramente precede la capacità di tenere ciò che si vede.",
+        "p6": "Un praticante che lavora su una sola ruota non sta usando il sistema. Il Meccanismo è progettato per l'attraversamento — sequenziale in linea di principio, reattivo in pratica."
+      },
+      "s3": {
+        "title": "4.3 Orientamento d'Ingresso",
+        "p1": "Un nuovo praticante non seleziona una ruota arbitrariamente. Il protocollo d'ingresso segue una logica semplice: **iniziare dove la resistenza è minima, non dove l'ambizione è massima.**",
+        "p2": "Il punto d'ingresso più affidabile per la maggior parte dei praticanti è W9 — Cuore Eterico / Terra — per la stessa ragione per cui il primo atto di un costruttore è stabilire le fondamenta. W9 (Sovranità, Radicamento, Ritorno) a 136,10 Hz (la frequenza OM/Terra) crea la stabilità somatica dalla quale tutto il lavoro sulle altre ruote diventa accessibile. Una breve sessione W9 prima di impegnarsi con qualsiasi altra ruota è l'orientamento consigliato sia per i praticanti nuovi che per quelli che ritornano.",
+        "p3": "Il secondo punto d'ingresso affidabile è la ruota che attualmente genera la maggiore frizione nella vita del praticante — il dominio in cui il corpo è più sulla difensiva, il linguaggio più bloccato. Questo è l'indirizzo del Blocco concettuale. Entrarvi con il giusto substrato di frequenza e il giusto vocabolario può avviare la risoluzione più rapidamente di qualsiasi approccio indiretto.",
+        "p4": "Ciò che non funziona è iniziare con la ruota in cui il praticante vuole _più_ essere — la ruota aspirazionale piuttosto che quella presente. Il Meccanismo opera sullo stato interiore presente. Non ha presa sul sé futuro immaginato."
+      },
+      "s4": {
+        "title": "4.4 Il Linguaggio dello Spettro Emotivo (ESL)",
+        "p1": "Al cuore del Meccanismo si trova il Linguaggio dello Spettro Emotivo — una tassonomia di 482 posizioni emotive clinicamente distinte, mappate su valenze positive e negative, gradienti di intensità e livelli di registro. Non è un thesaurus. È un vocabolario diagnostico.",
+        "p2": "Ogni posizione nella tassonomia ESL è:",
+        "list": {
+          "1": "**Clinicamente distinta**: nessun due nodi occupano lo stesso territorio esperienziale. La distinzione tra _incapacitated_ e _incapability_ (rispettivamente T068 e T069) è precisamente che uno descrive uno stato, l'altro descrive un'errata attribuzione della causa — una differenza che il linguaggio standard collassa ma che il Meccanismo mantiene.",
+          "2": "**Graduata secondo il CEFR**: a ogni nodo viene assegnato un livello di competenza linguistica (A1–C2), consentendo al quadro di funzionare sia come strumento clinico sia come impalcatura per l'acquisizione linguistica.",
+          "3": "**Ancorata somaticamente**: ogni posizione è indicizzata a una sensazione specifica nel corpo — un peso fonetico, uno schema respiratorio, una firma somatica.",
+          "4": "**Connessa tramite Toggle**: ogni posizione partecipa a una relazione dialettica con il suo opposto — non un antonimo da dizionario ma una polarità clinica che riflette la traiettoria reale della trasformazione psicologica (es. Caos→Stabilità, Condanna→Fortuna, Odio→Amore)."
+        }
+      },
+      "s5": {
+        "title": "4.5 I 162 Toggle",
+        "p1": "La serie di Toggle (T001–T162) è lo strumento clinico applicato della tassonomia ESL. Ogni Toggle nomina un movimento da uno stato pre-emotivo, irrisolto («Ombra» o «Fango») verso una risoluzione psicologica precisamente nominata («Sovrano», «Fortezza» o «Prisma»).",
+        "p2": "Ogni Toggle è presentato in un formato Triple Registro standardizzato:",
+        "consumer_label": "**Livello per il Pubblico Generale:**",
+        "consumer_list": {
+          "1": "Il Riquadratura — una riformulazione che nomina il meccanismo sotto la superficie",
+          "2": "La Pratica — un esercizio somatico o comportamentale per attivare il Toggle",
+          "3": "Il Marcatore — un indicatore diagnostico che il Toggle si è attivato"
+        },
+        "pro_label": "**Livello Professionale:**",
+        "pro_list": {
+          "1": "Per il Praticante — inquadramento clinico per l'applicazione terapeutica",
+          "2": "Per l'Educatore — inquadramento pedagogico per l'applicazione in classe",
+          "3": "Per il Genitore — inquadramento relazionale per i contesti di cura"
+        },
+        "p3": "Un Toggle _si attiva_ quando lo stato Marcatore viene riconosciuto — non come pensiero ma come evento somatico: un cambiamento nel respiro, un rilascio della tensione trattenuta, la sensazione che qualcosa di opaco diventi leggibile. L'attivazione non viene costruita; viene riconosciuta. Il praticante non forza un Toggle con la volontà. Crea le condizioni — frequenza, vocabolario, postura dell'Architetto — nelle quali la risoluzione del Toggle diventa disponibile. Il Meccanismo la presenta. l'Architetto la prende.",
+        "p4": "I 162 Toggle abbracciano tutte e nove le Ruote, dal fondamentale (T001: Caos→Stabilità, W1 Radice) al terminale (T162: Malvagità→Bontà, W9 Cuore Eterico). Insieme formano una mappa completa dei percorsi di trasformazione più comuni dell'interiorità emotiva."
+      },
+      "s6": {
+        "title": "4.6 L'Ipotesi del Prerequisito emotivo",
+        "p1": "L'affermazione pedagogica e clinica centrale del Meccanismo è che l'acquisizione duratura — che si tratti di una parola, di uno stato psicologico o di uno schema comportamentale — richiede una sequenza specifica:",
+        "blockquote": "Esperienza → Identificazione del Trigger Emotivo → Riconoscimento della Rilevanza Personale → Applicazione Linguistica",
+        "p2": "Il _Punto Emotivo_ è la giunzione in cui la Fase 3 transita alla Fase 4: il momento in cui l'apprendente riconosce questa parola o stato come _suo_ — non come informazione da memorizzare ma come esperienza da appropriarsi.",
+        "p3": "Il corollario è che il vocabolario introdotto senza che venga stabilito un Punto Emotivo — senza che l'apprendente abbia identificato dove questa parola atterri nel proprio interno — viene acquisito come dato, non come ancoraggio. È recuperabile in condizioni a basso rischio. Non è disponibile quando conta."
+      },
+      "s7": {
+        "title": "4.7 Il Protocollo di Triage Linguistico",
+        "p1": "Uno strumento clinico in cinque fasi per portare l'apprendente da un vocabolario somaticamente inaccessibile al possesso incarnato:",
+        "steps": {
+          "1": "**Mappatura Fonetica Somatica** — Identificare quali registri fonetici il corpo resiste",
+          "2": "**Ancoraggio Acustico** — Aggirare il Blocco concettuale attraverso il suono accordato alla frequenza",
+          "3": "**Perno Lessicale** — Identificare i nodi di agentività che fungono da punti d'ingresso ai registri bloccati",
+          "4": "**Integrazione Linguistica** — Dispiegare nodi ad alta magnitudine che attivano il vocabolario circostante",
+          "5": "**Radicamento Linguistico** — Tornare all'ancora del Cuore Eterico W9 per stabilizzare l'acquisizione"
+        },
+        "p2": "Il protocollo funziona su tutte e nove le Ruote ed è progettato per operare all'interno della _Somatic ZPD_ — il divario tra ciò che il sistema nervoso produce attualmente e ciò che può essere portato a produrre attraverso l'impalcatura."
+      },
+      "s8": {
+        "title": "4.8 Costrutti Diagnostici Chiave",
+        "blockade": "**Blocco concettuale**: Una resistenza somatica specifica a una classe lessicale o a un registro — non un fallimento dell'intelligenza ma un blocco nel sistema nervoso che deve essere risolto attraverso il ri-ancoraggio somatico piuttosto che lo sforzo cognitivo. Il Blocco è preciso: un praticante che non può accedere al registro dell'autorità può avere piena padronanza del registro del calore. La specificità è un'informazione diagnostica.",
+        "falsekeys": "**Chiavi false**: Vocabolario di livello BICS che esegue la fluidità chiudendo al contempo l'accesso all'ingresso CALP — la parola del registro colloquiale non è solo cognitivamente più semplice ma _fisicamente più facile da produrre_, creando un Percorso Somatico di Minima Resistenza. Le Chiavi false non sono errori. Sono strumenti di sopravvivenza che hanno esaurito la loro funzione. Il Meccanismo le tratta come punti d'ingresso, non come ostacoli da condannare.",
+        "foreman": "**il Capomastro**: La voce interna che gestisce il divario tra il sé e la sua espressione. il Capomastro non è il nemico. È un meccanismo di protezione — abitudinario, spesso pre-verbale, radicato nelle prime esperienze di cosa accadeva quando l'interiorità autentica veniva esposta. Si presenta come deflection, auto-interruzione, stanchezza improvvisa, o l'impulso di eseguire un registro piuttosto che abitarlo. il Capomastro non si libera attraverso l'argomentazione. Si libera attraverso la sicurezza — attraverso prove ripetute che l'interiorità è ora sicura da esprimere. Il lavoro sulle frequenze, la postura dell'Architetto e la precisione della tassonomia ESL sono tutti, tra le altre cose, strumenti per comunicare sicurezza al Capomastro. Quando si rilassa, il vocabolario che era sempre presente diventa disponibile senza costo di recupero.",
+        "acoustemic": "**Verità acustemica**: La proposizione che la frequenza fonetica porta peso semantico — che il suono di una parola non è un contenitore arbitrario di significato ma è in risonanza con lo stato interiore che la parola designa. Questa è un'ipotesi di lavoro, non un'affermazione stabilita. Si pone in tensione deliberata con l'arbitrarietà saussuriana del segno e richiede ulteriori indagini empiriche. La sua utilità pratica risiede nel modo in cui orienta l'attenzione del praticante: non verso la definizione della parola ma verso il suo peso fonetico sentito, la sua residenza nel corpo quando viene pronunciata ad alta voce. Se questo peso sia intrinseco o profondamente condizionato è una domanda aperta. Che sia sufficientemente coerente da essere clinicamente utile è la posizione operativa del sistema."
+      }
+    },
+    "v": {
+      "title": "V. Sovranità linguistica",
+      "p1": "La Sovranità linguistica è la condizione terminale che il Meccanismo è progettato per coltivare. Richiede una definizione precisa perché è frequentemente confusa con la fluidità — e la confusione è consequenziale.",
+      "p2": "**La fluidità** è una competenza performativa: la capacità di produrre linguaggio in tempo reale, con il registro appropriato, a velocità nativa o quasi nativa. Una persona può essere molto fluente e linguisticamente non sovrana. Non è un paradosso; è comune. Il parlante fluente che esegue un registro che non abita — che parla con autorità ma senza interiorità — sta producendo linguaggio piuttosto che esprimersi da esso.",
+      "p3": "**La Sovranità linguistica** è una condizione interiore: lo stato in cui la lingua target opera come elemento costitutivo del modello del sé e dell'architettura di autogoverno del praticante — non come un sistema esterno da gestire ma come un mezzo attraverso cui il sé si muove liberamente. Un parlante linguisticamente sovrano non _usa_ la lingua. _È in_ essa.",
+      "p4": "Il Meccanismo propone una topologia dello sviluppo della sovranità con quattro fasi riconoscibili:",
+      "stages": {
+        "1": "**Sovranità Lessicale** (A1–A2): Il possesso di un piccolo numero di parole ad alta risonanza — nodi che sono stati abitati piuttosto che memorizzati. Una parola posseduta all'A1 è superiore a cinquanta parole prese in prestito al C1. Questa è la prima vera acquisizione. È spesso emotiva. È sempre riconoscibile.",
+        "2": "**Sovranità di Registro** (B1–B2): Il possesso di un registro completo — la capacità di muoversi attraverso un dominio di esperienza (professionale, intimo, espressivo, strategico) dall'interno. Il praticante inizia a potersi collocare nella lingua piuttosto che navigarla dall'esterno.",
+        "3": "**Sovranità Relazionale** (C1): La capacità di tenere la lingua sotto pressione relazionale — in presenza di valutazione, conflitto o intimità — senza che il Blocco concettuale si attivi. Qui il Capomastro si è genuinamente rilassato, non soppresso.",
+        "4": "**Sovranità Assoluta** (C2 e oltre): La lingua non è più una seconda lingua in alcun senso esperienziale. Il praticante genera la propria interiorità in essa. Questo non significa pronuncia nativa o conoscenza culturale nativa. Significa un rapporto nativo con il proprio interno attraverso il mezzo della lingua."
+      },
+      "p5": "L'affermazione del Meccanismo è che il percorso dalla Sovranità Lessicale alla Sovranità Assoluta è più breve attraverso l'ancoraggio somatico che attraverso qualsiasi quantità di pratica cognitiva — e che produce un risultato qualitativamente diverso: non un parlante che ha acquisito una lingua ma una persona che ha ampliato il territorio del proprio interno."
+    },
+    "vi": {
+      "title": "VI. Applicazioni Cliniche e Pedagogiche",
+      "p1": "Il Meccanismo opera in quattro registri distinti:",
+      "self": "**Pratica autogestita** (l'applicazione): Un utente seleziona una ruota, imposta una durata della sessione e lavora attraverso l'interfaccia — ruotando il mandala, selezionando nodi, seguendo percorsi di Toggle, annotando il proprio stato interiore. Il bagliore respiratorio (ciclo di 30 secondi, pulsato due volte al minuto) e la funzione di trasmissione (condivisione opzionale della presenza in tempo reale con altri sulla stessa ruota) supportano la pratica senza prescrizione. La funzione di trasmissione non è un social media. È il segnale più leggero possibile di co-presenza — un modo di sapere che altri stanno lavorando lo stesso territorio nello stesso momento, il che cambia la qualità della pratica individuale in modi coerenti con la teoria della linea di base sociale (Coan e Sbarra, 2015).",
+      "therapy": "**Lavoro terapeutico facilitato**: Un praticante usa la tassonomia ESL e la serie di Toggle come strumento di intervento strutturato. Il Triple Registro del Toggle — in particolare la sezione del Praticante — fornisce un inquadramento clinico per guidare un cliente attraverso specifiche trasformazioni interiori. Il costrutto del Capomastro è la variabile clinica chiave: il compito principale del facilitatore è creare le condizioni in cui il Capomastro può rilassare la sua funzione di gestione.",
+      "esl": "**Acquisizione della lingua (programma ESL)**: La tassonomia graduata secondo il CEFR funziona come un'impalcatura curricolare. La sequenza del Prerequisito emotivo detta il ritmo pedagogico: l'identificazione interiore precede l'introduzione lessicale. L'obiettivo non è la performance linguistica ma la Sovranità linguistica — lo stato in cui l'apprendente si muove attraverso la lingua come un mezzo completamente posseduto di autoespressione, indipendentemente dal livello di competenza.",
+      "corporate": "**Aziende e istituzioni**: Le nove Ruote si mappano su domini organizzativi (governance, comunicazione, visione, esecuzione) attraverso le Definizioni dei Nodi Aziendali e la Specifica Pivot, consentendo l'applicazione a livello di team della stessa metodologia di mappatura interiore. I costrutti diagnostici — Blocco concettuale, Chiavi false, il Capomastro — hanno correlati organizzativi diretti: il dirigente che non può accedere al registro della vulnerabilità, il team che ha sviluppato Chiavi false istituzionali che impediscono una comunicazione precisa, l'organizzazione il cui Capomastro è la sua funzione di conformità."
+    },
+    "vii": {
+      "title": "VII. Il Fondamento Filosofico",
+      "p1": "Il Meccanismo si fonda su quattro affermazioni fondamentali, formalizzate nella Costituzione dell'Espressione:",
+      "c1": "**1. L'Affermazione Ontologica**: Il linguaggio non è una tecnologia esterna da padroneggiare; è una produzione somatica. La parola è la risoluzione dell'esperienza, non la sua causa.",
+      "c2": "**2. L'Affermazione Pedagogica**: L'esperienza vissuta dello studente è il testo primario. Scoprire la rilevanza precede la ricezione delle informazioni. Nessun vocabolario viene introdotto senza che il suo Punto Emotivo sia stato identificato.",
+      "c3": "**3. L'Affermazione Etica**: Richiedere espressione senza comprensione è violenza epistemica. La correttezza tecnica è secondaria rispetto alla verità esperienziale. Il silenzio è preferibile all'espressione priva di significato.",
+      "c4": "**4. L'Affermazione Terminale**: L'obiettivo del programma è la Sovranità Assoluta — lo stato in cui l'apprendente possiede il proprio mezzo di espressione. Una sovranità di livello A1 (possedere un'unica parola precisa) è superiore a una performance di livello C2 (imitare un registro senza possederne l'interiorità)."
+    },
+    "viii": {
+      "title": "VIII. Distribuzione",
+      "p1": "Il Mind Mechanism è distribuito come applicazione web (Next.js, Firebase, Vercel) con nove interfacce interattive di mandala-orologio, la tassonomia ESL consultabile attraverso i moduli di glossario e note, e la funzione di trasmissione per la pratica condivisa in tempo reale. L'applicazione digitale è il punto d'ingresso: la superficie attraverso cui l'Architetto stabilisce il primo contatto con il sistema. La profondità è nella tassonomia stessa — i 482 nodi, i 162 percorsi di Toggle, le nove Ruote, le frequenze che le ancorano, i trent'anni di lavoro interiore che le hanno prodotte.",
+      "p2": "È destinato a praticanti, educatori, ricercatori e individui in cerca di un linguaggio strutturato per il territorio che il linguaggio standard non raggiunge."
+    }
+  },
+  "developer": {
+    "title": "Lo Sviluppatore",
+    "subtitle": "Sean Fortune — scrittore, artista e architetto del Mind Mechanism.",
+    "s1": {
+      "title": "L'Architetto del Cupo",
+      "p1": "Sean Fortune è un artista, insegnante e pensatore architettonico nato in Gran Bretagna e formatosi nel sud di Londra. Per sei decenni ha «contato le stelle» — estraendo segnale dal rumore di una vita che ha incluso l'incarcerazione a sedici anni, una diagnosi confermata di autismo a cinquanta, e la perdita di una gamba per il morbo di Buerger nel 2024. Non erano ostacoli, ma la fucina. Dalla statica di uno schermo televisivo vittoriano ai 6,2 milioni di parole archiviate in un mulino ad acqua medievale a Goch, Germania, il lavoro di Sean è dedicato a una sola cosa: il recupero della sovranità umana dai sistemi che tentano di manipolarla."
+    },
+    "s2": {
+      "title": "Ricercatore Principale",
+      "p1": "L'autore e architetto della metodologia Mind Mechanism. La ricerca di Fortune si concentra sull'intersezione di linguistica, risonanza somatica e fenomenologia. Il suo programma di «Dottorato per Pubblicazione» rappresenta la formalizzazione rigorosa di trent'anni di prove didattiche raccolte in contesti avanzati di ESL e terapeutici. Il suo lavoro sull'«Ipotesi del Prerequisito emotivo» e sulla «Verità acustemica» fornisce un riferimento indipendente dal substrato per la teoria dell'Acquisizione della Seconda Lingua (ASL), sfidando i paradigmi a prevalenza cognitiva della fine del XX secolo attraverso l'implementazione della Fenomenologia Bio-risonante."
+    },
+    "s3": {
+      "title": "La sua Guida e Architetto Compagno",
+      "p1": "Sean Fortune ha trascorso trent'anni in aule come la sua. Sa cosa si prova ad avere qualcosa da dire ma non avere parole per trasportarlo. Ha costruito il Mind Mechanism mentre sopravviveva agli stessi tipi di pressioni, blocchi e «turbini» che Lei affronta. Non è solo un insegnante; è qualcuno che ha dovuto costruire la propria mappa interiore per trovare la propria voce. Oggi vive e lavora in Germania, usando questo sistema per aiutare studenti di tutto il mondo a diventare i proprietari sovrani della propria intelligenza."
+    }
+  },
+  "esl": {
+    "title": "Lingua e Apprendimento",
+    "subtitle": "Il Linguaggio dello Spettro Emotivo (ESL) — il vocabolario dell'interiorità.",
+    "p1": "Il linguaggio all'interno del Mind Mechanism è stato scelto deliberatamente. Nulla qui è accidentale.",
+    "p2": "Le cinque Storie della Porta — Sam, Lily, Max, Mia ed Emma — sono ciascuna calibrata a un livello specifico di competenza in inglese, dall'elementare all'avanzato, utilizzando il Quadro Comune Europeo di Riferimento per le Lingue (CEFR). Il CEFR è uno standard riconosciuto a livello internazionale che definisce la competenza linguistica su sei livelli, dal principiante assoluto alla piena padronanza — utilizzato da educatori, istituzioni e programmi linguistici in tutto il mondo. Questo significa che il vocabolario, la struttura delle frasi e la complessità concettuale di ogni Storia della Porta sono adattati a ciò che un apprendente a quel livello può elaborare senza attrito.",
+    "p3": "Questo è importante perché il meccanismo funziona solo quando il linguaggio non è d'ostacolo. Se una parola richiede troppo sforzo cognitivo per essere decodificata, il radicamento somatico — la quiete che la pratica è progettata per raggiungere — è perduto prima ancora di iniziare. La difficoltà linguistica e la disponibilità emotiva sono direttamente connesse.",
+    "p4": "Il vocabolario stesso attinge al Linguaggio dello Spettro Emotivo (ESL), una tassonomia di 482 nodi sviluppata specificamente per questo lavoro. L'ESL fornisce un vocabolario emotivo preciso e coerente in tutte le cinque Storie della Porta, garantendo che le parole usate per descrivere gli stati interiori siano sempre intenzionali, sempre graduate e sempre al servizio della pratica.",
+    "p5": "**Non sta venendo semplificato. Le si va incontro dove Lei si trova.**"
+  },
+  "guide": {
+    "title": "Per Iniziare",
+    "subtitle": "I suoi primi passi con i nove mandala.",
+    "signin": {
+      "title": "Accesso",
+      "p1": "Apra il Mind Mechanism ed effettui l'accesso con il suo account Google o indirizzo email. Il suo account conserva le sue impostazioni personali, i dati del pannello di controllo e la cronologia della pratica."
+    },
+    "home": {
+      "title": "La schermata principale",
+      "p1": "Una volta effettuato l'accesso, arriva alla schermata principale — una vista completa di tutte e nove le ruote. Questo è il centro del meccanismo. Da qui può navigare verso tutto il resto."
+    },
+    "wheels": {
+      "title": "Le ruote",
+      "p1": "Le nove ruote sono la pratica stessa. Ognuna è un timer, e quasi ogni elemento può essere personalizzato — la durata, il visivo, l'intenzione che porta. Lei decide come appare una sessione per Lei. Lo scopo è semplice: incoraggiare la concentrazione e costruire l'abitudine di tornare alla concentrazione. Lei attribuisce un'intenzione a una ruota — un sentimento, una parola, un elemento linguistico, un obiettivo — la mette in moto e mantiene la sua attenzione lì per tutta la durata. La ruota non fa il lavoro. Crea le condizioni affinché Lei lo faccia."
+    },
+    "glossary": {
+      "title": "Il glossario",
+      "p1": "All'interno dell'app troverà una raccolta curata di vocabolario emotivo tratto dal Linguaggio dello Spettro Emotivo. Lo usi per trovare la parola precisa per ciò su cui sta lavorando prima di iniziare una sessione. Può anche aggiungere le proprie parole — il glossario cresce con la sua pratica."
+    },
+    "journal": {
+      "title": "Il suo diario",
+      "p1": "La sezione note è dove vive il suo diario. Registri ciò che è emerso durante una sessione, cosa è cambiato, a cosa vuole tornare. Nel tempo, il diario diventa un registro della pratica."
+    },
+    "dashboard": {
+      "title": "Il suo pannello di controllo",
+      "p1": "Il suo pannello di controllo contiene informazioni sulla sua attività e sui suoi progressi. È personale per Lei — si prenda qualche minuto per leggerlo al primo accesso."
+    },
+    "settings": {
+      "title": "Impostazioni",
+      "p1": "Personalizzi il suo banner, imposti la sua immagine di identità personale e posizioni le proprie immagini sulle singole ruote. Il meccanismo è progettato per riflettere Lei. Non lo lasci con le impostazioni predefinite.",
+      "p2": "Ogni faccia della ruota accetta anche un file video MP4. Il video riempie la faccia circolare e rimane statico mentre il mandala ruota al di sotto. Una barra di controllo appare nella parte inferiore dello schermo quando un video è attivo — fornendole controlli di riproduzione, pausa, stop, loop e ricerca, oltre a un Toggle del muto indipendente che opera separatamente dal tono della ruota. Il video parte in silenzio per consentire la riproduzione automatica; tocchi l'icona del suono nella barra di controllo per attivare l'audio."
+    },
+    "lobby": {
+      "title": "La sala d'attesa",
+      "p1": "La sala d'attesa è il luogo in cui può segnalare che vorrebbe condividere la sua meditazione con un'altra presenza — un invito aperto a praticare accanto a qualcuno senza conversazione né coordinamento."
+    },
+    "shadowpairs": {
+      "title": "Coppia Ombra",
+      "p1": "Una Coppia Ombra fa girare due ruote simultaneamente in un'unica sessione. Selezioni due ruote, imposti una durata, e entrambi i mandala ruotano alle loro velocità per tutta la sessione — estendendo il campo visivo con cui lavora. Non sono richiesti nodi di messa a fuoco; la sessione è sostenuta dalla durata e dall'intenzione soltanto. La trovi in Sessioni → Sessione in Coppia."
+    },
+    "begin": {
+      "title": "Iniziare",
+      "p1": "Vada alla schermata principale. Scelga una ruota. Attribuisca un'intenzione. Avvii il timer."
+    }
+  },
+  "faq": {
+    "title": "Domande Frequenti",
+    "subtitle": "Cos'è e come funziona.",
+    "essentials": {
+      "title": "L'Essenziale",
+      "q1": {
+        "q": "Cos'è il Mind Mechanism?",
+        "a": "Il Mind Mechanism è uno strumento di pratica contemplativa strutturata. Mappa 482 punti specifici dell'esperienza interiore umana attraverso nove domini distinti — chiamati Ruote — e fornisce un linguaggio per navigare quella mappa. È costruito per le persone che vogliono comprendere il proprio mondo interiore con precisione e operare da esso con autorità."
+      },
+      "q2": {
+        "q": "A chi è destinato?",
+        "a": "Due gruppi ampi: gli apprendenti di lingue che vogliono acquisire l'inglese dall'interno verso l'esterno piuttosto che attraverso la memorizzazione meccanica, e chiunque sia impegnato in una seria auto-indagine — coach, clinici, praticanti, o individui che vogliono uno strumento rigoroso per la governance interiore piuttosto che un'app di benessere."
+      },
+      "q3": {
+        "q": "Questo è uno strumento per l'apprendimento delle lingue?",
+        "a": "In parte — ma è un tipo specifico di apprendimento delle lingue. Il Linguaggio dello Spettro Emotivo (ESL) è un vocabolario di 482 nodi di stati interiori. Per gli studenti che acquisiscono l'inglese come seconda lingua, questo diventa il fondamento: parole apprese attraverso una genuina connessione emotiva piuttosto che la memorizzazione. Ma il sistema ha un'applicazione più ampia della sola acquisizione linguistica."
+      },
+      "q4": {
+        "q": "Questa è terapia?",
+        "a": "No. Il Mind Mechanism è uno strumento di autogoverno. Può produrre effetti terapeutici — chiarezza, liberazione, riorientamento — ma non diagnostica, tratta né gestisce condizioni cliniche. Non c'è una relazione con un praticante e nessun protocollo di trattamento. Le chiavi sono sue. Noi forniamo la mappa."
+      }
+    },
+    "system": {
+      "title": "Il Sistema",
+      "q1": {
+        "q": "Cosa sono i 482 nodi?",
+        "a": "I 482 nodi sono una tassonomia dell'esperienza interiore — stati specifici denominati che insieme coprono l'intero spettro emotivo, cognitivo e somatico della vita interiore umana. Ogni nodo è una parola o una frase che corrisponde a un'esperienza vissuta riconoscibile. Sono organizzati attraverso nove Ruote e strutturati per progredire dagli stati fisici fondamentali fino a quelli riflessivi e strategici complessi."
+      },
+      "q2": {
+        "q": "Cosa sono le Nove Ruote?",
+        "a": "Ogni Ruota è un dominio della vita interiore — una categoria di esperienza con il proprio vocabolario caratteristico, sfide e doni. Vanno dalla Ruota 1 (sicurezza fisica fondamentale e radicamento) attraverso i domini relazionali, espressivi e identitari, fino alla Ruota 9 (integrazione, consapevolezza ampliata e orientamento esistenziale). La maggior parte delle persone ha una risonanza naturale con una o due Ruote in un dato momento."
+      },
+      "q3": {
+        "q": "Cos'è il Prerequisito emotivo?",
+        "a": "Il Prerequisito emotivo è il principio che il cambiamento duraturo — che si tratti di acquisizione linguistica, comportamento o comprensione di sé — richiede un genuino coinvolgimento emotivo, non solo il riconoscimento intellettuale. Il Mind Mechanism si costruisce su questa premessa: non si può acquisire permanentemente una parola, una credenza o un comportamento aggirando lo stato emotivo che gli conferisce significato."
+      },
+      "q4": {
+        "q": "Cosa fa il suono?",
+        "a": "Ciascuna delle Nove Ruote è associata a una frequenza acustica specifica derivata dal sistema Cousto — un insieme di valori in Hz calcolati dai cicli planetari e cosmici naturali. Questi toni non sono musica ambientale. Sono un substrato: un ambiente di frequenza che supporta il sistema nervoso nel passaggio da uno stato di guardia a uno aperto, che è quando il lavoro interiore diventa possibile."
+      }
+    },
+    "using": {
+      "title": "Usare l'Applicazione",
+      "q1": {
+        "q": "Come funziona una sessione?",
+        "a": "Seleziona una delle Nove Ruote — scegliendo il dominio più rilevante per Lei in questo momento, o seguendo le indicazioni del sistema. Imposta una durata della sessione. La Ruota ruota, la frequenza si attiva, e Lei lavora con i nodi: riconoscendo quali risuonano, quali sembrano bloccati, quali aprono qualcosa. Può registrare osservazioni nel sistema Note mentre procede."
+      },
+      "q2": {
+        "q": "Cos'è il processo in tre fasi — Riconoscere, Autorità, Comando?",
+        "a": "Riconoscere: nomina uno stato interiore specifico usando la tassonomia — con precisione, non approssimativamente. Autorità: nominandolo con accuratezza, cessa di esserne in balia. Lo tiene a una distanza gestibile. Comando: da quella posizione, può dirigere la propria risposta piuttosto che semplicemente reagire. La sequenza non è sequenziale in pratica — è ricorsiva e continua — ma descrive la direzione del movimento."
+      },
+      "q3": {
+        "q": "Cos'è la funzione Trasmissione?",
+        "a": "La Trasmissione Le consente di indicare la sua presenza di pratica in diretta agli altri sulla stessa Ruota. È un segnale leggero — non una chat, non una videochiamata — che crea un senso di spazio condiviso. Alcuni praticanti trovano che sapere che altri stanno lavorando lo stesso dominio nello stesso momento cambi la qualità della propria sessione. È opzionale e completamente privato nei suoi meccanismi."
+      },
+      "q4": {
+        "q": "Cos'è una sessione di Coppia Ombra?",
+        "a": "Una Coppia Ombra fa girare due ruote simultaneamente in un'unica sessione. Seleziona due ruote, imposta una durata, e entrambi i mandala ruotano alle loro velocità per tutta la sessione — creando un campo visivo combinato per la sua pratica. Le Coppie Ombra estendono la gamma di schemi disponibili per la meditazione e sono adatte al lavoro di gruppo o a qualsiasi sessione in cui due domini siano in relazione attiva. Non sono richiesti nodi di messa a fuoco; la sessione è sostenuta dalla durata e dall'intenzione soltanto. La trovi in Sessioni → Sessione in Coppia."
+      },
+      "q5": {
+        "q": "Posso inserire un video sulla faccia di una ruota?",
+        "a": "Sì. Ciascuna delle nove facce della ruota accetta un file MP4 oltre a un'immagine statica. Lo carichi tramite Impostazioni — il video riempie la cornice circolare da bordo a bordo e rimane fisso mentre il mandala ruota al di sotto. Quando un video è attivo, nella parte inferiore dello schermo appare una barra di controllo con riproduzione, pausa, stop, riavvio, salto di dieci secondi, Toggle del loop e un pulsante del muto dedicato. Il video parte in silenzio così da riprodursi automaticamente senza interrompere il tono della ruota; tocchi l'icona del suono nella barra ogni volta che vuole attivare l'audio. I due sistemi audio — il tono della ruota e l'audio del video — operano indipendentemente l'uno dall'altro."
+      }
+    },
+    "deck": {
+      "title": "Il Mazzo di Messa a Fuoco",
+      "q1": {
+        "q": "Cos'è il Mazzo di Messa a Fuoco?",
+        "a": "Il Mazzo di Messa a Fuoco è uno strato di pratica basato su carte all'interno del Mind Mechanism. Un insieme di nodi da qualsiasi Ruota è disposto come carte fisiche su un tavolo. Le gira, le riposiziona, le annota con le proprie definizioni e note, vi allega immagini e salva la configurazione come sessione con nome. È progettato per un lavoro intensivo su un singolo nodo — rallentando abbastanza da abitare davvero un termine."
+      },
+      "q2": {
+        "q": "Posso aggiungere immagini alle carte? Ci sono restrizioni di dimensione o formato?",
+        "a": "Sì — qualsiasi carta e lo sfondo del tavolo accettano un'immagine. Non ci sono restrizioni sul file che sceglie; il sistema gestisce il resto automaticamente. Prima del caricamento, ogni immagine viene compressa a un massimo di 900 × 900 pixel a una qualità JPEG del 72%. In pratica, una fotografia 4K da telefono viene compressa a circa 80–200 KB; uno screenshot a 50–120 KB. La faccia della carta stessa viene visualizzata a 240 × 339 pixel, quindi le immagini in formato verticale riempiono il riquadro in modo più pulito. Le immagini in formato orizzontale vengono ritagliate in alto e in basso. Il file originale non viene mai memorizzato — solo la versione compressa raggiunge Firebase Storage."
+      },
+      "q3": {
+        "q": "Quante sessioni posso salvare e sono disponibili su tutti i dispositivi?",
+        "a": "Fino a 20 sessioni con nome per account. Ogni sessione cattura lo stato completo del tavolo: posizioni delle carte, stati di capovolgimento, le sue definizioni, note e tutti i riferimenti alle immagini. Le sessioni sono archiviate nel suo account cloud — non sono locali a un dispositivo o browser — quindi sono disponibili ovunque effettui l'accesso. Il limite di 20 sessioni è un vincolo deliberato, non tecnico: incoraggia la curazione piuttosto che l'accumulo."
+      }
+    },
+    "outcomes": {
+      "title": "Risultati e Aspettative",
+      "q1": {
+        "q": "Cos'è la Sovranità linguistica?",
+        "a": "È lo stato finale che il sistema è progettato per coltivare: la condizione in cui il linguaggio funziona come strumento della propria autodeterminazione piuttosto che come un sistema estraneo che si sta gestendo. Una persona linguisticamente sovrana usa il linguaggio dall'interno — non è una sovrapposizione alla sua esperienza ma una parte costitutiva di essa."
+      },
+      "q2": {
+        "q": "In cosa si differenzia da altre app linguistiche o strumenti di sviluppo personale?",
+        "a": "La maggior parte delle app linguistiche opera sulla memorizzazione e la ripetizione. La maggior parte degli strumenti di sviluppo personale opera sull'intuizione e l'intenzione comportamentale. Il Mind Mechanism opera al livello costitutivo — il livello al di sotto di entrambi, dove si stabilisce il rapporto sentito tra linguaggio ed esperienza. Questo è un intervento diverso a un livello diverso dell'architettura."
+      },
+      "q3": {
+        "q": "Quali risultati posso aspettarmi e in quale arco di tempo?",
+        "a": "Le prime sessioni spesso producono riconoscimento — la sensazione di incontrare un linguaggio che le è sempre appartenuto. Una pratica sostenuta nel corso delle settimane produce il possesso del vocabolario: parole che Le appartengono piuttosto che parole che sta prendendo in prestito. Tre-sei mesi di lavoro coerente iniziano a spostare l'architettura stessa — il rapporto tra sentimento e parola, tra interiorità ed espressione. Questo non è uno strumento di soluzione rapida. È una pratica."
+      },
+      "q4": {
+        "q": "I miei dati sono privati?",
+        "a": "Sì. I suoi dati di pratica — registri delle sessioni, note, voci del glossario — sono archiviati nel suo account personale e non vengono condivisi, venduti né analizzati per scopi di terze parti. Il Mind Mechanism è costruito su un principio di priorità locale e raccolta minima. Il suo lavoro interiore Le appartiene."
+      },
+      "q5": {
+        "q": "Chi ha costruito questo e perché?",
+        "a": "Il Mind Mechanism è stato costruito da Sean Fortune — scrittore, artista e architetto del sistema — nel corso di tre decenni di indagine interiore, lavoro linguistico e pratica. La tassonomia, la pedagogia e l'applicazione sono tutte originali. La domanda dietro il sistema è sempre stata la stessa: cosa occorre davvero affinché il linguaggio diventi un veicolo del sé?"
+      }
+    }
+  },
+  "privacy": {
+    "title": "Privacy e Dati",
+    "subtitle": "Ultimo aggiornamento: 8 maggio 2026",
+    "controller": {
+      "title": "Titolare del trattamento dei dati",
+      "p1": "Sean Fortune e Frederic Printz, operanti come SFFP. Studio: Viller Mühle, Goch, Germania. Contatto:"
+    },
+    "collect": {
+      "title": "Cosa raccogliamo",
+      "p1": "Il Mind Mechanism opera su un'architettura con priorità locale. L'applicazione archivia i suoi registri di pratica, il vocabolario e le riflessioni sul suo dispositivo. Non abbiamo accesso alle sue registrazioni vocali, che non lasciano mai il suo dispositivo.",
+      "p2": "Con il suo consenso esplicito, raccogliamo dati comportamentali anonimizzati a fini di ricerca: le ruote somatiche a cui assegna il vocabolario, e i modelli numerici delle sue sessioni di pratica delle frasi. Questi dati non includono le parole stesse, informazioni di identificazione personale né le sue registrazioni audio.",
+      "p3": "La partecipazione alla ricerca è completamente opzionale. Può aderire, rifiutare o modificare le sue scelte in qualsiasi momento in Impostazioni → Partecipazione alla Ricerca. Il suo accesso a tutte le funzioni non è influenzato dalla sua scelta.",
+      "p4": "Per i dettagli completi su cosa viene raccolto, su quale base legale e come viene utilizzato, consulti il nostro protocollo completo di raccolta dei dati su",
+      "p4link": "DATA_COLLECTION_PROTOCOL.md"
+    },
+    "device": {
+      "title": "Cosa rimane sul suo dispositivo",
+      "p1": "Qualsiasi voce, riflessione o registro di pratica che crea all'interno dell'applicazione viene archiviato localmente solo sul suo dispositivo. Non abbiamo accesso a questi dati. Se elimina l'applicazione, quei dati vengono rimossi definitivamente."
+    },
+    "thirdparty": {
+      "title": "Servizi di terze parti",
+      "p1": "Il Mind Mechanism non integra servizi di analisi, pubblicità o tracciamento di terze parti."
+    },
+    "children": {
+      "title": "Minori",
+      "p1": "Questa applicazione non è rivolta a minori di 16 anni. Non raccogliamo consapevolmente dati da minori."
+    },
+    "gdpr": {
+      "title": "I suoi diritti (GDPR)",
+      "p1": "Come utente nello Spazio Economico Europeo, ha il diritto di accedere, correggere o cancellare qualsiasi dato personale che conserviamo su di Lei.",
+      "p2before": "Per gli utenti che hanno acconsentito alla partecipazione alla ricerca, ha il diritto di accedere, rettificare, cancellare e portare i suoi dati. Per esercitare questi diritti, contatti",
+      "p2after": ". Risponderemo entro 30 giorni."
+    },
+    "changes": {
+      "title": "Modifiche a questa informativa",
+      "p1": "Se le nostre pratiche sui dati cambiano, aggiorneremo questa pagina e revisioneremo la data indicata sopra. Il continuo utilizzo dell'applicazione dopo qualsiasi aggiornamento costituisce accettazione dell'informativa rivista."
+    }
+  },
+  "legal": {
+    "title": "Note Legali e Contatti",
+    "subtitle": "Versione 1.0 — 28 aprile 2026",
+    "disclaimer": {
+      "title": "Avvertenza",
+      "p1": "Il Mind Mechanism è uno strumento di pratica contemplativa. Non è un dispositivo medico, un intervento terapeutico né un sostituto dell'assistenza professionale per la salute mentale. Se si trova in una situazione di crisi, contatti un operatore sanitario qualificato o i servizi di emergenza locali."
+    },
+    "privacy": {
+      "title": "Privacy",
+      "p1": "Questa applicazione non raccoglie, archivia né trasmette dati personali. Nessuna analisi, telemetria o dato di utilizzo lascia il suo dispositivo. ¹"
+    },
+    "terms": {
+      "title": "Condizioni d'uso",
+      "p1": "Utilizzando questa applicazione, Lei accetta di usarla come ausilio alla pratica personale. Non è consentito eseguire il reverse engineering, ridistribuire né riutilizzare il software o la sua tassonomia sottostante — il Linguaggio dello Spettro Emotivo (ESL) — senza autorizzazione scritta."
+    },
+    "ip": {
+      "title": "Proprietà intellettuale",
+      "p1": "L'applicazione Mind Mechanism, la tassonomia ESL (482 nodi), i nove design di mandala, il quadro di Toggle e tutti i contenuti associati sono proprietà intellettuale di Sean Fortune e SFFP. © 2026 Sean Fortune e SFFP. Tutti i diritti riservati."
+    },
+    "liability": {
+      "title": "Responsabilità",
+      "p1": "SFFP fornisce questa applicazione così com'è, senza alcuna garanzia. In nessun caso SFFP o i suoi dirigenti saranno responsabili di qualsiasi reclamo, danno o altra responsabilità derivante dall'uso dell'applicazione. ²"
+    },
+    "contact": {
+      "title": "Contatti",
+      "studio": "Studio: Viller Mühle, Goch, Germania",
+      "developed": "Sviluppato da Sean Fortune e Frederic Printz — SFFP."
+    }
+  }
+}

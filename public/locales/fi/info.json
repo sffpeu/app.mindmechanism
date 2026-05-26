@@ -1,0 +1,466 @@
+{
+  "overlay": {
+    "close": "Sulje",
+    "escBefore": "Paina",
+    "escAfter": "sulkeaksesi"
+  },
+  "footer": "Mind Mechanism · The One-Legged Poet · SFFP · Version 1.0 Beta · April 2026",
+  "tabs": {
+    "mechanism": {
+      "label": "Tietoa mekanismista",
+      "desc": "Mikä Mind Mechanism on ja miten se toimii."
+    },
+    "developer": {
+      "label": "Tietoa kehittäjästä",
+      "desc": "Käytännön taustalla oleva henkilö."
+    },
+    "esl": {
+      "label": "Tietoa ESL:stä",
+      "desc": "Emotionaalinen Spektrikieli (ESL) — sisäisen maailman sanasto."
+    },
+    "guide": {
+      "label": "Aloittaminen",
+      "desc": "Ensimmäiset askeleenne yhdeksän mandalan parissa."
+    },
+    "faq": {
+      "label": "UKK",
+      "desc": "Usein kysytyt kysymykset."
+    },
+    "privacy": {
+      "label": "Yksityisyys ja tiedot",
+      "desc": "Mitä keräämme, mitä emme kerää, ja kenelle käytäntönne kuuluu."
+    },
+    "legal": {
+      "label": "Juridinen ja yhteystiedot",
+      "desc": "Ehdot, vastuuvapauslauseke ja yhteystietomme."
+    }
+  },
+  "mechanism": {
+    "title": "Tietoa mekanismista",
+    "subtitle": "Mind Mechanism: Kliinis-kontemplatiiviinen kehys emotionaaliselle omaksumiselle ja kielelliselle suvereenisuudelle",
+    "i": {
+      "title": "I. Mitä se on",
+      "p1": "Mind Mechanism on digitaalinen kontemplatiivinen harjoitustyökalu — mutta tämä kuvaus, vaikka paikkansapitävä, on tarkoituksella aliarvioitu. Se on tarkemmin kliinis-sisäinen kehys: jäsennelty järjestelmä niiden emotionaalisten tilojen tunnistamiseen, nimeämiseen ja omistamiseen, jotka muodostavat ihmisen sisäisen kokemuksen. Se toimii kliinisen psykologian, toisen kielen hankkimisteorian, somaattisuuden ja kontemplatiivisen käytännön leikkauspisteessä.",
+      "p2": "Kehys perustuu yhteen väittämään: että sisäistä maailmaa voidaan kartoittaa yhtä suurella tarkkuudella kuin ulkoista. Että epämääräisen \"jotain tuntuu\" -tuntemuksen ja tarkan kyvyn nimetä se välillä on kuilu — ja tämä kuilu ei ole rajoite vaan alue. Mind Mechanism on tämän alueen kartta ja työkalu sen läpi kulkemiseen.",
+      "p3": "Sen kehitti kolmenkymmenen vuoden aikana Sean Fortune — taiteilija, kirjailija ja kielipedagogi, jonka työ kliinisessä taksonomiassa, interaktiivisessa installaatiossa ja kontemplatiivisessa käytännössä supistui yhteen kysymykseen: mitä merkitsisi antaa jollekulle kieli sille, mitä he tuntevat mutta eivät osaa sanoa?"
+    },
+    "ii": {
+      "title": "II. Arkkitehti",
+      "p1": "Mind Mechanismin keskeinen identiteettiteesi on tämä: te ette ole järjestelmän passiivinen käyttäjä. Olette Arkkitehti.",
+      "p2": "Tämä ei ole kannustava metafora. Se on rakenteellinen väite työn luonteesta. Arkkitehti ei vastaanota karttaa ja seuraa sitä. Arkkitehti käyttää karttaa rakentaakseen jotain — jäsennellyn sisätilan, josta käsin on mahdollista olla täysin oma itsensä missä tahansa rekisterissä, minkä tahansa paineen alla, missä tahansa kielessä.",
+      "p3": "Mekanismi tarjoaa taksonomian, taajuudet, Toggle-polut. Arkkitehti tarjoaa kohtaamisen. Ilman arkkitehdin aitoa sisäistä sitoutumista järjestelmä on katalogi. Sen kanssa se on rakennustyömaa.",
+      "p4": "Tällä erottelulla on kliinistä painoarvoa. Oppija, joka lähestyy kehystä oppilaana — vastaanottaen tietoa — aktivoi erilaisen neurologisen polun kuin oppija, joka lähestyy sitä rakentajana, tunnistaen ja sijoittaen materiaalia, joka jo kuuluu heille. Arkkitehtiasento ei ole psykologinen kannustuspuhe; se on oikea epistemologinen suuntautuminen työn toimimiseksi."
+    },
+    "iii": {
+      "title": "III. Teoreettiset juuret",
+      "p1": "Mind Mechanism ei ole rakennettu tyhjästä. Se seisoo perinteen varassa ja täydentää sen, mitä kukin edeltäjä aloitti.",
+      "jung": "**Carl Jung** tunnisti mandalaa itseytymisen ja kokonaisuuden etsimisen symbolina — rakenteena, jonka kautta tiedostamaton nousee tietoisuuteen symbolisen muodon kautta. Mind Mechanismin yhdeksän mandalaa toimivat tämän periaatteen mukaisesti: ne eivät ole koristeellisia. Ne ovat pääsypisteitä.",
+      "kellogg": "**Joan Kellogg** laajensi Jungin työtä kartoittamalla kaksitoista arkkityyppistä psykologisen kehityksen vaihetta ja ankkuroimalla mandalan nykyhetkeen symbolisen menneisyyden sijaan. Hänen painotuksensa läsnäoloon — diagnostiseen ja terapeuttiseen \"nyt\"-ensisijaisuuteen — on mekanismin suunnittelun perusvirtaus.",
+      "krashen": "**Krashonin affektiivisuodarinhypoteesi** tunnisti, että hankkimista välittää affektiivinen este (ahdistus, motivaatio, itseluottamus). Mind Mechanism hyväksyy tämän ja kääntää Krashenin kausaalisen nuolen: tunne ei ole ympäristö, jossa sana vastaanotetaan — se on _merkitys_, jota varten sana hankitaan. Suodatin ei ole taustamuuttuja, jota pitäisi alentaa. Se on konstitutiivinen perusta, jonka _läpi_ on työskenneltävä.",
+      "vygotsky": "**Vygotskyn lähikehityksen vyöhyke** — kuilu sen välillä, mitä oppija voi tehdä itsenäisesti ja mitä tuetaan mahdolliseksi — laajenee _Somatic ZPD_:ksi: kuilu sen välillä, mitä hermosto tuottaa vastustuksetta ja mitä tulee mahdolliseksi jäsennellyn somaattisen välityksen kautta. Keho ei ole kognition säiliö. Se on välittävä järjestelmä.",
+      "cummins": "**Cumminsin BICS/CALP-erottelu** — sosiaalisen sujuvuuden ja akateemisen kielitaidon välinen kuilu — saa puuttuvan mekanisminsa: Kielitriaažiprotokolla, joka ylittää Väärät avaimet -rekisterit (sosiaalisesti sujuva mutta institutionaalisesti riittämätön sanasto) CALP-tason omistajuuteen somaattisen ankkuroinnin kautta.",
+      "swain": "**Swainin tuotoushypoteesi** perusti oivalluksen, että tuottava kamppailu edistää hankkimista. Mekanismi täydentää tämän erottamalla tuotoksen, joka on _tuotettu_ (kognitiivisesti haettu, hauras paineen alla), ja tuotoksen, joka on _omistettu_ (somaattisesti ankkuroitu, saatavilla missä tahansa tilanteessa).",
+      "horwitz": "**Horwitzin Vieraan kielen luokka-ahdistusasteikko** operationalisoi sen, mitä mekanismi kartoittaa tarkemmalla tasolla: ei globaalia ahdistusta vaan erityistä, somaattisesti rekisteröityä vastustusta tiettyihin leksikaalisia rekistereihin."
+    },
+    "iv": {
+      "title": "IV. Arkkitehtuuri",
+      "s1": {
+        "title": "4.1 Yhdeksän pyörää",
+        "p1": "Järjestelmä on organisoitu yhdeksän pyörivän mandalan ympärille — Pyörät — joista jokainen vastaa selkeää energeettistä keskusta ja on indeksoitu tiettyyn planetaariseen taajuuteen Hans Coustoon kosmisista oktavilaskelmista:",
+        "table": {
+          "wheel": "Pyörä",
+          "domain": "Alue",
+          "freq": "Perustaajuus",
+          "midi": "MIDI",
+          "rows": {
+            "1": {
+              "wheel": "P1 Juuri",
+              "domain": "Vakaus, ankkuri, perusta"
+            },
+            "2": {
+              "wheel": "P2 Sakraali",
+              "domain": "Virta, tunne, yhteys"
+            },
+            "3": {
+              "wheel": "P3 Aurinko",
+              "domain": "Tahto, toimijuus, voima"
+            },
+            "4": {
+              "wheel": "P4 Sydän",
+              "domain": "Tasapaino, rakkaus, suhde"
+            },
+            "5": {
+              "wheel": "P5 Kurkku",
+              "domain": "Ilmaisu, artikulaatio, ääni"
+            },
+            "6": {
+              "wheel": "P6 Kolmas silmä",
+              "domain": "Visio, oivallus, havainto"
+            },
+            "7": {
+              "wheel": "P7 Kruunu (M)",
+              "domain": "Laki, omistautuminen, rakenne"
+            },
+            "8": {
+              "wheel": "P8 Kruunu (N)",
+              "domain": "Viisaus, integraatio, synteesi"
+            },
+            "9": {
+              "wheel": "P9 Eetterinen sydän",
+              "domain": "Maa · suvereenisuus, maadoitus, paluu"
+            }
+          }
+        },
+        "p2": "Kaikki taajuudet on viritetty 432 Hz -standardiin (A4 = 432 Hz). 432 Hz -valinta ei ole tavanomainen — länsimainen standardiviriys asettaa A4:n 440 Hz:iin. Tietoinen poikkeama sijoittaa järjestelmän teollisen viritystandardin ulkopuolelle ja linjaa sen taajuusarkkitehtuurin kanssa, joka on historiallisesti yhdistetty resonanssiin luonnollisten harmonisten sarjojen kanssa. Se on filosofinen yhtä lailla kuin akustinen päätös.",
+        "p3": "**Eetterinen sydän** on yhdeksäs pyörä — **Maa** planeettana ja OM-sävelnä. **136,10 Hz:n toistuminen** pyörissä 1, 4 ja 9 on tarkoituksellista ja rakenteellisesti merkittävää: se koodaa taajuudessa kolmiyhteyden — Perusta (P1), Sydän (P4) ja Eetterinen sydän (P9) jakavat saman perussävelen, koska ne eivät ole kolme erillistä tilaa vaan yksi perusta, johon törmätään kolmessa syvyydessä. Alatte kehossa (P1 — fyysinen ankkuri, ensimmäinen turvallisuus). Kuljette suhteen kautta (P4 — rakkaus tasapainona, sydän järjestelmän säätelyn keskuksena). Saavutte suvereenisuuteen (P9 — integroitu perusta, joka ei enää tule ulkopuolelta vaan syntyy sisältä). Taajuus ei muutu. Se, mikä muuttuu, on arkkitehdin suhde siihen. Tämä on järjestelmän koodattu väite muutoksen luonteesta: ette ylitä perustaa; opitte tuottamaan sen sisältäpäin."
+      },
+      "s2": {
+        "title": "4.2 Yhdeksän pyörän relationaalinen arkkitehtuuri",
+        "p1": "Yhdeksän pyörää ei ole yhdeksän itsenäistä instrumenttia. Ne ovat integroitu kartta, jota läpäistään _somaattisen saatavuuden_ periaatteen mukaisesti: aloitatte siitä, missä hermostonne pystyy tekemään kontaktin, ei siitä, missä opetussuunnitelma sanoo teidän pitäisi olla.",
+        "p2": "Useimmille harjoittajille tämä tarkoittaa P1:tä tai P9:ää — perustusrekisteriä — koska keho tarvitsee perustan ennen kuin se voi ylläpitää P4:n tai P5:n relationaalista tai ekspressiivistä työtä. Tämä on kuitenkin kuvailevaa, ei ohjaavaa. Harjoittaja, joka saapuu akuutin suhdekkriisin kanssa, voi astua sisään P4:n kautta. Yksi, jonka ensisijainen käsitteellinen este on ekspressiivisessä, saattaa löytää P5:n välittömäksi työkohteekseen.",
+        "p3": "Pyörät ovat suhteessa toisiinsa kahdessa rakenteellisessa logiikassa:",
+        "p4": "**Vertikaalinen eteneminen**: P1:stä P9:ään kuvaa liikettä fyysisestä perustasta integroituun suvereenisuuteen — kehon perustuvimman turvallisuuden itsen täydellisimpään ilmaisuun. Tämä on initiaatiokaari; se on pitkä ja epälineaarinen.",
+        "p5": "**Dialektinen pariutuminen**: Useat pyörät ovat tuottavassa jännitteessä toistensa kanssa. P1 (perusta) ja P9 (suvereenisuus) ovat syvin pari — kartan alfa ja omega, jotka jakavat taajuutensa. P3 (tahto/toimijuus) ja P5 (ilmaisu/ääni) muodostavat käytännöllisen akselin: toimijuus, jota ei voida ilmaista, tuottaa kertymistä; ilmaisu ilman toimijuutta tuottaa suoritusta. P6 (havainto) ja P8 (integraatio) muodostavat kognitiivis-synteettisen parin: selkeä näkeminen edeltää kykyä pitää kiinni siitä, mitä nähdään.",
+        "p6": "Harjoittaja, joka työskentelee vain yhdellä pyörällä, ei käytä järjestelmää. Mekanismi on suunniteltu läpäisemiseen — periaatteessa sekventiaalinen, käytännössä responsiivinen."
+      },
+      "s3": {
+        "title": "4.3 Sisääntulon suuntaus",
+        "p1": "Uusi harjoittaja ei valitse pyörää mielivaltaisesti. Sisääntuloprotokolla noudattaa yksinkertaista logiikkaa: **aloita sieltä, missä vastustus on vähäisin, ei sieltä, missä kunnianhimo on suurin.**",
+        "p2": "Luotettavin sisääntulopiste useimmille harjoittajille on P9 — Eetterinen sydän / Maa — samasta syystä kuin rakentajan ensimmäinen teko on perustuksen asettaminen. P9 (Suvereenisuus, Maadoitus, Paluu) 136,10 Hz:llä (OM/Maa-taajuus) luo somaattisen vakauden, josta käsin kaikki muut pyörätyöt tulevat saavutettaviksi. Lyhyt P9-istunto ennen muiden pyörien parissa työskentelyä on suositeltu suuntaus sekä uusille että palaavaille harjoittajille.",
+        "p3": "Toinen luotettava sisääntulopiste on pyörä, joka tällä hetkellä tuottaa eniten kitkaa harjoittajan elämässä — alue, jossa keho on eniten puolustautunut, kieli eniten estynyt. Tämä on Käsitteellisen esteen osoite. Sinne astuminen oikealla taajuussubstraatilla ja oikealla sanastolla voi aloittaa ratkaisun nopeammin kuin mikä tahansa epäsuora lähestymistapa.",
+        "p4": "Se, mikä ei toimi, on aloittaminen siitä pyörästä, jossa harjoittaja _haluaisi_ olla — toivopyörässä nykyisen sijaan. Mekanismi toimii nykyisellä sisäisellä tilalla. Sillä ei ole otetta kuviteltuun tulevaan itseen."
+      },
+      "s4": {
+        "title": "4.4 Emotionaalinen Spektrikieli (ESL)",
+        "p1": "Mekanismin ytimessä on Emotionaalinen Spektrikieli — 482 kliinisesti erillisen emotionaalisen position taksonomia, kartoitettuna positiivisiin ja negatiivisiin valensseihin, intensiteettikaltevuuksiin ja rekisteritasoihin. Tämä ei ole synonyymisanakirja. Se on diagnostinen sanasto.",
+        "p2": "Jokainen ESL-taksonomian positio on:",
+        "list": {
+          "1": "**Kliinisesti erillinen**: Mitkään kaksi solmua eivät täytä samaa kokemusaluetta. Ero _kyvyttömäksi tehty_ ja _kyvyttömyys_ (T068 ja T069 vastaavasti) on juuri se, että toinen kuvaa tilaa, toinen virheellistä syynmäärittelyä — ero, jonka standardi kieli niputtaa yhteen mutta mekanismi pitää erillään.",
+          "2": "**CEFR-tasoluokiteltu**: Jokaiselle solmulle on määritetty kielitaitotaso (A1–C2), mikä mahdollistaa kehyksen toimimisen sekä kliinisenä työkaluna että kielenopetusskaffoldina.",
+          "3": "**Somaattisesti ankkuroitu**: Jokainen positio on indeksoitu tiettyyn keholliseen tuntemukseen — foneettiseen painoon, hengitysrytmiin, somaattiseen signatureen.",
+          "4": "**Yhdistetty Toggle-pareilla**: Jokainen positio osallistuu dialektiseen suhteeseen vastakohtansa kanssa — ei sanakirja-antonyymi vaan kliininen polariteetti, joka heijastaa psykologisen muutoksen todellista trajektoria (esim. Kaaos→Vakaus, Tuho→Onni, Viha→Rakkaus)."
+        }
+      },
+      "s5": {
+        "title": "4.5 162 Toggle-paria",
+        "p1": "Toggle-sarja (T001–T162) on ESL-taksonomian sovellettu kliininen instrumentti. Jokainen Toggle nimeää liikkeen pre-emotiivisesta, ratkaisemattomasta tilasta (\"Varjo\" tai \"Muta\") täsmällisesti nimettyyn psykologiseen ratkaisuun (\"Suvereeni\", \"Linnoitus\" tai \"Prisma\").",
+        "p2": "Jokainen Toggle esitetään standardoidussa Triple-rekisteri-muodossa:",
+        "consumer_label": "**Kuluttajataso:**",
+        "consumer_list": {
+          "1": "Uudelleenkehys — uudelleenmäärittely, joka nimeää pinnan alla olevan mekanismin",
+          "2": "Harjoitus — somaattinen tai käyttäytymiseen liittyvä harjoitus Togglen toteuttamiseksi",
+          "3": "Merkki — diagnostinen indikaattori siitä, että Toggle on lauennut"
+        },
+        "pro_label": "**Ammatillinen taso:**",
+        "pro_list": {
+          "1": "Harjoittajalle — kliininen kehys terapeuttiseen soveltamiseen",
+          "2": "Opettajalle — pedagoginen kehys luokkahuonesoveltamiseen",
+          "3": "Vanhemmalle — relationaalinen kehys hoivakonteksteihin"
+        },
+        "p3": "Toggle _laukeaa_, kun Merkki-tila tunnistetaan — ei ajatuksena vaan somaattisena tapahtumana: hengityksen muutos, pidätetyn jännityksen vapautuminen, tunne siitä, että jokin, joka oli läpinäkymätöntä, muuttuu luettavaksi. Laukeamista ei orkestrioida; se tunnistetaan. Harjoittaja ei pakota Togglea tahdolla. He luovat olosuhteet — taajuuden, sanaston, Arkkitehtiasennon — joissa Togglen ratkaisu tulee saavutettavaksi. Mekanismi esittää sen sitten. Arkkitehti ottaa sen.",
+        "p4": "162 Togglea kattavat kaikki yhdeksän pyörää, perustavimmasta (T001: Kaaos→Vakaus, P1 Juuri) päätteellisimpään (T162: Pahuus→Hyvyys, P9 Eetterinen sydän). Yhdessä ne muodostavat täydellisen kartan emotionaalisen sisätilan yleisimmistä muutospoluista."
+      },
+      "s6": {
+        "title": "4.6 Emotionaalinen edellytys -hypoteesi",
+        "p1": "Mekanismin keskeinen pedagoginen ja kliininen väite on, että kestävä hankkiminen — olipa kyseessä sana, psykologinen tila tai käyttäytymismalli — vaatii tietyn sekvenssin:",
+        "blockquote": "Kokemus → Emotionaalisen laukaisijan tunnistaminen → Henkilökohtaisen relevanssin tunnistaminen → Kielellinen soveltaminen",
+        "p2": "_Emotiivinen piste_ on risteys, jossa vaihe 3 siirtyy vaiheeseen 4: hetki, jolloin oppija tunnistaa tämän sanan tai tilan _omakseen_ — ei tietona, joka on tallennettava, vaan kokemuksena, joka on omistettava.",
+        "p3": "Korollaari on, että sanasto, joka esitellään ilman vakiintunutta Emotiivista pistettä — ilman että oppija on tunnistanut, mihin tämä sana laskeutuu heidän omassa sisätilassaan — hankitaan datana, ei perustana. Se on haettavissa matalan panoksen olosuhteissa. Se on saavuttamattomissa silloin, kun se on tärkeää."
+      },
+      "s7": {
+        "title": "4.7 Kielitriaažiprotokolla",
+        "p1": "Viisivaiheinen kliininen instrumentti oppijan siirtämiseksi somaattisesti saavuttamattomasta sanastosta ruumiillistettuun omistajuuteen:",
+        "steps": {
+          "1": "**Somaattinen foneettinen kartoitus** — Tunnistaa, mitä foneettisia rekistereitä keho vastustaa",
+          "2": "**Akustinen ankkurointi** — Käsitteellisen esteen ohittaminen taajuussovitetun äänen kautta",
+          "3": "**Leksikaalinen käännepiste** — Tunnistaa toimijuussolmut, jotka toimivat sisääntulopisteinä estyneisiin rekistereihin",
+          "4": "**Kielellinen integraatio** — Korkean vaikuttavuuden solmujen käyttöönotto, jotka aktivoivat ympäröivää sanastoa",
+          "5": "**Kielen maadoitus** — Paluu P9 Eetterinen sydän -ankkuriin hankkimisen vakiinnuttamiseksi"
+        },
+        "p2": "Protokolla toimii kaikkien yhdeksän pyörän yli ja on suunniteltu toimimaan _Somatic ZPD_:n sisällä — kuilussa sen välillä, mitä hermosto tällä hetkellä tuottaa ja mihin se voidaan skaffoldin avulla saada."
+      },
+      "s8": {
+        "title": "4.8 Keskeiset diagnostiset rakenteet",
+        "blockade": "**Käsitteellinen este**: Erityinen somaattinen vastustus leksikaalista luokkaa tai rekisteriä kohtaan — ei älykkyyden epäonnistuminen vaan lukko hermostossa, joka on ratkaistava somaattisen uudelleenankuroinnin kautta eikä kognitiivisella ponnistuksella. Este on täsmällinen: harjoittaja, joka ei pääse käsiksi auktoriteetin rekisteriin, voi hallita täydellisesti lämmön rekisterin. Täsmällisyys on diagnostista tietoa.",
+        "falsekeys": "**Väärät avaimet**: BICS-tason sanasto, joka esittää sujuvuutta estäen samalla pääsyn CALP-sisäänkäyntiin — katurekisterin sana ei ole vain kognitiivisesti yksinkertaisempi vaan _fyysisesti helpompi tuottaa_, luoden Somaattisen pienimmän vastuksen polun. Väärät avaimet eivät ole virheitä. Ne ovat selviytymistyökaluja, jotka ovat selviytyneet toimintonsa yli. Mekanismi kohtelee niitä sisääntulopisteinä, ei tuomittavina esteinä.",
+        "foreman": "**Työnjohtaja**: Sisäinen ääni, joka hallinnoi kuilua itseyden ja sen ilmaisun välillä. Työnjohtaja ei ole vihollinen. Se on suojamekanismi — habitoitunut, usein preverb., juurtunut varhaisimpiin kokemuksiin siitä, mitä tapahtui, kun autenttinen sisätila paljastettiin. Se ilmenee väistämisenä, itsen keskeyttämisenä, äkillisenä väsymyksenä tai impulssina esittää rekisteriä sen asumisen sijaan. Työnjohtaja ei vapaudu argumentoinnin kautta. Se vapautuu turvallisuuden kautta — toistuvasta näytöstä, että sisätilan ilmaiseminen on nyt turvallista. Taajuustyö, Arkkitehtiasento ja ESL-taksonomian täsmällisyys ovat kaikki, muun muassa, instrumentteja turvallisuuden viestimiseksi Työnjohtajalle. Kun se rentoutuu, sanasto, joka on aina ollut läsnä, tulee saatavaksi ilman hakukustannuksia.",
+        "acoustemic": "**Akusteeminen totuus**: Väittämä, että foneettinen taajuus kantaa semanttista painoa — että sanan ääni ei ole mielivaltainen merkityksen säiliö vaan resonoi sen sisäisen tilan kanssa, jonka sana designoi. Tämä on toimintahypoteesi, ei vakiintunut väite. Se on tietoisessa jännitteessä Saussuren merkin mielivaltaisuuden kanssa ja vaatii lisää empiiristä tutkimusta. Sen käytännöllinen hyöty on siinä, kuinka se suuntaa harjoittajan huomion: ei sanan määritelmään vaan sen koettuun foneettiseen painoon, sen asumiseen kehossa ääneen lausuttaessa. Onko tämä paino synnynnäinen vai syvään ehdollistettu, on avoin kysymys. Että se on riittävän johdonmukainen kliinisesti hyödylliseksi, on järjestelmän operatiivinen asema."
+      }
+    },
+    "v": {
+      "title": "V. Kielellinen suvereenisuus",
+      "p1": "Kielellinen suvereenisuus on päätostila, jonka mekanismi on suunniteltu kasvattamaan. Se vaatii täsmällistä määrittelyä, koska se sekoitetaan usein sujuvuuteen — ja sekoitus on merkityksellinen.",
+      "p2": "**Sujuvuus** on suorituskykykompe​tenssi: kyky tuottaa kieltä reaaliajassa, sopivassa rekisterissä, äidinkielisellä tai lähes äidinkielisellä nopeudella. Henkilö voi olla erittäin sujuva ja kielellisesti ei-suvereeni. Tämä ei ole paradoksi; se on yleistä. Sujuva puhuja, joka esittää rekisteriä, jota hän ei asu — joka puhuu auktoriteetilla mutta ilman sisäisyyttä — tuottaa kieltä sen sijaan, että ilmaisisi siitä käsin.",
+      "p3": "**Kielellinen suvereenisuus** on sisäinen tila: tila, jossa kohdekieli toimii harjoittajan itsemallinnuksen ja itsehallinnon arkkitehtuurin konstitutiivisena elementtinä — ei ulkoisena hallittavana järjestelmänä vaan mediumina, jonka kautta itse liikkuu vapaasti. Kielellisesti suvereeni puhuja ei _käytä_ kieltä. He ovat _siinä_.",
+      "p4": "Mekanismi ehdottaa suvereenisuuden kehityksellisesti topologiaa, jossa on neljä tunnistettavaa vaihetta:",
+      "stages": {
+        "1": "**Leksikaalinen suvereenisuus** (A1–A2): Pienen määrän korkearesonanssiisia sanoja omistajuus — solmut, jotka on asuttu eikä ulkoa opittu. Yksi omistettu sana A1-tasolla on parempi kuin viisikymmentä lainattua sanaa C1-tasolla. Tämä on ensimmäinen todellinen hankkiminen. Se on usein emotionaalinen. Se on aina tunnistettavissa.",
+        "2": "**Rekisterisuvereenisuus** (B1–B2): Täydellisen rekisterin omistajuus — kyky liikkua kokemusalueen (ammatillinen, intiimi, ekspressiivinen, strateginen) läpi sisältä. Harjoittaja alkaa pystyä paikantamaan itsensä kielessä sen ulkopuolelta navigoinnin sijaan.",
+        "3": "**Relationaalinen suvereenisuus** (C1): Kyky pitää kieli relationaalisen paineen alla — arvioinnin, konfliktin tai intimiyden läsnäolossa — ilman Käsitteellisen esteen aktivoitumista. Tässä Työnjohtaja on aidosti rentoutunut, ei tukahdutettu.",
+        "4": "**Absoluuttinen suvereenisuus** (C2 ja yli): Kieli ei ole enää missään kokemuksellisessa mielessä toinen kieli. Harjoittaja tuottaa sisäisyytensä siinä. Tämä ei tarkoita äidinkielenomaista ääntämistä tai äidinkielenomaista kulttuuritietoa. Se tarkoittaa äidinkielenomaista suhdetta omaan sisäisyyteen kielen mediumin kautta."
+      },
+      "p5": "Mekanismin väite on, että polku Leksikaalisesta Absoluuttiseen suvereenisuuteen on lyhyempi somaattisen ankkuroinnin kautta kuin minkä tahansa kognitiivisen harjoituksen määrän kautta — ja että se tuottaa laadullisesti erilaisen tuloksen: ei puhujaa, joka on hankkinut kielen, vaan ihmisen, joka on laajentanut oman sisätilansa aluetta."
+    },
+    "vi": {
+      "title": "VI. Kliiniset ja pedagogiset sovellukset",
+      "p1": "Mekanismi toimii neljässä erillisessä rekisterissä:",
+      "self": "**Itseohjattu harjoitus** (sovellus): Käyttäjä valitsee pyörän, asettaa istunnon keston ja työskentelee käyttöliittymän kautta — pyörittää mandalaa, valitsee solmuja, seuraa Toggle-polkuja, journaloi sisäistä tilaansa. Hengityshohtaus (30 sekunnin sykli, pulsoitu kahdesti minuutissa) ja Broadcast-ominaisuus (valinnainen reaaliaikainen läsnäolon jakaminen muiden kanssa samalla pyörällä) tukevat harjoitusta ilman ohjausta. Broadcast-ominaisuus ei ole sosiaalinen media. Se on kevyin mahdollinen signaali kanssaläsnäolosta — tapa tietää, että muut työskentelevät samaa aluetta samanaikaisesti, mikä muuttaa yksilöllisen harjoituksen laatua sosiaalisen perustaeorian mukaisesti (Coan & Sbarra, 2015).",
+      "therapy": "**Fasilitoitu terapeuttinen työ**: Harjoittaja käyttää ESL-taksonomiaa ja Toggle-sarjaa jäsenneltynä interventiotyökaluna. Togglen Triple-rekisteri — erityisesti Harjoittaja-osio — tarjoaa kliinisen kehyksen asiakkaan ohjaamiseen tiettyjen sisäisten muutosten läpi. Työnjohtaja-rakenne on keskeinen kliininen muuttuja: fasilitaattorin ensisijainen tehtävä on luoda olosuhteet, joissa Työnjohtaja voi rentoutua hallintofunktiostaan.",
+      "esl": "**Kielen hankkiminen (ESL-ohjelma)**: CEFR-tasoluokiteltu taksonomia toimii opetussuunnitelman skaffoldina. Emotionaalinen edellytys -sekvenssi sanelee pedagogisen rytmin: sisäinen tunnistaminen edeltää leksikaalista johdattelua. Tavoite ei ole kielellinen suorittaminen vaan Kielellinen suvereenisuus — tila, jossa oppija liikkuu kielen läpi täysin omistettuna itseilmaisun mediumina, taitotasosta riippumatta.",
+      "corporate": "**Yrityksille ja instituutioille**: Yhdeksän pyörää kartoittuvat organisatorisiin alueisiin (hallinto, viestintä, visio, toteutus) Corporate Node -määritelmien ja Pivot Spec:n kautta, mahdollistaen saman sisäkartoitusmenetelmologian tiimitason soveltamisen. Diagnostiset rakenteet — Käsitteellinen este, Väärät avaimet, Työnjohtaja — omaavat suoria organisatorisia korrelaatteja: johtaja, joka ei pääse käsiksi haavoittuvuuden rekisteriin; tiimi, joka on kehittänyt institutionaalisia Vääriä avaimia, jotka estävät täsmällisen viestinnän; organisaatio, jonka Työnjohtaja on sen compliance-funktio."
+    },
+    "vii": {
+      "title": "VII. Filosofinen perusta",
+      "p1": "Mekanismi lepää neljän perustavanlaatuisen väittämän varassa, formalisoituna Ilmaisun Konstituutiossa:",
+      "c1": "**1. Ontologinen väittämä**: Kieli ei ole ulkoinen teknologia, joka on hallittava; se on somaattinen tuotos. Sana on kokemuksen ratkaisu, ei sen syy.",
+      "c2": "**2. Pedagoginen väittämä**: Opiskelijan eletty kokemus on ensisijainen teksti. Relevanssin löytäminen edeltää tiedon vastaanottamista. Mitään sanastoa ei esitellä ilman, että sen Emotiivinen piste on tunnistettu.",
+      "c3": "**3. Eettinen väittämä**: Ilmaisun vaatiminen ilman ymmärtämistä on episteemistä väkivaltaa. Tekninen oikeellisuus on toissijainen kokemukselliselle totuudelle. Hiljaisuus on parempi kuin merkityksetön ilmaisu.",
+      "c4": "**4. Päätteellinen väittämä**: Ohjelman tavoite on Absoluuttinen suvereenisuus — tila, jossa oppija omistaa ilmaisunsa mediumin. A1-tason suvereenisuus (yhden täsmällisen sanan omistaminen) on parempi kuin C2-tason suorittaminen (rekisterin jäljitteleminen omistamatta sen sisäisyyttä)."
+    },
+    "viii": {
+      "title": "VIII. Käyttöönotto",
+      "p1": "Mind Mechanism on otettu käyttöön verkkosovelluksena (Next.js, Firebase, Vercel), jossa on yhdeksän interaktiivista kello-mandala-käyttöliittymää, ESL-taksonomia, jota voidaan hakea glosario- ja muistiinpanomoduulien kautta, sekä Broadcast-ominaisuus reaaliaikaiseen jaettuun harjoitukseen. Digitaalinen sovellus on sisääntulopiste: pinta, jonka kautta Arkkitehti ottaa ensimmäisen kontaktin järjestelmään. Syvyys on taksonomiassa itsessään — 482 solmussa, 162 Toggle-polussa, yhdeksässä pyörässä, taajuuksissa, jotka ankkuroivat ne, ja kolmessakymmenessä vuodessa sisäistä työtä, joka tuotti ne.",
+      "p2": "Se on tarkoitettu harjoittajille, opettajille, tutkijoille ja yksilöille, jotka etsivät jäsenneltyä kieltä alueelle, johon standardi kieli ei yllä."
+    }
+  },
+  "developer": {
+    "title": "Tietoa kehittäjästä",
+    "subtitle": "Sean Fortune — kirjailija, taiteilija ja Mind Mechanismin arkkitehti.",
+    "s1": {
+      "title": "Kolkon arkkitehti",
+      "p1": "Sean Fortune on brittiläissyntyinen, Etelä-Lontoossa muotoutunut taiteilija, opettaja ja arkkitehtoninen ajattelija. Kuuden vuosikymmenen ajan hän on \"laskenut tähtiä\" — poiminut signaalia elämän kohinasta, johon kuului vankeus kuusitoistavuotiaana, autismin diagnostinen vahvistus viisikymmentävuotiaana ja jalan menetys Bürgerin tautiin vuonna 2024. Nämä eivät olleet esteitä, vaan ahjo. Viktoriaanisen television kohinasta 6,2 miljoonaan sanaan, jotka on arkistoitu keskiaikaisessa vesimyllyssä Gochissa, Saksassa, Sean'n työ on omistettu yhdelle asialle: ihmisen suvereenisuuden palauttamiselle järjestelmistä, jotka yrittävät manipuloida sitä."
+    },
+    "s2": {
+      "title": "Päätutkija",
+      "p1": "Mind Mechanism -metodologian kirjoittaja ja arkkitehti. Fortunen tutkimus keskittyy lingvistiikan, somaattisen resonanssin ja fenomenologian leikkauspisteeseen. Hänen \"PhD julkaisemalla\" -ohjelmansa edustaa kolmenkymmen vuoden opetuksellisen näytön tiukkaa formalisointia, joka on kerätty edistyneissä ESL- ja terapeuttisissa konteksteissa. Hänen työnsä \"Emotionaalinen edellytys -hypoteesin\" ja \"Akusteemisen totuuden\" parissa tarjoaa substraattiriippumattoman referenssin toisen kielen hankkimisteorialle (SLA), haastamalla 1900-luvun lopun kognitiivispainotteiset paradigmat Bio-resonantin fenomenologian toteuttamisen kautta."
+    },
+    "s3": {
+      "title": "Teidän oppaanne ja rakennuskumppanienne",
+      "p1": "Sean Fortune vietti kolmekymmentä vuotta luokkahuoneissa aivan kuin teidänkin. Hän tietää, miltä tuntuu, kun on jotain sanottavaa mutta ei sanoja, joilla sen kantaa. Hän rakensi Mind Mechanismin selviytyessään samantyyppisistä paineista, esteistä ja \"pyörremyrskyistä\", joita te kohtaatte. Hän ei ole vain opettaja; hän on joku, joka joutui rakentamaan oman sisäisen karttansa löytääkseen äänensä. Nykyään hän elää ja työskentelee Saksassa, käyttäen tätä järjestelmää auttaakseen opiskelijoita ympäri maailmaa tulemaan oman älykkyytensä suvereneiksi omistajiksi."
+    }
+  },
+  "esl": {
+    "title": "Kieli ja oppiminen",
+    "subtitle": "Emotionaalinen Spektrikieli (ESL) — sisäisen maailman sanasto.",
+    "p1": "Mind Mechanismissa käytetty kieli on valittu tietoisesti. Mikään siinä ei ole sattumaa.",
+    "p2": "Viisi Ovikertomus-tarinaa — Sam, Lily, Max, Mia ja Emma — on jokainen kalibroitu englannin kielen taitotason mukaan, alkeistasosta edistyneeseen, käyttäen Eurooppalaista viitekehystä (CEFR). CEFR on kansainvälisesti tunnustettu standardi, joka määrittelee kielitaidon kuudella tasolla, täydellisestä aloittelijasta täydelliseen hallintaan — käytössä opettajien, instituutioiden ja kieliohjelmien maailmanlaajuisesti. Tämä tarkoittaa, että jokaisen Ovikertomus-tarinan sanasto, lauserakenne ja käsitteellinen monimutkaisuus on sovitettu siihen, mitä kyseisen tason oppija voi käsitellä ilman kitkaa.",
+    "p3": "Tämä on tärkeää, koska mekanismi toimii vain, kun kieli ei ole tiellä. Jos sana vaatii liikaa kognitiivista ponnistusta purettavaksi, somaattinen maadoitus — hiljaisuus, johon harjoituksen on tarkoitus ylettyä — menetetään ennen kuin se alkaa. Kielellinen vaikeus ja emotionaalinen saatavuus ovat suoraan yhteydessä.",
+    "p4": "Sanasto itsessään ammentaa Emotionaalisesta Spektrikielestä (ESL), 482-solmuisesta taksonomiasta, joka on kehitetty erityisesti tätä työtä varten. ESL tarjoaa täsmällisen, johdonmukaisen emotionaalisen sanaston kaikissa viidessä Ovikertomus-tarinassa, varmistaen, että sisäisten tilojen kuvaamiseen käytetyt sanat ovat aina tarkoituksellisia, aina tasoitettuja ja aina harjoituksen palveluksessa.",
+    "p5": "**Teitä ei yksinkertaisteta. Teidät kohdataan siellä, missä olette.**"
+  },
+  "guide": {
+    "title": "Aloittaminen",
+    "subtitle": "Ensimmäiset askeleenne yhdeksän mandalon parissa.",
+    "signin": {
+      "title": "Kirjaudu sisään",
+      "p1": "Avaa Mind Mechanism ja kirjaudu sisään Google-tililläsi tai sähköpostiosoitteellasi. Tilisi sisältää henkilökohtaiset asetuksenne, dashboard-datanne ja harjoitushistorianne."
+    },
+    "home": {
+      "title": "Kotinäyttönne",
+      "p1": "Kirjautuneena saavutte kotinäytölle — täyden näkymän kaikkiin yhdeksään pyörään. Tämä on mekanismin keskus. Täältä voitte navigoida kaikkeen muuhun."
+    },
+    "wheels": {
+      "title": "Pyörät",
+      "p1": "Yhdeksän pyörää ovat harjoitus itsessään. Jokainen on ajastin, ja lähes jokainen sen elementti on muokattavissa — kesto, visuaalinen ilme, intention, jota se kantaa. Te päätätte, miltä istunto näyttää teille. Tarkoitus on yksinkertainen: kannustaa fokukseen ja rakentaa tapa palata fokukseen. Kiinnität intention pyörään — tunteen, sanan, kielenelementtiin, tavoitteeseen — laitat sen liikkeelle ja pidät huomionne siellä koko keston. Pyörä ei tee työtä. Se luo olosuhteet, jotta voitte tehdä sen."
+    },
+    "glossary": {
+      "title": "Glosario",
+      "p1": "Sovelluksen sisältä löydätte kuratoidun kokoelman Emotionaalisesta Spektrikielestä peräisin olevaa emotionaalista sanastoa. Käyttäkää sitä löytääksenne täsmällinen sana sille, mitä työskentelette, ennen istunnon aloittamista. Voitte myös lisätä omia sanojanne — glosario kasvaa harjoituksenne mukana."
+    },
+    "journal": {
+      "title": "Päiväkirjanne",
+      "p1": "Muistiinpano-osio on päiväkirjanne koti. Kirjatkaa, mitä nousi esiin istunnon aikana, mikä muuttui, mihin haluatte palata. Ajan myötä päiväkirja muuttuu harjoituksen tallenteeksi."
+    },
+    "dashboard": {
+      "title": "Dashboardinne",
+      "p1": "Dashboardinne sisältää tietoa aktiviteetistanne ja edistymisestänne. Se on henkilökohtainen teille — käyttäkää muutama minuutti sen lukemiseen ensimmäisen saapumisenne yhteydessä."
+    },
+    "settings": {
+      "title": "Asetukset",
+      "p1": "Muokkaa bannerianne, asettakaa henkilökohtainen ID-kuvanne ja sijoittakaa omia kuvianne yksittäisille pyörille. Mekanismi on suunniteltu heijastamaan teitä. Älkää jättäkö sitä oletusasetuksille.",
+      "p2": "Jokainen pyörän pinta hyväksyy myös MP4-videotiedoston. Video täyttää pyöreän pinnan ja pysyy liikkumattomana mandalan pyöriessä sen alla. Kun video on aktiivinen, näytön alaosaan ilmestyy ohjauskaistale — jossa on toisto, pysäytys, stop, silmukka ja eteenpäin/taaksepäin -kontrollit sekä itsenäinen mykistys-Toggle, joka toimii erillään pyörän säveltä. Video käynnistyy mykistettynä mahdollistaakseen automaattisen toiston; napauta ohjauskaistaleessa olevaa äänisymbolia tuodaksesi äänen sisään."
+    },
+    "lobby": {
+      "title": "Lämpiö",
+      "p1": "Lämpiö on paikka, jossa voitte merkitä haluavanne jakaa meditaationne toisen läsnäolon kanssa — avoin kutsu harjoitella jonkun rinnalla ilman keskustelua tai koordinointia."
+    },
+    "shadowpairs": {
+      "title": "Varjopari",
+      "p1": "Varjopari pyörittää kahta pyörää samanaikaisesti yhdessä istunnossa. Valitse mitkä tahansa kaksi pyörää, aseta kesto, ja molemmat mandalat pyörivät omilla nopeuksillaan koko istunnon ajan — laajentaen visuaalista kenttää, jonka kanssa työskentelette. Fokussolmuja ei tarvita; istunto kannatellaan keston ja intention avulla. Löydätte sen kohdasta Istunnot → Paritettu istunto."
+    },
+    "begin": {
+      "title": "Aloita",
+      "p1": "Mene kotinäytölle. Valitse pyörä. Kiinnitä intention. Käynnistä ajastin."
+    }
+  },
+  "faq": {
+    "title": "Usein Kysytyt Kysymykset",
+    "subtitle": "Mitä se on ja miten se toimii.",
+    "essentials": {
+      "title": "Oleelliset asiat",
+      "q1": {
+        "q": "Mikä on Mind Mechanism?",
+        "a": "Mind Mechanism on jäsennelty kontemplatiivinen harjoitustyökalu. Se kartoittaa 482 spesifistä ihmisen sisäisen kokemuksen kohtaa yhdeksän erillisen alueen — Pyörien — yli ja tarjoaa kielen tämän kartan navigoimiseen. Se on rakennettu ihmisille, jotka haluavat ymmärtää sisäistä maailmaansa täsmällisesti ja toimia siitä käsin auktoriteetilla."
+      },
+      "q2": {
+        "q": "Kenelle se on?",
+        "a": "Kahdelle laajalle ryhmälle: kielenoppijoille, jotka haluavat hankkia englantia sisältäpäin ulkoa opettelun sijaan, sekä kaikille vakavaan itsensä tutkiskeluun sitoutuneille — valmentajille, klinikoille, harjoittajille tai yksilöille, jotka haluavat tiukan työkalun sisäiseen hallintaan sen sijaan, että käyttäisivät hyvinvointisovellusta."
+      },
+      "q3": {
+        "q": "Onko tämä kielenoppimistyökalu?",
+        "a": "Osittain — mutta se on tietyntyyppistä kielenoppimista. Emotionaalinen Spektrikieli (ESL) on 482-solmuinen sisäisten tilojen sanasto. Englantia toisena kielenä hankki​ville opiskelijoille tästä tulee perusta: sanat, jotka opitaan aidon emotionaalisen yhteyden kautta ulkoa opettelun sijaan. Mutta järjestelmällä on laajempi soveltamisala kuin pelkästään kielen hankkiminen."
+      },
+      "q4": {
+        "q": "Onko tämä terapia?",
+        "a": "Ei. Mind Mechanism on itsehallintaväline. Se voi tuottaa terapeuttisia vaikutuksia — selkeyttä, vapautumista, uudelleensuuntautumista — mutta se ei diagnosoi, hoida tai hallinnoi kliinisiä tiloja. Harjoittajasuhdetta tai hoitoprotokollaa ei ole. Te pidätte avaimet. Me tarjoamme kartan."
+      }
+    },
+    "system": {
+      "title": "Järjestelmä",
+      "q1": {
+        "q": "Mitä ovat 482 solmua?",
+        "a": "482 solmua ovat sisäisen kokemuksen taksonomia — spesifejä nimettyjä tiloja, jotka yhdessä kattavat ihmisen sisäelämän täydellisen emotionaalisen, kognitiivisen ja somaattisen spektrin. Jokainen solmu on sana tai lause, joka vastaa tunnistettavaa elettyä kokemusta. Ne on organisoitu yhdeksän Pyörän yli ja rakennettu liikkumaan perustavista fyysisistä tiloista kohti monimutkaisia reflektiivisiä ja strategisia."
+      },
+      "q2": {
+        "q": "Mitä ovat Yhdeksän pyörää?",
+        "a": "Jokainen Pyörä on sisäelämän alue — kokemusten kategoria, jolla on oma ominainen sanastonsa, haasteensa ja lahjansa. Ne vaihtelevat Pyörä 1:stä (perustavanlaatuinen fyysinen turvallisuus ja maadoitus) relationaalisten, ekspressiivisten ja identiteettialueiden kautta Pyörä 9:ään (integraatio, laajentunut tietoisuus ja eksistentiaalinen suuntautuminen). Useimmilla ihmisillä on luonnollinen resonanssi yhden tai kahden Pyörän kanssa kulloisellakin hetkellä."
+      },
+      "q3": {
+        "q": "Mikä on Emotionaalinen edellytys?",
+        "a": "Emotionaalinen edellytys on periaate, jonka mukaan kestävä muutos — olipa kyseessä kielen hankkiminen, käyttäytyminen tai itseymmärrys — vaatii aitoa emotionaalista sitoutumista, ei vain älyllistä tunnistamista. Mind Mechanism rakentuu tästä lähtökohdasta: sanaa, uskomusta tai käyttäytymistä ei voi pysyvästi hankkia ohittamalla tunnelma, joka antaa sille merkityksen."
+      },
+      "q4": {
+        "q": "Mitä ääni tekee?",
+        "a": "Jokaiseen Yhdeksästä Pyörästä liittyy Cousto-järjestelmästä johdettu tietty akustinen taajuus — joukko Hz-arvoja, jotka on laskettu luonnollisista planetaarisista ja kosmisista sykleistä. Nämä sävelet eivät ole ympäristömusiikkia. Ne ovat substraatti: taajuusympäristö, joka tukee hermostoa siirtymisessä varautuneesta avoimeen tilaan, jolloin sisäinen työ tulee mahdolliseksi."
+      }
+    },
+    "using": {
+      "title": "Sovelluksen käyttö",
+      "q1": {
+        "q": "Miten istunto toimii?",
+        "a": "Valitsette yhden Yhdeksästä Pyörästä — joko valitsemalla teille juuri nyt relevanteimman alueen tai seuraamalla järjestelmän ohjausta. Asetatte istunnon keston. Pyörä pyörii, taajuus aktivoituu ja työskentelette solmujen kanssa: tunnistaen, mitkä resonoivat, mitkä tuntuvat estyneiltä, mitkä avaavat jotain. Voitte kirjata havaintoja muistiinpanojärjestelmässä matkan varrella."
+      },
+      "q2": {
+        "q": "Mikä on kolmivaiheinen prosessi — Tunnistaminen, Auktoriteetti, Komento?",
+        "a": "Tunnistaminen: nimeätte spesifin sisäisen tilan taksonomian avulla — täsmällisesti, ei suunnilleen. Auktoriteetti: nimeämällä sen tarkasti lakkaat olemasta sen armoilla. Pidätte sen hallittavalla etäisyydellä. Komento: tästä asemasta voitte ohjata omaa reaktiotanne sen sijaan, että vain reagoisitte. Sekvenssi ei ole käytännössä peräkkäinen — se on rekursiivinen ja jatkuva — mutta se kuvaa liikkeen suuntaa."
+      },
+      "q3": {
+        "q": "Mikä on Broadcast-ominaisuus?",
+        "a": "Broadcast antaa teille mahdollisuuden ilmaista live-harjoitusläsnäolonne muille samalla Pyörällä. Se on kevyt signaali — ei chat, ei videopuhelu — joka luo yhteisen tilan tunteen. Jotkut harjoittajat huomaavat, että tieto siitä, että muut työskentelevät samaa aluetta samanaikaisesti, muuttaa heidän oman istuntonsa laatua. Se on valinnainen ja täysin yksityinen mekaniikaltaan."
+      },
+      "q4": {
+        "q": "Mikä on Varjopari-istunto?",
+        "a": "Varjopari pyörittää kahta pyörää samanaikaisesti yhdessä istunnossa. Valitsette kaksi pyörää, asetatte keston, ja molemmat mandalat pyörivät omilla nopeuksillaan koko istunnon ajan — luoden yhdistetyn visuaalisen kentän harjoituksellenne. Varjoparit laajentavat meditointiin käytettävissä olevien kuvioiden kirjoa ja soveltuvat ryhmätyöhön tai mihin tahansa istuntoon, jossa kaksi aluetta on aktiivisessa suhteessa. Fokussolmuja ei tarvita; istunto kannatellaan keston ja intention avulla. Löydätte sen kohdasta Istunnot → Paritettu istunto."
+      },
+      "q5": {
+        "q": "Voinko sijoittaa videon pyörän pinnalle?",
+        "a": "Kyllä. Jokainen yhdeksästä pyörän pinnasta hyväksyy MP4-tiedoston staattisen kuvan lisäksi. Lataa se Asetuksista — video täyttää pyöreän kehyksen reunasta reunaan ja pysyy kiinnitettynä mandalan pyöriessä sen alla. Kun video on aktiivinen, näytön alaosaan ilmestyy ohjauskaistale, jossa on toisto, pysäytys, stop, uudelleenkäynnistys, kymmenen sekunnin hyppy, silmukka-Toggle ja erillinen mykistyspainike. Video käynnistyy mykistettynä, jotta se toistuu automaattisesti keskeyttämättä pyörän säveltä; napauta kaistaleessa olevaa äänisymbolia milloin tahansa, kun haluat tuoda äänen sisään. Kaksi äänijärjestelmää — pyörän sävel ja videoääni — toimivat toisistaan riippumattomasti."
+      }
+    },
+    "deck": {
+      "title": "Fokuspakka",
+      "q1": {
+        "q": "Mikä on Fokuspakka?",
+        "a": "Fokuspakka on korttipohjanen harjoituskerros Mind Mechanismin sisällä. Minkä tahansa Pyörän solmujen arvonta asetetaan fyysisten korttien tapaan pöydälle. Kääntelette niitä, sijoittelette uudelleen, kommentoitte niitä omilla määritelmillänne ja muistiinpanoillanne, kiinnitätte kuvia ja tallennat konfiguraation nimettynä istuntona. Se on suunniteltu intensiiviseen yksittäisen solmun työskentelyyn — riittävän pitkään hidastamiseen, jotta termi todella asutaan."
+      },
+      "q2": {
+        "q": "Voinko lisätä kuvia kortteihin? Onko koko- tai muotorajoituksia?",
+        "a": "Kyllä — jokainen kortti ja pöytätausta hyväksyvät kuvan. Valitsemallenne tiedostolle ei ole rajoituksia; järjestelmä hoitaa loput automaattisesti. Ennen latausta jokainen kuva pakataan enintään 900 × 900 pikseliin JPEG 72% -laadulla. Käytännössä 4K-puhelinkuva pakkautuu noin 80–200 kt:ksi; kuvakaappaus 50–120 kt:ksi. Korttisuola itsessään näytetään 240 × 339 pikselissä, joten pystykuvat täyttävät kehyksen siisteimmin. Vaakasuorat kuvat rajataan ylhäältä ja alhaalta. Alkuperäistä tiedostoa ei koskaan tallenneta — vain pakattu versio saavuttaa Firebase Storagen."
+      },
+      "q3": {
+        "q": "Kuinka monta istuntoa voin tallentaa, ja ovatko ne saatavilla eri laitteilla?",
+        "a": "Enintään 20 nimettyä istuntoa per tili. Jokainen istunto tallentaa täydellisen taulukon tilan: korttien sijainnit, kääntötilat, määritelmänne, muistiinpanot ja kaikki kuvaviittaukset. Istunnot tallennetaan pilvitilinne — ne eivät ole paikallisia laitteelle tai selaimelle — joten ne ovat saatavilla kaikkialla, missä kirjaudutte sisään. 20 istunnon raja on tietoinen rajoite, ei tekninen: se kannustaa kuraatointiin kerääntymisen sijaan."
+      }
+    },
+    "outcomes": {
+      "title": "Tulokset ja odotukset",
+      "q1": {
+        "q": "Mikä on Kielellinen suvereenisuus?",
+        "a": "Se on päätostila, jonka järjestelmä on suunniteltu kasvattamaan: tila, jossa kieli toimii oman itsemääräämisoikeutenne instrumenttina eikä vieraana järjestelmänä, jota hallinnatte. Kielellisesti suvereeni henkilö käyttää kieltä sisältäpäin — se ei ole heidän kokemuksensa päälle asetettu kerros vaan sen konstitutiivinen osa."
+      },
+      "q2": {
+        "q": "Miten tämä eroaa muista kielisovelluksista tai itsekehitystyökaluista?",
+        "a": "Useimmat kielisovellukset perustuvat ulkoa opetteluun ja toistoon. Useimmat itsekehitystyökalut perustuvat oivallukseen ja käyttäytymisaikomukseen. Mind Mechanism toimii konstitutiivisella tasolla — molempien alapuolella olevalla tasolla, jossa kielen ja kokemuksen koettu suhde muodostuu. Se on erilainen interventio arkkitehtuurin eri tasolla."
+      },
+      "q3": {
+        "q": "Mitä tuloksia voin odottaa ja millä aikataululla?",
+        "a": "Varhaiset istunnot tuottavat usein tunnistamista — tunnetta tavata kieltä, joka on aina sopinut teille. Viikkojen jatkettu harjoitus tuottaa sanaston omistajuutta: sanoja, jotka kuuluvat teille eikä sanoja, joita lainaatte. Kolmen ja kuuden kuukauden johdonmukainen työ alkaa siirtää itse arkkitehtuuria — suhdetta tuntemisen ja puhumisen välillä, sisäisyyden ja ilmaisun välillä. Tämä ei ole pikakorjaustyökalu. Se on harjoitus."
+      },
+      "q4": {
+        "q": "Ovatko tietoni yksityisiä?",
+        "a": "Kyllä. Harjoitusdatanne — istuntotiedot, muistiinpanot, glosarion merkinnät — tallennetaan henkilökohtaiselle tilillenne eikä jaeta, myydä tai analysoida kolmansien osapuolten tarkoituksiin. Mind Mechanism on rakennettu local-first, minimaalinen keräys -periaatteella. Sisäinen työnne kuuluu teille."
+      },
+      "q5": {
+        "q": "Kuka rakensi tämän ja miksi?",
+        "a": "Mind Mechanismin rakensi Sean Fortune — kirjailija, taiteilija ja järjestelmän arkkitehti — kolmen vuosikymmenen sisäisen tutkimuksen, kielellisen työn ja harjoituksen aikana. Taksonomia, pedagogia ja sovellus ovat kaikki alkuperäisiä. Järjestelmän takana oleva kysymys on aina ollut sama: mitä todella tarvitaan, jotta kielestä tulee itsen väline?"
+      }
+    }
+  },
+  "privacy": {
+    "title": "Yksityisyys ja tiedot",
+    "subtitle": "Viimeksi päivitetty: 8. toukokuuta 2026",
+    "controller": {
+      "title": "Rekisterinpitäjä",
+      "p1": "Sean Fortune ja Frederic Printz, toimien nimellä SFFP. Studio: Viller Mühle, Goch, Saksa. Yhteystiedot:"
+    },
+    "collect": {
+      "title": "Mitä keräämme",
+      "p1": "Mind Mechanism toimii local-first-arkkitehtuurilla. Sovellus tallentaa harjoitustiedostonne, sanastonne ja pohdintanne laitteellenne. Meillä ei ole pääsyä ääninauhuureihinne, jotka eivät koskaan poistu laitteeltanne.",
+      "p2": "Nimenomaisen suostumuksenne perusteella keräämme anonymisoitua käyttäytymisdataa tutkimustarkoituksiin: mihin somaattisiin pyöriin määritätte sanastoa ja numeeriset kuviot frausiharjoitusistunnoistanne. Nämä tiedot eivät sisällä itse sanoja, henkilökohtaisia tunnistetietoja tai ääninauhureitanne.",
+      "p3": "Tutkimukseen osallistuminen on täysin vapaaehtoista. Voitte valita osallistumisen, kieltäytymisen tai muuttaa valintojanne milloin tahansa kohdassa Asetukset → Tutkimukseen osallistuminen. Pääsyänne kaikkiin ominaisuuksiin ei vaikuteta valinnallanne.",
+      "p4": "Täydelliset tiedot siitä, mitä kerätään, millä oikeusperustalla ja miten sitä käytetään, löytyvät täydellisestä tietojenkeräämisprotokollastasamme osoitteessa",
+      "p4link": "DATA_COLLECTION_PROTOCOL.md"
+    },
+    "device": {
+      "title": "Mitä jää laitteellenne",
+      "p1": "Kaikki sovelluksen sisällä luomanne merkinnät, pohdinnat tai harjoitustiedostot tallennetaan paikallisesti vain laitteellenne. Meillä ei ole pääsyä näihin tietoihin. Jos poistatte sovelluksen, nämä tiedot poistetaan pysyvästi."
+    },
+    "thirdparty": {
+      "title": "Kolmansien osapuolten palvelut",
+      "p1": "Mind Mechanism ei integroi kolmansien osapuolten analytiikkaa, mainontaa tai seurantapalveluja."
+    },
+    "children": {
+      "title": "Lapset",
+      "p1": "Tämä sovellus ei ole suunnattu alle 16-vuotiaille lapsille. Emme tietoisesti kerää tietoja alaikäisiltä."
+    },
+    "gdpr": {
+      "title": "Oikeutenne (GDPR)",
+      "p1": "Euroopan talousalueen käyttäjänä teillä on oikeus saada pääsy, korjata tai poistaa kaikki henkilökohtaiset tiedot, joita meillä on teistä.",
+      "p2before": "Tutkimukseen osallistumiseen suostuneille käyttäjille teillä on oikeus saada pääsy, oikaista, poistaa ja siirtää tietojanne. Käyttääksenne näitä oikeuksia, ottakaa yhteyttä",
+      "p2after": ". Vastaamme 30 päivän kuluessa."
+    },
+    "changes": {
+      "title": "Muutokset tähän käytäntöön",
+      "p1": "Jos tietokäytäntömme muuttuvat, päivitämme tämän sivun ja muutamme yllä olevaa päivämäärää. Sovelluksen jatkuva käyttö minkä tahansa päivityksen jälkeen merkitsee muutetun käytännön hyväksymistä."
+    }
+  },
+  "legal": {
+    "title": "Juridinen ja yhteystiedot",
+    "subtitle": "Versio 1.0 — 28. huhtikuuta 2026",
+    "disclaimer": {
+      "title": "Vastuuvapauslauseke",
+      "p1": "Mind Mechanism on kontemplatiivinen harjoitustyökalu. Se ei ole lääketieteellinen laite, terapeuttinen interventio eikä korvike ammattimaiselle mielenterveydenhoidolle. Jos olette kriisissä, ottakaa yhteyttä pätevään terveydenhuollon tarjoajaan tai paikallisiin hätäpalveluihin."
+    },
+    "privacy": {
+      "title": "Yksityisyys",
+      "p1": "Tämä sovellus ei kerää, tallenna tai välitä henkilötietoja. Mitkään analytiikka-, telemetria- tai käyttötiedot eivät poistu laitteeltanne. ¹"
+    },
+    "terms": {
+      "title": "Käyttöehdot",
+      "p1": "Käyttämällä tätä sovellusta suostutte käyttämään sitä henkilökohtaisena harjoitusapuvälineenä. Ette saa takaisinmallintaa, jakaa uudelleen tai muuttaa tarkoitusta ohjelmistolle tai sen taustalla olevalle taksonomille — Emotionaaliselle Spektrikielelle (ESL) — ilman kirjallista lupaa."
+    },
+    "ip": {
+      "title": "Immateriaalioikeudet",
+      "p1": "Mind Mechanism -sovellus, ESL-taksonomia (482 solmua), yhdeksän mandalasuunnittelua, Toggle-kehys ja kaikki siihen liittyvä sisältö ovat Sean Fortunen ja SFFP:n immateriaalioikeuksia. © 2026 Sean Fortune ja SFFP. Kaikki oikeudet pidätetään."
+    },
+    "liability": {
+      "title": "Vastuu",
+      "p1": "SFFP tarjoaa tämän sovelluksen sellaisenaan, ilman minkäänlaista takuuta. SFFP tai sen johtajat eivät missään tapauksessa vastaa mistään vaatimuksista, vahingoista tai muusta vastuusta, joka aiheutuu sovelluksen käytöstä. ²"
+    },
+    "contact": {
+      "title": "Yhteystiedot",
+      "studio": "Studio: Viller Mühle, Goch, Saksa",
+      "developed": "Kehittäneet Sean Fortune ja Frederic Printz — SFFP."
+    }
+  }
+}
