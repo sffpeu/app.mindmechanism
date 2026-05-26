@@ -1,3 +1,17 @@
+import { getMandalaNodes } from '@/data/mandalaNodes'
+
+/**
+ * Return the default focus-node words for a given clock in the requested language.
+ * clock_id 0 = wheel 1 (Root), clock_id 8 = wheel 9 (Etheric Heart).
+ * Falls back to the hardcoded English list when no localized data exists.
+ */
+export function getDefaultWordsForClock(clockId: number, language: string): string[] {
+  const wheel = clockId + 1 // clock_id is 0-indexed; wheel is 1-indexed
+  const nodes = getMandalaNodes(language).filter(n => n.wheel === wheel)
+  if (nodes.length > 0) return nodes.map(n => n.term)
+  return DEFAULT_WORDS_BY_CLOCK[clockId] ?? []
+}
+
 // Default words per clock for "Default" in Assign Words: word 1 = focus node 1, etc. Key = clock id.
 export const DEFAULT_WORDS_BY_CLOCK: Record<number, string[]> = {
   0: ['Achievement', 'Willingness', 'Vitality', 'Boldness', 'Insight', 'Command', 'Reflection', 'Illusion'],

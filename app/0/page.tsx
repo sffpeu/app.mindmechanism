@@ -40,7 +40,7 @@ import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useLocation } from '@/lib/hooks/useLocation'
 import { useClockEntrance } from '@/lib/hooks/useClockEntrance'
 import DotNavigation from '@/components/DotNavigation'
-import { DEFAULT_WORDS_BY_CLOCK } from '@/lib/defaultWordsByClock'
+import { getDefaultWordsForClock } from '@/lib/defaultWordsByClock'
 import { cn } from '@/lib/utils'
 import { CurvedCircleWordLabel } from '@/components/CurvedCircleWordLabel'
 import { wordProgressAlongProgressRing } from '@/lib/sessionWordRingFill'
@@ -408,7 +408,7 @@ function NodesPageContent() {
     window.addEventListener('mouseup', onUp)
   }, [cardPosition])
 
-  const defaultWords = DEFAULT_WORDS_BY_CLOCK[0] ?? []
+  const defaultWords = getDefaultWordsForClock(0, locale)
   const getFocusNodeStyle = (index: number, isSelected: boolean) => {
     const color = clockHex
     return {

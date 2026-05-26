@@ -44,7 +44,8 @@ import {
 import { LobbySatelliteField } from '@/components/LobbySatelliteField'
 import { clockSettings } from '@/lib/clockSettings'
 import { useClockTitles } from '@/lib/hooks/useClockTitles'
-import { DEFAULT_WORDS_BY_CLOCK } from '@/lib/defaultWordsByClock'
+import { getDefaultWordsForClock } from '@/lib/defaultWordsByClock'
+import { useLanguage } from '@/lib/i18n'
 import {
   LOBBY_SESSION_DURATION_CHOICES,
   type LobbySessionConfigInput,
@@ -64,8 +65,8 @@ import {
 import { cn } from '@/lib/utils'
 import { LobbyOpenField } from '@/components/LobbyOpenField'
 
-function focusNodeLabel(clockId: number, nodeIndex: number): string {
-  const words = DEFAULT_WORDS_BY_CLOCK[clockId]
+function focusNodeLabel(clockId: number, nodeIndex: number, language: string): string {
+  const words = getDefaultWordsForClock(clockId, language)
   const w = words?.[nodeIndex]
   return w ?? `Node ${nodeIndex + 1}`
 }
@@ -93,6 +94,7 @@ function gatheringEventDescription(opts: {
 
 export function SymbolicLobby() {
   const clockTitles = useClockTitles()
+  const { locale } = useLanguage()
   const { user } = useAuth()
   const [groups, setGroups] = useState<LobbyGroup[]>([])
   const [loading, setLoading] = useState(true)
@@ -339,8 +341,8 @@ export function SymbolicLobby() {
 
   const calendarClockId = myGroup?.session?.mandala_clock_id ?? mandalaClockId
   const calendarFocusLabels = myGroup?.session
-    ? myGroup.session.focus_node_indices.map((i) => focusNodeLabel(myGroup.session!.mandala_clock_id, i))
-    : selectedFocusNodes.map((i) => focusNodeLabel(mandalaClockId, i))
+    ? myGroup.session.focus_node_indices.map((i) => focusNodeLabel(myGroup.session!.mandala_clock_id, i, locale))
+    : selectedFocusNodes.map((i) => focusNodeLabel(mandalaClockId, i, locale))
   const calendarFriendsCode = myGroup ? myFriendsCode : null
 
   const addPlannedGathering = async () => {
@@ -563,7 +565,7 @@ export function SymbolicLobby() {
                             : 'border-black/15 bg-white/80 text-gray-800 hover:bg-white dark:border-white/15 dark:bg-white/10 dark:text-gray-100'
                         )}
                       >
-                        {focusNodeLabel(mandalaClockId, nodeIndex)}
+                        {focusNodeLabel(mandalaClockId, nodeIndex, locale)}
                       </button>
                     )
                   })}
@@ -867,7 +869,7 @@ export function SymbolicLobby() {
                 <li>
                   <span className="font-medium text-gray-900 dark:text-white">Focus nodes: </span>
                   {myGroup.session.focus_node_indices
-                    .map((i) => focusNodeLabel(myGroup.session!.mandala_clock_id, i))
+                    .map((i) => focusNodeLabel(myGroup.session!.mandala_clock_id, i, locale))
                     .join(', ')}
                 </li>
               </ul>

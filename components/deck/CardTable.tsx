@@ -713,7 +713,7 @@ export function CardTable() {
         <CreateSessionModal
           onStart={handleSessionStart}
           onClose={() => setShowCreateSession(false)}
-          defaultLanguage={sessionLanguage}
+          defaultLanguage={locale}
         />
       )}
 

@@ -39,7 +39,7 @@ import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useLocation } from '@/lib/hooks/useLocation'
 import { useClockEntrance } from '@/lib/hooks/useClockEntrance'
 import DotNavigation from '@/components/DotNavigation'
-import { DEFAULT_WORDS_BY_CLOCK } from '@/lib/defaultWordsByClock'
+import { getDefaultWordsForClock } from '@/lib/defaultWordsByClock'
 import { cn } from '@/lib/utils'
 import { CurvedCircleWordLabel } from '@/components/CurvedCircleWordLabel'
 import { wordProgressAlongProgressRing } from '@/lib/sessionWordRingFill'
@@ -376,7 +376,7 @@ function NodesPageContent() {
   }, [selectedWord])
   useEffect(() => { isMountedRef.current = true; return () => { isMountedRef.current = false; const { onMove, onUp } = dragListenersRef.current; if (onMove) window.removeEventListener('mousemove', onMove); if (onUp) window.removeEventListener('mouseup', onUp); dragListenersRef.current = { onMove: null, onUp: null } } }, [])
   const handleCardDragStart = useCallback((e: React.MouseEvent) => { e.preventDefault(); if (!cardPosition) return; dragRef.current = { startX: e.clientX, startY: e.clientY, startLeft: cardPosition.x, startTop: cardPosition.y }; const onMove = (e: MouseEvent) => { if (!dragRef.current || !isMountedRef.current) return; setCardPosition({ x: dragRef.current.startLeft + e.clientX - dragRef.current.startX, y: dragRef.current.startTop + e.clientY - dragRef.current.startY }) }; const onUp = () => { dragRef.current = null; window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); dragListenersRef.current = { onMove: null, onUp: null } }; dragListenersRef.current = { onMove, onUp }; window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp) }, [cardPosition])
-  const defaultWords = DEFAULT_WORDS_BY_CLOCK[CLOCK_INDEX] ?? []
+  const defaultWords = getDefaultWordsForClock(CLOCK_INDEX, locale)
   const getFocusNodeStyle = (index: number, isSelected: boolean) => {
     const color = clockHex
     return {
