@@ -310,12 +310,15 @@ export async function getAllWords(language: string = 'en'): Promise<GlossaryWord
 
       // Language filter: system words must match requested language; user words always included.
       // Falls back to EN system words when no language-specific words exist.
-      if (language !== 'en') {
+      const userWords = words.filter(w => w.source === 'user')
+      const enSystemWords = words.filter(w => w.source === 'system' && (!w.language || w.language === 'en'))
+      if (language === 'en') {
+        words = [...enSystemWords, ...userWords]
+      } else {
         const langSystemWords = words.filter(w => w.source === 'system' && w.language === language)
-        const userWords = words.filter(w => w.source === 'user')
-        if (langSystemWords.length > 0) {
-          words = [...langSystemWords, ...userWords]
-        }
+        words = langSystemWords.length > 0
+          ? [...langSystemWords, ...userWords]
+          : [...enSystemWords, ...userWords]
       }
 
       return assignDefaultClockIds(words);

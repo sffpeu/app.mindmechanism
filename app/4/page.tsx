@@ -354,7 +354,7 @@ function NodesPageContent() {
       }
     }
     loadGlossaryWords()
-  }, [])
+  }, [locale])
 
   const handleNodeClick = (index: number) => {
     setSelectedNodeIndices((prev) =>

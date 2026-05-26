@@ -92,7 +92,7 @@ function GlossaryPageInner() {
     }, 300)
 
     return () => clearTimeout(timer)
-  }, [searchQuery, nodeTier, user?.uid])
+  }, [searchQuery, nodeTier, user?.uid, locale])
 
   const loadWords = async () => {
     setLoading(true)
