@@ -224,6 +224,36 @@
     "continueRestart": "Jatka tai aloita uudelleen viimeisimmistä istunnoistasi.",
     "noUpcoming": "Ei tulevia istuntoja.",
     "scheduledGroup": "Aikataulutettu ja ryhmä",
-    "language": "Kieli"
+    "language": "Kieli",
+    "openIncomplete": "Avoimet, keskeneräiset & odottavat istunnot",
+    "continue": "Jatka",
+    "restart": "Käynnistä uudelleen",
+    "startAgain": "Aloita uudelleen",
+    "waitingLobbySessions": "Odottavat aulaistunnot",
+    "scheduledWaitingDesc": "Aikataulutetut istunnot odotustilassa. Käytä 'Käynnistä uudelleen' avataksesi kellon tai poista ne, jos et enää tarvitse niitä.",
+    "continueDesc": "Jatka siitä mihin jäit. Samat toiminnot kuin yllä olevissa korteissa: Jatka, Käynnistä uudelleen tai poista.",
+    "noWaitingSessions": "Sinulla ei ole tällä hetkellä istuntoja odotusaulassa.",
+    "noOpenSessions": "Sinulla ei ole tällä hetkellä avoimia tai keskeneräisiä istuntoja. Aloita yksi Istunnot-sivulta tai lopeta istunto, jolloin se merkitään tässä valmiiksi.",
+    "noSessionsFound": "Istuntoja ei löydy. Aloita uusi istunto nähdäksesi historiasi täällä."
+  },
+  "notes": {
+    "title": "Muistiinpanot",
+    "subtitle": "Istuntokonteksti — tallennetut muistiinpanot pysyvät helposti selattavina.",
+    "savedNotes": "Tallennetut muistiinpanot",
+    "collapsePanel": "Pienennä tallennetut muistiinpanot",
+    "expandPanel": "Laajenna tallennetut muistiinpanot",
+    "moveSavedPanel": "Siirrä muistiinpanopaneelia",
+    "collapseEditor": "Pienennä muistiinpanoeditori",
+    "expandEditor": "Laajenna muistiinpanoeditori",
+    "moveEditorPanel": "Siirrä editoripaneelia",
+    "viewNote": "Katso muistiinpano",
+    "editNote": "Muokkaa muistiinpanoa",
+    "writeNote": "Kirjoita muistiinpano",
+    "titleBodyRequired": "Otsikko ja sisältö vaaditaan tallentamiseen.",
+    "newest": "Uusimmat",
+    "oldest": "Vanhimmat",
+    "newNote": "Uusi muistiinpano",
+    "loading": "Ladataan muistiinpanoja…",
+    "noNotes": "Ei vielä tallennettuja muistiinpanoja. Aloita editoripaneelissa."
   }
 }

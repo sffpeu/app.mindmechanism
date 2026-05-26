@@ -69,6 +69,7 @@ import { useClockTitles } from '@/lib/hooks/useClockTitles'
 import { useLocation } from '@/lib/hooks/useLocation'
 import { useSoundEffects } from '@/lib/sounds'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { useLanguage } from '@/lib/i18n'
 
 /** Firestore `db` can be unset briefly after navigation; wait before preferences writes. */
 async function waitForNotesDb(maxMs = 8000): Promise<Firestore | null> {
@@ -523,6 +524,7 @@ function NotesFloatingPanel({
 
 export default function NotesPage() {
   const clockTitles = useClockTitles()
+  const { t } = useLanguage()
   const { user } = useAuth()
   const { notes, isLoading, addNote, editNote, removeNote } = useNotes()
   const { location } = useLocation()
@@ -1225,7 +1227,7 @@ export default function NotesPage() {
                   pageBackground ? 'text-white' : 'text-gray-900 dark:text-white'
                 )}
               >
-                Notes
+                {t('common', 'notes.title')}
               </h1>
               <p
                 className={cn(
@@ -1233,7 +1235,7 @@ export default function NotesPage() {
                   pageBackground ? 'text-white/65' : 'text-gray-500 dark:text-gray-400'
                 )}
               >
-                Session context — saved notes stay easy to scan.
+                {t('common', 'notes.subtitle')}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-1.5 sm:ml-auto sm:justify-end">
@@ -1419,8 +1421,8 @@ export default function NotesPage() {
                     savedCollapsed: !prev.savedCollapsed,
                   }))
                 }
-                collapseLabelExpanded="Collapse saved notes"
-                collapseLabelCollapsed="Expand saved notes"
+                collapseLabelExpanded={t('common', 'notes.collapsePanel')}
+                collapseLabelCollapsed={t('common', 'notes.expandPanel')}
                 onMove={(x, y) =>
                   setPanelLayout((prev) => ({
                     ...prev,
@@ -1428,11 +1430,11 @@ export default function NotesPage() {
                   }))
                 }
                 onBringToFront={() => setFrontPanel('saved')}
-                dragLabel="Move saved notes panel"
+                dragLabel={t('common', 'notes.moveSavedPanel')}
                 handleLeft={
                   <div className="flex min-w-0 items-center gap-2">
                     <ClipboardList className="h-3.5 w-3.5 shrink-0 text-gray-500" aria-hidden />
-                    <span className="truncate text-sm font-semibold text-gray-900 dark:text-white">Saved notes</span>
+                    <span className="truncate text-sm font-semibold text-gray-900 dark:text-white">{t('common', 'notes.savedNotes')}</span>
                   </div>
                 }
                 handleRight={
@@ -1445,9 +1447,9 @@ export default function NotesPage() {
                       onClick={() => setSortOrder((prev) => (prev === 'newest' ? 'oldest' : 'newest'))}
                     >
                       <ArrowUpDown className="mr-1 h-3.5 w-3.5" />
-                      {sortOrder === 'newest' ? 'Newest' : 'Oldest'}
+                      {sortOrder === 'newest' ? t('common', 'notes.newest') : t('common', 'notes.oldest')}
                     </Button>
-                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={clearForm} title="New note">
+                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={clearForm} title={t('common', 'notes.newNote')}>
                       <Plus className="h-4 w-4" />
                     </Button>
                   </>
@@ -1456,9 +1458,9 @@ export default function NotesPage() {
                 <div className="p-3 pt-2" onFocusCapture={() => setFrontPanel('saved')}>
                   <div className="space-y-1.5">
                 {isLoading ? (
-                  <p className="text-center text-xs text-gray-500 dark:text-gray-400 py-8">Loading notes…</p>
+                  <p className="text-center text-xs text-gray-500 dark:text-gray-400 py-8">{t('common', 'notes.loading')}</p>
                 ) : sortedNotes.length === 0 ? (
-                  <p className="text-center text-xs text-gray-500 dark:text-gray-400 py-8">No saved notes yet. Start one in the editor panel.</p>
+                  <p className="text-center text-xs text-gray-500 dark:text-gray-400 py-8">{t('common', 'notes.noNotes')}</p>
                 ) : (
                   sortedNotes.map((note) => (
                     <div
@@ -1568,8 +1570,8 @@ export default function NotesPage() {
                   editorCollapsed: !prev.editorCollapsed,
                 }))
               }
-              collapseLabelExpanded="Collapse note editor"
-              collapseLabelCollapsed="Expand note editor"
+              collapseLabelExpanded={t('common', 'notes.collapseEditor')}
+              collapseLabelCollapsed={t('common', 'notes.expandEditor')}
               onMove={(x, y) =>
                 setPanelLayout((prev) => ({
                   ...prev,
@@ -1577,19 +1579,19 @@ export default function NotesPage() {
                 }))
               }
               onBringToFront={() => setFrontPanel('editor')}
-              dragLabel="Move note editor panel"
+              dragLabel={t('common', 'notes.moveEditorPanel')}
               handleLeft={
                 selectedNote && !isEditing ? (
                   <div className="flex min-w-0 items-center gap-2">
                     <FileText className="h-3.5 w-3.5 shrink-0 text-gray-500" aria-hidden />
-                    <span className="truncate text-sm font-semibold text-gray-900 dark:text-white">View note</span>
+                    <span className="truncate text-sm font-semibold text-gray-900 dark:text-white">{t('common', 'notes.viewNote')}</span>
                   </div>
                 ) : (
                   <div className="min-w-0">
                     <span className="text-base font-semibold text-gray-900 dark:text-white">
-                      {selectedNote ? 'Edit note' : 'Write a note'}
+                      {selectedNote ? t('common', 'notes.editNote') : t('common', 'notes.writeNote')}
                     </span>
-                    <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Title and body are required to save.</p>
+                    <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{t('common', 'notes.titleBodyRequired')}</p>
                   </div>
                 )
               }

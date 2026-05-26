@@ -234,6 +234,36 @@
     "continueRestart": "Continuez ou recommencez à partir de vos dernières séances.",
     "noUpcoming": "Aucune séance à venir.",
     "scheduledGroup": "Planifié et groupe",
-    "language": "Langue"
+    "language": "Langue",
+    "openIncomplete": "Sessions ouvertes, incomplètes et en attente",
+    "continue": "Continuer",
+    "restart": "Redémarrer",
+    "startAgain": "Recommencer",
+    "waitingLobbySessions": "Sessions en attente dans le lobby",
+    "scheduledWaitingDesc": "Sessions planifiées en état d'attente. Utilisez Redémarrer pour ouvrir l'horloge, ou supprimez-les si vous n'en avez plus besoin.",
+    "continueDesc": "Reprenez là où vous vous étiez arrêté. Mêmes actions que les cartes ci-dessus : Continuer, Redémarrer ou supprimer.",
+    "noWaitingSessions": "Vous n'avez actuellement aucune session dans le lobby d'attente.",
+    "noOpenSessions": "Vous n'avez actuellement aucune session ouverte ou incomplète. Démarrez-en une depuis Sessions, ou terminez une session pour la voir marquée comme complète ici.",
+    "noSessionsFound": "Aucune session trouvée. Démarrez une nouvelle session pour voir votre historique ici."
+  },
+  "notes": {
+    "title": "Notes",
+    "subtitle": "Contexte de séance — les notes sauvegardées restent faciles à consulter.",
+    "savedNotes": "Notes sauvegardées",
+    "collapsePanel": "Réduire les notes sauvegardées",
+    "expandPanel": "Développer les notes sauvegardées",
+    "moveSavedPanel": "Déplacer le panneau des notes",
+    "collapseEditor": "Réduire l'éditeur de notes",
+    "expandEditor": "Développer l'éditeur de notes",
+    "moveEditorPanel": "Déplacer le panneau de l'éditeur",
+    "viewNote": "Voir la note",
+    "editNote": "Modifier la note",
+    "writeNote": "Écrire une note",
+    "titleBodyRequired": "Le titre et le contenu sont requis pour sauvegarder.",
+    "newest": "Plus récentes",
+    "oldest": "Plus anciennes",
+    "newNote": "Nouvelle note",
+    "loading": "Chargement des notes…",
+    "noNotes": "Pas encore de notes sauvegardées. Commencez dans le panneau d'édition."
   }
 }

@@ -231,6 +231,36 @@
     "continueRestart": "Letzte Sitzungen fortsetzen oder neu starten.",
     "noUpcoming": "Keine bevorstehenden Sitzungen.",
     "scheduledGroup": "Geplant & Gruppe",
-    "language": "Sprache"
+    "language": "Sprache",
+    "openIncomplete": "Offene, unvollständige & wartende Sitzungen",
+    "continue": "Fortsetzen",
+    "restart": "Neu starten",
+    "startAgain": "Erneut starten",
+    "waitingLobbySessions": "Wartende Lobby-Sitzungen",
+    "scheduledWaitingDesc": "Geplante Sitzungen im Wartezustand. Verwenden Sie „Neu starten", um die Uhr zu öffnen, oder entfernen Sie sie, wenn sie nicht mehr benötigt werden.",
+    "continueDesc": "Machen Sie dort weiter, wo Sie aufgehört haben. Gleiche Aktionen wie die Karten oben: Fortsetzen, Neu starten oder entfernen.",
+    "noWaitingSessions": "Sie haben derzeit keine Sitzungen in der Wartelobby.",
+    "noOpenSessions": "Sie haben derzeit keine offenen oder unvollständigen Sitzungen. Starten Sie eine über Sitzungen, oder beenden Sie eine Sitzung, um sie hier als abgeschlossen anzuzeigen.",
+    "noSessionsFound": "Keine Sitzungen gefunden. Starten Sie eine neue Sitzung, um Ihren Verlauf hier zu sehen."
+  },
+  "notes": {
+    "title": "Notizen",
+    "subtitle": "Sitzungskontext — gespeicherte Notizen bleiben leicht überschaubar.",
+    "savedNotes": "Gespeicherte Notizen",
+    "collapsePanel": "Gespeicherte Notizen einklappen",
+    "expandPanel": "Gespeicherte Notizen ausklappen",
+    "moveSavedPanel": "Notizenbereich verschieben",
+    "collapseEditor": "Notizeditor einklappen",
+    "expandEditor": "Notizeditor ausklappen",
+    "moveEditorPanel": "Editorbereich verschieben",
+    "viewNote": "Notiz ansehen",
+    "editNote": "Notiz bearbeiten",
+    "writeNote": "Notiz schreiben",
+    "titleBodyRequired": "Titel und Inhalt sind zum Speichern erforderlich.",
+    "newest": "Neueste",
+    "oldest": "Älteste",
+    "newNote": "Neue Notiz",
+    "loading": "Notizen werden geladen…",
+    "noNotes": "Noch keine gespeicherten Notizen. Beginnen Sie im Editorbereich."
   }
 }

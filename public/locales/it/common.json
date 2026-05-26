@@ -234,6 +234,36 @@
     "continueRestart": "Continua o ricomincia dalle tue ultime sessioni.",
     "noUpcoming": "Nessuna sessione in arrivo.",
     "scheduledGroup": "Programmato e gruppo",
-    "language": "Lingua"
+    "language": "Lingua",
+    "openIncomplete": "Sessioni aperte, incomplete e in attesa",
+    "continue": "Continua",
+    "restart": "Ricomincia",
+    "startAgain": "Inizia di nuovo",
+    "waitingLobbySessions": "Sessioni in attesa nella lobby",
+    "scheduledWaitingDesc": "Sessioni pianificate in stato di attesa. Usa Ricomincia per aprire l'orologio, o rimuovile se non ne hai più bisogno.",
+    "continueDesc": "Continua da dove ti eri fermato. Le stesse azioni delle schede sopra: Continua, Ricomincia o rimuovi.",
+    "noWaitingSessions": "Non hai sessioni nella lobby di attesa al momento.",
+    "noOpenSessions": "Non hai sessioni aperte o incomplete al momento. Avviarne una da Sessioni, o completa una sessione per vederla segnata come completata qui.",
+    "noSessionsFound": "Nessuna sessione trovata. Avvia una nuova sessione per vedere la tua cronologia qui."
+  },
+  "notes": {
+    "title": "Note",
+    "subtitle": "Contesto della sessione — le note salvate restano facili da consultare.",
+    "savedNotes": "Note salvate",
+    "collapsePanel": "Comprimi note salvate",
+    "expandPanel": "Espandi note salvate",
+    "moveSavedPanel": "Sposta pannello note",
+    "collapseEditor": "Comprimi editor note",
+    "expandEditor": "Espandi editor note",
+    "moveEditorPanel": "Sposta pannello editor",
+    "viewNote": "Visualizza nota",
+    "editNote": "Modifica nota",
+    "writeNote": "Scrivi una nota",
+    "titleBodyRequired": "Titolo e contenuto sono obbligatori per salvare.",
+    "newest": "Più recenti",
+    "oldest": "Più vecchie",
+    "newNote": "Nuova nota",
+    "loading": "Caricamento note…",
+    "noNotes": "Nessuna nota salvata ancora. Inizia nel pannello editor."
   }
 }

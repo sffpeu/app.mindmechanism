@@ -231,6 +231,36 @@
     "continueRestart": "Continue or restart from your latest sessions.",
     "noUpcoming": "No upcoming sessions.",
     "scheduledGroup": "Scheduled & Group",
-    "language": "Language"
+    "language": "Language",
+    "openIncomplete": "Open, incomplete & waiting sessions",
+    "continue": "Continue",
+    "restart": "Restart",
+    "startAgain": "Start again",
+    "waitingLobbySessions": "Waiting lobby sessions",
+    "scheduledWaitingDesc": "Scheduled sessions in the waiting state. Use Restart to open the clock, or remove if you no longer need them.",
+    "continueDesc": "Continue from where you left off. Same actions as the cards above: Continue, Restart, or remove.",
+    "noWaitingSessions": "You don't have any sessions in the waiting lobby right now.",
+    "noOpenSessions": "You don't have any open or incomplete sessions right now. Start one from Sessions, or finish a session to see it marked complete here.",
+    "noSessionsFound": "No sessions found. Start a new session to see your history here."
+  },
+  "notes": {
+    "title": "Notes",
+    "subtitle": "Session context — saved notes stay easy to scan.",
+    "savedNotes": "Saved notes",
+    "collapsePanel": "Collapse saved notes",
+    "expandPanel": "Expand saved notes",
+    "moveSavedPanel": "Move saved notes panel",
+    "collapseEditor": "Collapse note editor",
+    "expandEditor": "Expand note editor",
+    "moveEditorPanel": "Move note editor panel",
+    "viewNote": "View note",
+    "editNote": "Edit note",
+    "writeNote": "Write a note",
+    "titleBodyRequired": "Title and body are required to save.",
+    "newest": "Newest",
+    "oldest": "Oldest",
+    "newNote": "New note",
+    "loading": "Loading notes…",
+    "noNotes": "No saved notes yet. Start one in the editor panel."
   }
 }

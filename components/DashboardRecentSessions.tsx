@@ -17,6 +17,7 @@ import { toast } from 'react-hot-toast';
 
 import { useClockTitles } from '@/lib/hooks/useClockTitles';
 import { clockSettings } from '@/lib/clockSettings';
+import { useLanguage } from '@/lib/i18n';
 
 const clockColors = [
   'text-red-500',
@@ -159,6 +160,7 @@ export const DashboardRecentSessions = forwardRef<
   DashboardRecentSessionsProps
 >(function DashboardRecentSessions({ sessions: propSessions }, ref) {
   const clockTitles = useClockTitles()
+  const { t } = useLanguage()
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(!propSessions);
   const [openSessionsDialogOpen, setOpenSessionsDialogOpen] = useState(false);
@@ -322,7 +324,7 @@ export const DashboardRecentSessions = forwardRef<
               onClick={() => handleContinueSession(session)}
             >
               <Play className="h-3 w-3 mr-1" />
-              Continue
+              {t('common', 'dashboardExtra.continue')}
             </Button>
           )}
           <Button
@@ -332,7 +334,7 @@ export const DashboardRecentSessions = forwardRef<
             onClick={() => handleRestartSession(session)}
           >
             <RefreshCw className="h-3 w-3 mr-1" />
-            {isCompleted ? 'Start again' : 'Restart'}
+            {isCompleted ? t('common', 'dashboardExtra.startAgain') : t('common', 'dashboardExtra.restart')}
           </Button>
         </div>
       </div>
@@ -354,7 +356,7 @@ export const DashboardRecentSessions = forwardRef<
           }}
         >
           <FolderOpen className="h-4 w-4" />
-          Open, incomplete &amp; waiting sessions
+          {t('common', 'dashboardExtra.openIncomplete')}
           <span className="tabular-nums rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-white/10 dark:text-gray-300">
             {openSessions.length}
           </span>
@@ -372,21 +374,21 @@ export const DashboardRecentSessions = forwardRef<
           <DialogHeader className="px-6 pt-6 pb-2 text-left">
             <DialogTitle>
               {dialogFilter === 'waiting'
-                ? 'Waiting lobby sessions'
-                : 'Open, incomplete &amp; waiting sessions'}
+                ? t('common', 'dashboardExtra.waitingLobbySessions')
+                : t('common', 'dashboardExtra.openIncomplete')}
             </DialogTitle>
             <p className="text-sm text-gray-500 dark:text-gray-400 font-normal leading-relaxed pt-1">
               {dialogFilter === 'waiting'
-                ? 'Scheduled sessions in the waiting state. Use Restart to open the clock, or remove if you no longer need them.'
-                : 'Continue from where you left off. Same actions as the cards above: Continue, Restart, or remove.'}
+                ? t('common', 'dashboardExtra.scheduledWaitingDesc')
+                : t('common', 'dashboardExtra.continueDesc')}
             </p>
           </DialogHeader>
           <div className="px-6 pb-6 flex-1 min-h-0 overflow-y-auto">
             {dialogSessions.length === 0 ? (
               <p className="text-sm text-gray-600 dark:text-gray-400 text-center py-8 px-2">
                 {dialogFilter === 'waiting'
-                  ? 'You don&apos;t have any sessions in the waiting lobby right now.'
-                  : 'You don&apos;t have any open or incomplete sessions right now. Start one from Sessions, or finish a session to see it marked complete here.'}
+                  ? t('common', 'dashboardExtra.noWaitingSessions')
+                  : t('common', 'dashboardExtra.noOpenSessions')}
               </p>
             ) : (
               <div className="flex flex-wrap gap-4 justify-center sm:justify-start pt-2">
@@ -406,7 +408,7 @@ export const DashboardRecentSessions = forwardRef<
       ) : sessions.length === 0 ? (
         <div className="text-center p-6">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            No sessions found. Start a new session to see your history here.
+            {t('common', 'dashboardExtra.noSessionsFound')}
           </p>
         </div>
       ) : (
