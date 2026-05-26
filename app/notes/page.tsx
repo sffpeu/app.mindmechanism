@@ -1587,11 +1587,14 @@ export default function NotesPage() {
                     <span className="truncate text-sm font-semibold text-gray-900 dark:text-white">{t('common', 'notes.viewNote')}</span>
                   </div>
                 ) : (
-                  <div className="min-w-0">
-                    <span className="text-base font-semibold text-gray-900 dark:text-white">
-                      {selectedNote ? t('common', 'notes.editNote') : t('common', 'notes.writeNote')}
-                    </span>
-                    <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{t('common', 'notes.titleBodyRequired')}</p>
+                  <div className="flex min-w-0 items-center gap-2">
+                    <FileText className="h-3.5 w-3.5 shrink-0 text-gray-500" aria-hidden />
+                    <div className="min-w-0 flex-1 overflow-hidden">
+                      <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                        {selectedNote ? t('common', 'notes.editNote') : t('common', 'notes.writeNote')}
+                      </p>
+                      <p className="truncate text-xs text-gray-500 dark:text-gray-400">{t('common', 'notes.titleBodyRequired')}</p>
+                    </div>
                   </div>
                 )
               }
