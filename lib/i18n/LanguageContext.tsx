@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from 'react'
 import type { SupportedLocale, LocaleNamespace, TranslationDict } from './types'
-import { DEFAULT_LOCALE } from './types'
+import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from './types'
 
 interface LanguageContextValue {
   locale: SupportedLocale
@@ -67,6 +67,17 @@ export function LanguageProvider({
       portal: (bundle.portal ?? {}) as TranslationDict,
       'grammar-transit': (bundle['grammar-transit'] ?? {}) as TranslationDict,
     })
+  }, [])
+
+  // Restore saved locale from localStorage after hydration (runs once on mount)
+  useEffect(() => {
+    const saved = typeof window !== 'undefined'
+      ? (localStorage.getItem('mm_locale') as SupportedLocale | null)
+      : null
+    if (saved && SUPPORTED_LOCALES.includes(saved) && saved !== locale) {
+      setLocaleState(saved)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
