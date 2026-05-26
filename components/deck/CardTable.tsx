@@ -8,7 +8,7 @@ import { CreateSessionModal } from './CreateSessionModal'
 import { SessionsPanel, type SavedSession } from './SessionsPanel'
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { collection, doc, getDocs, setDoc, deleteDoc, query, orderBy, type Firestore } from 'firebase/firestore'
-import { addUserWord } from '@/lib/glossary'
+import { addUserWord, getIpaPhonetic } from '@/lib/glossary'
 import { getFirebaseStorage, db } from '@/lib/firebase'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { usePassportKey } from '@/components/passport/PassportKeyProvider'
@@ -122,6 +122,7 @@ export function CardTable() {
   const [savedSessions, setSavedSessions] = useState<SavedSession[]>([])
   const [currentSessionName, setCurrentSessionName] = useState('Default Draw')
   const [sessionLanguage, setSessionLanguage] = useState<string>(locale)
+  const [phoneticMap, setPhoneticMap] = useState<Record<string, string>>({})
 
   // Load deck sessions from Firestore whenever the authenticated user is known
   useEffect(() => {
@@ -212,6 +213,35 @@ export function CardTable() {
     }, 800)
     return () => clearTimeout(timer)
   }, [cards, annotations, tableBackground, currentSessionName, remainingDeck, sessionLanguage])
+
+  // Phonetic enrichment — runs whenever cards or session language change.
+  // Looks up IPA for any on-table node whose static data has an empty phonetic.
+  // Results go into phoneticMap; getIpaPhonetic caches to localStorage so
+  // subsequent loads are instant even when the API was needed first time.
+  useEffect(() => {
+    if (cards.length === 0) return
+    let cancelled = false
+    const nodes = getMandalaNodes(sessionLanguage)
+    const nodeById = Object.fromEntries(nodes.map(n => [n.id, n]))
+    const toEnrich = cards
+      .filter(c => !c.customContent) // blank cards have no node
+      .map(c => nodeById[c.nodeId])
+      .filter((n): n is MandalaNode => !!n && !n.phonetic?.trim())
+    if (toEnrich.length === 0) return
+    ;(async () => {
+      const entries: [string, string][] = []
+      await Promise.allSettled(
+        toEnrich.map(async node => {
+          const ipa = await getIpaPhonetic(node.term, sessionLanguage)
+          if (ipa) entries.push([node.id, ipa])
+        })
+      )
+      if (!cancelled && entries.length > 0) {
+        setPhoneticMap(prev => ({ ...prev, ...Object.fromEntries(entries) }))
+      }
+    })()
+    return () => { cancelled = true }
+  }, [cards, sessionLanguage])
 
   const showToast = useCallback((msg: string) => {
     setToast(msg)
@@ -499,7 +529,7 @@ export function CardTable() {
         const isBlank = !!card.customContent
         const node = nodeMap[card.nodeId]
         if (!node && !isBlank) return null
-        const effectiveNode = node ?? {
+        const baseNode = node ?? {
           id: card.nodeId,
           term: card.customContent!.term,
           phonetic: card.customContent!.phonetic,
@@ -510,6 +540,10 @@ export function CardTable() {
           rate: '~' as const,
           nodeId: 0,
         }
+        // Merge enriched phonetic when the static data left it empty
+        const effectiveNode = (!isBlank && !baseNode.phonetic?.trim() && phoneticMap[card.nodeId])
+          ? { ...baseNode, phonetic: phoneticMap[card.nodeId] }
+          : baseNode
         return (
           <DeckCard
             key={card.nodeId}

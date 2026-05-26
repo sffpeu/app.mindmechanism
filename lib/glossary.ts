@@ -248,16 +248,27 @@ function ruleBasedIpa(word: string, language: string): string {
 }
 
 /**
- * Get IPA phonetic for a word: Dictionary API first, rule-based fallback.
+ * Get IPA phonetic for a word: cache → Dictionary API → rule-based fallback.
  * Guaranteed to return a phonetic string for fi/de/fr/es/it even for
  * user-invented terms the dictionary has never seen.
- * Exported so AddWordDialog can call it directly on word entry.
+ * Results are cached in localStorage (mm_ipa_v2) so repeated calls are instant.
+ * Exported so AddWordDialog and CardTable can call it directly.
  */
 export async function getIpaPhonetic(word: string, language: string): Promise<string> {
   if (!word.trim()) return ''
+  // 1. localStorage cache (shared namespace with enrichWithPhonetics)
+  const cached = getIpaCached(language, word)
+  if (cached !== null) return cached // '' means a genuine miss was already recorded
+  // 2. Dictionary API
   const apiResult = await fetchIpaPhonetic(word, language)
-  if (apiResult) return apiResult
-  return ruleBasedIpa(word, language)
+  if (apiResult) {
+    setIpaCached(language, word, apiResult)
+    return apiResult
+  }
+  // 3. Rule-based fallback
+  const ruleResult = ruleBasedIpa(word, language)
+  setIpaCached(language, word, ruleResult)
+  return ruleResult
 }
 
 async function enrichWithPhonetics(words: GlossaryWord[], language: string): Promise<GlossaryWord[]> {
