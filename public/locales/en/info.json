@@ -1,0 +1,355 @@
+{
+  "overlay": {
+    "close": "Close",
+    "escBefore": "Press",
+    "escAfter": "to close"
+  },
+  "footer": "Mind Mechanism · The One-Legged Poet · SFFP · Version 1.0 Beta · April 2026",
+  "tabs": {
+    "mechanism": { "label": "About the Mechanism", "desc": "What Mind Mechanism is and how it works." },
+    "developer": { "label": "About the Developer", "desc": "The person behind the practice." },
+    "esl": { "label": "About ESL", "desc": "The Emotional Spectrum Language — the vocabulary of the interior." },
+    "guide": { "label": "Getting Started", "desc": "Your first steps with the nine mandalas." },
+    "faq": { "label": "FAQ", "desc": "Frequently asked questions." },
+    "privacy": { "label": "Privacy & Data", "desc": "What we collect, what we do not, and who owns your practice." },
+    "legal": { "label": "Legal & Contact", "desc": "Terms, disclaimer, and how to reach us." }
+  },
+  "mechanism": {
+    "title": "About the Mechanism",
+    "subtitle": "Mind Mechanism: A Clinical-Contemplative Framework for Emotional Acquisition and Linguistic Sovereignty",
+    "i": {
+      "title": "I. What It Is",
+      "p1": "Mind Mechanism is a digital contemplative practice tool — but that description, while accurate, is deliberately understated. It is more precisely a clinical-interior framework: a structured system for identifying, naming, and owning the emotional states that constitute human interior experience. It operates at the intersection of clinical psychology, second language acquisition theory, somatics, and contemplative practice.",
+      "p2": "The framework rests on a single proposition: that the interior can be mapped with the same precision as the exterior. That between the vague sensation of \"feeling something\" and the precise capacity to name it, there is a gap — and that gap is not a limitation but a territory. The Mind Mechanism is the map of that territory and the tool for moving through it.",
+      "p3": "It was developed over thirty years by Sean Fortune — an artist, writer, and language educator whose work across clinical taxonomy, interactive installation, and contemplative practice converged on a single question: what would it mean to give someone a language for what they feel but cannot say?"
+    },
+    "ii": {
+      "title": "II. The Architect",
+      "p1": "The central identity proposition of the Mind Mechanism is this: you are not a passive user of the system. You are the Architect.",
+      "p2": "This is not metaphor as encouragement. It is a structural claim about the nature of the work. The Architect does not receive a map and follow it. The Architect uses the map to build something — a structured interior space from which it becomes possible to be fully oneself in any register, under any pressure, in any language.",
+      "p3": "The Mechanism provides the taxonomy, the frequencies, the toggle pathways. The Architect provides the encounter. Without the Architect's genuine interior engagement, the system is a catalogue. With it, it is a construction site.",
+      "p4": "This distinction carries clinical weight. A learner who approaches the framework as a student — receiving information — activates a different neurological pathway than a learner who approaches it as a builder, recognising and placing material that already belongs to them. The Architect posture is not a psychological pep-talk; it is the correct epistemological orientation for the work to function."
+    },
+    "iii": {
+      "title": "III. Theoretical Lineage",
+      "p1": "The Mind Mechanism is not built ex nihilo. It stands on a lineage and completes what each antecedent began.",
+      "jung": "**Carl Jung** recognised the mandala as a symbol of the self's search for wholeness — a structure through which the unconscious surfaces into consciousness via symbolic form. The nine mandalas in Mind Mechanism function on this principle: they are not decorative. They are access points.",
+      "kellogg": "**Joan Kellogg** extended Jung's work by mapping twelve archetypal stages of psychological development, grounding the mandala in the present moment rather than in the symbolic past. Her emphasis on presence — the diagnostic and therapeutic primacy of \"now\" — is a foundational current in the Mechanism's design.",
+      "krashen": "**Krashen's Affective Filter Hypothesis** identified that acquisition is mediated by an affective barrier (anxiety, motivation, self-confidence). The Mind Mechanism accepts this and inverts Krashen's causal arrow: the emotion is not the environment in which the word is received — it is the _meaning_ the word is acquired to carry. The filter is not a background variable to be lowered. It is the constitutive ground to be worked _through_.",
+      "vygotsky": "**Vygotsky's Zone of Proximal Development** — the gap between what a learner can do independently and what becomes possible through scaffolding — is extended into the _somatic ZPD_: the gap between what the nervous system will produce without resistance and what becomes possible through structured somatic mediation. The body is not a container for cognition. It is a mediating system.",
+      "cummins": "**Cummins' BICS/CALP distinction** — the gap between social fluency and academic language proficiency — receives its missing mechanism: the Linguistic Triage Protocol, which bridges False Key registers (socially fluent but institutionally insufficient vocabulary) to CALP-level ownership through somatic anchoring.",
+      "swain": "**Swain's Output Hypothesis** grounded the insight that productive struggle drives acquisition. The Mechanism completes this by distinguishing between output that is _produced_ (cognitively retrieved, fragile under pressure) and output that is _owned_ (somatically grounded, available under any condition).",
+      "horwitz": "**Horwitz's Foreign Language Classroom Anxiety Scale** operationalised what the Mechanism maps at a finer grain: not global anxiety but specific, somatically registered resistance to specific lexical registers."
+    },
+    "iv": {
+      "title": "IV. The Architecture",
+      "s1": {
+        "title": "4.1 The Nine Wheels",
+        "p1": "The system is organised around nine rotating mandalas — the Wheels — each corresponding to a distinct energetic centre and indexed to a specific planetary frequency derived from the Cosmic Octave calculations of Hans Cousto:",
+        "table": {
+          "wheel": "Wheel",
+          "domain": "Domain",
+          "freq": "Base Frequency",
+          "midi": "MIDI",
+          "rows": {
+            "1": { "wheel": "W1 Root", "domain": "Stability, Anchor, Ground" },
+            "2": { "wheel": "W2 Sacral", "domain": "Flow, Emotion, Connection" },
+            "3": { "wheel": "W3 Solar", "domain": "Will, Agency, Power" },
+            "4": { "wheel": "W4 Heart", "domain": "Equilibrium, Love, Relation" },
+            "5": { "wheel": "W5 Throat", "domain": "Expression, Articulacy, Voice" },
+            "6": { "wheel": "W6 Third Eye", "domain": "Vision, Insight, Perception" },
+            "7": { "wheel": "W7 Crown (M)", "domain": "Law, Devotion, Structure" },
+            "8": { "wheel": "W8 Crown (F)", "domain": "Wisdom, Integration, Synthesis" },
+            "9": { "wheel": "W9 Etheric Heart", "domain": "Earth · sovereignty, grounding, return" }
+          }
+        },
+        "p2": "All frequencies are tuned to the 432 Hz standard (A4 = 432 Hz). The 432 Hz choice is not conventional — standard Western tuning sets A4 at 440 Hz. The deliberate deviation positions the system outside the industrial tuning standard and aligns it with a frequency architecture historically associated with resonance with natural harmonic series. It is a philosophical as much as an acoustic decision.",
+        "p3": "**Etheric Heart** is the ninth wheel — **Earth** as planet and OM tone. **The 136.10 Hz recurrence** across Wheels 1, 4, and 9 is intentional and structurally significant: it encodes a Trinity in frequency — Ground (W1), Heart (W4), and Etheric Heart (W9) share the same base tone because they are not three unrelated states but one ground encountered at three depths. You begin in the body (W1 — physical anchor, the first safety). You pass through relation (W4 — love as equilibrium, the heart as the system's regulating centre). You arrive at sovereignty (W9 — the integrated ground that is no longer received from outside but generated from within). The frequency does not change. What changes is the Architect's relationship to it. This is the system's encoded claim about the nature of transformation: you do not transcend the ground; you learn to generate it from inside."
+      },
+      "s2": {
+        "title": "4.2 The Relational Architecture of the Nine Wheels",
+        "p1": "The nine wheels are not nine independent instruments. They are an integrated map, traversed according to the principle of _somatic availability_: you begin where your nervous system can make contact, not where a curriculum dictates you should.",
+        "p2": "For most practitioners, this means W1 or W9 — the ground registers — because the body requires a foundation before it can sustain the relational or expressive work of W4 or W5. But this is descriptive, not prescriptive. A practitioner who arrives with acute relational crisis may enter through W4. One whose primary blockade is expressive may find W5 the immediate site of work.",
+        "p3": "The wheels relate to each other in two structural logics:",
+        "p4": "**Vertical progression**: W1 through W9 describes a movement from physical foundation to integrated sovereignty — from the body's most basic safety to the self's most complete expression. This is the initiatory arc; it is long and non-linear.",
+        "p5": "**Dialectical pairing**: Several wheels exist in productive tension with each other. W1 (ground) and W9 (sovereignty) are the deepest pair — the alpha and omega of the map, sharing their frequency. W3 (will/agency) and W5 (expression/voice) form a practical axis: agency that cannot be expressed produces accumulation; expression without agency produces performance. W6 (perception) and W8 (integration) form the cognitive-synthetic pair: seeing clearly precedes the capacity to hold what is seen.",
+        "p6": "A practitioner who works only one wheel is not using the system. The Mechanism is designed for traversal — sequential in principle, responsive in practice."
+      },
+      "s3": {
+        "title": "4.3 Entry Orientation",
+        "p1": "A new practitioner does not select a wheel arbitrarily. The entry protocol follows a simple logic: **begin where resistance is least, not where ambition is greatest.**",
+        "p2": "The most reliable entry point for most practitioners is W9 — Etheric Heart / Earth — for the same reason that a builder's first act is to establish the foundation. W9 (Sovereignty, Grounding, Return) at 136.10 Hz (the OM/Earth frequency) creates the somatic stability from which all other wheel-work becomes accessible. A short W9 session before engaging any other wheel is the recommended orientation for new and returning practitioners alike.",
+        "p3": "The second reliable entry point is the wheel that is currently generating the most friction in the practitioner's life — the domain where the body is most defended, the language most blocked. This is the Conceptual Blockade's address. Entering there with the right frequency substrate and the right vocabulary can begin the resolution faster than any amount of indirect approach.",
+        "p4": "What does not work is beginning with the wheel the practitioner most _wants_ to be at — the aspirational wheel rather than the present one. The Mechanism operates on the present interior state. It has no purchase on the imagined future self."
+      },
+      "s4": {
+        "title": "4.4 The Emotional Spectrum Language (ESL)",
+        "p1": "At the heart of the Mechanism is the Emotional Spectrum Language — a taxonomy of 482 clinically distinct emotional positions, mapped across positive and negative valences, intensity gradients, and register tiers. This is not a thesaurus. It is a diagnostic vocabulary.",
+        "p2": "Each position in the ESL taxonomy is:",
+        "list": {
+          "1": "**Clinically distinct**: no two nodes occupy the same experiential territory. The distinction between _incapacitated_ and _incapability_ (T068 and T069 respectively) is precisely that one describes a state, the other describes a misattribution of cause — a difference that standard language collapses but the Mechanism holds.",
+          "2": "**CEFR-graded**: each node is assigned a language proficiency level (A1–C2), enabling the framework to function as both a clinical tool and a language acquisition scaffold.",
+          "3": "**Somatically anchored**: each position is indexed to a specific felt-sense in the body — a phonetic weight, a breath pattern, a somatic signature.",
+          "4": "**Connected via toggle pairs**: every position participates in a dialectical relationship with its opposite — not a dictionary antonym but a clinical polarity that reflects the actual trajectory of psychological transformation (e.g., Chaos→Stability, Doom→Fortune, Hate→Love)."
+        }
+      },
+      "s5": {
+        "title": "4.5 The 162 Toggle Pairs",
+        "p1": "The toggle series (T001–T162) is the applied clinical instrument of the ESL taxonomy. Each toggle names a movement from a pre-emotive, unresolved state (\"Shadow\" or \"Mud\") to a precisely named psychological resolution (\"Sovereign,\" \"Fortress,\" or \"Prism\").",
+        "p2": "Each toggle is rendered in a standardised Triple Register format:",
+        "consumer_label": "**Consumer Layer:**",
+        "consumer_list": {
+          "1": "The Re-Bore — a reframing that names the mechanism beneath the surface",
+          "2": "The Practice — a somatic or behavioural exercise for enacting the toggle",
+          "3": "The Marker — a diagnostic indicator that the toggle has fired"
+        },
+        "pro_label": "**Professional Layer:**",
+        "pro_list": {
+          "1": "For the Practitioner — clinical framing for therapeutic application",
+          "2": "For the Educator — pedagogical framing for classroom application",
+          "3": "For the Parent — relational framing for caregiving contexts"
+        },
+        "p3": "A toggle _fires_ when the Marker state is recognised — not as a thought but as a somatic event: a shift in breath, a release of held tension, the sense of something that was opaque becoming legible. The firing is not engineered; it is recognised. The practitioner does not force a toggle by will. They create the conditions — frequency, vocabulary, Architect posture — in which the toggle's resolution becomes available. The Mechanism then presents it. The Architect takes it.",
+        "p4": "The 162 toggles span all nine Wheels, from the foundational (T001: Chaos→Stability, W1 Root) to the terminal (T162: Wickedness→Goodness, W9 Etheric Heart). Together they form a complete map of the emotional interior's most common transformation pathways."
+      },
+      "s6": {
+        "title": "4.6 The Emotive Prerequisite Hypothesis",
+        "p1": "The Mechanism's central pedagogical and clinical claim is that durable acquisition — whether of a word, a psychological state, or a behavioural pattern — requires a specific sequence:",
+        "blockquote": "Experience → Emotive Trigger Identification → Recognition of Personal Relevance → Linguistic Application",
+        "p2": "The _Emotive Point_ is the junction where Stage 3 transitions to Stage 4: the moment the learner recognises this word or state as _theirs_ — not as information to be stored but as an experience to be owned.",
+        "p3": "The corollary is that vocabulary introduced without an Emotive Point being established — without the learner having identified where this word lands in their own interior — is acquired as data, not as ground. It is retrievable under low-stakes conditions. It is unavailable when it matters."
+      },
+      "s7": {
+        "title": "4.7 The Linguistic Triage Protocol",
+        "p1": "A five-step clinical instrument for moving the learner from somatically inaccessible vocabulary to embodied ownership:",
+        "steps": {
+          "1": "**Somatic Phonetic Mapping** — Identifying which phonetic registers the body resists",
+          "2": "**Acoustic Anchoring** — Bypassing the Conceptual Blockade through frequency-matched sound",
+          "3": "**Lexical Pivot** — Identifying agency nodes that serve as entry points to blocked registers",
+          "4": "**Linguistic Integration** — Deploying high-magnitude nodes that activate surrounding vocabulary",
+          "5": "**Language Grounding** — Returning to the W9 Etheric Heart anchor to stabilise the acquisition"
+        },
+        "p2": "The protocol functions across all nine Wheels and is designed to operate within the _somatic ZPD_ — the gap between what the nervous system currently produces and what it can be scaffolded to produce."
+      },
+      "s8": {
+        "title": "4.8 Key Diagnostic Constructs",
+        "blockade": "**Conceptual Blockade**: A specific somatic resistance to a lexical class or register — not a failure of intelligence but a lock in the nervous system that must be resolved through somatic re-anchoring rather than cognitive effort. The Blockade is precise: a practitioner who cannot access the register of authority may have full command of the register of warmth. The specificity is diagnostic information.",
+        "falsekeys": "**False Keys**: BICS-level vocabulary that performs fluency while foreclosing access to CALP entry — the street-register word is not merely cognitively simpler but _physically easier to produce_, creating a Somatic Path of Least Resistance. False Keys are not errors. They are survival tools that have outlived their function. The Mechanism treats them as entry points, not as obstacles to be condemned.",
+        "foreman": "**The Foreman**: The internal voice that manages the gap between the self and its expression. The Foreman is not the enemy. It is a protection mechanism — habituated, often pre-verbal, rooted in the earliest experiences of what happened when the authentic interior was exposed. It presents as deflection, self-interruption, sudden fatigue, or the impulse to perform a register rather than inhabit it. The Foreman does not release through argument. It releases through safety — through repeated evidence that the interior is now safe to express. The frequency work, the Architect posture, and the precision of the ESL taxonomy are all, among other things, instruments for communicating safety to the Foreman. When it relaxes, the vocabulary that was always present becomes available without retrieval cost.",
+        "acoustemic": "**Acoustemic Truth**: The proposition that phonetic frequency carries semantic weight — that the sound of a word is not an arbitrary container for meaning but is resonant with the interior state the word designates. This is a working hypothesis, not a settled claim. It stands in deliberate tension with the Saussurean arbitrariness of the sign and requires further empirical investigation. Its practical utility lies in how it orients the practitioner's attention: not to the word's definition but to its felt phonetic weight, its residence in the body when spoken aloud. Whether this weight is inherent or deeply conditioned is an open question. That it is consistent enough to be clinically useful is the system's operational position."
+      }
+    },
+    "v": {
+      "title": "V. Linguistic Sovereignty",
+      "p1": "Linguistic Sovereignty is the terminal condition the Mechanism is designed to cultivate. It requires precise definition because it is frequently confused with fluency — and the confusion is consequential.",
+      "p2": "**Fluency** is a performance competency: the capacity to produce language in real time, with appropriate register, at native or near-native speed. A person can be highly fluent and linguistically unsovereign. This is not a paradox; it is common. The fluent speaker who performs a register they do not inhabit — who speaks with authority but without interiority — is producing language rather than expressing from it.",
+      "p3": "**Linguistic Sovereignty** is an interior condition: the state in which the target language operates as a constituent element of the practitioner's self-model and self-governance architecture — not as an external system being managed but as a medium through which the self moves freely. A linguistically sovereign speaker does not _use_ the language. They _are in_ it.",
+      "p4": "The Mechanism proposes a developmental topology of sovereignty with four recognisable stages:",
+      "stages": {
+        "1": "**Lexical Sovereignty** (A1–A2): Ownership of a small number of high-resonance words — nodes that have been inhabited rather than memorised. One owned word at A1 is superior to fifty borrowed words at C1. This is the first real acquisition. It is often emotional. It is always recognisable.",
+        "2": "**Register Sovereignty** (B1–B2): Ownership of a complete register — the capacity to move through a domain of experience (professional, intimate, expressive, strategic) from the inside. The practitioner begins to be able to locate themselves in the language rather than navigating it from outside.",
+        "3": "**Relational Sovereignty** (C1): The capacity to hold the language under relational pressure — in the presence of evaluation, conflict, or intimacy — without the Conceptual Blockade activating. This is where the Foreman has genuinely relaxed, not been suppressed.",
+        "4": "**Absolute Sovereignty** (C2 and beyond): The language is no longer a second language in any experiential sense. The practitioner generates their interiority in it. This does not mean native pronunciation or native cultural knowledge. It means native relationship to one's own interior through the medium of the language."
+      },
+      "p5": "The Mechanism's claim is that the path from Lexical to Absolute Sovereignty is shorter through somatic anchoring than through any amount of cognitive practice — and that it produces a qualitatively different result: not a speaker who has acquired a language but a person who has expanded the territory of their own interior."
+    },
+    "vi": {
+      "title": "VI. Clinical and Pedagogical Applications",
+      "p1": "The Mechanism operates across four distinct registers:",
+      "self": "**Self-directed practice** (the application): A user selects a wheel, sets a session duration, and works through the interface — rotating the mandala, selecting nodes, following toggle pathways, journaling their interior state. The breathing glow (30-second cycle, pulsed at twice per minute) and the broadcast feature (optional real-time presence sharing with others on the same wheel) support the practice without prescription. The broadcast feature is not social media. It is the lightest possible signal of co-presence — a way of knowing that others are working the same territory at the same time, which changes the quality of individual practice in ways consistent with social baseline theory (Coan & Sbarra, 2015).",
+      "therapy": "**Facilitated therapeutic work**: A practitioner uses the ESL taxonomy and toggle series as a structured intervention tool. The toggle's Triple Register — particularly the Practitioner section — provides clinical framing for guiding a client through specific interior transformations. The Foreman construct is the key clinical variable: the facilitator's primary task is to create the conditions under which the Foreman can relax its management function.",
+      "esl": "**Language acquisition (ESL programme)**: The CEFR-graded taxonomy functions as a curriculum scaffold. The Emotive Prerequisite sequence dictates the pedagogical rhythm: interior identification precedes lexical introduction. The goal is not linguistic performance but Linguistic Sovereignty — the state where the learner moves through the language as a fully owned medium of self-expression, regardless of their proficiency tier.",
+      "corporate": "**Corporate and institutional**: The nine Wheels map onto organisational domains (governance, communication, vision, execution) through the Corporate Node Definitions and Pivot Spec, enabling team-level application of the same interior-mapping methodology. The diagnostic constructs — Conceptual Blockade, False Keys, the Foreman — have direct organisational correlates: the executive who cannot access the register of vulnerability, the team that has developed institutional False Keys that prevent precise communication, the organisation whose Foreman is its compliance function."
+    },
+    "vii": {
+      "title": "VII. The Philosophical Ground",
+      "p1": "The Mechanism rests on four foundational claims, formalised in the Constitution of Expression:",
+      "c1": "**1. The Ontological Claim**: Language is not an external technology to be mastered; it is a somatic output. The word is the resolution of the experience, not the cause of it.",
+      "c2": "**2. The Pedagogical Claim**: The student's lived experience is the primary text. Discovering relevance precedes receiving information. No vocabulary is introduced without its Emotive Point being identified.",
+      "c3": "**3. The Ethical Claim**: Requiring expression without understanding is epistemic violence. Technical correctness is secondary to experiential truth. Silence is preferable to meaningless expression.",
+      "c4": "**4. The Terminal Claim**: The goal of the programme is Absolute Sovereignty — the state where the learner owns their medium of expression. A1-level sovereignty (owning a single, precise word) is superior to C2-level performance (mimicking a register without owning the interior)."
+    },
+    "viii": {
+      "title": "VIII. Deployment",
+      "p1": "The Mind Mechanism is deployed as a web application (Next.js, Firebase, Vercel) with nine interactive clock-mandala interfaces, the ESL taxonomy searchable through glossary and notes modules, and the broadcast feature for real-time shared practice. The digital application is the entry point: the surface through which the Architect makes first contact with the system. The depth is in the taxonomy itself — the 482 nodes, the 162 toggle pathways, the nine Wheels, the frequencies that anchor them, the thirty years of interior work that produced them.",
+      "p2": "It is intended for practitioners, educators, researchers, and individuals seeking a structured language for the territory that standard language does not reach."
+    }
+  },
+  "developer": {
+    "title": "About the Developer",
+    "subtitle": "Sean Fortune — writer, artist, and architect of the Mind Mechanism.",
+    "s1": {
+      "title": "The Architect of the Bleak",
+      "p1": "Sean Fortune is a British-born, South London-formed artist, teacher, and architectural thinker. For six decades, he has been \"counting stars\" — pulling signal from the noise of a life that included incarceration at sixteen, a diagnostic confirmation of autism at fifty, and the loss of a leg to Buerger's disease in 2024. These were not obstacles, but the forge. From the static on a Victorian television screen to the 6.2 million words filed in a medieval water mill in Goch, Germany, Sean's work is dedicated to one thing: the recovery of human sovereignty from the systems that attempt to manipulate it."
+    },
+    "s2": {
+      "title": "Principal Investigator",
+      "p1": "The author and architect of the Mind Mechanism methodology. Fortune's research focuses on the intersection of linguistics, somatic resonance, and phenomenology. His \"PhD by Publication\" programme represents the rigorous formalisation of thirty years of instructional evidence gathered within advanced ESL and therapeutic contexts. His work on the \"Emotive Prerequisite Hypothesis\" and the \"Acoustemic Truth\" provides a substrate-independent reference for Second Language Acquisition (SLA) theory, challenging the cognitive-heavy paradigms of the late 20th century through the implementation of Bio-resonant Phenomenology."
+    },
+    "s3": {
+      "title": "Your Guide and Fellow Architect",
+      "p1": "Sean Fortune spent thirty years in classrooms just like yours. He knows what it feels like to have something to say but no words to carry it. He built the Mind Mechanism while surviving the same kinds of pressure, blockages, and \"whirlwinds\" that you face. He isn't just a teacher; he is someone who had to build his own internal map to find his voice. Today, he lives and works in Germany, using this system to help students around the world become the sovereign owners of their own intelligence."
+    }
+  },
+  "esl": {
+    "title": "Language & Learning",
+    "subtitle": "The Emotional Spectrum Language — the vocabulary of the interior.",
+    "p1": "The language inside Mind Mechanism has been deliberately chosen. Nothing here is accidental.",
+    "p2": "The five Doorway Stories — Sam, Lily, Max, Mia, and Emma — are each calibrated to a specific level of English proficiency, from elementary to advanced, using the Common European Framework of Reference for Languages (CEFR). The CEFR is an internationally recognised standard that defines language ability across six levels, from complete beginner to full mastery — used by educators, institutions, and language programmes worldwide. This means the vocabulary, sentence structure, and conceptual complexity of each Doorway Story is matched to what a learner at that level can process without friction.",
+    "p3": "This matters because the mechanism only works when the language doesn't get in the way. If a word costs too much cognitive effort to decode, the somatic grounding — the quiet the practice is designed to reach — is lost before it begins. Language difficulty and emotional availability are directly connected.",
+    "p4": "The vocabulary itself draws from the Emotional Spectrum Language (ESL), a 482-node taxonomy developed specifically for this work. The ESL provides a precise, consistent emotional vocabulary across all five Doorway Stories, ensuring that the words used to describe internal states are always intentional, always graded, and always in service of the practice.",
+    "p5": "**You are not being simplified. You are being met where you are.**"
+  },
+  "guide": {
+    "title": "Getting Started",
+    "subtitle": "Your first steps with the nine mandalas.",
+    "signin": {
+      "title": "Sign in",
+      "p1": "Open Mind Mechanism and sign in with your Google account or email address. Your account holds your personal settings, your dashboard data, and your practice history."
+    },
+    "home": {
+      "title": "Your home screen",
+      "p1": "Once signed in, you arrive at the home screen — a full view of all nine wheels. This is the centre of the mechanism. From here you can navigate to everything else."
+    },
+    "wheels": {
+      "title": "The wheels",
+      "p1": "The nine wheels are the practice itself. Each one is a timer, and almost every element of it can be customised — the duration, the visual, the intention it carries. You decide what a session looks like for you. The purpose is simple: to encourage focus, and to build the habit of returning to focus. You attach an intention to a wheel — a feeling, a word, a language element, an objective — set it in motion, and hold your attention there for the duration. The wheel does not do the work. It creates the conditions for you to do it."
+    },
+    "glossary": {
+      "title": "The glossary",
+      "p1": "Inside the app you will find a curated collection of emotional vocabulary drawn from the Emotional Spectrum Language. Use it to find the precise word for what you are working with before you begin a session. You can also add your own words — the glossary grows with your practice."
+    },
+    "journal": {
+      "title": "Your journal",
+      "p1": "The notes section is where your journal lives. Record what came up during a session, what shifted, what you want to return to. Over time, the journal becomes a record of the practice."
+    },
+    "dashboard": {
+      "title": "Your dashboard",
+      "p1": "Your dashboard holds information about your activity and your progress. It is personal to you — take a few minutes to read it when you first arrive."
+    },
+    "settings": {
+      "title": "Settings",
+      "p1": "Customise your banner, set your personal ID image, and place your own imagery onto individual wheels. The mechanism is designed to reflect you. Don't leave it on the defaults.",
+      "p2": "Each wheel face also accepts an MP4 video file. The video fills the circular face and remains static while the mandala rotates beneath it. A control strip appears at the bottom of the screen when a video is active — giving you play, pause, stop, loop, and seek controls, plus an independent mute toggle that operates separately from the wheel tone. The video starts muted to allow automatic playback; tap the sound icon in the control strip to bring in the audio."
+    },
+    "lobby": {
+      "title": "The lobby",
+      "p1": "The lobby is where you can signal that you would like to share your meditation with another presence — an open invitation to practise alongside someone without conversation or coordination."
+    },
+    "shadowpairs": {
+      "title": "Shadow Pairs",
+      "p1": "A Shadow Pair runs two wheels simultaneously in a single session. Select any two wheels, set a duration, and both mandalas rotate at their own speeds for the full session — extending the visual field you work with. No focus nodes are required; the session is carried by duration and intention alone. Find it under Sessions → Paired Session."
+    },
+    "begin": {
+      "title": "Begin",
+      "p1": "Go to the home screen. Choose a wheel. Attach an intention. Start the timer."
+    }
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "What it is and how it works.",
+    "essentials": {
+      "title": "The Essentials",
+      "q1": { "q": "What is the Mind Mechanism?", "a": "Mind Mechanism is a structured contemplative practice tool. It maps 482 specific points of human interior experience across nine distinct domains — called Wheels — and provides a language for navigating that map. It is built for people who want to understand their inner world with precision and operate from it with authority." },
+      "q2": { "q": "Who is it for?", "a": "Two broad groups: language learners who want to acquire English from the inside out rather than through rote memorisation, and anyone engaged in serious self-inquiry — coaches, clinicians, practitioners, or individuals who want a rigorous tool for interior governance rather than a wellness app." },
+      "q3": { "q": "Is this a language learning tool?", "a": "Partly — but it is a specific kind of language learning. The Emotional Spectrum Language (ESL) is a 482-node vocabulary of interior states. For students acquiring English as a second language, this becomes the foundation: words learned through genuine emotional connection rather than memorisation. But the system has wider application than language acquisition alone." },
+      "q4": { "q": "Is this therapy?", "a": "No. Mind Mechanism is a self-governance tool. It can produce therapeutic effects — clarity, release, reorientation — but it does not diagnose, treat, or manage clinical conditions. There is no practitioner relationship and no treatment protocol. You hold the keys. We provide the map." }
+    },
+    "system": {
+      "title": "The System",
+      "q1": { "q": "What are the 482 nodes?", "a": "The 482 nodes are a taxonomy of interior experience — specific named states that together cover the full emotional, cognitive, and somatic spectrum of human inner life. Each node is a word or phrase that corresponds to a recognisable lived experience. They are organised across nine Wheels and structured to move from foundational physical states up to complex reflective and strategic ones." },
+      "q2": { "q": "What are the Nine Wheels?", "a": "Each Wheel is a domain of interior life — a category of experience with its own characteristic vocabulary, challenges, and gifts. They range from Wheel 1 (fundamental physical safety and groundedness) through relational, expressive, and identity domains, to Wheel 9 (integration, expanded awareness, and existential orientation). Most people have a natural resonance with one or two Wheels at any given time." },
+      "q3": { "q": "What is the Emotive Prerequisite?", "a": "The Emotive Prerequisite is the principle that durable change — whether in language acquisition, behaviour, or self-understanding — requires genuine emotional engagement, not just intellectual recognition. The Mind Mechanism builds from this premise: you cannot permanently acquire a word, belief, or behaviour by bypassing the feeling state that gives it meaning." },
+      "q4": { "q": "What does the sound do?", "a": "Each of the Nine Wheels is associated with a specific acoustic frequency derived from the Cousto system — a set of Hz values calculated from natural planetary and cosmic cycles. These tones are not ambient music. They are a substrate: a frequency environment that supports the nervous system in shifting from a guarded to an open state, which is when interior work becomes possible." }
+    },
+    "using": {
+      "title": "Using the App",
+      "q1": { "q": "How does a session work?", "a": "You select one of the Nine Wheels — either by choosing the domain most relevant to you right now, or by following the system's guidance. You set a session duration. The Wheel rotates, the frequency activates, and you work with the nodes: recognising which ones resonate, which ones feel blocked, which ones open something. You can record observations in the Notes system as you go." },
+      "q2": { "q": "What is the three-stage process — Recognise, Authority, Command?", "a": "Recognise: you name a specific interior state using the taxonomy — precisely, not approximately. Authority: by naming it accurately, you cease to be at its mercy. You hold it at a workable distance. Command: from that position, you can direct your own response rather than simply reacting. The sequence is not sequential in practice — it is recursive and ongoing — but it describes the direction of movement." },
+      "q3": { "q": "What is the Broadcast feature?", "a": "Broadcast allows you to indicate your live practice presence to others on the same Wheel. It is a light signal — not a chat, not a video call — that creates a sense of shared space. Some practitioners find that knowing others are working the same domain at the same time changes the quality of their own session. It is optional and entirely private in its mechanics." },
+      "q4": { "q": "What is a Shadow Pair session?", "a": "A Shadow Pair runs two wheels simultaneously in a single session. You select two wheels, set a duration, and both mandalas rotate at their own speeds for the full session — creating a combined visual field for your practice. Shadow Pairs extend the range of patterns available to meditate with, and are suited to group work or any session where two domains are in active relationship. No focus nodes are required; the session is carried by duration and intention alone. Find it under Sessions → Paired Session." },
+      "q5": { "q": "Can I place a video on a wheel face?", "a": "Yes. Each of the nine wheel faces accepts an MP4 file in addition to a static image. Upload it through Settings — the video fills the circular frame edge to edge and remains fixed while the mandala rotates underneath it. When a video is active, a control strip appears at the bottom of the screen with play, pause, stop, restart, ten-second skip, loop toggle, and a dedicated mute button. The video starts muted so it plays automatically without interrupting the wheel tone; tap the sound icon in the strip whenever you want to bring the audio in. The two sound systems — wheel tone and video audio — operate independently of each other." }
+    },
+    "deck": {
+      "title": "The Focus Deck",
+      "q1": { "q": "What is the Focus Deck?", "a": "The Focus Deck is a card-based practice layer within the Mind Mechanism. A draw of nodes from any Wheel is laid out as physical-style cards on a table. You flip them, reposition them, annotate them with your own definitions and notes, attach images, and save the configuration as a named session. It is designed for intensive single-node work — slowing down long enough to actually inhabit a term." },
+      "q2": { "q": "Can I add images to cards? Are there size or format restrictions?", "a": "Yes — any card and the table background accept an image. There are no restrictions on the file you choose; the system handles the rest automatically. Before upload, every image is compressed to a maximum of 900 × 900 pixels at JPEG 72% quality. In practice, a 4K phone photograph compresses to roughly 80–200 KB; a screenshot to 50–120 KB. The card face itself displays at 240 × 339 pixels, so portrait images fill the frame cleanest. Landscape images are cropped top and bottom. The original file is never stored — only the compressed version reaches Firebase Storage." },
+      "q3": { "q": "How many sessions can I save, and are they available across devices?", "a": "Up to 20 named sessions per account. Each session captures the full table state: card positions, flip states, your definitions, notes, and all image references. Sessions are stored in your cloud account — they are not local to a device or browser — so they are available wherever you sign in. The 20-session limit is a deliberate constraint, not a technical one: it encourages curation rather than accumulation." }
+    },
+    "outcomes": {
+      "title": "Outcomes and Expectations",
+      "q1": { "q": "What is Linguistic Sovereignty?", "a": "It is the end-state the system is designed to cultivate: the condition in which language functions as an instrument of your own self-determination rather than a foreign system you are managing. A linguistically sovereign person uses language from the inside — it is not an overlay on their experience but a constituent part of it." },
+      "q2": { "q": "How is this different from other language apps or self-development tools?", "a": "Most language apps operate on memorisation and repetition. Most self-development tools operate on insight and behavioural intention. Mind Mechanism operates on the constitutive level — the level below both of those, where the felt relationship between language and experience is established. That is a different intervention at a different level of the architecture." },
+      "q3": { "q": "What results can I expect and on what timeline?", "a": "Early sessions often produce recognition — the sense of meeting language that has always applied to you. Sustained practice over weeks produces vocabulary ownership: words that belong to you rather than words you are borrowing. Three to six months of consistent work begins to shift the architecture itself — the relationship between feeling and speech, between interiority and expression. This is not a quick-fix tool. It is a practice." },
+      "q4": { "q": "Is my data private?", "a": "Yes. Your practice data — session records, notes, glossary entries — is stored in your personal account and is not shared, sold, or analysed for third-party purposes. The Mind Mechanism is built on a local-first, minimal-collection principle. Your interior work belongs to you." },
+      "q5": { "q": "Who built this and why?", "a": "The Mind Mechanism was built by Sean Fortune — writer, artist, and architect of the system — over a period of three decades of interior inquiry, linguistic work, and practice. The taxonomy, the pedagogy, and the application are all original. The question behind the system has always been the same: what does it actually take for language to become a vehicle of the self?" }
+    }
+  },
+  "privacy": {
+    "title": "Privacy & Data",
+    "subtitle": "Last updated: 8 May 2026",
+    "controller": {
+      "title": "Data controller",
+      "p1": "Sean Fortune and Frederic Printz, operating as SFFP. Studio: Viller Mühle, Goch, Germany. Contact:"
+    },
+    "collect": {
+      "title": "What we collect",
+      "p1": "Mind Mechanism operates on a local-first architecture. The application stores your practice records, vocabulary, and reflections on your device. We have no access to your voice recordings, which never leave your device.",
+      "p2": "With your explicit consent, we collect anonymised behavioural data for research purposes: which somatic wheels you assign vocabulary to, and numerical patterns from your phrase practice sessions. This data does not include the words themselves, personally identifying information, or your audio recordings.",
+      "p3": "Research participation is entirely optional. You may opt in, opt out, or change your choices at any time in Settings → Research Participation. Your access to all features is not affected by your choice.",
+      "p4": "For full details of what is collected, on what legal basis, and how it is used, see our full data collection protocol at",
+      "p4link": "DATA_COLLECTION_PROTOCOL.md"
+    },
+    "device": {
+      "title": "What stays on your device",
+      "p1": "Any entries, reflections, or practice records you create within the application are stored locally on your device only. We have no access to this data. If you delete the application, that data is permanently removed."
+    },
+    "thirdparty": {
+      "title": "Third-party services",
+      "p1": "Mind Mechanism does not integrate third-party analytics, advertising, or tracking services."
+    },
+    "children": {
+      "title": "Children",
+      "p1": "This application is not directed at children under 16. We do not knowingly collect data from minors."
+    },
+    "gdpr": {
+      "title": "Your rights (GDPR)",
+      "p1": "As a user in the European Economic Area, you have the right to access, correct, or erase any personal data we hold about you.",
+      "p2before": "For users who have consented to research participation, you have the right to access, rectify, erase, and port your data. To exercise these rights, contact",
+      "p2after": ". We will respond within 30 days."
+    },
+    "changes": {
+      "title": "Changes to this policy",
+      "p1": "If our data practices change, we will update this page and revise the date above. Continued use of the application following any update constitutes acceptance of the revised policy."
+    }
+  },
+  "legal": {
+    "title": "Legal & Contact",
+    "subtitle": "Version 1.0 — 28 April 2026",
+    "disclaimer": {
+      "title": "Disclaimer",
+      "p1": "Mind Mechanism is a contemplative practice tool. It is not a medical device, a therapeutic intervention, or a substitute for professional mental health care. If you are in crisis, please contact a qualified healthcare provider or your local emergency services."
+    },
+    "privacy": {
+      "title": "Privacy",
+      "p1": "This application does not collect, store, or transmit personal data. No analytics, telemetry, or usage data leaves your device. ¹"
+    },
+    "terms": {
+      "title": "Terms of use",
+      "p1": "By using this application, you agree to use it as a personal practice aid. You may not reverse-engineer, redistribute, or repurpose the software or its underlying taxonomy — the Emotional Spectrum Language (ESL) — without written permission."
+    },
+    "ip": {
+      "title": "Intellectual property",
+      "p1": "The Mind Mechanism application, the ESL taxonomy (482 nodes), the nine mandala designs, the toggle framework, and all associated content are the intellectual property of Sean Fortune and SFFP. © 2026 Sean Fortune and SFFP. All rights reserved."
+    },
+    "liability": {
+      "title": "Liability",
+      "p1": "SFFP provides this application as-is, without warranty of any kind. In no event shall SFFP or its principals be liable for any claim, damages, or other liability arising from the use of the application. ²"
+    },
+    "contact": {
+      "title": "Contact",
+      "studio": "Studio: Viller Mühle, Goch, Germany",
+      "developed": "Developed by Sean Fortune and Frederic Printz — SFFP."
+    }
+  }
+}

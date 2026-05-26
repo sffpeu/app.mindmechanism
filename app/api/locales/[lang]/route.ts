@@ -10,7 +10,7 @@ import type { SupportedLocale } from '@/lib/i18n/types'
 export const runtime = 'nodejs'
 
 const SUPPORTED: SupportedLocale[] = ['en', 'de', 'fi', 'fr', 'es', 'it']
-const NAMESPACES = ['common', 'portal', 'grammar-transit'] as const
+const NAMESPACES = ['common', 'portal', 'grammar-transit', 'info'] as const
 
 async function getUserLanguageAccess(uid: string): Promise<SupportedLocale[]> {
   try {

@@ -66,6 +66,7 @@ export function LanguageProvider({
       common: (bundle.common ?? {}) as TranslationDict,
       portal: (bundle.portal ?? {}) as TranslationDict,
       'grammar-transit': (bundle['grammar-transit'] ?? {}) as TranslationDict,
+      info: (bundle.info ?? {}) as TranslationDict,
     })
   }, [])
 

@@ -13,55 +13,21 @@ import { FAQ } from '@/components/info/FAQ'
 import { PrivacyData } from '@/components/info/PrivacyData'
 import { LegalContact } from '@/components/info/LegalContact'
 import { usePortal } from '@/contexts/PortalContext'
+import { useLanguage } from '@/lib/i18n'
 
-// ─── Tab definitions ──────────────────────────────────────────────────────────
+// ─── Static tab ids / icons (labels come from i18n) ───────────────────────────
 
-const TABS = [
-  {
-    id: 'mechanism',
-    label: 'About the Mechanism',
-    icon: Cpu,
-    description: 'What Mind Mechanism is and how it works.',
-  },
-  {
-    id: 'developer',
-    label: 'About the Developer',
-    icon: User,
-    description: 'The person behind the practice.',
-  },
-  {
-    id: 'esl',
-    label: 'About ESL',
-    icon: BookOpen,
-    description: 'The Emotional Spectrum Language — the vocabulary of the interior.',
-  },
-  {
-    id: 'guide',
-    label: 'Getting Started',
-    icon: Sparkles,
-    description: 'Your first steps with the nine mandalas.',
-  },
-  {
-    id: 'faq',
-    label: 'FAQ',
-    icon: HelpCircle,
-    description: 'Frequently asked questions.',
-  },
-  {
-    id: 'privacy',
-    label: 'Privacy & Data',
-    icon: Shield,
-    description: 'What we collect, what we do not, and who owns your practice.',
-  },
-  {
-    id: 'legal',
-    label: 'Legal & Contact',
-    icon: Scale,
-    description: 'Terms, disclaimer, and how to reach us.',
-  },
+const TAB_DEFS = [
+  { id: 'mechanism', icon: Cpu    },
+  { id: 'developer', icon: User   },
+  { id: 'esl',       icon: BookOpen },
+  { id: 'guide',     icon: Sparkles },
+  { id: 'faq',       icon: HelpCircle },
+  { id: 'privacy',   icon: Shield },
+  { id: 'legal',     icon: Scale  },
 ] as const
 
-type TabId = (typeof TABS)[number]['id']
+type TabId = (typeof TAB_DEFS)[number]['id']
 
 
 // ─── Tab content ──────────────────────────────────────────────────────────────
@@ -94,6 +60,7 @@ type Props = {
 export function AppInfoOverlay({ clockHex, open: openProp, onOpenChange }: Props) {
   const controlled = openProp !== undefined
   const { config } = usePortal()
+  const { t } = useLanguage()
   const [internalOpen, setInternalOpen] = useState(false)
   const open = controlled ? openProp! : internalOpen
   const setOpen = (v: boolean) => {
@@ -151,7 +118,7 @@ export function AppInfoOverlay({ clockHex, open: openProp, onOpenChange }: Props
               type="button"
               onClick={() => setOpen(false)}
               className="h-8 w-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-              aria-label="Close"
+              aria-label={t('info', 'overlay.close')}
             >
               <X className="h-4 w-4" />
             </button>
@@ -160,7 +127,7 @@ export function AppInfoOverlay({ clockHex, open: openProp, onOpenChange }: Props
           {/* Tab bar — horizontally scrollable */}
           <div className="relative shrink-0 border-b border-black/5 dark:border-white/10 overflow-x-auto scrollbar-none">
             <div className="flex items-end gap-0 px-4 min-w-max">
-              {TABS.map((tab) => {
+              {TAB_DEFS.map((tab) => {
                 const Icon = tab.icon
                 const isActive = activeTab === tab.id
                 return (
@@ -177,7 +144,7 @@ export function AppInfoOverlay({ clockHex, open: openProp, onOpenChange }: Props
                     style={isActive ? { borderBottomColor: clockHex, color: clockHex } : { borderBottomColor: 'transparent' }}
                   >
                     <Icon className="h-3.5 w-3.5 shrink-0" />
-                    {tab.label}
+                    {t('info', `tabs.${tab.id}.label`)}
                   </button>
                 )
               })}
@@ -202,10 +169,12 @@ export function AppInfoOverlay({ clockHex, open: openProp, onOpenChange }: Props
           {/* Footer */}
           <div className="relative shrink-0 px-6 py-3 border-t border-black/5 dark:border-white/10 flex items-center justify-between">
             <p className="text-[10px] text-gray-400 dark:text-gray-600 tracking-widest uppercase">
-              Mind Mechanism · The One-Legged Poet
+              {t('info', 'footer')}
             </p>
             <p className="text-[10px] text-gray-400 dark:text-gray-600">
-              Press <kbd className="px-1 py-0.5 rounded border border-black/10 dark:border-white/10 font-mono text-[9px]">esc</kbd> to close
+              {t('info', 'overlay.escBefore')}{' '}
+              <kbd className="px-1 py-0.5 rounded border border-black/10 dark:border-white/10 font-mono text-[9px]">esc</kbd>{' '}
+              {t('info', 'overlay.escAfter')}
             </p>
           </div>
         </motion.div>
@@ -220,7 +189,7 @@ export function AppInfoOverlay({ clockHex, open: openProp, onOpenChange }: Props
         <button
           type="button"
           onClick={() => setOpen(true)}
-          aria-label="Open information"
+          aria-label={t('info', 'overlay.close')}
           className="flex items-center justify-center h-8 w-8 rounded-full bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 border border-black/10 dark:border-white/15 hover:bg-black/10 dark:hover:bg-white/15 transition-all duration-200"
         >
           <Info className="h-3.5 w-3.5" />
