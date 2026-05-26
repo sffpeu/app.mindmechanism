@@ -50,6 +50,81 @@ export async function fetchIpaPhonetic(word: string, language: string = 'en'): P
   }
 }
 
+// ─── Phonetics enrichment ──────────────────────────────────────────────────
+// Supported by the Free Dictionary API (dictionaryapi.dev)
+const IPA_API_LANGS = new Set(['en', 'es', 'fr', 'de', 'it', 'pt-BR', 'ru', 'ar', 'hi', 'ja', 'ko', 'tr'])
+const IPA_CACHE_NS = 'mm_ipa_v1'
+const IPA_MISS = '\x00' // sentinel: "tried, got nothing"
+
+function ipaKey(lang: string, word: string) {
+  return `${IPA_CACHE_NS}:${lang}:${word.toLowerCase()}`
+}
+function getIpaCached(lang: string, word: string): string | null {
+  if (typeof window === 'undefined') return null
+  const v = window.localStorage.getItem(ipaKey(lang, word))
+  if (v === null) return null
+  return v === IPA_MISS ? '' : v
+}
+function setIpaCached(lang: string, word: string, ipa: string) {
+  if (typeof window === 'undefined') return
+  try { window.localStorage.setItem(ipaKey(lang, word), ipa || IPA_MISS) } catch { /* quota */ }
+}
+
+// Finnish has near-perfect phoneme-grapheme correspondence — rule-based is reliable.
+function finnishPhonemic(word: string): string {
+  const s = word.toLowerCase()
+    .replace(/aa/g, 'aː').replace(/ee/g, 'eː').replace(/ii/g, 'iː')
+    .replace(/oo/g, 'oː').replace(/uu/g, 'uː')
+    .replace(/ää/g, 'æː').replace(/öö/g, 'øː').replace(/yy/g, 'yː')
+    .replace(/([bcdfghjklmnpqrstvwxz])\1/g, '$1ː')
+    .replace(/ng/g, 'ŋ').replace(/nk/g, 'ŋk')
+    .replace(/ä/g, 'æ').replace(/ö/g, 'ø')
+  return `/${s}/`
+}
+
+async function enrichWithPhonetics(words: GlossaryWord[], language: string): Promise<GlossaryWord[]> {
+  const needsIpa = words.filter(w => !w.phonetic_spelling?.trim())
+  if (needsIpa.length === 0) return words
+
+  const resolved = new Map<string, string>() // word.id → IPA
+  const toFetch: GlossaryWord[] = []
+
+  for (const w of needsIpa) {
+    const cached = getIpaCached(language, w.word)
+    if (cached !== null) {
+      if (cached) resolved.set(w.id, cached)
+    } else if (language === 'fi') {
+      const ipa = finnishPhonemic(w.word)
+      resolved.set(w.id, ipa)
+      setIpaCached(language, w.word, ipa)
+    } else if (IPA_API_LANGS.has(language)) {
+      toFetch.push(w)
+    }
+  }
+
+  // Batch API calls, max 20 concurrent
+  const BATCH = 20
+  for (let i = 0; i < toFetch.length; i += BATCH) {
+    const batch = toFetch.slice(i, i + BATCH)
+    const results = await Promise.allSettled(
+      batch.map(w => fetchIpaPhonetic(w.word, language))
+    )
+    results.forEach((r, j) => {
+      const w = batch[j]
+      const ipa = r.status === 'fulfilled' ? r.value : ''
+      setIpaCached(language, w.word, ipa)
+      if (ipa) resolved.set(w.id, ipa)
+    })
+  }
+
+  return words.map(w => {
+    if (w.phonetic_spelling?.trim()) return w
+    const ipa = resolved.get(w.id)
+    if (!ipa) return w
+    return { ...w, phonetic_spelling: ipa }
+  })
+}
+
 /**
  * Fetch extended definition tiers from the separate `glossary_definitions` collection.
  * Returns null if the document doesn't exist or access is denied by Firestore rules.
@@ -325,7 +400,8 @@ export async function getAllWords(language: string = 'en'): Promise<GlossaryWord
     };
 
     const raw = await retryOperation(operation);
-    return assignDefaultClockIds(await decryptPersonalWordsInList(raw));
+    const base = assignDefaultClockIds(await decryptPersonalWordsInList(raw));
+    return enrichWithPhonetics(base, language);
   } catch (error) {
     console.error('Error fetching words:', error);
     return createDefaultGlossaryWords();
