@@ -8,6 +8,7 @@ import { SoundSettings } from './SoundSettings'
 import { SmartHomeSettings } from './SmartHomeSettings'
 import { AccountSettings } from './AccountSettings'
 import { ResearchParticipationSettings } from './ResearchParticipationSettings'
+import { LanguageSettings } from './LanguageSettings'
 import { Button } from '@/components/ui/button'
 import {
   X,
@@ -19,6 +20,7 @@ import {
   Home,
   Shield,
   Microscope,
+  Globe,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -29,17 +31,18 @@ interface SettingsDialogProps {
   initialTab?: TabId
 }
 
-type TabId = 'profile' | 'wheel' | 'appearance' | 'accessibility' | 'sound' | 'smart-home' | 'research' | 'account'
+type TabId = 'profile' | 'wheel' | 'appearance' | 'accessibility' | 'sound' | 'smart-home' | 'research' | 'account' | 'language'
 
 const TABS: { id: TabId; label: string; Icon: React.ElementType }[] = [
-  { id: 'profile',    label: 'Profile',     Icon: User        },
-  { id: 'wheel',      label: 'Wheel',       Icon: LayoutGrid  },
-  { id: 'appearance', label: 'Appearance',  Icon: Palette     },
-  { id: 'accessibility', label: 'Accessibility', Icon: Accessibility },
-  { id: 'sound',      label: 'Sound',       Icon: Music2      },
-  { id: 'smart-home', label: 'Smart Home',  Icon: Home        },
-  { id: 'research',   label: 'Research Participation', Icon: Microscope  },
-  { id: 'account',    label: 'Account',     Icon: Shield      },
+  { id: 'profile',       label: 'Profile',               Icon: User          },
+  { id: 'wheel',         label: 'Wheel',                 Icon: LayoutGrid    },
+  { id: 'appearance',    label: 'Appearance',            Icon: Palette       },
+  { id: 'accessibility', label: 'Accessibility',         Icon: Accessibility },
+  { id: 'sound',         label: 'Sound',                 Icon: Music2        },
+  { id: 'smart-home',    label: 'Smart Home',            Icon: Home          },
+  { id: 'language',      label: 'Language',              Icon: Globe         },
+  { id: 'research',      label: 'Research Participation', Icon: Microscope   },
+  { id: 'account',       label: 'Account',               Icon: Shield        },
 ]
 
 export function SettingsDialog({ isOpen, onClose, initialTab }: SettingsDialogProps) {
@@ -144,14 +147,15 @@ export function SettingsDialog({ isOpen, onClose, initialTab }: SettingsDialogPr
 
           {/* Content panel */}
           <div className="min-h-0 flex-1 min-w-0 overflow-y-auto overscroll-contain bg-white p-4 dark:bg-neutral-950">
-            {activeTab === 'profile'    && <PersonalInfoSettings onChangesPending={setHasChanges} />}
-            {activeTab === 'wheel'      && <WheelFacesSettings />}
-            {activeTab === 'appearance' && <ThemeSettings section="appearance" />}
+            {activeTab === 'profile'       && <PersonalInfoSettings onChangesPending={setHasChanges} />}
+            {activeTab === 'wheel'         && <WheelFacesSettings />}
+            {activeTab === 'appearance'    && <ThemeSettings section="appearance" />}
             {activeTab === 'accessibility' && <ThemeSettings section="accessibility" />}
-            {activeTab === 'sound'      && <SoundSettings />}
-            {activeTab === 'smart-home' && <SmartHomeSettings />}
-            {activeTab === 'research'   && <ResearchParticipationSettings />}
-            {activeTab === 'account'    && <AccountSettings />}
+            {activeTab === 'sound'         && <SoundSettings />}
+            {activeTab === 'smart-home'    && <SmartHomeSettings />}
+            {activeTab === 'language'      && <LanguageSettings />}
+            {activeTab === 'research'      && <ResearchParticipationSettings />}
+            {activeTab === 'account'       && <AccountSettings />}
           </div>
         </div>
 
