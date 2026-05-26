@@ -9,6 +9,7 @@ import { SmartHomeSettings } from './SmartHomeSettings'
 import { AccountSettings } from './AccountSettings'
 import { ResearchParticipationSettings } from './ResearchParticipationSettings'
 import { LanguageSettings } from './LanguageSettings'
+import { BetaKeySettings } from './BetaKeySettings'
 import { Button } from '@/components/ui/button'
 import {
   X,
@@ -21,6 +22,7 @@ import {
   Shield,
   Microscope,
   Globe,
+  KeyRound,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -31,7 +33,7 @@ interface SettingsDialogProps {
   initialTab?: TabId
 }
 
-type TabId = 'profile' | 'wheel' | 'appearance' | 'accessibility' | 'sound' | 'smart-home' | 'research' | 'account' | 'language'
+type TabId = 'profile' | 'wheel' | 'appearance' | 'accessibility' | 'sound' | 'smart-home' | 'research' | 'account' | 'language' | 'access'
 
 const TABS: { id: TabId; label: string; Icon: React.ElementType }[] = [
   { id: 'profile',       label: 'Profile',               Icon: User          },
@@ -42,6 +44,7 @@ const TABS: { id: TabId; label: string; Icon: React.ElementType }[] = [
   { id: 'smart-home',    label: 'Smart Home',            Icon: Home          },
   { id: 'language',      label: 'Language',              Icon: Globe         },
   { id: 'research',      label: 'Research Participation', Icon: Microscope   },
+  { id: 'access',        label: 'Beta Access',           Icon: KeyRound      },
   { id: 'account',       label: 'Account',               Icon: Shield        },
 ]
 
@@ -155,6 +158,7 @@ export function SettingsDialog({ isOpen, onClose, initialTab }: SettingsDialogPr
             {activeTab === 'smart-home'    && <SmartHomeSettings />}
             {activeTab === 'language'      && <LanguageSettings />}
             {activeTab === 'research'      && <ResearchParticipationSettings />}
+            {activeTab === 'access'        && <BetaKeySettings />}
             {activeTab === 'account'       && <AccountSettings />}
           </div>
         </div>

@@ -1,4 +1,5 @@
 import type { SupportedLocale } from '@/lib/i18n/types'
+import type { Portal } from '@/lib/portalConfig'
 
 /** Firestore document at passport/{uid} */
 export interface PassportDocument {
@@ -8,6 +9,19 @@ export interface PassportDocument {
   created_at?: string
   lexicon_count?: number
   languageAccess?: LanguageAccessClaim
+  betaAccess?: BetaAccessClaim
+}
+
+/**
+ * Beta access credential.
+ * Set when a user redeems a sector-specific beta key.
+ * sector maps to the portal identity the key was issued for.
+ * keyCode records which of the three keys was used (for audit).
+ */
+export interface BetaAccessClaim {
+  sector: Portal
+  grantedAt: string
+  keyCode: string
 }
 
 /**
