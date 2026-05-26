@@ -1,0 +1,65 @@
+{
+  "nav": {
+    "home": "Home",
+    "dashboard": "Pannello",
+    "passport": "Passaporto",
+    "glossary": "Vocabolario",
+    "settings": "Impostazioni",
+    "logout": "Esci",
+    "login": "Accedi",
+    "register": "Registrati"
+  },
+  "actions": {
+    "save": "Salva",
+    "cancel": "Annulla",
+    "continue": "Continua",
+    "back": "Indietro",
+    "close": "Chiudi",
+    "submit": "Invia",
+    "confirm": "Conferma",
+    "search": "Cerca",
+    "filter": "Filtra"
+  },
+  "auth": {
+    "signIn": "Accedi",
+    "signOut": "Esci",
+    "email": "Indirizzo e-mail",
+    "password": "Password",
+    "forgotPassword": "Password dimenticata?",
+    "noAccount": "Non hai un account?",
+    "haveAccount": "Hai già un account?",
+    "createAccount": "Crea account"
+  },
+  "passport": {
+    "title": "Passaporto dell'apprendente",
+    "verified": "Verificato",
+    "unverified": "Non verificato",
+    "credentials": "Attestazioni",
+    "history": "Cronologia",
+    "export": "Esporta registro"
+  },
+  "language": {
+    "switcher": "Lingua",
+    "en": "English",
+    "de": "Deutsch",
+    "fi": "Suomi",
+    "fr": "Français",
+    "es": "Español",
+    "it": "Italiano",
+    "locked": "Sblocca questa lingua"
+  },
+  "errors": {
+    "generic": "Qualcosa è andato storto. Riprova.",
+    "notFound": "Pagina non trovata.",
+    "unauthorized": "Non hai accesso a questo contenuto.",
+    "networkError": "Errore di rete. Controlla la connessione."
+  },
+  "clock": {
+    "satellites": "Satelliti",
+    "focusWords": "Parole chiave",
+    "noDefinition": "Nessuna definizione nel glossario",
+    "colour": "COLORE",
+    "mono": "MONO",
+    "loading": "Caricamento…"
+  }
+}

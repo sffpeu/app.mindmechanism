@@ -1,0 +1,43 @@
+{
+  "_register_notes": {
+    "consumer": "Alltagssprache — Du-Form, direkt, zugänglich",
+    "academic": "Lehrsprache — präzise, sachlich, strukturiert",
+    "corporate": "Geschäftssprache — formelles Sie, konzise, autoritätsbewusst"
+  },
+  "consumer": {
+    "name": "Mind Mechanism",
+    "tagline": "Deine Sprache. Deine Intelligenz.",
+    "heroHeadline": "Sprachintelligenz, die dir gehört.",
+    "heroSubtext": "Baue deinen Wortschatz auf, verfolge deine Muster, behalte deine Aufzeichnungen.",
+    "copy": {
+      "passportLabel": "Lernpass",
+      "lexiconLabel": "Persönlicher Wortschatz",
+      "practiceLabel": "Üben",
+      "recordSectionTitle": "Mein Lernverlauf"
+    }
+  },
+  "academic": {
+    "name": "Mind Mechanism Akademisch",
+    "tagline": "Evidenzbasierte Sprachintelligenz für Lernende und Forschende.",
+    "heroHeadline": "Ihr Lernfortschritt — klar dokumentiert.",
+    "heroSubtext": "Ein strukturierter akademischer Nachweis Ihrer Sprachentwicklung — portabel, souverän, verifizierbar.",
+    "copy": {
+      "passportLabel": "Akademischer Nachweis",
+      "lexiconLabel": "Akademischer Wortschatz",
+      "practiceLabel": "Studieren",
+      "recordSectionTitle": "Mein akademischer Nachweis"
+    }
+  },
+  "corporate": {
+    "name": "Mind Mechanism Unternehmens",
+    "tagline": "Sprachkompetenz als organisationale Intelligenz.",
+    "heroHeadline": "Sprache ist eine Führungskompetenz.",
+    "heroSubtext": "Individuelle Profile erfassen, unternehmensweite Sprachkompetenz verstehen, evidenzbasierte L&D-Entscheidungen treffen.",
+    "copy": {
+      "passportLabel": "Sprachprofil",
+      "lexiconLabel": "Beruflicher Wortschatz",
+      "practiceLabel": "Training",
+      "recordSectionTitle": "Mein Profil"
+    }
+  }
+}

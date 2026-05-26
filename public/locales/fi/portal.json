@@ -1,0 +1,82 @@
+{
+  "_register_notes": {
+    "consumer": "Sinutteleva, suora. Suomalainen arkikieli on tuttavallista ilman, että se menettää tarkkuuttaan.",
+    "academic": "Täsmällinen ja analyyttinen. Suomi soveltuu luontevasti rakenteelliseen oppimiseen — sijamuodot tekevät kieliopin näkyväksi.",
+    "corporate": "Asiallinen ja tasa-arvoinen. Suomalainen liike-elämä välttää hierarkkista kohteliaisuutta; suoruus on ammattimaisuutta."
+  },
+  "consumer": {
+    "hero": {
+      "headline": "Kielesi toimii paremmin kuin luulit.",
+      "subheadline": "Mind Mechanism paljastaa aivojen äänijärjestelmän — sen, joka oli jo olemassa ennen kuin keksit miten käyttää sitä.",
+      "cta": "Aloita ilmaiseksi"
+    },
+    "intro": {
+      "title": "Ei uusia sääntöjä. Vanhat rakenteet näkyviksi.",
+      "body": "Olet jo puhuja. Mind Mechanism näyttää rakenteen, jota olet käyttänyt koko ajan — selkeästi, ilman jargonia."
+    },
+    "features": {
+      "grammarTransit": {
+        "title": "Kielioppikartta",
+        "body": "Jokainen lause on matka. Sanat kulkevat asemien kautta — näet tarkalleen, mitä kukin tekee lauseessa."
+      },
+      "passport": {
+        "title": "Oppijan passi",
+        "body": "Avaa uusia kieliä omaan tahtiisi. Passi tallentaa edistymisesi pysyvästi."
+      },
+      "wheel": {
+        "title": "Mielen pyörä",
+        "body": "482 solmua — ajatuksen, tunteen ja äänen rakennuselementit. Kartoitettu kerran, käytetty kaikkiin kieliin."
+      }
+    }
+  },
+  "academic": {
+    "hero": {
+      "headline": "Universaali kielirakenne — empiirinen lähestymistapa.",
+      "subheadline": "Mind Mechanism tarjoaa falsifioitavan mallin foneettisen rakenteen ja kognitiivisen käsittelyn välisestä suhteesta.",
+      "cta": "Tutki kehystä"
+    },
+    "intro": {
+      "title": "Hypoteesi: rakenne edeltää hankintaa.",
+      "body": "Kehyksen ydinväite on, että ihmisellä on synnynnäinen foneettinen arkkitehtuuri, joka toimii kielenoppimisen pohjana. 482 solmun taksonomia on testattava rakenne, ei metafora."
+    },
+    "features": {
+      "grammarTransit": {
+        "title": "Kielioppikartta — rakenneanalyysi",
+        "body": "NLP-putkisto muuntaa lauseen sijamuoto-, aspekti- ja riippuvuuskartoiksi. Suomessa kartasta tulee merkittävästi tiheämpi — 15 sijamuotoa tekee näkyviksi sen, mitä englannin prepositionaaliset fraasit piilottavat."
+      },
+      "taxonomy": {
+        "title": "482 solmun taksonomia",
+        "body": "Solmut on luokiteltu kolmeen luokkaan: universaali (~85 %), kulttuurisesti resonantti (~10 %) ja foneettisesti ankkuroitu (~5 %). Suomen testi vahvistaa universaaliluokan."
+      },
+      "research": {
+        "title": "Tutkimusasenne",
+        "body": "Tulos, joka falsifioi kaupallisen väitteen, on julkaistava. Tämä ei ole neuvoteltavissa."
+      }
+    }
+  },
+  "corporate": {
+    "hero": {
+      "headline": "Päätöksenteon kieli selkeäksi.",
+      "subheadline": "Mind Mechanism tarjoaa yhteisen käsitteellisen perustan organisaatioille, jotka tarvitsevat tarkkuutta monitasoisessa viestinnässä.",
+      "cta": "Pyydä esittely"
+    },
+    "intro": {
+      "title": "Rakenne ennen retoriikkaa.",
+      "body": "Epäselvyys organisaatioviestinnässä johtuu useimmiten rakenteellisesta epäjohdonmukaisuudesta, ei tiedonpuutteesta. Mind Mechanism tarjoaa jaetun kielen, joka tekee rakenteen näkyväksi kaikilla tasoilla."
+    },
+    "features": {
+      "governance": {
+        "title": "Hallinto ja päätösdynamiikka",
+        "body": "Kehys kartoittaa 482 käsitteellistä solmua — ne rakenteet, jotka toistuvat johdon kommunikaatiossa organisaatioissa ja toimialoilla."
+      },
+      "multilingual": {
+        "title": "Monikielinen organisaatio",
+        "body": "Sama rakenne suomeksi, saksaksi tai englanniksi. Ei käännöshäviötä — kehys pitää."
+      },
+      "passport": {
+        "title": "Organisaation passi",
+        "body": "Tiimin kielipääsy hallittuna yhdessä järjestelmässä. Täydellinen auditoitavuus."
+      }
+    }
+  }
+}

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import {
   Home,
   LayoutDashboard,
@@ -55,6 +56,7 @@ const baseNavTemplate = [
   { title: 'Synth Lab', href: '/synth-lab', icon: Waves },
   { title: 'My Record', href: '/record', icon: ScrollText },
 ] as const
+
 
 export function AppDock() {
   const pathname = usePathname();
@@ -205,6 +207,10 @@ export function AppDock() {
             </a>
           </Dock>
         </div>
+      </div>
+      {/* Language switcher fixed at bottom-left, aligned with dock column — independent of dock height */}
+      <div className="fixed bottom-4 z-[12002]" style={{ left: DOCK_ICON_CENTER_LEFT, transform: 'translateX(-50%)' }}>
+        <LanguageSwitcher />
       </div>
       {/* Info — top of screen, aligned with dock icon column; never idle-fades */}
       <button

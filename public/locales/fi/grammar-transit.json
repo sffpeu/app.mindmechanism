@@ -1,0 +1,103 @@
+{
+  "ui": {
+    "title": "Kielioppikartta",
+    "subtitle": "Lauset matkana asemien läpi",
+    "inputPlaceholder": "Kirjoita lause suomeksi…",
+    "analyze": "Analysoi",
+    "analyzing": "Analysoidaan…",
+    "journeyTitle": "Matka",
+    "stopsLabel": "Pysäkit",
+    "exportExcalidraw": "Vie Excalidrawiin",
+    "exportMarkdown": "Vie Markdowniin",
+    "copyJson": "Kopioi JSON"
+  },
+  "lines": {
+    "V": "V-linja — Verbilinja",
+    "N": "N-linja — Nominiilinja",
+    "M": "M-linja — Modifikaattorilinja",
+    "T": "T-linja — Temporaalilinja",
+    "P": "P-linja — Prepositiolinja",
+    "K": "K-linja — Sijamuotolinja",
+    "H": "H-linja — Harmonialinja",
+    "PX": "PX-haara — Possessiivihaara"
+  },
+  "stations": {
+    "S1": {
+      "name": "Konttorihuone",
+      "formula": "V×T",
+      "description": "Päätoiminnon ydin. Kaikki liike alkaa tästä."
+    },
+    "S2": {
+      "name": "Auktoriteettiliittymä",
+      "formula": "AUX",
+      "description": "Apuverbit muokkaavat modaalisuutta, aikamuotoa ja aspektia."
+    },
+    "S4": {
+      "name": "Perusta",
+      "formula": "N×V",
+      "description": "Subjektiasema. Nominatiivi — lauseen kantaja."
+    },
+    "S5": {
+      "name": "Yksityiskoneisto",
+      "formula": "V×M",
+      "description": "Tapa-adverbit ja verbimodifikaattorit toimivat täällä."
+    },
+    "S6": {
+      "name": "Kello",
+      "formula": "T×P×SIJAMUOTO",
+      "description": "Aika, paikka ja suunta sijamuodon kautta. Postpositiot asuvat täällä."
+    },
+    "S7": {
+      "name": "Haarautuminen",
+      "formula": "V",
+      "description": "Infinitiivit ja verbinounit — toiminta substantiivisena."
+    },
+    "S8L": {
+      "name": "Asteikko",
+      "formula": "M",
+      "description": "Komparatiivi-adjektiivit."
+    },
+    "S8R": {
+      "name": "Huippu",
+      "formula": "M",
+      "description": "Superlatiivi-adjektiivit."
+    },
+    "S9": {
+      "name": "Värityspiste",
+      "formula": "N×M",
+      "description": "Adjektiivimääritteet maalaa nominit."
+    },
+    "S10": {
+      "name": "Sijapäätteiden Solmukohta",
+      "formula": "N×SIJAMUOTO(15)",
+      "description": "15 sijamuodon terminaali. Jokainen nomini kantaa sijapäätettään mukanaan — tässä ne käyvät läpi. Paikallissijat, omistussijat, vajasijat ja muut."
+    },
+    "S11": {
+      "name": "Harmoniaportaali",
+      "formula": "VOKAALISOINTU",
+      "description": "Etuvokaali–takavokaali-parit kulkevat tästä. Suomen vokaalisointu on foneettinen universaali — kehyksen syvimmät väitteet testataan täällä."
+    },
+    "S12": {
+      "name": "Liitesilo",
+      "formula": "MORPH×MORPH",
+      "description": "Agglutinaatio: suffiksiketjut kerrostuvat tässä. Yksi sana voi kantaa useita morfeemeja — jokainen lisää sijaa, omistusta, aikamuotoa tai aspektia."
+    }
+  },
+  "cases": {
+    "nominatiivi": "Nimetty — subjekti, predikatiivin perusmuoto",
+    "genetiivi": "Omistus ja yhdistelmät",
+    "akkusatiivi": "Kokonaisobjekti",
+    "partitiivi": "Osa tai jatkuva toiminta",
+    "essiivi": "Tilapäinen tila tai rooli",
+    "translatiivi": "Muutos tilaan",
+    "inessiivi": "Sisällä — missä",
+    "elatiivi": "Sisältä — mistä",
+    "illatiivi": "Sisälle — mihin",
+    "adessiivi": "Ulkopinnalla — missä (myös omistus: 'sillä on')",
+    "ablatiivi": "Ulkopinnalta — mistä",
+    "allatiivi": "Ulkopinnalle — mihin",
+    "abessiivi": "Ilman — ilmatta",
+    "komitatiivi": "Seurassa — yhdessä",
+    "instruktiivi": "Keinoin — kuinka"
+  }
+}

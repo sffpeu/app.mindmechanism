@@ -1,0 +1,32 @@
+{
+  "title": "Grammar Transit Map",
+  "subtitle": "Your sentence as a journey",
+  "lines": {
+    "V": "V Line — Verbs",
+    "T": "T Line — Tense & Time",
+    "N": "N Line — Nouns",
+    "M": "M Line — Modifiers",
+    "D": "D spur — Determiners",
+    "P": "P Line — Prepositions"
+  },
+  "stations": {
+    "S1": "Engine Room",
+    "S2": "Authority Junction",
+    "S3": "The Gateway",
+    "S4": "Foundation",
+    "S5": "Detail Engine",
+    "S6": "The Clock",
+    "S7": "The Fork",
+    "S8L": "The Scale",
+    "S8R": "The Peak",
+    "S9": "Colour Station"
+  },
+  "journey": {
+    "analyze": "Analyze sentence",
+    "placeholder": "Enter a sentence to map...",
+    "stops": "Journey stops",
+    "token": "Word",
+    "role": "Grammatical role",
+    "station": "Station"
+  }
+}

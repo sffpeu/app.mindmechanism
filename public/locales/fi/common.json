@@ -1,0 +1,55 @@
+{
+  "nav": {
+    "home": "Etusivu",
+    "learn": "Opi",
+    "portal": "Portaali",
+    "grammarTransit": "Kielioppikartta",
+    "glossary": "Sanasto",
+    "profile": "Profiili",
+    "settings": "Asetukset",
+    "signIn": "Kirjaudu sisään",
+    "signOut": "Kirjaudu ulos"
+  },
+  "actions": {
+    "save": "Tallenna",
+    "cancel": "Peruuta",
+    "close": "Sulje",
+    "continue": "Jatka",
+    "back": "Takaisin",
+    "next": "Seuraava",
+    "submit": "Lähetä",
+    "search": "Hae",
+    "loading": "Ladataan…",
+    "error": "Tapahtui virhe",
+    "retry": "Yritä uudelleen"
+  },
+  "passport": {
+    "title": "Oppijan passi",
+    "languages": "Kielet",
+    "unlocked": "Avattu",
+    "locked": "Lukittu",
+    "unlock": "Avaa kieli"
+  },
+  "language": {
+    "en": "Englanti",
+    "de": "Saksa",
+    "fi": "Suomi",
+    "switchTo": "Vaihda kieleen"
+  },
+  "errors": {
+    "notFound": "Sivua ei löydy",
+    "unauthorized": "Kirjautuminen vaaditaan",
+    "forbidden": "Pääsy estetty",
+    "serverError": "Palvelinvirhe",
+    "generic": "Jotain meni pieleen. Yritä uudelleen.",
+    "networkError": "Verkkovirhe. Tarkista yhteytesi."
+  },
+  "clock": {
+    "satellites": "Satelliitit",
+    "focusWords": "Fokussanat",
+    "noDefinition": "Ei määritelmää sanastossa",
+    "colour": "VÄRI",
+    "mono": "MONO",
+    "loading": "Ladataan…"
+  }
+}

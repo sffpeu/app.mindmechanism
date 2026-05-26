@@ -1,0 +1,62 @@
+{
+  "nav": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "passport": "Passport",
+    "glossary": "Vocabulary",
+    "settings": "Settings",
+    "logout": "Log out",
+    "login": "Log in",
+    "register": "Register"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "continue": "Continue",
+    "back": "Back",
+    "close": "Close",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "search": "Search",
+    "filter": "Filter"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "email": "Email address",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "createAccount": "Create account"
+  },
+  "passport": {
+    "title": "Learner's Passport",
+    "verified": "Verified",
+    "unverified": "Unverified",
+    "credentials": "Credentials",
+    "history": "History",
+    "export": "Export record"
+  },
+  "language": {
+    "switcher": "Language",
+    "en": "English",
+    "de": "Deutsch",
+    "fi": "Suomi",
+    "locked": "Unlock this language"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "notFound": "Page not found.",
+    "unauthorized": "You don't have access to this content.",
+    "networkError": "Network error. Check your connection."
+  },
+  "clock": {
+    "satellites": "Satellites",
+    "focusWords": "Focus Words",
+    "noDefinition": "No definition in glossary",
+    "colour": "COLOUR",
+    "mono": "MONO",
+    "loading": "Loading…"
+  }
+}

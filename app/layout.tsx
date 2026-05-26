@@ -6,6 +6,7 @@ import { SoundProvider } from '@/components/SoundProvider'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { FontProvider } from '@/components/FontProvider'
 import { AccessibilityProvider } from '@/components/AccessibilityProvider'
+import { LanguageProvider } from '@/lib/i18n'
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-montserrat' })
 const lora = Lora({ subsets: ['latin'], variable: '--font-lora' })
@@ -39,7 +40,9 @@ export default function RootLayout({
           <FontProvider>
             <AccessibilityProvider>
               <SoundProvider>
-                <LayoutContent>{children}</LayoutContent>
+                <LanguageProvider>
+                  <LayoutContent>{children}</LayoutContent>
+                </LanguageProvider>
               </SoundProvider>
             </AccessibilityProvider>
           </FontProvider>

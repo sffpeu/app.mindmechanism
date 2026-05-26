@@ -1,0 +1,74 @@
+{
+  "ui": {
+    "title": "Mappa di Transito Grammaticale",
+    "subtitle": "La frase come viaggio attraverso le stazioni",
+    "inputPlaceholder": "Scrivi una frase in italiano…",
+    "analyze": "Analizza",
+    "analyzing": "Analisi in corso…",
+    "journeyTitle": "Viaggio",
+    "stopsLabel": "Fermate",
+    "exportExcalidraw": "Esporta in Excalidraw",
+    "exportMarkdown": "Esporta in Markdown",
+    "copyJson": "Copia JSON"
+  },
+  "lines": {
+    "V": "Linea V — Linea Verbale",
+    "N": "Linea N — Linea Nominale",
+    "M": "Linea M — Linea dei Modificatori",
+    "T": "Linea T — Linea Temporale",
+    "P": "Linea P — Linea Preposizionale",
+    "D": "Diramazione D — Ramo Determinante"
+  },
+  "stations": {
+    "S1": {
+      "name": "Sala Macchine",
+      "formula": "V×T",
+      "description": "Il nucleo dell'azione principale. Tutto il movimento comincia qui — il verbo ancorato nel suo tempo."
+    },
+    "S2": {
+      "name": "Nodo d'Autorità",
+      "formula": "AUX",
+      "description": "Gli ausiliari modulano la modalità, il tempo e l'aspetto. Essere e avere operano qui."
+    },
+    "S3": {
+      "name": "Il Portale",
+      "formula": "N×D",
+      "description": "Gli articoli introducono i sostantivi. In italiano pro-drop, il soggetto può essere assente — la morfologia verbale ricca lo rivela dove l'inglese non marca nulla."
+    },
+    "S4": {
+      "name": "La Fondazione",
+      "formula": "N×V",
+      "description": "La posizione del soggetto. Il sostantivo che porta l'azione — è lui che fa girare la frase."
+    },
+    "S5": {
+      "name": "Motore Dettaglio",
+      "formula": "V×M",
+      "description": "Gli avverbi di modo e i modificatori verbali si attivano qui."
+    },
+    "S6": {
+      "name": "L'Orologio",
+      "formula": "T×P",
+      "description": "Il tempo, il luogo e la direzione — le preposizioni e i complementi circostanziali abitano questa stazione."
+    },
+    "S7": {
+      "name": "Lo Scambio",
+      "formula": "V",
+      "description": "Gli infiniti e le nominalizzazioni verbali — l'azione ridotta alla sua essenza nominale."
+    },
+    "S8L": {
+      "name": "La Bilancia",
+      "formula": "M",
+      "description": "Gli aggettivi comparativi — più grande di, meno veloce di."
+    },
+    "S8R": {
+      "name": "La Vetta",
+      "formula": "M",
+      "description": "Gli aggettivi superlativi — il più grande, il migliore."
+    },
+    "S9": {
+      "name": "Stazione Colore",
+      "formula": "N×M",
+      "description": "Gli aggettivi qualificativi dipingono i sostantivi. In italiano, l'accordo in genere e numero rivela qui ciò che l'inglese non marca."
+    }
+  }
+}

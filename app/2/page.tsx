@@ -46,6 +46,7 @@ import { CurvedCircleWordLabel } from '@/components/CurvedCircleWordLabel'
 import { wordProgressAlongProgressRing } from '@/lib/sessionWordRingFill'
 import { getSession } from '@/lib/sessions'
 import { MandalaCeremony } from '@/components/MandalaCeremony'
+import { useLanguage } from '@/lib/i18n'
 
 // Weather and Moon data interfaces
 interface WeatherResponse {
@@ -93,6 +94,7 @@ const satelliteConfigs = defaultSatelliteConfigs[CLOCK_INDEX] ?? []
 
 function NodesPageContent() {
   const searchParams = useSearchParams()
+  const { t } = useLanguage()
   const [showElements, setShowElements] = useState(true)
   const [showSatellites, setShowSatellites] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -423,7 +425,7 @@ function NodesPageContent() {
 
 
   if (isLoading) {
-    return <div>Loading...</div>
+    return <div>{t('common', 'clock.loading')}</div>
   }
 
   return (
@@ -437,7 +439,7 @@ function NodesPageContent() {
               <ClockPanelRow>
                 <div className="flex min-w-0 flex-1 items-center gap-1.5 pr-0.5">
                   <Satellite className="h-3 w-3 shrink-0 text-muted-foreground" />
-                  <span className="leading-snug">Satellites</span>
+                  <span className="leading-snug">{t('common', 'clock.satellites')}</span>
                 </div>
                 <Switch
                   className="origin-right scale-[0.72] shrink-0"
@@ -448,7 +450,7 @@ function NodesPageContent() {
               <ClockPanelRow>
                 <div className="flex min-w-0 flex-1 items-center gap-1.5 pr-0.5">
                   <List className="h-3 w-3 shrink-0 text-muted-foreground" />
-                  <span className="leading-snug">Focus Words</span>
+                  <span className="leading-snug">{t('common', 'clock.focusWords')}</span>
                 </div>
                 <Switch
                   className="origin-right scale-[0.72] shrink-0"
@@ -714,7 +716,7 @@ function NodesPageContent() {
                     <X className="w-4 h-4" />
                   </button>
                   <div className="px-4 pb-4 pt-0 cursor-default">
-                    {gw ? <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{gw.definition}</p> : <p className="text-sm text-gray-500 dark:text-gray-400">No definition in glossary</p>}
+                    {gw ? <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{gw.definition}</p> : <p className="text-sm text-gray-500 dark:text-gray-400">{t('common', 'clock.noDefinition')}</p>}
                   </div>
                 </>
               )
@@ -759,10 +761,10 @@ function NodesPageContent() {
       >
         <span className={`px-3 py-1.5 transition-colors ${
           colourMode === 'colour' ? 'bg-white/20 text-white' : 'text-white/40'
-        }`}>COLOUR</span>
+        }`}>{t('common', 'clock.colour')}</span>
         <span className={`px-3 py-1.5 transition-colors ${
           colourMode === 'mono' ? 'bg-white/20 text-white' : 'text-white/40'
-        }`}>MONO</span>
+        }`}>{t('common', 'clock.mono')}</span>
       </button>
     </ProtectedRoute>
   )

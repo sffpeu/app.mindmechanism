@@ -1,0 +1,65 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "dashboard": "Tableau de bord",
+    "passport": "Passeport",
+    "glossary": "Vocabulaire",
+    "settings": "Paramètres",
+    "logout": "Se déconnecter",
+    "login": "Se connecter",
+    "register": "S'inscrire"
+  },
+  "actions": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "continue": "Continuer",
+    "back": "Retour",
+    "close": "Fermer",
+    "submit": "Envoyer",
+    "confirm": "Confirmer",
+    "search": "Rechercher",
+    "filter": "Filtrer"
+  },
+  "auth": {
+    "signIn": "Se connecter",
+    "signOut": "Se déconnecter",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "forgotPassword": "Mot de passe oublié ?",
+    "noAccount": "Pas encore de compte ?",
+    "haveAccount": "Vous avez déjà un compte ?",
+    "createAccount": "Créer un compte"
+  },
+  "passport": {
+    "title": "Passeport de l'apprenant",
+    "verified": "Vérifié",
+    "unverified": "Non vérifié",
+    "credentials": "Attestations",
+    "history": "Historique",
+    "export": "Exporter le dossier"
+  },
+  "language": {
+    "switcher": "Langue",
+    "en": "English",
+    "de": "Deutsch",
+    "fi": "Suomi",
+    "fr": "Français",
+    "es": "Español",
+    "it": "Italiano",
+    "locked": "Débloquer cette langue"
+  },
+  "errors": {
+    "generic": "Une erreur est survenue. Veuillez réessayer.",
+    "notFound": "Page introuvable.",
+    "unauthorized": "Vous n'avez pas accès à ce contenu.",
+    "networkError": "Erreur réseau. Vérifiez votre connexion."
+  },
+  "clock": {
+    "satellites": "Satellites",
+    "focusWords": "Mots-clés",
+    "noDefinition": "Aucune définition dans le glossaire",
+    "colour": "COULEUR",
+    "mono": "MONO",
+    "loading": "Chargement…"
+  }
+}

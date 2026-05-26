@@ -1,0 +1,62 @@
+{
+  "nav": {
+    "home": "Startseite",
+    "dashboard": "Übersicht",
+    "passport": "Pass",
+    "glossary": "Wortschatz",
+    "settings": "Einstellungen",
+    "logout": "Abmelden",
+    "login": "Anmelden",
+    "register": "Registrieren"
+  },
+  "actions": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "continue": "Weiter",
+    "back": "Zurück",
+    "close": "Schließen",
+    "submit": "Absenden",
+    "confirm": "Bestätigen",
+    "search": "Suchen",
+    "filter": "Filtern"
+  },
+  "auth": {
+    "signIn": "Anmelden",
+    "signOut": "Abmelden",
+    "email": "E-Mail-Adresse",
+    "password": "Passwort",
+    "forgotPassword": "Passwort vergessen?",
+    "noAccount": "Noch kein Konto?",
+    "haveAccount": "Bereits ein Konto?",
+    "createAccount": "Konto erstellen"
+  },
+  "passport": {
+    "title": "Lernpass",
+    "verified": "Verifiziert",
+    "unverified": "Nicht verifiziert",
+    "credentials": "Nachweise",
+    "history": "Verlauf",
+    "export": "Nachweis exportieren"
+  },
+  "language": {
+    "switcher": "Sprache",
+    "en": "English",
+    "de": "Deutsch",
+    "fi": "Suomi",
+    "locked": "Diese Sprache freischalten"
+  },
+  "errors": {
+    "generic": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+    "notFound": "Seite nicht gefunden.",
+    "unauthorized": "Sie haben keinen Zugriff auf diesen Inhalt.",
+    "networkError": "Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung."
+  },
+  "clock": {
+    "satellites": "Satelliten",
+    "focusWords": "Fokus-Wörter",
+    "noDefinition": "Keine Definition im Glossar",
+    "colour": "FARBE",
+    "mono": "MONO",
+    "loading": "Wird geladen…"
+  }
+}

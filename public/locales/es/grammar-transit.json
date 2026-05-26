@@ -1,0 +1,74 @@
+{
+  "ui": {
+    "title": "Mapa de Tránsito Gramatical",
+    "subtitle": "La frase como viaje a través de las estaciones",
+    "inputPlaceholder": "Escribe una frase en español…",
+    "analyze": "Analizar",
+    "analyzing": "Analizando…",
+    "journeyTitle": "Viaje",
+    "stopsLabel": "Paradas",
+    "exportExcalidraw": "Exportar a Excalidraw",
+    "exportMarkdown": "Exportar en Markdown",
+    "copyJson": "Copiar JSON"
+  },
+  "lines": {
+    "V": "Línea V — Línea Verbal",
+    "N": "Línea N — Línea Nominal",
+    "M": "Línea M — Línea de Modificadores",
+    "T": "Línea T — Línea Temporal",
+    "P": "Línea P — Línea Preposicional",
+    "D": "Ramal D — Ramal Determinante"
+  },
+  "stations": {
+    "S1": {
+      "name": "Sala de Máquinas",
+      "formula": "V×T",
+      "description": "El núcleo de la acción principal. Todo movimiento comienza aquí — el verbo anclado en su tiempo."
+    },
+    "S2": {
+      "name": "Nudo de Autoridad",
+      "formula": "AUX",
+      "description": "Los auxiliares modulan la modalidad, el tiempo y el aspecto. Ser, estar y haber operan aquí."
+    },
+    "S3": {
+      "name": "La Puerta",
+      "formula": "N×D",
+      "description": "Los artículos introducen los sustantivos. En español pro-drop, el sujeto puede estar ausente — la concordancia verbal lo revela."
+    },
+    "S4": {
+      "name": "La Fundación",
+      "formula": "N×V",
+      "description": "La posición del sujeto. El sustantivo que lleva la acción — es él quien hace girar la frase."
+    },
+    "S5": {
+      "name": "Motor Detalle",
+      "formula": "V×M",
+      "description": "Los adverbios de modo y los modificadores verbales se activan aquí."
+    },
+    "S6": {
+      "name": "El Reloj",
+      "formula": "T×P",
+      "description": "El tiempo, el lugar y la dirección — las preposiciones y los complementos circunstanciales habitan esta estación."
+    },
+    "S7": {
+      "name": "El Desvío",
+      "formula": "V",
+      "description": "Los infinitivos y las nominalizaciones verbales — la acción reducida a su esencia nominal."
+    },
+    "S8L": {
+      "name": "La Balanza",
+      "formula": "M",
+      "description": "Los adjetivos comparativos — más grande que, menos rápido que."
+    },
+    "S8R": {
+      "name": "La Cima",
+      "formula": "M",
+      "description": "Los adjetivos superlativos — el más grande, el mejor."
+    },
+    "S9": {
+      "name": "Estación Color",
+      "formula": "N×M",
+      "description": "Los adjetivos calificativos pintan los sustantivos. En español, el acuerdo en género y número revela aquí lo que el inglés no marca."
+    }
+  }
+}

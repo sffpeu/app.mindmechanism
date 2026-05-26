@@ -1,0 +1,74 @@
+{
+  "ui": {
+    "title": "Carte de Transit Grammatical",
+    "subtitle": "La phrase comme voyage à travers les stations",
+    "inputPlaceholder": "Saisissez une phrase en français…",
+    "analyze": "Analyser",
+    "analyzing": "Analyse en cours…",
+    "journeyTitle": "Voyage",
+    "stopsLabel": "Arrêts",
+    "exportExcalidraw": "Exporter vers Excalidraw",
+    "exportMarkdown": "Exporter en Markdown",
+    "copyJson": "Copier JSON"
+  },
+  "lines": {
+    "V": "Ligne V — Ligne Verbale",
+    "N": "Ligne N — Ligne Nominale",
+    "M": "Ligne M — Ligne des Modificateurs",
+    "T": "Ligne T — Ligne Temporelle",
+    "P": "Ligne P — Ligne Prépositionnelle",
+    "D": "Embranchement D — Branche Déterminante"
+  },
+  "stations": {
+    "S1": {
+      "name": "Salle des Machines",
+      "formula": "V×T",
+      "description": "Le noyau de l'action principale. Tout mouvement commence ici — le verbe ancré dans son temps."
+    },
+    "S2": {
+      "name": "Carrefour d'Autorité",
+      "formula": "AUX",
+      "description": "Les auxiliaires modulent la modalité, le temps et l'aspect. Être et avoir opèrent ici."
+    },
+    "S3": {
+      "name": "La Porte",
+      "formula": "N×D",
+      "description": "Les articles introduisent les noms. En français, le genre et le nombre sont marqués ici — un point que l'anglais ignore."
+    },
+    "S4": {
+      "name": "La Fondation",
+      "formula": "N×V",
+      "description": "La position du sujet. Le nom qui porte l'action — c'est lui qui fait tourner la phrase."
+    },
+    "S5": {
+      "name": "Moteur Détail",
+      "formula": "V×M",
+      "description": "Les adverbes de manière et les modificateurs verbaux s'activent ici."
+    },
+    "S6": {
+      "name": "L'Horloge",
+      "formula": "T×P",
+      "description": "Le temps, le lieu et la direction — les prépositions et compléments circonstanciels habitent cette station."
+    },
+    "S7": {
+      "name": "L'Aiguillage",
+      "formula": "V",
+      "description": "Les infinitifs et les nominalisations verbales — l'action réduite à son essence nominale."
+    },
+    "S8L": {
+      "name": "La Balance",
+      "formula": "M",
+      "description": "Les adjectifs comparatifs — plus grand que, moins rapide que."
+    },
+    "S8R": {
+      "name": "Le Sommet",
+      "formula": "M",
+      "description": "Les adjectifs superlatifs — le plus grand, le meilleur."
+    },
+    "S9": {
+      "name": "Station Couleur",
+      "formula": "N×M",
+      "description": "Les adjectifs qualificatifs peignent les noms. En français, l'accord en genre révèle ici ce que l'anglais ne marque pas."
+    }
+  }
+}

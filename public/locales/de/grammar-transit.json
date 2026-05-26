@@ -1,0 +1,35 @@
+{
+  "title": "Grammatik-Transitkarte",
+  "subtitle": "Ihr Satz als Reise",
+  "lines": {
+    "V": "V-Linie — Verben",
+    "T": "T-Linie — Tempus & Zeit",
+    "N": "N-Linie — Nomen",
+    "M": "M-Linie — Modifikatoren",
+    "D": "D-Abzweig — Artikel",
+    "P": "P-Linie — Präpositionen",
+    "K": "K-Linie — Kasus"
+  },
+  "stations": {
+    "S1": "Maschinenraum",
+    "S2": "Autoritätsknotenpunkt",
+    "S3": "Das Tor",
+    "S4": "Fundament",
+    "S5": "Detailmaschine",
+    "S6": "Die Uhr",
+    "S7": "Die Weiche",
+    "S8L": "Die Waage",
+    "S8R": "Der Gipfel",
+    "S9": "Farbstation",
+    "S10": "Das Kreuzungsfeld",
+    "S11": "Bahnhof Trennung"
+  },
+  "journey": {
+    "analyze": "Satz analysieren",
+    "placeholder": "Geben Sie einen Satz zum Kartieren ein...",
+    "stops": "Reisestationen",
+    "token": "Wort",
+    "role": "Grammatische Rolle",
+    "station": "Station"
+  }
+}

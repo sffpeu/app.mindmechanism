@@ -1,0 +1,106 @@
+{
+  "_register_notes": {
+    "consumer": "Tu informale, diretto, accessibile. L'italiano quotidiano è caldo senza perdere in precisione.",
+    "academic": "Preciso e analitico. Lei formale. Vocabolario tecnico assunto.",
+    "corporate": "Lei formale, conciso, orientato alla decisione. Il registro dei comitati direttivi."
+  },
+  "consumer": {
+    "name": "Mind Mechanism",
+    "tagline": "La tua lingua, la tua intelligenza.",
+    "heroHeadline": "L'intelligenza linguistica che ti appartiene.",
+    "heroSubtext": "Costruisci il tuo vocabolario, traccia i tuoi schemi, possiedi il tuo registro.",
+    "copy.passportLabel": "Passaporto dell'apprendente",
+    "copy.lexiconLabel": "Vocabolario personale",
+    "copy.practiceLabel": "Praticare",
+    "copy.recordSectionTitle": "Il mio registro",
+    "hero": {
+      "headline": "L'intelligenza linguistica che ti appartiene.",
+      "subheadline": "Mind Mechanism rivela l'architettura sonora del tuo cervello — quella che esisteva molto prima che imparassi a usarla.",
+      "cta": "Inizia gratuitamente"
+    },
+    "intro": {
+      "title": "Nessuna nuova regola. Le strutture esistenti rese visibili.",
+      "body": "Sei già un parlante. Mind Mechanism mostra la struttura che hai sempre usato — chiaramente, senza gergo."
+    },
+    "features": {
+      "grammarTransit": {
+        "title": "Mappa di transito grammaticale",
+        "body": "Ogni frase è un viaggio. Le parole passano per le stazioni — vedi esattamente cosa fa ciascuna."
+      },
+      "passport": {
+        "title": "Passaporto dell'apprendente",
+        "body": "Sblocca nuove lingue al tuo ritmo. Il passaporto registra i tuoi progressi in modo permanente."
+      },
+      "wheel": {
+        "title": "La Ruota della Mente",
+        "body": "482 nodi — i mattoni del pensiero, dell'emozione e del suono. Mappati una volta, usati per tutte le lingue."
+      }
+    }
+  },
+  "academic": {
+    "name": "Mind Mechanism Accademico",
+    "tagline": "Intelligenza linguistica basata sull'evidenza per apprendenti e ricercatori.",
+    "heroHeadline": "Il Suo apprendimento reso leggibile.",
+    "heroSubtext": "Un registro accademico strutturato del Suo sviluppo linguistico — portatile, sovrano, verificabile.",
+    "copy.passportLabel": "Registro accademico",
+    "copy.lexiconLabel": "Vocabolario accademico",
+    "copy.practiceLabel": "Studiare",
+    "copy.recordSectionTitle": "Il mio registro accademico",
+    "hero": {
+      "headline": "Struttura universale del linguaggio — un approccio empirico.",
+      "subheadline": "Mind Mechanism propone un modello falsificabile della relazione tra struttura fonetica e elaborazione cognitiva.",
+      "cta": "Esplora il framework"
+    },
+    "intro": {
+      "title": "Ipotesi: la struttura precede l'acquisizione.",
+      "body": "L'affermazione centrale del framework è che l'essere umano possiede un'architettura fonetica innata che sottende l'apprendimento delle lingue. La tassonomia a 482 nodi è una struttura testabile, non una metafora."
+    },
+    "features": {
+      "grammarTransit": {
+        "title": "Mappa di transito — analisi strutturale",
+        "body": "La pipeline NLP converte le frasi in mappe di caso, aspetto e dipendenze. L'italiano pro-drop rivela la morfologia verbale dove l'inglese non segna nulla — la densità della mappa è la prova."
+      },
+      "taxonomy": {
+        "title": "Tassonomia a 482 nodi",
+        "body": "I nodi sono classificati in tre categorie: universali (~85 %), culturalmente risonanti (~10 %) e foneticamente ancorati (~5 %). I test multilingui validano la categoria universale."
+      },
+      "research": {
+        "title": "Impegno nella ricerca",
+        "body": "Un risultato che falsifica l'affermazione commerciale deve essere pubblicato. Non è negoziabile."
+      }
+    }
+  },
+  "corporate": {
+    "name": "Mind Mechanism Corporate",
+    "tagline": "La capacità linguistica come intelligenza organizzativa.",
+    "heroHeadline": "Il linguaggio è una competenza di leadership.",
+    "heroSubtext": "Monitorate i profili individuali, comprendete la capacità collettiva, supportate decisioni di L&D basate sull'evidenza.",
+    "copy.passportLabel": "Profilo linguistico",
+    "copy.lexiconLabel": "Vocabolario operativo",
+    "copy.practiceLabel": "Formazione",
+    "copy.recordSectionTitle": "Il mio profilo",
+    "hero": {
+      "headline": "Il linguaggio della decisione, reso esplicito.",
+      "subheadline": "Mind Mechanism offre una base concettuale comune alle organizzazioni che richiedono precisione nella comunicazione multilivello.",
+      "cta": "Richiedere una demo"
+    },
+    "intro": {
+      "title": "La struttura prima della retorica.",
+      "body": "L'ambiguità nella comunicazione organizzativa deriva il più delle volte da un'incoerenza strutturale, non da mancanza di informazioni. Mind Mechanism fornisce un linguaggio condiviso che rende visibile la struttura a tutti i livelli."
+    },
+    "features": {
+      "governance": {
+        "title": "Governance e dinamica decisionale",
+        "body": "Il framework mappa 482 nodi concettuali — le strutture che si ripetono nella comunicazione manageriale, in tutte le organizzazioni e i settori."
+      },
+      "multilingual": {
+        "title": "Organizzazione multilingue",
+        "body": "La stessa struttura in italiano, tedesco o inglese. Zero perdita nella traduzione — il framework regge."
+      },
+      "passport": {
+        "title": "Passaporto organizzativo",
+        "body": "L'accesso linguistico del team gestito in un unico sistema. Auditabilità completa."
+      }
+    }
+  }
+}

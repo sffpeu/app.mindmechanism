@@ -79,6 +79,12 @@ _NOTES: dict[str, str] = {
     "ADP|agent|S6": "Agentive by-phrase — passive counterpart track at The Clock.",
     "ADP|*|S6": "Preposition — case and path at The Clock.",
     "ADP|*|*": "Preposition on the map.",
+    # Numerals
+    "NUM|nummod|S3": "Numeral quantifier — boarding the D spur at The Gateway. Numbers that modify nouns travel the determiner route.",
+    "NUM|quantmod|S3": "Quantity modifier — determiner-class traffic at The Gateway.",
+    "NUM|*|S3": "Number functioning as determiner — The Gateway handles it.",
+    "NUM|*|S8L": "Standalone numeral — The Scale. Figures as degree or comparison reference.",
+    "NUM|*|*": "Numeral — quantity or measure on the map.",
     # Fallbacks
     "*|*|*": "Token on the grammar map — role read from POS and dependency.",
 }
@@ -98,3 +104,23 @@ def get_note(pos: str, dep: str, stations: tuple[str, ...]) -> str:
         if key in _NOTES:
             return _NOTES[key]
     return _NOTES["*|*|*"]
+
+
+def get_note_for_lang(lang: str, pos: str, dep: str, stations: tuple[str, ...]) -> str:
+    """Dispatch to the correct language note function."""
+    if lang == "de":
+        from descriptions_de import get_note_de
+        return get_note_de(pos, dep, stations)
+    if lang == "fi":
+        from descriptions_fi import get_note_fi
+        return get_note_fi(pos, dep, stations)
+    if lang == "fr":
+        from descriptions_fr import get_note_fr
+        return get_note_fr(pos, dep, stations)
+    if lang == "es":
+        from descriptions_es import get_note_es
+        return get_note_es(pos, dep, stations)
+    if lang == "it":
+        from descriptions_it import get_note_it
+        return get_note_it(pos, dep, stations)
+    return get_note(pos, dep, stations)

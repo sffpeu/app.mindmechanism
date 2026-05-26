@@ -1,0 +1,65 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "dashboard": "Panel",
+    "passport": "Pasaporte",
+    "glossary": "Vocabulario",
+    "settings": "Configuración",
+    "logout": "Cerrar sesión",
+    "login": "Iniciar sesión",
+    "register": "Registrarse"
+  },
+  "actions": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "continue": "Continuar",
+    "back": "Volver",
+    "close": "Cerrar",
+    "submit": "Enviar",
+    "confirm": "Confirmar",
+    "search": "Buscar",
+    "filter": "Filtrar"
+  },
+  "auth": {
+    "signIn": "Iniciar sesión",
+    "signOut": "Cerrar sesión",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "noAccount": "¿No tienes cuenta?",
+    "haveAccount": "¿Ya tienes cuenta?",
+    "createAccount": "Crear cuenta"
+  },
+  "passport": {
+    "title": "Pasaporte del aprendiz",
+    "verified": "Verificado",
+    "unverified": "No verificado",
+    "credentials": "Credenciales",
+    "history": "Historial",
+    "export": "Exportar registro"
+  },
+  "language": {
+    "switcher": "Idioma",
+    "en": "English",
+    "de": "Deutsch",
+    "fi": "Suomi",
+    "fr": "Français",
+    "es": "Español",
+    "it": "Italiano",
+    "locked": "Desbloquear este idioma"
+  },
+  "errors": {
+    "generic": "Algo salió mal. Por favor, inténtalo de nuevo.",
+    "notFound": "Página no encontrada.",
+    "unauthorized": "No tienes acceso a este contenido.",
+    "networkError": "Error de red. Comprueba tu conexión."
+  },
+  "clock": {
+    "satellites": "Satélites",
+    "focusWords": "Palabras clave",
+    "noDefinition": "Sin definición en el glosario",
+    "colour": "COLOR",
+    "mono": "MONO",
+    "loading": "Cargando…"
+  }
+}

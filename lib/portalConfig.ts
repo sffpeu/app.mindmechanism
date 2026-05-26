@@ -51,10 +51,10 @@ export const PORTAL_CONFIGS: Record<Portal, PortalConfig> = {
       researchCTA: 'soft',
     },
     copy: {
-      passportLabel: "Learner's Passport",
-      lexiconLabel: 'Personal Vocabulary',
-      practiceLabel: 'Practice',
-      recordSectionTitle: 'My Record',
+      passportLabel: 'portal.consumer.copy.passportLabel',
+      lexiconLabel: 'portal.consumer.copy.lexiconLabel',
+      practiceLabel: 'portal.consumer.copy.practiceLabel',
+      recordSectionTitle: 'portal.consumer.copy.recordSectionTitle',
     },
     theme: {
       accentClass: 'text-indigo-600 dark:text-indigo-400',
@@ -80,10 +80,10 @@ export const PORTAL_CONFIGS: Record<Portal, PortalConfig> = {
       researchCTA: 'prominent',
     },
     copy: {
-      passportLabel: 'Academic Record',
-      lexiconLabel: 'Academic Vocabulary',
-      practiceLabel: 'Study',
-      recordSectionTitle: 'My Academic Record',
+      passportLabel: 'portal.academic.copy.passportLabel',
+      lexiconLabel: 'portal.academic.copy.lexiconLabel',
+      practiceLabel: 'portal.academic.copy.practiceLabel',
+      recordSectionTitle: 'portal.academic.copy.recordSectionTitle',
     },
     theme: {
       accentClass: 'text-emerald-600 dark:text-emerald-400',
@@ -109,10 +109,10 @@ export const PORTAL_CONFIGS: Record<Portal, PortalConfig> = {
       researchCTA: 'none',
     },
     copy: {
-      passportLabel: 'Language Profile',
-      lexiconLabel: 'Working Vocabulary',
-      practiceLabel: 'Training',
-      recordSectionTitle: 'My Profile',
+      passportLabel: 'portal.corporate.copy.passportLabel',
+      lexiconLabel: 'portal.corporate.copy.lexiconLabel',
+      practiceLabel: 'portal.corporate.copy.practiceLabel',
+      recordSectionTitle: 'portal.corporate.copy.recordSectionTitle',
     },
     theme: {
       accentClass: 'text-slate-700 dark:text-slate-300',

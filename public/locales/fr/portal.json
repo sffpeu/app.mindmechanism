@@ -1,0 +1,112 @@
+{
+  "_register_notes": {
+    "consumer": "Tutoiement, direct, accessible. Le français grand public est chaleureux sans perdre en précision.",
+    "academic": "Précis et analytique. Le vouvoiement universitaire. Vocabulaire technique assumé.",
+    "corporate": "Vouvoiement formel, concis, orienté décision. Le registre des comités de direction."
+  },
+  "consumer": {
+    "name": "Mind Mechanism",
+    "tagline": "Votre langue, votre intelligence.",
+    "heroHeadline": "L'intelligence linguistique qui t'appartient.",
+    "heroSubtext": "Construis ton vocabulaire, trace tes schémas, possède ton dossier.",
+    "copy": {
+      "passportLabel": "portal.consumer.copy.passportLabel",
+      "lexiconLabel": "portal.consumer.copy.lexiconLabel",
+      "practiceLabel": "portal.consumer.copy.practiceLabel",
+      "recordSectionTitle": "portal.consumer.copy.recordSectionTitle"
+    },
+    "copy.passportLabel": "Passeport de l'apprenant",
+    "copy.lexiconLabel": "Vocabulaire personnel",
+    "copy.practiceLabel": "Pratiquer",
+    "copy.recordSectionTitle": "Mon dossier",
+    "hero": {
+      "headline": "L'intelligence linguistique qui t'appartient.",
+      "subheadline": "Mind Mechanism révèle l'architecture sonore de ton cerveau — celle qui existait bien avant que tu apprennes à t'en servir.",
+      "cta": "Commencer gratuitement"
+    },
+    "intro": {
+      "title": "Pas de nouvelles règles. Les structures existantes rendues visibles.",
+      "body": "Tu parles déjà. Mind Mechanism montre la structure que tu utilises depuis toujours — clairement, sans jargon."
+    },
+    "features": {
+      "grammarTransit": {
+        "title": "Carte de transit grammatical",
+        "body": "Chaque phrase est un voyage. Les mots passent par des stations — tu vois exactement ce que chacun fait."
+      },
+      "passport": {
+        "title": "Passeport de l'apprenant",
+        "body": "Débloque de nouvelles langues à ton rythme. Le passeport enregistre ta progression de façon permanente."
+      },
+      "wheel": {
+        "title": "La Roue de l'Esprit",
+        "body": "482 nœuds — les briques de la pensée, de l'émotion et du son. Cartographiées une fois, utilisées pour toutes les langues."
+      }
+    }
+  },
+  "academic": {
+    "name": "Mind Mechanism Académique",
+    "tagline": "Intelligence linguistique fondée sur les preuves pour les apprenants et chercheurs.",
+    "heroHeadline": "Votre apprentissage rendu lisible.",
+    "heroSubtext": "Un dossier académique structuré de votre développement linguistique — portable, souverain, vérifiable.",
+    "copy.passportLabel": "Dossier académique",
+    "copy.lexiconLabel": "Vocabulaire académique",
+    "copy.practiceLabel": "Étudier",
+    "copy.recordSectionTitle": "Mon dossier académique",
+    "hero": {
+      "headline": "Structure universelle du langage — une approche empirique.",
+      "subheadline": "Mind Mechanism propose un modèle falsifiable de la relation entre structure phonétique et traitement cognitif.",
+      "cta": "Explorer le cadre"
+    },
+    "intro": {
+      "title": "Hypothèse : la structure précède l'acquisition.",
+      "body": "L'affirmation centrale du cadre est que l'être humain possède une architecture phonétique innée qui sous-tend l'apprentissage des langues. La taxonomie à 482 nœuds est une structure testable, non une métaphore."
+    },
+    "features": {
+      "grammarTransit": {
+        "title": "Carte de transit — analyse structurale",
+        "body": "Le pipeline NLP convertit les phrases en cartes de cas, d'aspect et de dépendances. La densité varie selon la langue — le français révèle l'accord en genre là où l'anglais ne marque rien."
+      },
+      "taxonomy": {
+        "title": "Taxonomie à 482 nœuds",
+        "body": "Les nœuds sont classés en trois catégories : universels (~85 %), culturellement résonnants (~10 %) et phonétiquement ancrés (~5 %). Les tests multilingues valident la catégorie universelle."
+      },
+      "research": {
+        "title": "Engagement de recherche",
+        "body": "Un résultat qui falsifie l'affirmation commerciale doit être publié. Ce n'est pas négociable."
+      }
+    }
+  },
+  "corporate": {
+    "name": "Mind Mechanism Corporate",
+    "tagline": "La capacité linguistique comme intelligence organisationnelle.",
+    "heroHeadline": "Le langage est une compétence de leadership.",
+    "heroSubtext": "Suivez les profils individuels, comprenez la capacité collective, soutenez des décisions de D&F fondées sur des preuves.",
+    "copy.passportLabel": "Profil linguistique",
+    "copy.lexiconLabel": "Vocabulaire opérationnel",
+    "copy.practiceLabel": "Formation",
+    "copy.recordSectionTitle": "Mon profil",
+    "hero": {
+      "headline": "Le langage de la décision, rendu explicite.",
+      "subheadline": "Mind Mechanism offre un socle conceptuel commun aux organisations qui exigent de la précision dans une communication multi-niveaux.",
+      "cta": "Demander une démonstration"
+    },
+    "intro": {
+      "title": "La structure avant la rhétorique.",
+      "body": "L'ambiguïté dans la communication organisationnelle résulte le plus souvent d'une incohérence structurelle, non d'un manque d'information. Mind Mechanism fournit un langage partagé qui rend la structure visible à tous les niveaux."
+    },
+    "features": {
+      "governance": {
+        "title": "Gouvernance et dynamique décisionnelle",
+        "body": "Le cadre cartographie 482 nœuds conceptuels — les structures qui se répètent dans la communication managériale, toutes organisations et tous secteurs confondus."
+      },
+      "multilingual": {
+        "title": "Organisation multilingue",
+        "body": "La même structure en français, en allemand ou en anglais. Zéro perte à la traduction — le cadre tient."
+      },
+      "passport": {
+        "title": "Passeport organisationnel",
+        "body": "L'accès linguistique de l'équipe géré dans un seul système. Auditabilité complète."
+      }
+    }
+  }
+}
