@@ -7,7 +7,12 @@
     "settings": "Configuración",
     "logout": "Cerrar sesión",
     "login": "Iniciar sesión",
-    "register": "Registrarse"
+    "register": "Registrarse",
+    "sessions": "Sesiones",
+    "notes": "Notas",
+    "deck": "Baraja",
+    "sequencer": "Secuenciador",
+    "synthLab": "Lab Síntesis"
   },
   "actions": {
     "save": "Guardar",

@@ -7,7 +7,12 @@
     "settings": "Impostazioni",
     "logout": "Esci",
     "login": "Accedi",
-    "register": "Registrati"
+    "register": "Registrati",
+    "sessions": "Sessioni",
+    "notes": "Note",
+    "deck": "Mazzo",
+    "sequencer": "Sequenziatore",
+    "synthLab": "Lab Sintetizzatore"
   },
   "actions": {
     "save": "Salva",

@@ -8,7 +8,12 @@
     "profile": "Profiili",
     "settings": "Asetukset",
     "signIn": "Kirjaudu sisään",
-    "signOut": "Kirjaudu ulos"
+    "signOut": "Kirjaudu ulos",
+    "sessions": "Istunnot",
+    "notes": "Muistiinpanot",
+    "deck": "Korttipakka",
+    "sequencer": "Sekvensseri",
+    "synthLab": "Synteettori"
   },
   "actions": {
     "save": "Tallenna",

@@ -7,7 +7,12 @@
     "settings": "Paramètres",
     "logout": "Se déconnecter",
     "login": "Se connecter",
-    "register": "S'inscrire"
+    "register": "S'inscrire",
+    "sessions": "Séances",
+    "notes": "Notes",
+    "deck": "Jeu de cartes",
+    "sequencer": "Séquenceur",
+    "synthLab": "Labo Synth"
   },
   "actions": {
     "save": "Enregistrer",

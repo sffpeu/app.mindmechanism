@@ -10,15 +10,11 @@
     "heroHeadline": "L'intelligence linguistique qui t'appartient.",
     "heroSubtext": "Construis ton vocabulaire, trace tes schémas, possède ton dossier.",
     "copy": {
-      "passportLabel": "portal.consumer.copy.passportLabel",
-      "lexiconLabel": "portal.consumer.copy.lexiconLabel",
-      "practiceLabel": "portal.consumer.copy.practiceLabel",
-      "recordSectionTitle": "portal.consumer.copy.recordSectionTitle"
+      "passportLabel": "Passeport de l'apprenant",
+      "lexiconLabel": "Vocabulaire personnel",
+      "practiceLabel": "Pratiquer",
+      "recordSectionTitle": "Mon dossier"
     },
-    "copy.passportLabel": "Passeport de l'apprenant",
-    "copy.lexiconLabel": "Vocabulaire personnel",
-    "copy.practiceLabel": "Pratiquer",
-    "copy.recordSectionTitle": "Mon dossier",
     "hero": {
       "headline": "L'intelligence linguistique qui t'appartient.",
       "subheadline": "Mind Mechanism révèle l'architecture sonore de ton cerveau — celle qui existait bien avant que tu apprennes à t'en servir.",
@@ -48,10 +44,6 @@
     "tagline": "Intelligence linguistique fondée sur les preuves pour les apprenants et chercheurs.",
     "heroHeadline": "Votre apprentissage rendu lisible.",
     "heroSubtext": "Un dossier académique structuré de votre développement linguistique — portable, souverain, vérifiable.",
-    "copy.passportLabel": "Dossier académique",
-    "copy.lexiconLabel": "Vocabulaire académique",
-    "copy.practiceLabel": "Étudier",
-    "copy.recordSectionTitle": "Mon dossier académique",
     "hero": {
       "headline": "Structure universelle du langage — une approche empirique.",
       "subheadline": "Mind Mechanism propose un modèle falsifiable de la relation entre structure phonétique et traitement cognitif.",
@@ -74,6 +66,12 @@
         "title": "Engagement de recherche",
         "body": "Un résultat qui falsifie l'affirmation commerciale doit être publié. Ce n'est pas négociable."
       }
+    },
+    "copy": {
+      "passportLabel": "Dossier académique",
+      "lexiconLabel": "Vocabulaire académique",
+      "practiceLabel": "Étudier",
+      "recordSectionTitle": "Mon dossier académique"
     }
   },
   "corporate": {
@@ -81,10 +79,6 @@
     "tagline": "La capacité linguistique comme intelligence organisationnelle.",
     "heroHeadline": "Le langage est une compétence de leadership.",
     "heroSubtext": "Suivez les profils individuels, comprenez la capacité collective, soutenez des décisions de D&F fondées sur des preuves.",
-    "copy.passportLabel": "Profil linguistique",
-    "copy.lexiconLabel": "Vocabulaire opérationnel",
-    "copy.practiceLabel": "Formation",
-    "copy.recordSectionTitle": "Mon profil",
     "hero": {
       "headline": "Le langage de la décision, rendu explicite.",
       "subheadline": "Mind Mechanism offre un socle conceptuel commun aux organisations qui exigent de la précision dans une communication multi-niveaux.",
@@ -107,6 +101,12 @@
         "title": "Passeport organisationnel",
         "body": "L'accès linguistique de l'équipe géré dans un seul système. Auditabilité complète."
       }
+    },
+    "copy": {
+      "passportLabel": "Profil linguistique",
+      "lexiconLabel": "Vocabulaire opérationnel",
+      "practiceLabel": "Formation",
+      "recordSectionTitle": "Mon profil"
     }
   }
 }

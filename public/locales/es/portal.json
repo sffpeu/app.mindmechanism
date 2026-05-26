@@ -9,10 +9,6 @@
     "tagline": "Tu idioma, tu inteligencia.",
     "heroHeadline": "La inteligencia lingüística que te pertenece.",
     "heroSubtext": "Construye tu vocabulario, rastrea tus patrones, posee tu registro.",
-    "copy.passportLabel": "Pasaporte del aprendiz",
-    "copy.lexiconLabel": "Vocabulario personal",
-    "copy.practiceLabel": "Practicar",
-    "copy.recordSectionTitle": "Mi registro",
     "hero": {
       "headline": "La inteligencia lingüística que te pertenece.",
       "subheadline": "Mind Mechanism revela la arquitectura sonora de tu cerebro — la que existía mucho antes de que aprendieras a usarla.",
@@ -35,6 +31,12 @@
         "title": "La Rueda Mental",
         "body": "482 nodos — los bloques de construcción del pensamiento, la emoción y el sonido. Cartografiados una vez, utilizados para todos los idiomas."
       }
+    },
+    "copy": {
+      "passportLabel": "Pasaporte del aprendiz",
+      "lexiconLabel": "Vocabulario personal",
+      "practiceLabel": "Practicar",
+      "recordSectionTitle": "Mi registro"
     }
   },
   "academic": {
@@ -42,10 +44,6 @@
     "tagline": "Inteligencia lingüística basada en evidencias para aprendices e investigadores.",
     "heroHeadline": "Su aprendizaje, hecho legible.",
     "heroSubtext": "Un registro académico estructurado de su desarrollo lingüístico — portátil, soberano, verificable.",
-    "copy.passportLabel": "Expediente académico",
-    "copy.lexiconLabel": "Vocabulario académico",
-    "copy.practiceLabel": "Estudiar",
-    "copy.recordSectionTitle": "Mi expediente académico",
     "hero": {
       "headline": "Estructura universal del lenguaje — un enfoque empírico.",
       "subheadline": "Mind Mechanism ofrece un modelo falsificable de la relación entre estructura fonética y procesamiento cognitivo.",
@@ -68,6 +66,12 @@
         "title": "Compromiso investigador",
         "body": "Un resultado que falsifique la afirmación comercial debe publicarse. Esto no es negociable."
       }
+    },
+    "copy": {
+      "passportLabel": "Expediente académico",
+      "lexiconLabel": "Vocabulario académico",
+      "practiceLabel": "Estudiar",
+      "recordSectionTitle": "Mi expediente académico"
     }
   },
   "corporate": {
@@ -75,10 +79,6 @@
     "tagline": "La capacidad lingüística como inteligencia organizacional.",
     "heroHeadline": "El lenguaje es una competencia de liderazgo.",
     "heroSubtext": "Haga un seguimiento de los perfiles individuales, comprenda la capacidad colectiva, respalde decisiones de L&D basadas en evidencias.",
-    "copy.passportLabel": "Perfil lingüístico",
-    "copy.lexiconLabel": "Vocabulario operativo",
-    "copy.practiceLabel": "Formación",
-    "copy.recordSectionTitle": "Mi perfil",
     "hero": {
       "headline": "El lenguaje de la decisión, explicitado.",
       "subheadline": "Mind Mechanism ofrece una base conceptual común a las organizaciones que exigen precisión en la comunicación multinivel.",
@@ -101,6 +101,12 @@
         "title": "Pasaporte organizacional",
         "body": "El acceso lingüístico del equipo gestionado en un solo sistema. Auditabilidad completa."
       }
+    },
+    "copy": {
+      "passportLabel": "Perfil lingüístico",
+      "lexiconLabel": "Vocabulario operativo",
+      "practiceLabel": "Formación",
+      "recordSectionTitle": "Mi perfil"
     }
   }
 }

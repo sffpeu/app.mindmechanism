@@ -5,6 +5,16 @@
     "corporate": "Asiallinen ja tasa-arvoinen. Suomalainen liike-elämä välttää hierarkkista kohteliaisuutta; suoruus on ammattimaisuutta."
   },
   "consumer": {
+    "name": "Mind Mechanism",
+    "tagline": "Kielesi, älykkyytesi.",
+    "heroHeadline": "Kielesi toimii paremmin kuin luulit.",
+    "heroSubtext": "Mind Mechanism paljastaa aivojen äänijärjestelmän — sen, joka oli jo olemassa ennen kuin keksit miten käyttää sitä.",
+    "copy": {
+      "passportLabel": "Oppijan passi",
+      "lexiconLabel": "Henkilökohtainen sanasto",
+      "practiceLabel": "Harjoittele",
+      "recordSectionTitle": "Oma rekisteri"
+    },
     "hero": {
       "headline": "Kielesi toimii paremmin kuin luulit.",
       "subheadline": "Mind Mechanism paljastaa aivojen äänijärjestelmän — sen, joka oli jo olemassa ennen kuin keksit miten käyttää sitä.",
@@ -30,6 +40,16 @@
     }
   },
   "academic": {
+    "name": "Mind Mechanism Akateeminen",
+    "tagline": "Näyttöön perustuva kieliäly oppijoille ja tutkijoille.",
+    "heroHeadline": "Universaali kielirakenne — empiirinen lähestymistapa.",
+    "heroSubtext": "Mind Mechanism tarjoaa falsifioitavan mallin foneettisen rakenteen ja kognitiivisen käsittelyn välisestä suhteesta.",
+    "copy": {
+      "passportLabel": "Akateeminen rekisteri",
+      "lexiconLabel": "Akateeminen sanasto",
+      "practiceLabel": "Opiskele",
+      "recordSectionTitle": "Oma akateeminen rekisteri"
+    },
     "hero": {
       "headline": "Universaali kielirakenne — empiirinen lähestymistapa.",
       "subheadline": "Mind Mechanism tarjoaa falsifioitavan mallin foneettisen rakenteen ja kognitiivisen käsittelyn välisestä suhteesta.",
@@ -55,6 +75,16 @@
     }
   },
   "corporate": {
+    "name": "Mind Mechanism Yrityskäyttö",
+    "tagline": "Kieliosaaminen organisatorisena älykkyytenä.",
+    "heroHeadline": "Päätöksenteon kieli selkeäksi.",
+    "heroSubtext": "Mind Mechanism tarjoaa yhteisen käsitteellisen perustan organisaatioille, jotka tarvitsevat tarkkuutta monitasoisessa viestinnässä.",
+    "copy": {
+      "passportLabel": "Kieliprofiili",
+      "lexiconLabel": "Toiminnallinen sanasto",
+      "practiceLabel": "Koulutus",
+      "recordSectionTitle": "Oma profiili"
+    },
     "hero": {
       "headline": "Päätöksenteon kieli selkeäksi.",
       "subheadline": "Mind Mechanism tarjoaa yhteisen käsitteellisen perustan organisaatioille, jotka tarvitsevat tarkkuutta monitasoisessa viestinnässä.",

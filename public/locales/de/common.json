@@ -7,7 +7,12 @@
     "settings": "Einstellungen",
     "logout": "Abmelden",
     "login": "Anmelden",
-    "register": "Registrieren"
+    "register": "Registrieren",
+    "sessions": "Sitzungen",
+    "notes": "Notizen",
+    "deck": "Kartenstapel",
+    "sequencer": "Sequenzer",
+    "synthLab": "Synth-Labor"
   },
   "actions": {
     "save": "Speichern",

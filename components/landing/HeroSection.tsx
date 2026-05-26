@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { usePortal } from '@/contexts/PortalContext'
+import { useLanguage } from '@/lib/i18n'
 
 type Props = {
   /** When false, omit primary / secondary CTAs (e.g. on /home where auth lives beside copy). */
@@ -12,6 +13,7 @@ type Props = {
 
 export function HeroSection({ showCtas = true, className }: Props) {
   const { config } = usePortal()
+  const { t } = useLanguage()
 
   return (
     <section
@@ -21,25 +23,27 @@ export function HeroSection({ showCtas = true, className }: Props) {
       )}
     >
       <p className="mb-6 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">
-        {config.name}
+        {t('portal', `${config.id}.name`)}
       </p>
       <h1 className="mb-6 font-serif text-4xl font-semibold leading-tight text-gray-900 dark:text-gray-100">
-        {config.heroHeadline}
+        {t('portal', `${config.id}.heroHeadline`)}
       </h1>
-      <p className="mb-10 max-w-xl text-lg leading-relaxed text-gray-500 dark:text-gray-400">{config.heroSubtext}</p>
+      <p className="mb-10 max-w-xl text-lg leading-relaxed text-gray-500 dark:text-gray-400">
+        {t('portal', `${config.id}.heroSubtext`)}
+      </p>
       {showCtas ? (
         <div className="flex flex-wrap items-center gap-4">
           <Link
             href="/register"
             className="bg-gray-900 px-6 py-3 text-sm font-medium tracking-wide text-gray-100 transition-opacity hover:opacity-80 dark:bg-gray-100 dark:text-gray-900"
           >
-            Get started
+            {t('portal', `${config.id}.hero.cta`)}
           </Link>
           <Link
             href="/login"
             className="text-sm text-gray-500 transition-colors hover:text-gray-700 dark:hover:text-gray-300"
           >
-            Sign in →
+            {t('common', 'auth.signIn')} →
           </Link>
         </div>
       ) : null}

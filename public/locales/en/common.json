@@ -7,7 +7,12 @@
     "settings": "Settings",
     "logout": "Log out",
     "login": "Log in",
-    "register": "Register"
+    "register": "Register",
+    "sessions": "Sessions",
+    "notes": "Notes",
+    "deck": "Deck",
+    "sequencer": "Sequencer",
+    "synthLab": "Synth Lab"
   },
   "actions": {
     "save": "Save",

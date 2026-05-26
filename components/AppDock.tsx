@@ -31,6 +31,7 @@ import { useIdleFade } from '@/lib/hooks/useIdleFade';
 import { cn } from '@/lib/utils';
 import { useSettings } from '@/lib/hooks/useSettings';
 import { usePortal } from '@/contexts/PortalContext';
+import { useLanguage } from '@/lib/i18n';
 
 function isPublicAuthPath(pathname: string | null) {
   if (!pathname) return true;
@@ -44,30 +45,26 @@ function isPublicAuthPath(pathname: string | null) {
 /** Horizontal center of dock icons: pl-3 + Dock mx-2 + half of vertical rail width (see `panelHeight` on Dock, default 64) */
 const DOCK_ICON_CENTER_LEFT = 'calc(0.75rem + 0.5rem + 32px)'
 
-const baseNavTemplate = [
-  { title: 'Home', href: '/layers', icon: Home },
-  { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { title: 'Sessions', href: '/sessions', icon: Clock },
-  { title: 'Notes', href: '/notes', icon: ClipboardList },
-  { title: 'Glossary', href: '/glossary', icon: BookOpen },
-  { title: 'Deck', href: '/deck', icon: SquareStack },
-  { title: 'Sequencer', href: '/sequencer', icon: Music2 },
-  { title: 'Synth Lab', href: '/synth-lab', icon: Waves },
-  { title: 'My Record', href: '/record', icon: ScrollText },
-] as const
-
 
 export function AppDock() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, loading } = useAuth();
   const { config } = usePortal();
+  const { t } = useLanguage();
   const navItems = useMemo(
-    () =>
-      baseNavTemplate.map((item) =>
-        item.href === '/record' ? { ...item, title: config.copy.recordSectionTitle } : item
-      ),
-    [config.copy.recordSectionTitle]
+    () => [
+      { title: t('common', 'nav.home'),       href: '/layers',    icon: Home         },
+      { title: t('common', 'nav.dashboard'),  href: '/dashboard', icon: LayoutDashboard },
+      { title: t('common', 'nav.sessions'),   href: '/sessions',  icon: Clock        },
+      { title: t('common', 'nav.notes'),      href: '/notes',     icon: ClipboardList },
+      { title: t('common', 'nav.glossary'),   href: '/glossary',  icon: BookOpen     },
+      { title: t('common', 'nav.deck'),       href: '/deck',      icon: SquareStack  },
+      { title: t('common', 'nav.sequencer'),  href: '/sequencer', icon: Music2       },
+      { title: t('common', 'nav.synthLab'),   href: '/synth-lab', icon: Waves        },
+      { title: t('portal', `${config.id}.copy.recordSectionTitle`), href: '/record', icon: ScrollText },
+    ],
+    [t, config.id]
   );
   const { isDarkMode, setIsDarkMode } = useTheme();
   const { accessibilityEnabled, accessibilityMode } = useSettings();
