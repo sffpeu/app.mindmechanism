@@ -5,6 +5,7 @@ export interface SavedSession {
   name: string
   savedAt: number
   cardCount: number
+  language?: string
   tableBackground: string | null
   cards: Array<{
     nodeId: string
@@ -120,11 +121,25 @@ export function SessionsPanel({ sessions, onLoad, onDelete, onClose }: Props) {
                   )}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    fontSize: 14, fontWeight: 700, color: '#ddd',
-                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                  }}>
-                    {session.name}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{
+                      fontSize: 14, fontWeight: 700, color: '#ddd',
+                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                      flex: 1, minWidth: 0,
+                    }}>
+                      {session.name}
+                    </div>
+                    {session.language && session.language !== 'en' && (
+                      <div style={{
+                        fontSize: 9, fontWeight: 700, letterSpacing: '0.08em',
+                        color: '#666', background: '#252527',
+                        border: '1px solid #363638', borderRadius: 4,
+                        padding: '1px 5px', flexShrink: 0,
+                        textTransform: 'uppercase',
+                      }}>
+                        {session.language}
+                      </div>
+                    )}
                   </div>
                   <div style={{ fontSize: 11, color: '#3a3a3a', marginTop: 3 }}>
                     {session.cardCount} card{session.cardCount !== 1 ? 's' : ''} · {formatDate(session.savedAt)}

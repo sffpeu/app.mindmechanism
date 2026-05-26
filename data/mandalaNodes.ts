@@ -1,4 +1,6 @@
 import { WHEEL_HEX } from '@/lib/wheelColors'
+import { MANDALA_NODES_DE } from './mandalaNodes.de'
+import { MANDALA_NODES_FI } from './mandalaNodes.fi'
 
 export type NodeRate = '+' | '~' | '-'
 
@@ -18,6 +20,12 @@ export interface MandalaNode {
 export const WHEEL_COLORS: Record<number, string> = Object.fromEntries(
   WHEEL_HEX.map((hex, i) => [i + 1, hex])
 ) as Record<number, string>
+
+export function getMandalaNodes(language: string): MandalaNode[] {
+  if (language === 'de') return MANDALA_NODES_DE
+  if (language === 'fi') return MANDALA_NODES_FI
+  return MANDALA_NODES
+}
 
 export const CARD_W = 240
 export const CARD_H = 339

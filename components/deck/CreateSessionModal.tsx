@@ -1,26 +1,36 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { MANDALA_NODES, WHEEL_COLORS } from '@/data/mandalaNodes'
+import { getMandalaNodes, WHEEL_COLORS } from '@/data/mandalaNodes'
+
+const DECK_LANGUAGES = [
+  { code: 'en', label: 'EN' },
+  { code: 'de', label: 'DE' },
+  { code: 'fi', label: 'FI' },
+]
 
 interface Props {
-  onStart: (nodeIds: string[], sessionName: string, blankCount: number) => void
+  onStart: (nodeIds: string[], sessionName: string, blankCount: number, language: string) => void
   onClose: () => void
+  defaultLanguage?: string
 }
 
-export function CreateSessionModal({ onStart, onClose }: Props) {
+export function CreateSessionModal({ onStart, onClose, defaultLanguage = 'en' }: Props) {
   const [count, setCount] = useState(9)
   const [blankCount, setBlankCount] = useState(0)
   const [sessionName, setSessionName] = useState('')
+  const [language, setLanguage] = useState(defaultLanguage)
+
+  const nodes = useMemo(() => getMandalaNodes(language), [language])
 
   const wheelData = useMemo(() => {
     const map: Record<number, { ids: string[]; name: string }> = {}
-    for (const node of MANDALA_NODES) {
+    for (const node of nodes) {
       if (!map[node.wheel]) map[node.wheel] = { ids: [], name: node.wheelName }
       map[node.wheel].ids.push(node.id)
     }
     return map
-  }, [])
+  }, [nodes])
 
   const wheels = Object.keys(wheelData).map(Number).sort((a, b) => a - b)
   const eligibleWheels = wheels.filter(w => wheelData[w].ids.length >= count)
@@ -35,7 +45,7 @@ export function CreateSessionModal({ onStart, onClose }: Props) {
     if (!canProceed) return
     const shuffled = [...eligibleNodeIds].sort(() => Math.random() - 0.5)
     const drawnIds = count > 0 ? shuffled.slice(0, count) : []
-    onStart(drawnIds, sessionName.trim() || 'Session', blankCount)
+    onStart(drawnIds, sessionName.trim() || 'Session', blankCount, language)
   }
 
   const inc = () => setCount(c => Math.min(16, c + 1))
@@ -63,14 +73,40 @@ export function CreateSessionModal({ onStart, onClose }: Props) {
       >
         {/* Header */}
         <div style={{ padding: '24px 28px 20px', borderBottom: '1px solid #252527' }}>
-          <div style={{ fontSize: 10, color: '#444', textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: 6 }}>
-            Mind Mechanism
-          </div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: '#eee', letterSpacing: '0.01em' }}>
-            Create Session
-          </div>
-          <div style={{ fontSize: 13, color: '#444', marginTop: 4 }}>
-            Initial wheel cards (0–16), plus up to 8 blank cards. Set wheel draw to 0 for blanks only — then use Draw to add wheel cards from the deck.
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+            <div>
+              <div style={{ fontSize: 10, color: '#444', textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: 6 }}>
+                Mind Mechanism
+              </div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: '#eee', letterSpacing: '0.01em' }}>
+                Create Session
+              </div>
+              <div style={{ fontSize: 13, color: '#444', marginTop: 4 }}>
+                Initial wheel cards (0–16), plus up to 8 blank cards. Set wheel draw to 0 for blanks only — then use Draw to add wheel cards from the deck.
+              </div>
+            </div>
+            {/* Language picker */}
+            <div style={{ display: 'flex', gap: 4, flexShrink: 0, paddingTop: 4 }}>
+              {DECK_LANGUAGES.map(lang => (
+                <button
+                  key={lang.code}
+                  onClick={() => setLanguage(lang.code)}
+                  style={{
+                    padding: '5px 10px',
+                    background: language === lang.code ? '#3a3a3e' : 'none',
+                    border: language === lang.code ? '1px solid #555' : '1px solid #2e2e30',
+                    borderRadius: 6,
+                    color: language === lang.code ? '#eee' : '#555',
+                    fontSize: 11, fontWeight: 700,
+                    cursor: 'pointer',
+                    letterSpacing: '0.06em',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  {lang.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 

@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { MANDALA_NODES, WHEEL_COLORS, CARD_W, CARD_H, type MandalaNode } from '@/data/mandalaNodes'
+import { getMandalaNodes, WHEEL_COLORS, CARD_W, CARD_H, type MandalaNode } from '@/data/mandalaNodes'
+import { useLanguage } from '@/lib/i18n'
 import { DeckCard, type Annotation } from './DeckCard'
 import { CreateSessionModal } from './CreateSessionModal'
 import { SessionsPanel, type SavedSession } from './SessionsPanel'
@@ -104,6 +105,7 @@ const DECK_STRIP_BTN_DRAW =
 export function CardTable() {
   const { user, profile } = useAuth()
   const { key: passportKey } = usePassportKey()
+  const { locale } = useLanguage()
   const tableRef = useRef<HTMLDivElement>(null)
   const bgInputRef = useRef<HTMLInputElement>(null)
   const [cards, setCards] = useState<CardState[]>([])
@@ -119,6 +121,7 @@ export function CardTable() {
   const [showSaveModal, setShowSaveModal] = useState(false)
   const [savedSessions, setSavedSessions] = useState<SavedSession[]>([])
   const [currentSessionName, setCurrentSessionName] = useState('Default Draw')
+  const [sessionLanguage, setSessionLanguage] = useState<string>(locale)
 
   // Load deck sessions from Firestore whenever the authenticated user is known
   useEffect(() => {
@@ -166,6 +169,7 @@ export function CardTable() {
           setTableBackground(snap.tableBackground ?? null)
           setCurrentSessionName(snap.currentSessionName ?? 'Default Draw')
           setRemainingDeck(snap.remainingDeck ?? [])
+          setSessionLanguage(snap.sessionLanguage ?? 'en')
           return
         }
       }
@@ -173,7 +177,7 @@ export function CardTable() {
       // Corrupted snapshot — fall through to default scatter
     }
 
-    const shuffled = [...MANDALA_NODES].sort(() => Math.random() - 0.5)
+    const shuffled = [...getMandalaNodes(sessionLanguage)].sort(() => Math.random() - 0.5)
     const drawn = shuffled.slice(0, DEFAULT_DRAW_SIZE).map(n => n.id)
     const remaining = shuffled.slice(DEFAULT_DRAW_SIZE).map(n => n.id)
     setCards(makeScattered(drawn, w, h))
@@ -198,6 +202,7 @@ export function CardTable() {
         tableBackground: tableBackground?.startsWith('https://') ? tableBackground : null,
         currentSessionName,
         remainingDeck,
+        sessionLanguage,
       }
       try {
         localStorage.setItem(AUTO_SAVE_KEY, JSON.stringify(snapshot))
@@ -206,7 +211,7 @@ export function CardTable() {
       }
     }, 800)
     return () => clearTimeout(timer)
-  }, [cards, annotations, tableBackground, currentSessionName, remainingDeck])
+  }, [cards, annotations, tableBackground, currentSessionName, remainingDeck, sessionLanguage])
 
   const showToast = useCallback((msg: string) => {
     setToast(msg)
@@ -266,7 +271,7 @@ export function CardTable() {
           rating: '~',
           source: 'user',
           version: 'User',
-          language: 'en',
+          language: sessionLanguage,
           user_id: user?.uid,
         },
         { researchContext, passportKey: passportKey ?? undefined }
@@ -274,10 +279,10 @@ export function CardTable() {
       showToast(result ? `"${term.trim()}" added to My Words` : 'Failed to add — try again')
       return
     }
-    const node = MANDALA_NODES.find(n => n.id === nodeId)
+    const node = getMandalaNodes(sessionLanguage).find(n => n.id === nodeId)
     if (!node) return
     showToast(`"${node.term}" sent to Glossary`)
-  }, [cards, showToast, user, profile, passportKey])
+  }, [cards, showToast, user, profile, passportKey, sessionLanguage])
 
   const handleCustomContentChange = useCallback((nodeId: string, field: 'term' | 'definition' | 'phonetic', value: string) => {
     setCards(prev => prev.map(c =>
@@ -337,7 +342,7 @@ export function CardTable() {
     e.target.value = ''
   }, [user])
 
-  const handleSessionStart = useCallback((nodeIds: string[], sessionName: string, blankCount: number) => {
+  const handleSessionStart = useCallback((nodeIds: string[], sessionName: string, blankCount: number, language: string) => {
     const el = tableRef.current
     if (!el) return
     const { clientWidth: w, clientHeight: h } = el
@@ -352,7 +357,8 @@ export function CardTable() {
       customContent: { term: '', definition: '', phonetic: '' },
     }))
     setCards([...taxonomyCards, ...blankCards])
-    setRemainingDeck(MANDALA_NODES.filter(n => !nodeIds.includes(n.id)).map(n => n.id))
+    setSessionLanguage(language)
+    setRemainingDeck(getMandalaNodes(language).filter(n => !nodeIds.includes(n.id)).map(n => n.id))
     setAnnotations({})
     setExpandedNode(null)
     setCurrentSessionName(sessionName)
@@ -396,6 +402,7 @@ export function CardTable() {
       name,
       savedAt: Date.now(),
       cardCount: cards.length,
+      language: sessionLanguage,
       cards,
       annotations: finalAnnotations,
       tableBackground: finalBg,
@@ -419,10 +426,11 @@ export function CardTable() {
     } else {
       showToast('Sign in to save sessions to your account')
     }
-  }, [cards, annotations, tableBackground, savedSessions, user, showToast])
+  }, [cards, annotations, tableBackground, savedSessions, user, showToast, sessionLanguage])
 
   const handleLoadSession = useCallback((session: SavedSession) => {
     playDeckSessionLoadTone()
+    const lang = session.language ?? 'en'
     setCards(session.cards)
     // Merge stored annotations with EMPTY_ANNOTATION defaults so new fields are always present
     const normAnnotations: Record<string, Annotation> = {}
@@ -432,8 +440,9 @@ export function CardTable() {
     setAnnotations(normAnnotations)
     setTableBackground(session.tableBackground ?? null)
     setCurrentSessionName(session.name)
+    setSessionLanguage(lang)
     setRemainingDeck(
-      MANDALA_NODES.filter(n => !session.cards.find(c => c.nodeId === n.id)).map(n => n.id)
+      getMandalaNodes(lang).filter(n => !session.cards.find(c => c.nodeId === n.id)).map(n => n.id)
     )
     setExpandedNode(null)
     setShowSessions(false)
@@ -452,7 +461,7 @@ export function CardTable() {
     }
   }, [savedSessions, user])
 
-  const nodeMap = Object.fromEntries(MANDALA_NODES.map(n => [n.id, n]))
+  const nodeMap = Object.fromEntries(getMandalaNodes(sessionLanguage).map(n => [n.id, n]))
 
   return (
     <div
@@ -704,6 +713,7 @@ export function CardTable() {
         <CreateSessionModal
           onStart={handleSessionStart}
           onClose={() => setShowCreateSession(false)}
+          defaultLanguage={sessionLanguage}
         />
       )}
 
