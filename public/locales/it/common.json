@@ -264,6 +264,7 @@
     "oldest": "Più vecchie",
     "newNote": "Nuova nota",
     "loading": "Caricamento note…",
-    "noNotes": "Nessuna nota salvata ancora. Inizia nel pannello editor."
+    "noNotes": "Nessuna nota salvata ancora. Inizia nel pannello editor.",
+    "noSearchResults": "No notes match your search."
   }
 }

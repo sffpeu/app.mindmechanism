@@ -254,6 +254,7 @@
     "oldest": "Vanhimmat",
     "newNote": "Uusi muistiinpano",
     "loading": "Ladataan muistiinpanoja…",
-    "noNotes": "Ei vielä tallennettuja muistiinpanoja. Aloita editoripaneelissa."
+    "noNotes": "Ei vielä tallennettuja muistiinpanoja. Aloita editoripaneelissa.",
+    "noSearchResults": "No notes match your search."
   }
 }

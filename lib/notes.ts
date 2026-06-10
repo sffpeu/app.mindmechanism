@@ -59,6 +59,8 @@ export interface Note {
   updatedAt: Timestamp;
   weatherSnapshot?: WeatherSnapshot;
   sessionId?: string | null;
+  isPinned?: boolean;
+  tags?: string[];
 }
 
 // Validation functions
@@ -85,11 +87,12 @@ const handleFirestoreError = (error: FirestoreError, context: string): never => 
 };
 
 export const createNote = async (
-  userId: string, 
-  title: string, 
+  userId: string,
+  title: string,
   content: string,
   weatherSnapshot?: WeatherSnapshot,
-  sessionId?: string | null
+  sessionId?: string | null,
+  tags?: string[]
 ): Promise<string> => {
   console.log('Creating note:', { userId, title });
   
@@ -107,6 +110,8 @@ export const createNote = async (
       updatedAt: serverTimestamp(),
       weatherSnapshot,
       sessionId: sessionId || null,
+      isPinned: false,
+      tags: tags || [],
     };
     
     const docRef = await addDoc(collection(db, `users/${userId}/notes`), noteData);
@@ -150,6 +155,8 @@ export async function getUserNotes(userId: string): Promise<Note[]> {
         updatedAt,
         weatherSnapshot: data.weatherSnapshot,
         sessionId: data.sessionId || null,
+        isPinned: data.isPinned || false,
+        tags: data.tags || [],
       };
     });
   } catch (error) {
@@ -202,6 +209,8 @@ export const subscribeToUserNotes = (
             updatedAt,
             weatherSnapshot: data.weatherSnapshot,
             sessionId: data.sessionId || null,
+            isPinned: data.isPinned || false,
+            tags: data.tags || [],
           } as Note;
         });
         console.log('Received notes update, count:', notes.length);
@@ -224,14 +233,14 @@ export const updateNote = async (
   title: string,
   content: string,
   weatherSnapshot?: WeatherSnapshot,
-  sessionId?: string | null
+  sessionId?: string | null,
+  tags?: string[]
 ): Promise<void> => {
   try {
     if (!db) throw new Error('Firestore is not initialized');
     if (!userId) throw new Error('User ID is required');
     if (!noteId) throw new Error('Note ID is required');
 
-    // Validate input data
     validateNoteData(title, content);
 
     const noteRef = doc(db, `users/${userId}/notes/${noteId}`);
@@ -241,6 +250,7 @@ export const updateNote = async (
       updatedAt: serverTimestamp(),
       weatherSnapshot,
       sessionId: sessionId || null,
+      tags: tags || [],
     };
 
     await updateDoc(noteRef, updateData);
@@ -248,6 +258,23 @@ export const updateNote = async (
     console.error('Error updating note:', error);
     if (error instanceof FirestoreError) {
       handleFirestoreError(error, 'update note');
+    }
+    throw error;
+  }
+};
+
+export const toggleNotePin = async (userId: string, noteId: string, currentlyPinned: boolean): Promise<void> => {
+  try {
+    if (!db) throw new Error('Firestore is not initialized');
+    if (!userId) throw new Error('User ID is required');
+    if (!noteId) throw new Error('Note ID is required');
+
+    const noteRef = doc(db, `users/${userId}/notes/${noteId}`);
+    await updateDoc(noteRef, { isPinned: !currentlyPinned });
+  } catch (error) {
+    console.error('Error toggling note pin:', error);
+    if (error instanceof FirestoreError) {
+      handleFirestoreError(error, 'pin note');
     }
     throw error;
   }

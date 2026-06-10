@@ -43,7 +43,11 @@ import {
   Type,
   Image as ImageIcon,
   Smile,
+  Search,
+  Bookmark,
+  Tag,
 } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -526,7 +530,7 @@ export default function NotesPage() {
   const clockTitles = useClockTitles()
   const { t } = useLanguage()
   const { user } = useAuth()
-  const { notes, isLoading, addNote, editNote, removeNote } = useNotes()
+  const { notes, isLoading, addNote, editNote, removeNote, pinNote } = useNotes()
   const { location } = useLocation()
   const [noteTitle, setNoteTitle] = useState('')
   const [noteContent, setNoteContent] = useState('')
@@ -549,6 +553,9 @@ export default function NotesPage() {
   const [notesTextColor, setNotesTextColor] = useState<string | null>(null)
   const [editorBgStyle, setEditorBgStyle] = useState<EditorBgStyle>('plain')
   const [emojiPickerOpen, setEmojiPickerOpen] = useState<'title' | 'body' | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [noteTags, setNoteTags] = useState<string[]>([])
+  const [tagInput, setTagInput] = useState('')
   const panelsHydratedRef = useRef(false)
   const titleInputRef = useRef<HTMLInputElement>(null)
   const bodyTextareaRef = useRef<HTMLTextAreaElement>(null)
@@ -820,9 +827,9 @@ export default function NotesPage() {
       const finalSessionId = selectedSessionId === "none" ? null : selectedSessionId;
       
       if (selectedNote && isEditing) {
-        await editNote(selectedNote.id, noteTitle, noteContent, weatherSnapshot, finalSessionId)
+        await editNote(selectedNote.id, noteTitle, noteContent, weatherSnapshot, finalSessionId, noteTags)
       } else {
-        const noteId = await addNote(noteTitle, noteContent, weatherSnapshot, finalSessionId)
+        const noteId = await addNote(noteTitle, noteContent, weatherSnapshot, finalSessionId, noteTags)
         if (noteId) {
           console.log('Created note with ID:', noteId)
         }
@@ -861,12 +868,19 @@ export default function NotesPage() {
     }
   }
 
+  const handleTogglePin = async (note: Note, e: React.MouseEvent) => {
+    e.stopPropagation()
+    await pinNote(note.id, note.isPinned || false)
+  }
+
   const clearForm = () => {
     setNoteTitle('')
     setNoteContent('')
     setSelectedNote(null)
     setIsEditing(false)
     setSelectedSessionId('none')
+    setNoteTags([])
+    setTagInput('')
   }
 
   const handleBgUpload = useCallback(
@@ -1048,11 +1062,24 @@ export default function NotesPage() {
     }).format(date)
   }
 
-  const sortedNotes = [...notes].sort((a, b) => {
-    const dateA = a.updatedAt.toDate().getTime()
-    const dateB = b.updatedAt.toDate().getTime()
-    return sortOrder === 'newest' ? dateB - dateA : dateA - dateB
-  })
+  const sortedNotes = [...notes]
+    .filter((n) => {
+      if (!searchQuery.trim()) return true
+      const q = searchQuery.toLowerCase()
+      return (
+        n.title.toLowerCase().includes(q) ||
+        n.content.toLowerCase().includes(q) ||
+        (n.tags || []).some((t) => t.toLowerCase().includes(q))
+      )
+    })
+    .sort((a, b) => {
+      if ((a.isPinned || false) !== (b.isPinned || false)) {
+        return (a.isPinned ? -1 : 1)
+      }
+      const dateA = a.updatedAt.toDate().getTime()
+      const dateB = b.updatedAt.toDate().getTime()
+      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB
+    })
 
   const canSave = noteTitle.trim().length > 0 && noteContent.trim().length > 0
 
@@ -1456,11 +1483,39 @@ export default function NotesPage() {
                 }
               >
                 <div className="p-3 pt-2" onFocusCapture={() => setFrontPanel('saved')}>
+                  {/* Search */}
+                  <div className="relative mb-2">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 dark:text-gray-500 pointer-events-none" aria-hidden />
+                    <input
+                      type="search"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search notes…"
+                      aria-label="Search saved notes"
+                      className={cn(
+                        'w-full rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-black/30',
+                        'pl-8 pr-3 py-1.5 text-xs text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500',
+                        'focus:outline-none focus:ring-1 focus:ring-blue-500/40'
+                      )}
+                    />
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchQuery('')}
+                        aria-label="Clear search"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
                   <div className="space-y-1.5">
                 {isLoading ? (
                   <p className="text-center text-xs text-gray-500 dark:text-gray-400 py-8">{t('common', 'notes.loading')}</p>
                 ) : sortedNotes.length === 0 ? (
-                  <p className="text-center text-xs text-gray-500 dark:text-gray-400 py-8">{t('common', 'notes.noNotes')}</p>
+                  <p className="text-center text-xs text-gray-500 dark:text-gray-400 py-8">
+                    {searchQuery ? t('common', 'notes.noSearchResults') : t('common', 'notes.noNotes')}
+                  </p>
                 ) : (
                   sortedNotes.map((note) => (
                     <div
@@ -1471,6 +1526,7 @@ export default function NotesPage() {
                           setNoteTitle(note.title);
                           setNoteContent(note.content);
                           setSelectedSessionId(note.sessionId || 'none');
+                          setNoteTags(note.tags || []);
                         }
                       }}
                       className={cn(
@@ -1492,9 +1548,24 @@ export default function NotesPage() {
                           {note.title}
                         </h3>
                         <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            className="p-1 rounded-md group transition-colors"
+                            onClick={(e) => handleTogglePin(note, e)}
+                            title={note.isPinned ? 'Unpin note' : 'Pin note'}
+                            aria-label={note.isPinned ? 'Unpin note' : 'Pin note'}
+                          >
+                            <Bookmark
+                              className={`h-4 w-4 transition-colors ${
+                                note.isPinned
+                                  ? 'fill-amber-400 text-amber-400'
+                                  : 'text-gray-300 dark:text-gray-600 group-hover:text-amber-400'
+                              }`}
+                            />
+                          </button>
                           {note.weatherSnapshot && (
                             <WeatherSnapshotPopover weatherSnapshot={note.weatherSnapshot}>
-                              <button 
+                              <button
                                 className="p-1 rounded-md hover:bg-blue-100 dark:hover:bg-blue-500/20 group transition-colors"
                                 onClick={(e) => e.stopPropagation()}
                               >
@@ -1548,6 +1619,19 @@ export default function NotesPage() {
                             </div>
                           )
                         })()}
+                      {(note.tags || []).length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1.5">
+                          {(note.tags || []).map((tag) => (
+                            <span
+                              key={tag}
+                              className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300"
+                            >
+                              <Tag className="h-2.5 w-2.5" aria-hidden />
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))
                 )}
@@ -1651,6 +1735,21 @@ export default function NotesPage() {
                       {noteTitle}
                     </h3>
                     <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        className="p-1 rounded-md group transition-colors"
+                        onClick={(e) => handleTogglePin(selectedNote, e)}
+                        title={selectedNote.isPinned ? 'Unpin note' : 'Pin note'}
+                        aria-label={selectedNote.isPinned ? 'Unpin note' : 'Pin note'}
+                      >
+                        <Bookmark
+                          className={`h-4 w-4 transition-colors ${
+                            selectedNote.isPinned
+                              ? 'fill-amber-400 text-amber-400'
+                              : 'text-gray-300 dark:text-gray-600 group-hover:text-amber-400'
+                          }`}
+                        />
+                      </button>
                       {selectedNote.weatherSnapshot && (
                         <WeatherSnapshotPopover weatherSnapshot={selectedNote.weatherSnapshot}>
                           <button
@@ -1689,15 +1788,16 @@ export default function NotesPage() {
                       {formatDate(selectedNote.updatedAt)}
                     </p>
                   </div>
-                  <p
+                  <div
                     className={cn(
-                      'mt-0.5 whitespace-pre-wrap break-words leading-relaxed',
+                      'mt-0.5 prose prose-sm dark:prose-invert max-w-none break-words',
+                      '[&>*:first-child]:mt-0 [&>*:last-child]:mb-0',
                       notesTextColor == null && 'text-gray-600 dark:text-gray-400'
                     )}
                     style={noteTypographyStyle}
                   >
-                    {noteContent}
-                  </p>
+                    <ReactMarkdown>{noteContent}</ReactMarkdown>
+                  </div>
                   {selectedNote.sessionId &&
                     (() => {
                       const s = recentSessions.find((x) => x.id === selectedNote.sessionId)
@@ -1713,6 +1813,19 @@ export default function NotesPage() {
                         </div>
                       )
                     })()}
+                  {(selectedNote.tags || []).length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-black/5 dark:border-white/10">
+                      {(selectedNote.tags || []).map((tag) => (
+                        <span
+                          key={tag}
+                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300"
+                        >
+                          <Tag className="h-2.5 w-2.5" aria-hidden />
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -2102,6 +2215,59 @@ export default function NotesPage() {
                       )}
                     </div>
                   </>
+                )}
+
+                {/* Tags */}
+                {(!selectedNote || isEditing) && (
+                  <div className="rounded-lg border border-black/5 dark:border-white/10 bg-gray-50 dark:bg-black/20 p-3 space-y-2">
+                    <label className="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                      <Tag className="h-3.5 w-3.5" aria-hidden />
+                      Tags
+                    </label>
+                    {noteTags.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {noteTags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300"
+                          >
+                            {tag}
+                            <button
+                              type="button"
+                              onClick={() => setNoteTags((prev) => prev.filter((t) => t !== tag))}
+                              aria-label={`Remove tag ${tag}`}
+                              className="hover:text-violet-900 dark:hover:text-violet-100 transition-colors"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if ((e.key === 'Enter' || e.key === ',') && tagInput.trim()) {
+                            e.preventDefault()
+                            const newTag = tagInput.trim().toLowerCase().replace(/,/g, '')
+                            if (newTag && !noteTags.includes(newTag)) {
+                              setNoteTags((prev) => [...prev, newTag])
+                            }
+                            setTagInput('')
+                          }
+                        }}
+                        placeholder="Type a tag, press Enter"
+                        className={cn(
+                          'flex-1 rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-black/40',
+                          'px-3 py-1.5 text-xs text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500',
+                          'focus:outline-none focus:ring-1 focus:ring-blue-500/40'
+                        )}
+                      />
+                    </div>
+                  </div>
                 )}
 
                 {/* Session link — after title/body so the writing comes first */}

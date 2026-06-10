@@ -261,6 +261,7 @@
     "oldest": "Oldest",
     "newNote": "New note",
     "loading": "Loading notes…",
-    "noNotes": "No saved notes yet. Start one in the editor panel."
+    "noNotes": "No saved notes yet. Start one in the editor panel.",
+    "noSearchResults": "No notes match your search."
   }
 }

@@ -2,16 +2,17 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { useAuth } from '@/lib/FirebaseAuthContext'
-import { Note, WeatherSnapshot, createNote, updateNote, deleteNote, subscribeToUserNotes } from '@/lib/notes'
+import { Note, WeatherSnapshot, createNote, updateNote, deleteNote, toggleNotePin, subscribeToUserNotes } from '@/lib/notes'
 import { toast } from '@/components/ui/use-toast'
 
 interface NotesContextType {
   notes: Note[]
   isLoading: boolean
   error: string | null
-  addNote: (title: string, content: string, weatherSnapshot?: WeatherSnapshot, sessionId?: string | null) => Promise<string | undefined>
-  editNote: (noteId: string, title: string, content: string, weatherSnapshot?: WeatherSnapshot, sessionId?: string | null) => Promise<void>
+  addNote: (title: string, content: string, weatherSnapshot?: WeatherSnapshot, sessionId?: string | null, tags?: string[]) => Promise<string | undefined>
+  editNote: (noteId: string, title: string, content: string, weatherSnapshot?: WeatherSnapshot, sessionId?: string | null, tags?: string[]) => Promise<void>
   removeNote: (noteId: string) => Promise<void>
+  pinNote: (noteId: string, currentlyPinned: boolean) => Promise<void>
 }
 
 const NotesContext = createContext<NotesContextType | undefined>(undefined)
@@ -51,7 +52,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     }
   }, [user])
 
-  const addNote = async (title: string, content: string, weatherSnapshot?: WeatherSnapshot, sessionId?: string | null): Promise<string | undefined> => {
+  const addNote = async (title: string, content: string, weatherSnapshot?: WeatherSnapshot, sessionId?: string | null, tags?: string[]): Promise<string | undefined> => {
     if (!user) {
       toast({
         title: "Authentication Error",
@@ -62,7 +63,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
     try {
       setError(null)
-      const noteId = await createNote(user.uid, title, content, weatherSnapshot, sessionId)
+      const noteId = await createNote(user.uid, title, content, weatherSnapshot, sessionId, tags)
       toast({
         title: "Success",
         description: "Note created successfully"
@@ -79,7 +80,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const editNote = async (noteId: string, title: string, content: string, weatherSnapshot?: WeatherSnapshot, sessionId?: string | null) => {
+  const editNote = async (noteId: string, title: string, content: string, weatherSnapshot?: WeatherSnapshot, sessionId?: string | null, tags?: string[]) => {
     if (!user) {
       toast({
         title: "Authentication Error",
@@ -90,7 +91,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
     try {
       setError(null)
-      await updateNote(user.uid, noteId, title, content, weatherSnapshot, sessionId)
+      await updateNote(user.uid, noteId, title, content, weatherSnapshot, sessionId, tags)
       toast({
         title: "Success",
         description: "Note updated successfully"
@@ -133,8 +134,18 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const pinNote = async (noteId: string, currentlyPinned: boolean) => {
+    if (!user) return
+    try {
+      await toggleNotePin(user.uid, noteId, currentlyPinned)
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to pin note'
+      toast({ title: 'Error', description: errorMessage })
+    }
+  }
+
   return (
-    <NotesContext.Provider value={{ notes, isLoading, error, addNote, editNote, removeNote }}>
+    <NotesContext.Provider value={{ notes, isLoading, error, addNote, editNote, removeNote, pinNote }}>
       {children}
     </NotesContext.Provider>
   )

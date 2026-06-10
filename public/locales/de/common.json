@@ -237,7 +237,7 @@
     "restart": "Neu starten",
     "startAgain": "Erneut starten",
     "waitingLobbySessions": "Wartende Lobby-Sitzungen",
-    "scheduledWaitingDesc": "Geplante Sitzungen im Wartezustand. Verwenden Sie „Neu starten", um die Uhr zu öffnen, oder entfernen Sie sie, wenn sie nicht mehr benötigt werden.",
+    "scheduledWaitingDesc": "Geplante Sitzungen im Wartezustand. Verwenden Sie „Neu starten”, um die Uhr zu öffnen, oder entfernen Sie sie, wenn sie nicht mehr benötigt werden.",
     "continueDesc": "Machen Sie dort weiter, wo Sie aufgehört haben. Gleiche Aktionen wie die Karten oben: Fortsetzen, Neu starten oder entfernen.",
     "noWaitingSessions": "Sie haben derzeit keine Sitzungen in der Wartelobby.",
     "noOpenSessions": "Sie haben derzeit keine offenen oder unvollständigen Sitzungen. Starten Sie eine über Sitzungen, oder beenden Sie eine Sitzung, um sie hier als abgeschlossen anzuzeigen.",
@@ -261,6 +261,7 @@
     "oldest": "Älteste",
     "newNote": "Neue Notiz",
     "loading": "Notizen werden geladen…",
-    "noNotes": "Noch keine gespeicherten Notizen. Beginnen Sie im Editorbereich."
+    "noNotes": "Noch keine gespeicherten Notizen. Beginnen Sie im Editorbereich.",
+    "noSearchResults": "Keine Notizen entsprechen Ihrer Suche."
   }
 }
