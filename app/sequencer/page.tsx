@@ -24,7 +24,6 @@ import { encryptField } from '@/lib/passportCrypto'
 import { PhraseProgressCurve } from '@/components/sequencer/PhraseProgressCurve'
 import { NodeAffinityMap } from '@/components/sequencer/NodeAffinityMap'
 import { computeNodeAffinityProfile, type NodeAffinityProfile } from '@/lib/nodeAffinity'
-import { hasStudentAcademicPortal, tierDisplayName } from '@/lib/portalAccess'
 
 type StressKind = 'primary' | 'secondary' | 'unstressed'
 
@@ -304,30 +303,6 @@ export default function SequencerPage() {
   }
 
   if (!user) return null
-
-  const tier = profile?.tier ?? 'open'
-  const hasPortalAccess = hasStudentAcademicPortal(tier)
-
-  if (!hasPortalAccess) {
-    return (
-      <div className="min-h-full overflow-y-auto ml-16 px-4 pb-12 pt-6 sm:px-6">
-        <div className="max-w-3xl rounded-2xl border border-amber-300/40 bg-amber-50/70 p-5 dark:border-amber-500/30 dark:bg-amber-950/20">
-          <p className="text-[10px] uppercase tracking-[0.18em] text-amber-700 dark:text-amber-300">
-            Student + Academic portal required
-          </p>
-          <h1 className="mt-2 text-xl font-semibold text-amber-900 dark:text-amber-100">Sequencer access is scaffolded by portal</h1>
-          <p className="mt-2 text-sm leading-relaxed text-amber-800/90 dark:text-amber-200/90">
-            The phrase analyzer tape and lane-level sequencing are available in the Student + Academic portal only.
-            Your current membership is <strong>{tierDisplayName(tier)}</strong>. This protects against unguided use of
-            clinical-grade feedback tooling.
-          </p>
-          <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">
-            You can still use the rest of Mind Mechanism normally. Access here is expanded after portal upgrade.
-          </p>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-full overflow-y-auto ml-16 px-4 pb-12 pt-4 sm:px-6">
