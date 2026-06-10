@@ -61,6 +61,7 @@ export interface Note {
   sessionId?: string | null;
   isPinned?: boolean;
   tags?: string[];
+  deckSessionId?: string | null;
 }
 
 // Validation functions
@@ -92,7 +93,8 @@ export const createNote = async (
   content: string,
   weatherSnapshot?: WeatherSnapshot,
   sessionId?: string | null,
-  tags?: string[]
+  tags?: string[],
+  deckSessionId?: string | null
 ): Promise<string> => {
   console.log('Creating note:', { userId, title });
   
@@ -112,6 +114,7 @@ export const createNote = async (
       sessionId: sessionId || null,
       isPinned: false,
       tags: tags || [],
+      deckSessionId: deckSessionId || null,
     };
     
     const docRef = await addDoc(collection(db, `users/${userId}/notes`), noteData);
@@ -157,6 +160,7 @@ export async function getUserNotes(userId: string): Promise<Note[]> {
         sessionId: data.sessionId || null,
         isPinned: data.isPinned || false,
         tags: data.tags || [],
+        deckSessionId: data.deckSessionId || null,
       };
     });
   } catch (error) {
@@ -234,7 +238,8 @@ export const updateNote = async (
   content: string,
   weatherSnapshot?: WeatherSnapshot,
   sessionId?: string | null,
-  tags?: string[]
+  tags?: string[],
+  deckSessionId?: string | null
 ): Promise<void> => {
   try {
     if (!db) throw new Error('Firestore is not initialized');
@@ -251,6 +256,7 @@ export const updateNote = async (
       weatherSnapshot,
       sessionId: sessionId || null,
       tags: tags || [],
+      deckSessionId: deckSessionId || null,
     };
 
     await updateDoc(noteRef, updateData);

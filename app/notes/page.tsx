@@ -46,6 +46,7 @@ import {
   Search,
   Bookmark,
   Tag,
+  LayoutGrid,
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { Button } from '@/components/ui/button'
@@ -69,6 +70,9 @@ import {
 } from "@/components/ui/select"
 import { getUserSessions } from '@/lib/sessions'
 import { Session } from '@/lib/sessions'
+import { getUserDeckSessions } from '@/lib/deckSessions'
+import type { SavedSession as DeckSession } from '@/components/deck/SessionsPanel'
+import { getMandalaNodes } from '@/data/mandalaNodes'
 import { useClockTitles } from '@/lib/hooks/useClockTitles'
 import { useLocation } from '@/lib/hooks/useLocation'
 import { useSoundEffects } from '@/lib/sounds'
@@ -556,6 +560,8 @@ export default function NotesPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [noteTags, setNoteTags] = useState<string[]>([])
   const [tagInput, setTagInput] = useState('')
+  const [deckSessions, setDeckSessions] = useState<DeckSession[]>([])
+  const [selectedDeckSessionId, setSelectedDeckSessionId] = useState<string>('none')
   const panelsHydratedRef = useRef(false)
   const titleInputRef = useRef<HTMLInputElement>(null)
   const bodyTextareaRef = useRef<HTMLTextAreaElement>(null)
@@ -721,13 +727,17 @@ export default function NotesPage() {
   const zSaved = frontPanel === 'saved' ? 50 : 42
   const zEditor = frontPanel === 'editor' ? 50 : 42
 
-  // Load recent sessions
+  // Load recent wheel sessions and deck sessions
   useEffect(() => {
     const loadSessions = async () => {
       if (!user) return;
       try {
-        const sessions = await getUserSessions(user.uid);
+        const [sessions, decks] = await Promise.all([
+          getUserSessions(user.uid),
+          getUserDeckSessions(user.uid),
+        ]);
         setRecentSessions(sessions);
+        setDeckSessions(decks);
         // Auto-link to most recent completed session on first load
         if (!autoSelectedRef.current) {
           autoSelectedRef.current = true
@@ -826,10 +836,11 @@ export default function NotesPage() {
       const weatherSnapshot = createWeatherSnapshot();
       const finalSessionId = selectedSessionId === "none" ? null : selectedSessionId;
       
+      const finalDeckSessionId = selectedDeckSessionId === 'none' ? null : selectedDeckSessionId
       if (selectedNote && isEditing) {
-        await editNote(selectedNote.id, noteTitle, noteContent, weatherSnapshot, finalSessionId, noteTags)
+        await editNote(selectedNote.id, noteTitle, noteContent, weatherSnapshot, finalSessionId, noteTags, finalDeckSessionId)
       } else {
-        const noteId = await addNote(noteTitle, noteContent, weatherSnapshot, finalSessionId, noteTags)
+        const noteId = await addNote(noteTitle, noteContent, weatherSnapshot, finalSessionId, noteTags, finalDeckSessionId)
         if (noteId) {
           console.log('Created note with ID:', noteId)
         }
@@ -881,6 +892,7 @@ export default function NotesPage() {
     setSelectedSessionId('none')
     setNoteTags([])
     setTagInput('')
+    setSelectedDeckSessionId('none')
   }
 
   const handleBgUpload = useCallback(
@@ -1527,6 +1539,7 @@ export default function NotesPage() {
                           setNoteContent(note.content);
                           setSelectedSessionId(note.sessionId || 'none');
                           setNoteTags(note.tags || []);
+                          setSelectedDeckSessionId(note.deckSessionId || 'none');
                         }
                       }}
                       className={cn(
@@ -1563,6 +1576,14 @@ export default function NotesPage() {
                               }`}
                             />
                           </button>
+                          {note.deckSessionId && (
+                            <span
+                              className="p-1 flex items-center"
+                              title={deckSessions.find(d => d.id === note.deckSessionId)?.name ?? 'Deck session'}
+                            >
+                              <LayoutGrid className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
+                            </span>
+                          )}
                           {note.weatherSnapshot && (
                             <WeatherSnapshotPopover weatherSnapshot={note.weatherSnapshot}>
                               <button
@@ -1750,6 +1771,11 @@ export default function NotesPage() {
                           }`}
                         />
                       </button>
+                      {selectedNote.deckSessionId && (
+                        <span className="p-1 flex items-center" title={deckSessions.find(d => d.id === selectedNote.deckSessionId)?.name ?? 'Deck session'}>
+                          <LayoutGrid className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
+                        </span>
+                      )}
                       {selectedNote.weatherSnapshot && (
                         <WeatherSnapshotPopover weatherSnapshot={selectedNote.weatherSnapshot}>
                           <button
@@ -1826,6 +1852,82 @@ export default function NotesPage() {
                       ))}
                     </div>
                   )}
+                  {selectedNote.deckSessionId && (() => {
+                    const deck = deckSessions.find(d => d.id === selectedNote.deckSessionId)
+                    if (!deck) return null
+                    const nodeMap = Object.fromEntries(
+                      getMandalaNodes(deck.language || 'en').map(n => [n.id, n])
+                    )
+                    const savedDate = new Date(deck.savedAt).toLocaleDateString('en-GB', {
+                      day: 'numeric', month: 'short', year: 'numeric',
+                    }) + ' · ' + new Date(deck.savedAt).toLocaleTimeString('en-GB', {
+                      hour: '2-digit', minute: '2-digit',
+                    })
+                    return (
+                      <div className="mt-2 pt-2 border-t border-black/5 dark:border-white/10 space-y-2">
+                        {/* Deck session header */}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <LayoutGrid className="h-3.5 w-3.5 text-emerald-500 dark:text-emerald-400 shrink-0" aria-hidden />
+                          <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 truncate">{deck.name}</span>
+                          {deck.language && deck.language !== 'en' && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 font-medium uppercase">{deck.language}</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 text-[10px] text-gray-400 dark:text-gray-500">
+                          <span>{deck.cardCount} card{deck.cardCount !== 1 ? 's' : ''}</span>
+                          <span>{savedDate}</span>
+                        </div>
+                        {/* Cards list */}
+                        <div className="space-y-1.5 pt-1">
+                          {deck.cards
+                            .slice()
+                            .sort((a, b) => a.zIndex - b.zIndex)
+                            .map((card, i) => {
+                              const isBlank = card.nodeId.startsWith('blank-')
+                              const node = isBlank ? null : nodeMap[card.nodeId]
+                              const term = isBlank
+                                ? (card.customContent?.term || 'Custom card')
+                                : (node?.term ?? card.nodeId)
+                              const ann = deck.annotations[card.nodeId]
+                              const hasAnnotation = ann && (ann.userDef || ann.notes)
+                              return (
+                                <div
+                                  key={card.nodeId + i}
+                                  className="rounded-lg border border-black/5 dark:border-white/8 bg-gray-50/60 dark:bg-white/5 px-2.5 py-2 space-y-1"
+                                >
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="text-[10px] text-gray-400 dark:text-gray-600 w-4 shrink-0 text-right">{i + 1}</span>
+                                    <span className="text-xs font-semibold text-gray-800 dark:text-gray-200">{term}</span>
+                                    {!isBlank && node && (
+                                      <span className="text-[10px] text-gray-400 dark:text-gray-500 font-mono">{node.phonetic}</span>
+                                    )}
+                                    {isBlank && (
+                                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-white/10 text-gray-400 dark:text-gray-500">custom</span>
+                                    )}
+                                    {card.isFlipped && (
+                                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">flipped</span>
+                                    )}
+                                  </div>
+                                  {isBlank && card.customContent?.definition && (
+                                    <p className="text-[11px] text-gray-600 dark:text-gray-400 pl-6">{card.customContent.definition}</p>
+                                  )}
+                                  {hasAnnotation && (
+                                    <div className="pl-6 space-y-0.5">
+                                      {ann.userDef && (
+                                        <p className="text-[11px] text-gray-700 dark:text-gray-300"><span className="text-gray-400 dark:text-gray-500 font-medium">def · </span>{ann.userDef}</p>
+                                      )}
+                                      {ann.notes && (
+                                        <p className="text-[11px] text-gray-600 dark:text-gray-400 italic"><span className="text-gray-400 dark:text-gray-500 not-italic font-medium">note · </span>{ann.notes}</p>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              )
+                            })}
+                        </div>
+                      </div>
+                    )
+                  })()}
                 </div>
               )}
 
@@ -2369,6 +2471,86 @@ export default function NotesPage() {
                           </div>
                         )
                       })()}
+                  </div>
+                )}
+
+                {/* Deck session link */}
+                {(!selectedNote || isEditing) && (
+                  <div className="rounded-lg border border-black/5 dark:border-white/10 bg-gray-50 dark:bg-black/20 p-3 space-y-2">
+                    <label className="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                      <LayoutGrid className="h-3.5 w-3.5 text-emerald-500 dark:text-emerald-400" aria-hidden />
+                      Link to deck session
+                    </label>
+                    <Select value={selectedDeckSessionId} onValueChange={setSelectedDeckSessionId}>
+                      <SelectTrigger className="bg-white dark:bg-black/40">
+                        <SelectValue placeholder="Choose a deck session" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No deck session</SelectItem>
+                        {deckSessions.map((deck) => (
+                          <SelectItem key={deck.id} value={deck.id}>
+                            <div className="flex items-center gap-2">
+                              <LayoutGrid className="h-3.5 w-3.5 text-emerald-500 dark:text-emerald-400 shrink-0" />
+                              <span className="font-medium text-gray-800 dark:text-gray-200 truncate">{deck.name}</span>
+                              <span className="text-gray-400 dark:text-gray-500 text-[10px] shrink-0">{deck.cardCount}c</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    {selectedDeckSessionId !== 'none' && (() => {
+                      const deck = deckSessions.find(d => d.id === selectedDeckSessionId)
+                      if (!deck) return null
+                      const nodeMap = Object.fromEntries(
+                        getMandalaNodes(deck.language || 'en').map(n => [n.id, n])
+                      )
+                      const savedDate = new Date(deck.savedAt).toLocaleDateString('en-GB', {
+                        day: 'numeric', month: 'short', year: 'numeric',
+                      }) + ' · ' + new Date(deck.savedAt).toLocaleTimeString('en-GB', {
+                        hour: '2-digit', minute: '2-digit',
+                      })
+                      return (
+                        <div className="rounded-md border border-black/5 dark:border-white/10 bg-white/80 dark:bg-black/30 p-2.5 space-y-2">
+                          {/* Header */}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <LayoutGrid className="h-3 w-3 text-emerald-500 dark:text-emerald-400 shrink-0" aria-hidden />
+                            <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-300 truncate">{deck.name}</span>
+                            {deck.language && deck.language !== 'en' && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 font-medium uppercase">{deck.language}</span>
+                            )}
+                          </div>
+                          {/* Meta */}
+                          <div className="flex items-center gap-3 text-[10px] text-gray-500 dark:text-gray-400">
+                            <span>{deck.cardCount} card{deck.cardCount !== 1 ? 's' : ''}</span>
+                            <span>{savedDate}</span>
+                          </div>
+                          {/* Card pills */}
+                          <div className="flex flex-wrap gap-1.5">
+                            {deck.cards
+                              .slice()
+                              .sort((a, b) => a.zIndex - b.zIndex)
+                              .map((card, i) => {
+                                const isBlank = card.nodeId.startsWith('blank-')
+                                const node = isBlank ? null : nodeMap[card.nodeId]
+                                const term = isBlank
+                                  ? (card.customContent?.term || 'Custom')
+                                  : (node?.term ?? card.nodeId)
+                                return (
+                                  <span
+                                    key={card.nodeId + i}
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-700/40"
+                                  >
+                                    <span className="opacity-50 font-normal">{i + 1}</span>
+                                    {term.toUpperCase()}
+                                    {isBlank && <span className="opacity-40">✦</span>}
+                                  </span>
+                                )
+                              })}
+                          </div>
+                        </div>
+                      )
+                    })()}
                   </div>
                 )}
               </div>
