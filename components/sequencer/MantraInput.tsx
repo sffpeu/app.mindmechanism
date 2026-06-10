@@ -18,6 +18,8 @@ type Props = {
   onIpaChange: (ipa: string) => void
 }
 
+const DEFAULT_EXAMPLE = 'a|ware|ness'
+
 export function MantraInput({
   mantraText,
   mantraLanguage,
@@ -48,6 +50,11 @@ export function MantraInput({
           placeholder="Use | to mark syllable breaks: re|mem|ber|ing"
         />
       </div>
+      {mantraText === DEFAULT_EXAMPLE && (
+        <p className="text-[11px] text-violet-500/80 dark:text-violet-400/70 -mt-1">
+          This is an example — type your own phrase and use | to mark syllable breaks.
+        </p>
+      )}
       <div className="text-xs text-gray-600 dark:text-gray-400">
         {counterText}
         {overflow > 0 ? (

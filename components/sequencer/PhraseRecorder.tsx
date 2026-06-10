@@ -35,6 +35,7 @@ import { useAuth } from '@/lib/FirebaseAuthContext'
 import { useEffectiveNodeTier } from '@/lib/useEffectiveNodeTier'
 import { filterGlossaryWordsByTier } from '@/lib/nodeTiers'
 import { WHEEL_HEX } from '@/lib/wheelColors'
+import { WaveformDisplay } from '@/components/sequencer/WaveformDisplay'
 
 const POOL_RECORD_MS = 10000
 const PRACTICE_POOLS = 3
@@ -610,6 +611,10 @@ export default function PhraseRecorder({ mantraText, onPoolFinished }: PhraseRec
           </div>
         </div>
 
+        <p className="text-[10px] text-gray-400 dark:text-neutral-500">
+          Recordings exist in this session only — deleted when you reset a pool or leave the page. Attach to a card to save locally.
+        </p>
+
         <div className="flex items-center gap-3">
           <Label className="text-[10px] uppercase tracking-widest text-gray-400 dark:text-neutral-500 shrink-0">
             Playback speed
@@ -665,6 +670,19 @@ export default function PhraseRecorder({ mantraText, onPoolFinished }: PhraseRec
               +0.1s
             </Button>
           </div>
+
+          {/* Waveform — appears immediately on recording finish */}
+          {pools[activePool]?.blob && (
+            <div className="mt-3">
+              <WaveformDisplay
+                blob={pools[activePool].blob}
+                phrasePos={phrasePos}
+                phraseDuration={phraseDuration || POOL_RECORD_MS / 1000}
+                color={selectedPoolColor}
+                onSeek={jogPhrase}
+              />
+            </div>
+          )}
 
           <div className="mt-3 space-y-1">
             <Label className="text-[10px] uppercase tracking-widest text-gray-400 dark:text-neutral-500">
