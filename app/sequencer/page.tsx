@@ -6,7 +6,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { useAuth } from '@/lib/FirebaseAuthContext'
 import { usePassportKey } from '@/components/passport/PassportKeyProvider'
 import { cn } from '@/lib/utils'
-import StepSequencer from '@/components/StepSequencer'
+import PhraseRecorder from '@/components/sequencer/PhraseRecorder'
 import { useSequencer } from '@/lib/hooks/useSequencer'
 import { useSequencerAudio } from '@/lib/hooks/useSequencerAudio'
 import { useSequencerStorage } from '@/lib/hooks/useSequencerStorage'
@@ -510,11 +510,10 @@ export default function SequencerPage() {
         </div>
       ) : null}
 
-      {/* Phrase analyzer — full width, no extra wrapper */}
-      <StepSequencer
+      {/* Phrase recorder & acoustic analysis */}
+      <PhraseRecorder
         mantraText={sequencer.sequence.mantraText}
         onPoolFinished={handlePoolFinished}
-        onNodeAffinityLogged={refreshAffinityProfile}
       />
     </div>
   )

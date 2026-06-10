@@ -72,7 +72,7 @@ export function SequencerControls({
         <Button type="button" variant="outline" className="h-7 px-2 text-xs" onClick={() => onBpmChange(bpm + 5)}>
           +5
         </Button>
-        <span className="w-14 text-xs tabular-nums text-gray-500 dark:text-gray-400">{bpm} bpm</span>
+        <span className="w-14 text-xs tabular-nums text-gray-500 dark:text-gray-400">{bpm} pace</span>
       </div>
 
       <div className="h-5 w-px shrink-0 bg-black/12 dark:bg-white/12" />
