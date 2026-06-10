@@ -23,7 +23,6 @@ const DROPS: Drop[] = [
 ]
 
 // ─── Room definitions ─────────────────────────────────────────────────────────
-// Room = ambient background sound (slide to control level) + spatial treatment on mix
 
 type Room = {
   id: string; ambientName: string; treatmentName: string; color: string; wheelName: string
@@ -44,9 +43,7 @@ const ROOMS: Room[] = clockTitles.map((title, i) => ({
   ][i]!,
 }))
 
-// ─── Effect layer definitions ─────────────────────────────────────────────────
-// Independent insert — applied AFTER the room treatment (or dry if no room).
-// Named by what they do, not by wheel.
+// ─── Effect layer ─────────────────────────────────────────────────────────────
 
 const EFFECTS = [
   { id: '0', name: 'Cave',      color: '#fd290a' },
@@ -61,15 +58,18 @@ const EFFECTS = [
 ] as const
 
 // ─── Signal routing ────────────────────────────────────────────────────────────
-// drops → mixBus → [room.treatment?] → midBus → [effectChain?] → destination
-//         ambient.node → destination  (independent background layer)
+//
+//  drops → mixBus ──┬──→ room[0].treatment → room[0].mixGain ──┐
+//                   ├──→ room[1].treatment → room[1].mixGain ──┼──→ midBus → [effect?] → destination
+//                   └──→ dryGain (gain→0 when any room active) ──┘
+//
+//  Each room's ambient.node → destination  (independent background layer)
 
 // ─── Colour blending ──────────────────────────────────────────────────────────
 
 function hexToRgb(hex: string): [number, number, number] {
   return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)]
 }
-
 function blendWeighted(entries: Array<{ color: string; level: number }>): string {
   if (!entries.length) return 'transparent'
   const total = entries.reduce((s, e) => s + e.level, 0)
@@ -104,21 +104,21 @@ function createAmbient(ctx: AudioContext, roomId: string): AmbientHandle {
   const nodes: AudioNode[] = [out]
 
   switch (roomId) {
-    case '0': { // Deep Earth
+    case '0': {
       const src = noiseSource(ctx); const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 90
       const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.08
       const lfoG = ctx.createGain(); lfoG.gain.value = 0.025
       lfo.connect(lfoG); lfoG.connect(out.gain); src.connect(lp); lp.connect(out)
       src.start(); lfo.start(); sources.push(src); oscillators.push(lfo); nodes.push(lp, lfoG); break
     }
-    case '1': { // Running Water
+    case '1': {
       for (const f of [320, 680, 1100, 2200]) {
         const src = noiseSource(ctx); const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'
         bp.frequency.value = f; bp.Q.value = 0.7; const g = ctx.createGain(); g.gain.value = 0.25
         src.connect(bp); bp.connect(g); g.connect(out); src.start(); sources.push(src); nodes.push(bp, g)
       }; break
     }
-    case '2': { // Open Fire
+    case '2': {
       const src = noiseSource(ctx)
       const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 600
       const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 80
@@ -130,7 +130,7 @@ function createAmbient(ctx: AudioContext, roomId: string): AmbientHandle {
       src.connect(hp); hp.connect(lp); lp.connect(out); src.start(); swell.start(); crackle.start()
       sources.push(src); oscillators.push(swell, crackle); nodes.push(lp, hp, swellG, crackleG); break
     }
-    case '3': { // Forest Floor
+    case '3': {
       const src = noiseSource(ctx); const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'
       bp.frequency.value = 500; bp.Q.value = 0.4
       const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.12
@@ -138,7 +138,7 @@ function createAmbient(ctx: AudioContext, roomId: string): AmbientHandle {
       lfo.connect(lfoG); lfoG.connect(out.gain); src.connect(bp); bp.connect(out)
       src.start(); lfo.start(); sources.push(src); oscillators.push(lfo); nodes.push(bp, lfoG); break
     }
-    case '4': { // Open Ocean
+    case '4': {
       const src = noiseSource(ctx)
       const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 800
       const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 60
@@ -147,14 +147,14 @@ function createAmbient(ctx: AudioContext, roomId: string): AmbientHandle {
       wave.connect(waveG); waveG.connect(out.gain); src.connect(hp); hp.connect(lp); lp.connect(out)
       src.start(); wave.start(); sources.push(src); oscillators.push(wave); nodes.push(lp, hp, waveG); break
     }
-    case '5': { // Deep Space
+    case '5': {
       const src = noiseSource(ctx); const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 4000
       const shG = ctx.createGain(); shG.gain.value = 0.15; src.connect(hp); hp.connect(shG); shG.connect(out)
       const sub = ctx.createOscillator(); sub.type = 'sine'; sub.frequency.value = 32
       const subG = ctx.createGain(); subG.gain.value = 0.06; sub.connect(subG); subG.connect(out)
       src.start(); sub.start(); sources.push(src); oscillators.push(sub); nodes.push(hp, shG, subG); break
     }
-    case '6': { // Mountain Wind
+    case '6': {
       const src = noiseSource(ctx)
       const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1200
       const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 5000
@@ -165,7 +165,7 @@ function createAmbient(ctx: AudioContext, roomId: string): AmbientHandle {
       src.connect(hp); hp.connect(lp); lp.connect(out); src.start(); g1.start(); g2.start()
       sources.push(src); oscillators.push(g1, g2); nodes.push(hp, lp, gG1, gG2); break
     }
-    case '7': { // Soft Rain
+    case '7': {
       const s1 = noiseSource(ctx); const s2 = noiseSource(ctx)
       const bp1 = ctx.createBiquadFilter(); bp1.type = 'bandpass'; bp1.frequency.value = 2400; bp1.Q.value = 0.6
       const bp2 = ctx.createBiquadFilter(); bp2.type = 'bandpass'; bp2.frequency.value = 4800; bp2.Q.value = 0.5
@@ -173,7 +173,7 @@ function createAmbient(ctx: AudioContext, roomId: string): AmbientHandle {
       s1.connect(bp1); bp1.connect(g1); g1.connect(out); s2.connect(bp2); bp2.connect(g2); g2.connect(out)
       s1.start(); s2.start(); sources.push(s1, s2); nodes.push(bp1, bp2, g1, g2); break
     }
-    case '8': { // Crystal Chamber
+    case '8': {
       const src = noiseSource(ctx); const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 3000
       const srcG = ctx.createGain(); srcG.gain.value = 0.2; src.connect(hp); hp.connect(srcG); srcG.connect(out)
       const delay = ctx.createDelay(2.0); delay.delayTime.value = 0.8
@@ -194,7 +194,7 @@ function createAmbient(ctx: AudioContext, roomId: string): AmbientHandle {
   }
 }
 
-// ─── Effect chain (shared by room treatments AND standalone effects) ──────────
+// ─── Effect / treatment chain ─────────────────────────────────────────────────
 
 type EffectChain = { input: AudioNode; output: AudioNode; dispose: () => void }
 
@@ -231,11 +231,11 @@ function createEffectChain(ctx: AudioContext, id: string): EffectChain {
   allNodes.push(input, output)
 
   switch (id) {
-    case '0': { // Cave
+    case '0': {
       const { input: rvI, output: rvO, nodes } = makeReverb(ctx, 0.55, 0.48, 5500, 0.4, 1.6)
       input.connect(rvI); rvO.connect(output); allNodes.push(...nodes); break
     }
-    case '1': { // Chorus
+    case '1': {
       const dry = ctx.createGain(); dry.gain.value = 0.5; input.connect(dry); dry.connect(output); allNodes.push(dry)
       for (let i = 0; i < 3; i++) {
         const delay = ctx.createDelay(0.05); delay.delayTime.value = 0.01 + i * 0.003
@@ -246,23 +246,23 @@ function createEffectChain(ctx: AudioContext, id: string): EffectChain {
         lfo.start(); allOscillators.push(lfo); allNodes.push(delay, lfoG, tapG)
       }; break
     }
-    case '2': { // Warm Room
+    case '2': {
       const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3200; input.connect(lp)
       const { input: rvI, output: rvO, nodes } = makeReverb(ctx, 0.85, 0.58, 3200, 0.5, 1.3)
       lp.connect(rvI); rvO.connect(output); allNodes.push(lp, ...nodes); break
     }
-    case '3': { // Hall
+    case '3': {
       const { input: rvI, output: rvO, nodes } = makeReverb(ctx, 1.5, 0.74, 4000, 0.3, 1.8)
       input.connect(rvI); rvO.connect(output); allNodes.push(...nodes); break
     }
-    case '4': { // Tremolo
+    case '4': {
       const trem = ctx.createGain(); trem.gain.value = 0; const base = ctx.createGain(); base.gain.value = 0.65
       const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.45
       const lfoG = ctx.createGain(); lfoG.gain.value = 0.35
       lfo.connect(lfoG); lfoG.connect(trem.gain); input.connect(base); base.connect(output); input.connect(trem); trem.connect(output)
       lfo.start(); allOscillators.push(lfo); allNodes.push(trem, base, lfoG); break
     }
-    case '5': { // Phaser
+    case '5': {
       const dry = ctx.createGain(); dry.gain.value = 0.5; input.connect(dry); dry.connect(output); allNodes.push(dry)
       const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.18
       const lfoG = ctx.createGain(); lfoG.gain.value = 700
@@ -276,12 +276,12 @@ function createEffectChain(ctx: AudioContext, id: string): EffectChain {
       const wetG = ctx.createGain(); wetG.gain.value = 0.5; chain.connect(wetG); wetG.connect(output)
       lfo.start(); allOscillators.push(lfo); allNodes.push(lfoG, wetG, base); break
     }
-    case '6': { // Wide
+    case '6': {
       const merger = ctx.createChannelMerger(2); const delay = ctx.createDelay(0.04); delay.delayTime.value = 0.022
       input.connect(merger, 0, 0); input.connect(delay); delay.connect(merger, 0, 1); merger.connect(output)
       allNodes.push(merger, delay); break
     }
-    case '7': { // Shimmer
+    case '7': {
       const predelay = ctx.createDelay(0.1); predelay.delayTime.value = 0.04
       const { input: rvI, output: rvO, nodes } = makeReverb(ctx, 1.2, 0.7, 6000, 0.3, 1.5)
       input.connect(predelay); predelay.connect(rvI)
@@ -293,7 +293,7 @@ function createEffectChain(ctx: AudioContext, id: string): EffectChain {
       ringOsc.connect(ringGain); ringGain.connect(shimFb); shimFb.connect(rvI); rvO.connect(output)
       ringOsc.start(); allOscillators.push(ringOsc); allNodes.push(predelay, shimSend, shimFb, ringGain, ...nodes); break
     }
-    case '8': { // Cathedral
+    case '8': {
       const predelay = ctx.createDelay(0.5); predelay.delayTime.value = 0.06; input.connect(predelay)
       const { input: rv1I, output: rv1O, nodes: n1 } = makeReverb(ctx, 2.2, 0.82, 3600, 0.15, 2.2)
       const { input: rv2I, output: rv2O, nodes: n2 } = makeReverb(ctx, 1.8, 0.78, 4500, 0, 0.8)
@@ -336,7 +336,7 @@ function createDropAudio(ctx: AudioContext, mixBus: GainNode, id: string): DropA
       levelGain.gain.linearRampToValueAtTime(1, ctx.currentTime + 2); src.start()
       return {
         setLevel: (v) => levelGain.gain.setTargetAtTime(v, ctx.currentTime, 0.05),
-        stop: () => { levelGain.gain.setTargetAtTime(0, ctx.currentTime, 0.5); setTimeout(() => { try { src.stop() } catch { /* ignore */ }; try { ng.disconnect(); filter.disconnect(); src.disconnect(); levelGain.disconnect() } catch { /* ignore */ } }, 800) },
+        stop: () => { levelGain.gain.setTargetAtTime(0, ctx.currentTime, 0.5); setTimeout(() => { try { src.stop() } catch { /* ignore */ }; [ng, filter, src, levelGain].forEach(n => { try { n.disconnect() } catch { /* ignore */ } }) }, 800) },
       }
     }
     case 'glass': { const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = 528; const og = ctx.createGain(); og.gain.value = 0.09; o.connect(og); og.connect(levelGain); fadeIn(1.5); o.start(); oscillators.push(o); extraNodes.push(og); break }
@@ -351,11 +351,16 @@ function createDropAudio(ctx: AudioContext, mixBus: GainNode, id: string): DropA
 // ─── Persistence ──────────────────────────────────────────────────────────────
 
 type SavedAtmosphere = {
-  name: string; drops: Array<{ id: string; level: number }>; masterVolume: number
-  roomId: string | null; roomLevel: number; effectId: string | null; wheelIndex: number | null; savedAt: number
+  name: string
+  drops: Array<{ id: string; level: number }>
+  masterVolume: number
+  rooms: Array<{ id: string; level: number }>
+  effectId: string | null
+  wheelIndex: number | null
+  savedAt: number
 }
 
-const LS_KEY = 'mm_atmospheres_v1'
+const LS_KEY = 'mm_atmospheres_v2'
 function loadAtmospheres(): SavedAtmosphere[] { try { return JSON.parse(localStorage.getItem(LS_KEY) ?? '[]') as SavedAtmosphere[] } catch { return [] } }
 function persistAtmosphere(atm: SavedAtmosphere): void {
   const all = loadAtmospheres().filter(a => { if (atm.wheelIndex !== null) return a.wheelIndex !== atm.wheelIndex; return true })
@@ -370,44 +375,61 @@ const DEFAULT_ROOM_LEVEL = 0.45
 
 // ─── Component types ──────────────────────────────────────────────────────────
 
-type ActiveRoom   = { id: string; level: number; ambient: AmbientHandle; treatment: EffectChain }
+type ActiveRoom = {
+  id: string
+  level: number
+  ambient: AmbientHandle
+  treatment: EffectChain
+  mixGain: GainNode   // treatment.output → mixGain → midBus; level controls this
+}
 type ActiveEffect = { id: string; chain: EffectChain }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function PotionMixer() {
+  // Drop state
   const [activeDropIds, setActiveDropIds]   = useState<string[]>([])
   const [levels, setLevels]                 = useState<Record<string, number>>({})
   const [masterVolume, setMasterVolume]     = useState(0.65)
-  const [activeRoom, setActiveRoom]         = useState<{ id: string; level: number } | null>(null)
+
+  // Room state — map of roomId → level (multiple simultaneously)
+  const [activeRooms, setActiveRooms]       = useState<Record<string, number>>({})
+
+  // Effect state
   const [activeEffectId, setActiveEffectId] = useState<string | null>(null)
+
+  // Save UI
   const [showSave, setShowSave]             = useState(false)
   const [saveName, setSaveName]             = useState('')
   const [saveWheel, setSaveWheel]           = useState<number | null>(null)
   const [confirmation, setConfirmation]     = useState('')
+
+  // Drag tracking
   const [draggingDropId, setDraggingDropId] = useState<string | null>(null)
-  const [draggingRoom, setDraggingRoom]     = useState(false)
+  const [draggingRoomId, setDraggingRoomId] = useState<string | null>(null)
 
   // Audio graph refs
-  const ctxRef        = useRef<AudioContext | null>(null)
-  const mixBusRef     = useRef<GainNode | null>(null)
-  const midBusRef     = useRef<GainNode | null>(null)  // junction: room treatment out → effect in
-  const handlesRef    = useRef<Record<string, DropAudioHandle>>({})
-  const roomRef       = useRef<ActiveRoom | null>(null)
-  const effectRef     = useRef<ActiveEffect | null>(null)
+  const ctxRef      = useRef<AudioContext | null>(null)
+  const mixBusRef   = useRef<GainNode | null>(null)
+  const midBusRef   = useRef<GainNode | null>(null)
+  const dryGainRef  = useRef<GainNode | null>(null)  // open when no rooms, closed when any room active
+  const roomsRef    = useRef<Record<string, ActiveRoom>>({})
+  const effectRef   = useRef<ActiveEffect | null>(null)
+  const handlesRef  = useRef<Record<string, DropAudioHandle>>({})
 
   const dropDragRef = useRef<{ id: string; startX: number; startLevel: number; moved: boolean } | null>(null)
-  const roomDragRef = useRef<{ startX: number; startLevel: number; moved: boolean } | null>(null)
+  const roomDragRef = useRef<{ id: string; startX: number; startLevel: number; moved: boolean } | null>(null)
 
   // ── Bootstrap ─────────────────────────────────────────────────────────────
   const ensureCtx = useCallback(() => {
     if (!ctxRef.current) {
-      const ctx    = new AudioContext()
-      const mixBus = ctx.createGain(); mixBus.gain.value = masterVolume
-      const midBus = ctx.createGain(); midBus.gain.value = 1
-      // Default: dry path — mixBus → midBus → destination
-      mixBus.connect(midBus); midBus.connect(ctx.destination)
-      ctxRef.current = ctx; mixBusRef.current = mixBus; midBusRef.current = midBus
+      const ctx     = new AudioContext()
+      const mixBus  = ctx.createGain(); mixBus.gain.value = masterVolume
+      const midBus  = ctx.createGain(); midBus.gain.value = 1
+      const dryGain = ctx.createGain(); dryGain.gain.value = 1  // open by default; closes when first room added
+      // Default dry path: mixBus → dryGain → midBus → destination
+      mixBus.connect(dryGain); dryGain.connect(midBus); midBus.connect(ctx.destination)
+      ctxRef.current = ctx; mixBusRef.current = mixBus; midBusRef.current = midBus; dryGainRef.current = dryGain
     }
     if (ctxRef.current.state === 'suspended') void ctxRef.current.resume()
     return { ctx: ctxRef.current, mixBus: mixBusRef.current!, midBus: midBusRef.current! }
@@ -420,27 +442,17 @@ export default function PotionMixer() {
   useEffect(() => {
     return () => {
       Object.values(handlesRef.current).forEach(h => h.stop())
-      if (roomRef.current) { roomRef.current.ambient.dispose(); roomRef.current.treatment.dispose() }
-      if (effectRef.current) { effectRef.current.chain.dispose() }
+      Object.values(roomsRef.current).forEach(r => { r.ambient.dispose(); r.treatment.dispose() })
+      effectRef.current?.chain.dispose()
       void ctxRef.current?.close()
     }
   }, [])
 
-  // ── Routing: rewire mixBus→[treatment]→midBus→[effect]→destination ────────
-  const rerouteAll = useCallback(() => {
-    const ctx = ctxRef.current; const mixBus = mixBusRef.current; const midBus = midBusRef.current
-    if (!ctx || !mixBus || !midBus) return
-    try { mixBus.disconnect() } catch { /* ignore */ }
+  // ── midBus → effect/destination routing (called only when effect changes) ─
+  const rerouteMidBus = useCallback(() => {
+    const ctx = ctxRef.current; const midBus = midBusRef.current
+    if (!ctx || !midBus) return
     try { midBus.disconnect() } catch { /* ignore */ }
-    // mixBus → [room treatment?] → midBus
-    const room = roomRef.current
-    if (room) {
-      mixBus.connect(room.treatment.input as GainNode)
-      ;(room.treatment.output as GainNode).connect(midBus)
-    } else {
-      mixBus.connect(midBus)
-    }
-    // midBus → [effect?] → destination
     const eff = effectRef.current
     if (eff) {
       midBus.connect(eff.chain.input as GainNode)
@@ -450,34 +462,81 @@ export default function PotionMixer() {
     }
   }, [])
 
-  // ── Room switching ────────────────────────────────────────────────────────
-  const selectRoom = useCallback((roomId: string | null) => {
-    const { ctx } = ensureCtx()
-    if (roomRef.current) {
-      const prev = roomRef.current
-      prev.ambient.node.gain.setTargetAtTime(0, ctx.currentTime, 0.6)
-      setTimeout(() => prev.ambient.dispose(), 2000)
-      setTimeout(() => prev.treatment.dispose(), 200)
-      roomRef.current = null
-    }
-    setActiveRoom(null)
-    if (roomId !== null) {
+  // ── Room toggle ───────────────────────────────────────────────────────────
+  const toggleRoom = useCallback((roomId: string) => {
+    const { ctx, mixBus, midBus } = ensureCtx()
+    const existing = roomsRef.current[roomId]
+
+    if (existing) {
+      // ── Remove room ──
+      existing.ambient.node.gain.setTargetAtTime(0, ctx.currentTime, 0.6)
+      setTimeout(() => existing.ambient.dispose(), 2000)
+      // Disconnect this room's treatment chain from the graph
+      try { (existing.treatment.input as GainNode).disconnect() } catch { /* ignore */ }
+      try { (existing.treatment.output as GainNode).disconnect() } catch { /* ignore */ }
+      try { existing.mixGain.disconnect() } catch { /* ignore */ }
+      setTimeout(() => existing.treatment.dispose(), 200)
+      const next = { ...roomsRef.current }; delete next[roomId]; roomsRef.current = next
+      setActiveRooms(prev => { const n = { ...prev }; delete n[roomId]; return n })
+      // Re-open dry path if no rooms remain
+      if (Object.keys(next).length === 0 && dryGainRef.current) {
+        mixBus.connect(dryGainRef.current)
+        dryGainRef.current.gain.setTargetAtTime(1, ctx.currentTime, 0.1)
+      }
+    } else {
+      // ── Add room ──
       const treatment = createEffectChain(ctx, roomId)
+      const mixGain   = ctx.createGain(); mixGain.gain.value = DEFAULT_ROOM_LEVEL
       const ambient   = createAmbient(ctx, roomId)
+
+      // Wire: mixBus → treatment → mixGain → midBus
+      mixBus.connect(treatment.input as GainNode)
+      ;(treatment.output as GainNode).connect(mixGain)
+      mixGain.connect(midBus)
+
+      // Ambient goes directly to destination
       ambient.node.connect(ctx.destination)
       ambient.node.gain.setValueAtTime(0, ctx.currentTime)
       ambient.node.gain.linearRampToValueAtTime(DEFAULT_ROOM_LEVEL * 0.22, ctx.currentTime + 3)
-      roomRef.current = { id: roomId, level: DEFAULT_ROOM_LEVEL, ambient, treatment }
-      setActiveRoom({ id: roomId, level: DEFAULT_ROOM_LEVEL })
-    }
-    rerouteAll()
-  }, [ensureCtx, rerouteAll])
 
-  const setRoomLevel = useCallback((level: number) => {
-    const room = roomRef.current; if (!room || !ctxRef.current) return
+      // Close dry path on first room
+      if (Object.keys(roomsRef.current).length === 0 && dryGainRef.current) {
+        dryGainRef.current.gain.setTargetAtTime(0, ctx.currentTime, 0.05)
+        try { mixBus.disconnect(dryGainRef.current) } catch { /* ignore */ }
+      }
+
+      roomsRef.current = { ...roomsRef.current, [roomId]: { id: roomId, level: DEFAULT_ROOM_LEVEL, ambient, treatment, mixGain } }
+      setActiveRooms(prev => ({ ...prev, [roomId]: DEFAULT_ROOM_LEVEL }))
+    }
+  }, [ensureCtx])
+
+  const clearAllRooms = useCallback(() => {
+    const ctx = ctxRef.current; const mixBus = mixBusRef.current
+    if (!ctx || !mixBus) return
+    Object.values(roomsRef.current).forEach(r => {
+      r.ambient.node.gain.setTargetAtTime(0, ctx.currentTime, 0.6)
+      setTimeout(() => r.ambient.dispose(), 2000)
+      try { (r.treatment.input as GainNode).disconnect() } catch { /* ignore */ }
+      try { (r.treatment.output as GainNode).disconnect() } catch { /* ignore */ }
+      try { r.mixGain.disconnect() } catch { /* ignore */ }
+      setTimeout(() => r.treatment.dispose(), 200)
+    })
+    roomsRef.current = {}
+    setActiveRooms({})
+    // Re-open dry path
+    if (dryGainRef.current) {
+      mixBus.connect(dryGainRef.current)
+      dryGainRef.current.gain.setTargetAtTime(1, ctx.currentTime, 0.1)
+    }
+  }, [])
+
+  const setRoomLevel = useCallback((roomId: string, level: number) => {
+    const room = roomsRef.current[roomId]; const ctx = ctxRef.current
+    if (!room || !ctx) return
     room.level = level
-    room.ambient.node.gain.setTargetAtTime(level * 0.22, ctxRef.current.currentTime, 0.05)
-    setActiveRoom(prev => prev ? { ...prev, level } : null)
+    room.mixGain.gain.setTargetAtTime(level, ctx.currentTime, 0.05)
+    room.ambient.node.gain.setTargetAtTime(level * 0.22, ctx.currentTime, 0.05)
+    setActiveRooms(prev => ({ ...prev, [roomId]: level }))
   }, [])
 
   // ── Effect layer ──────────────────────────────────────────────────────────
@@ -493,8 +552,8 @@ export default function PotionMixer() {
       effectRef.current = { id: effectId, chain }
       setActiveEffectId(effectId)
     }
-    rerouteAll()
-  }, [ensureCtx, rerouteAll])
+    rerouteMidBus()
+  }, [ensureCtx, rerouteMidBus])
 
   // ── Drop management ───────────────────────────────────────────────────────
   const activateDrop = useCallback((dropId: string) => {
@@ -539,30 +598,31 @@ export default function PotionMixer() {
   // ── Room pill drag ────────────────────────────────────────────────────────
   const handleRoomPointerDown = useCallback((e: React.PointerEvent, roomId: string) => {
     e.currentTarget.setPointerCapture(e.pointerId)
-    if (activeRoom?.id !== roomId) return
-    roomDragRef.current = { startX: e.clientX, startLevel: activeRoom.level, moved: false }
-  }, [activeRoom])
+    if (!(roomId in activeRooms)) return
+    roomDragRef.current = { id: roomId, startX: e.clientX, startLevel: activeRooms[roomId] ?? DEFAULT_ROOM_LEVEL, moved: false }
+  }, [activeRooms])
 
   const handleRoomPointerMove = useCallback((e: React.PointerEvent, roomId: string) => {
-    const drag = roomDragRef.current; if (!drag || activeRoom?.id !== roomId) return
+    const drag = roomDragRef.current; if (!drag || drag.id !== roomId) return
     const delta = e.clientX - drag.startX; if (Math.abs(delta) > DRAG_THRESHOLD_PX) drag.moved = true
     if (!drag.moved) return
     const v = Math.max(0, Math.min(1, drag.startLevel + delta / DRAG_RANGE_PX))
-    setRoomLevel(v); setDraggingRoom(true)
-  }, [activeRoom, setRoomLevel])
+    setRoomLevel(roomId, v); setDraggingRoomId(roomId)
+  }, [setRoomLevel])
 
   const handleRoomPointerUp = useCallback((e: React.PointerEvent, roomId: string) => {
     e.currentTarget.releasePointerCapture(e.pointerId)
-    const wasDrag = roomDragRef.current?.moved ?? false; roomDragRef.current = null; setDraggingRoom(false)
+    const wasDrag = roomDragRef.current?.moved ?? false; roomDragRef.current = null; setDraggingRoomId(null)
     if (wasDrag) return
-    selectRoom(activeRoom?.id === roomId ? null : roomId)
-  }, [activeRoom, selectRoom])
+    toggleRoom(roomId)
+  }, [toggleRoom])
 
   // ── Derived ───────────────────────────────────────────────────────────────
-  const activeEntries = activeDropIds.map(id => ({ id, color: DROPS.find(d => d.id === id)!.color, level: levels[id] ?? 1.0 }))
-  const potColor      = blendWeighted(activeEntries)
-  const isEmpty       = activeDropIds.length === 0
-  const activeRoomDef = ROOMS.find(r => r.id === activeRoom?.id) ?? null
+  const activeEntries  = activeDropIds.map(id => ({ id, color: DROPS.find(d => d.id === id)!.color, level: levels[id] ?? 1.0 }))
+  const potColor       = blendWeighted(activeEntries)
+  const isEmpty        = activeDropIds.length === 0
+  const activeRoomIds  = Object.keys(activeRooms)
+  const activeRoomDefs = activeRoomIds.map(id => ROOMS.find(r => r.id === id)!).filter(Boolean)
 
   // ── Save ──────────────────────────────────────────────────────────────────
   const handleSave = () => {
@@ -570,8 +630,11 @@ export default function PotionMixer() {
     persistAtmosphere({
       name: saveName.trim() || 'Untitled mixture',
       drops: activeDropIds.map(id => ({ id, level: levels[id] ?? 1.0 })),
-      masterVolume, roomId: activeRoom?.id ?? null, roomLevel: activeRoom?.level ?? DEFAULT_ROOM_LEVEL,
-      effectId: activeEffectId, wheelIndex: saveWheel, savedAt: Date.now(),
+      masterVolume,
+      rooms: activeRoomIds.map(id => ({ id, level: activeRooms[id] ?? DEFAULT_ROOM_LEVEL })),
+      effectId: activeEffectId,
+      wheelIndex: saveWheel,
+      savedAt: Date.now(),
     })
     const label = saveWheel !== null ? clockTitles[saveWheel] : 'session'
     setConfirmation(`Saved — ${saveName.trim() || 'Untitled mixture'} · ${label}`)
@@ -587,21 +650,26 @@ export default function PotionMixer() {
       <div>
         <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 mb-1">Room</p>
         <p className="text-[9px] text-gray-400/60 dark:text-gray-500/60 mb-3">
-          Tap to enter · slide to set ambient level — also applies a spatial treatment to the mix
+          Tap any room to add it · tap again to remove · slide to balance · stack as many as you like
         </p>
         <div className="flex flex-wrap gap-1.5">
-          <button
-            type="button" onClick={() => selectRoom(null)}
-            className={`px-3 py-1.5 rounded-full text-[10px] font-medium border transition-all ${!activeRoom ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-transparent' : 'border-black/10 dark:border-white/10 text-gray-500 dark:text-gray-400'}`}
-          >No room</button>
+          {activeRoomIds.length > 0 && (
+            <button
+              type="button" onClick={clearAllRooms}
+              className="px-3 py-1.5 rounded-full text-[10px] font-medium border border-black/10 dark:border-white/10 text-gray-400 dark:text-gray-500 transition-all"
+            >Clear rooms</button>
+          )}
           {ROOMS.map(room => {
-            const isActive = activeRoom?.id === room.id
-            const level    = isActive ? (activeRoom?.level ?? DEFAULT_ROOM_LEVEL) : 0
-            const isDragging = draggingRoom && isActive
+            const isActive   = room.id in activeRooms
+            const level      = activeRooms[room.id] ?? 0
+            const isDragging = draggingRoomId === room.id
             return (
               <div key={room.id} className="flex flex-col items-center gap-0.5">
-                <div className="text-[9px] font-mono tabular-nums text-gray-500 dark:text-gray-400 h-3.5 leading-none transition-opacity duration-100 text-center" style={{ opacity: isDragging ? 1 : 0 }}>
-                  {Math.round(level * 100)}
+                <div
+                  className="text-[9px] font-mono tabular-nums text-gray-500 dark:text-gray-400 h-3.5 leading-none transition-opacity duration-100 text-center"
+                  style={{ opacity: isDragging ? 1 : 0 }}
+                >
+                  {isDragging ? Math.round(level * 100) : ''}
                 </div>
                 <button
                   type="button" title={`${room.ambientName} · ${room.treatmentName}`}
@@ -625,9 +693,11 @@ export default function PotionMixer() {
             )
           })}
         </div>
-        <p className="mt-2 text-[10px] text-gray-400 dark:text-gray-500 h-4 transition-opacity duration-300" style={{ opacity: activeRoomDef ? 1 : 0 }}>
-          {activeRoomDef ? `${activeRoomDef.ambientName} · ${activeRoomDef.treatmentName}` : ''}
-        </p>
+        {activeRoomDefs.length > 0 && (
+          <p className="mt-2 text-[10px] text-gray-400 dark:text-gray-500 leading-relaxed">
+            {activeRoomDefs.map(r => `${r.ambientName} · ${r.treatmentName}`).join('  /  ')}
+          </p>
+        )}
       </div>
 
       {/* ── Effect layer ── */}
@@ -637,10 +707,12 @@ export default function PotionMixer() {
           Applied to the mix independently — stacks with the room, or use alone
         </p>
         <div className="flex flex-wrap gap-1.5">
-          <button
-            type="button" onClick={() => selectEffect(null)}
-            className={`px-3 py-1.5 rounded-lg text-[10px] font-medium border transition-all ${!activeEffectId ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-transparent' : 'border-black/10 dark:border-white/10 text-gray-500 dark:text-gray-400'}`}
-          >None</button>
+          {activeEffectId !== null && (
+            <button
+              type="button" onClick={() => selectEffect(null)}
+              className="px-3 py-1.5 rounded-lg text-[10px] font-medium border border-black/10 dark:border-white/10 text-gray-400 dark:text-gray-500 transition-all"
+            >Clear</button>
+          )}
           {EFFECTS.map(effect => {
             const isActive = activeEffectId === effect.id
             return (
@@ -729,7 +801,7 @@ export default function PotionMixer() {
 
       {/* ── Actions ── */}
       <div className="flex items-center gap-3 flex-wrap min-h-8">
-        {!isEmpty && <Button variant="outline" size="sm" onClick={clearAll} className="text-xs h-8">Clear</Button>}
+        {!isEmpty && <Button variant="outline" size="sm" onClick={clearAll} className="text-xs h-8">Clear drops</Button>}
         {!isEmpty && !showSave && <Button size="sm" onClick={() => setShowSave(true)} className="text-xs h-8">Save mixture</Button>}
         {confirmation && <span className="text-[11px] text-green-600 dark:text-green-400">{confirmation}</span>}
       </div>
