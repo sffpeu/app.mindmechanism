@@ -27,14 +27,36 @@ const DROPS: Drop[] = [
   { id: 'glass',   name: 'Glass',   color: '#56c1ff', sub: 'clear and pure'      },
 ]
 
+// ─── Room definitions ─────────────────────────────────────────────────────────
+
+type Room = {
+  id: string          // matches wheel index as string '0'–'8'
+  name: string        // evocative name
+  color: string       // WHEEL_HEX colour
+  wheelName: string   // e.g. ROOT
+}
+
+const ROOMS: Room[] = clockTitles.map((title, i) => ({
+  id: String(i),
+  name: [
+    'Deep Earth',       // ROOT
+    'Running Water',    // SACRAL
+    'Open Fire',        // SOLAR PLEXUS
+    'Forest Floor',     // HEART
+    'Open Ocean',       // THROAT
+    'Deep Space',       // THIRD EYE
+    'Mountain Wind',    // MALE CROWN
+    'Soft Rain',        // FEMALE CROWN
+    'Crystal Chamber',  // ETHERIC HEART
+  ][i]!,
+  color: WHEEL_HEX[i]!,
+  wheelName: title,
+}))
+
 // ─── Colour blending (level-weighted) ────────────────────────────────────────
 
 function hexToRgb(hex: string): [number, number, number] {
-  return [
-    parseInt(hex.slice(1, 3), 16),
-    parseInt(hex.slice(3, 5), 16),
-    parseInt(hex.slice(5, 7), 16),
-  ]
+  return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)]
 }
 
 function blendWeighted(entries: Array<{ color: string; level: number }>): string {
@@ -47,23 +69,215 @@ function blendWeighted(entries: Array<{ color: string; level: number }>): string
   return `rgb(${r},${g},${b})`
 }
 
-// ─── Audio engine ─────────────────────────────────────────────────────────────
+// ─── Audio: noise buffer util ─────────────────────────────────────────────────
+
+function makeNoiseBuffer(ctx: AudioContext, seconds = 3): AudioBuffer {
+  const sr = ctx.sampleRate
+  const buf = ctx.createBuffer(1, sr * seconds, sr)
+  const data = buf.getChannelData(0)
+  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1
+  return buf
+}
+
+function noiseSource(ctx: AudioContext): AudioBufferSourceNode {
+  const src = ctx.createBufferSource()
+  src.buffer = makeNoiseBuffer(ctx, 4)
+  src.loop = true
+  return src
+}
+
+// ─── Audio: room engine ───────────────────────────────────────────────────────
+// Each room is a self-contained ambient generator. Gain is fixed and low —
+// the room is a backdrop, not a mix element.
+
+type RoomHandle = { stop: () => void }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function createRoomAudio(ctx: AudioContext, destination: AudioNode, roomId: string): RoomHandle {
+  const out = ctx.createGain()
+  out.gain.setValueAtTime(0, ctx.currentTime)
+  out.connect(destination)
+
+  const sources: AudioBufferSourceNode[] = []
+  const oscillators: OscillatorNode[] = []
+  const nodes: AudioNode[] = []
+
+  const TARGET_GAIN = 0.28
+
+  switch (roomId) {
+
+    case '0': {
+      // ROOT — Deep Earth: sub rumble + low cave resonance
+      const src = noiseSource(ctx)
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 90
+      const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.08
+      const lfoG = ctx.createGain(); lfoG.gain.value = 0.04
+      lfo.connect(lfoG); lfoG.connect(out.gain)
+      src.connect(lp); lp.connect(out)
+      out.gain.linearRampToValueAtTime(TARGET_GAIN, ctx.currentTime + 4)
+      src.start(); lfo.start()
+      sources.push(src); oscillators.push(lfo); nodes.push(lp, lfoG)
+      break
+    }
+
+    case '1': {
+      // SACRAL — Running Water: layered bandpass noise
+      const freqs = [320, 680, 1100, 2200]
+      freqs.forEach(f => {
+        const src = noiseSource(ctx)
+        const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'
+        bp.frequency.value = f; bp.Q.value = 0.7
+        const g = ctx.createGain(); g.gain.value = 0.25
+        src.connect(bp); bp.connect(g); g.connect(out)
+        src.start()
+        sources.push(src); nodes.push(bp, g)
+      })
+      out.gain.linearRampToValueAtTime(TARGET_GAIN, ctx.currentTime + 3)
+      break
+    }
+
+    case '2': {
+      // SOLAR PLEXUS — Open Fire: noise with fast crackle LFO
+      const src = noiseSource(ctx)
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 600
+      const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 80
+      // Slow amplitude swell
+      const swell = ctx.createOscillator(); swell.type = 'sine'; swell.frequency.value = 0.15
+      const swellG = ctx.createGain(); swellG.gain.value = 0.06
+      // Fast crackle
+      const crackle = ctx.createOscillator(); crackle.type = 'sine'; crackle.frequency.value = 9
+      const crackleG = ctx.createGain(); crackleG.gain.value = 0.03
+      swell.connect(swellG); swellG.connect(out.gain)
+      crackle.connect(crackleG); crackleG.connect(out.gain)
+      src.connect(hp); hp.connect(lp); lp.connect(out)
+      out.gain.linearRampToValueAtTime(TARGET_GAIN, ctx.currentTime + 2)
+      src.start(); swell.start(); crackle.start()
+      sources.push(src); oscillators.push(swell, crackle); nodes.push(lp, hp, swellG, crackleG)
+      break
+    }
+
+    case '3': {
+      // HEART — Forest Floor: soft mid noise + gentle breeze swell
+      const src = noiseSource(ctx)
+      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'
+      bp.frequency.value = 500; bp.Q.value = 0.4
+      const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.12
+      const lfoG = ctx.createGain(); lfoG.gain.value = 0.07
+      lfo.connect(lfoG); lfoG.connect(out.gain)
+      src.connect(bp); bp.connect(out)
+      out.gain.linearRampToValueAtTime(TARGET_GAIN * 0.8, ctx.currentTime + 4)
+      src.start(); lfo.start()
+      sources.push(src); oscillators.push(lfo); nodes.push(bp, lfoG)
+      break
+    }
+
+    case '4': {
+      // THROAT — Open Ocean: very slow wave swell on broadband noise
+      const src = noiseSource(ctx)
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 800
+      const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 60
+      // Wave rhythm — ~0.07 Hz = one wave every ~14 seconds
+      const wave = ctx.createOscillator(); wave.type = 'sine'; wave.frequency.value = 0.07
+      const waveG = ctx.createGain(); waveG.gain.value = 0.12
+      wave.connect(waveG); waveG.connect(out.gain)
+      src.connect(hp); hp.connect(lp); lp.connect(out)
+      out.gain.linearRampToValueAtTime(TARGET_GAIN, ctx.currentTime + 6)
+      src.start(); wave.start()
+      sources.push(src); oscillators.push(wave); nodes.push(lp, hp, waveG)
+      break
+    }
+
+    case '5': {
+      // THIRD EYE — Deep Space: barely-there hiss + ultra-low sub tone
+      const src = noiseSource(ctx)
+      const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 4000
+      const shelfG = ctx.createGain(); shelfG.gain.value = 0.15
+      src.connect(hp); hp.connect(shelfG); shelfG.connect(out)
+      // Sub presence, nearly inaudible
+      const sub = ctx.createOscillator(); sub.type = 'sine'; sub.frequency.value = 32
+      const subG = ctx.createGain(); subG.gain.value = 0.06
+      sub.connect(subG); subG.connect(out)
+      out.gain.linearRampToValueAtTime(TARGET_GAIN * 0.7, ctx.currentTime + 5)
+      src.start(); sub.start()
+      sources.push(src); oscillators.push(sub); nodes.push(hp, shelfG, subG)
+      break
+    }
+
+    case '6': {
+      // MALE CROWN — Mountain Wind: highpass noise with gusty LFO
+      const src = noiseSource(ctx)
+      const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1200
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 5000
+      // Irregular gust — two LFOs at different rates beating together
+      const gust1 = ctx.createOscillator(); gust1.type = 'sine'; gust1.frequency.value = 0.22
+      const gust2 = ctx.createOscillator(); gust2.type = 'sine'; gust2.frequency.value = 0.31
+      const gustG1 = ctx.createGain(); gustG1.gain.value = 0.06
+      const gustG2 = ctx.createGain(); gustG2.gain.value = 0.04
+      gust1.connect(gustG1); gust2.connect(gustG2)
+      gustG1.connect(out.gain); gustG2.connect(out.gain)
+      src.connect(hp); hp.connect(lp); lp.connect(out)
+      out.gain.linearRampToValueAtTime(TARGET_GAIN, ctx.currentTime + 3)
+      src.start(); gust1.start(); gust2.start()
+      sources.push(src); oscillators.push(gust1, gust2); nodes.push(hp, lp, gustG1, gustG2)
+      break
+    }
+
+    case '7': {
+      // FEMALE CROWN — Soft Rain: mid-high noise, constant gentle patter
+      const src1 = noiseSource(ctx)
+      const src2 = noiseSource(ctx)
+      const bp1 = ctx.createBiquadFilter(); bp1.type = 'bandpass'; bp1.frequency.value = 2400; bp1.Q.value = 0.6
+      const bp2 = ctx.createBiquadFilter(); bp2.type = 'bandpass'; bp2.frequency.value = 4800; bp2.Q.value = 0.5
+      const g1 = ctx.createGain(); g1.gain.value = 0.5
+      const g2 = ctx.createGain(); g2.gain.value = 0.3
+      src1.connect(bp1); bp1.connect(g1); g1.connect(out)
+      src2.connect(bp2); bp2.connect(g2); g2.connect(out)
+      out.gain.linearRampToValueAtTime(TARGET_GAIN * 0.9, ctx.currentTime + 2)
+      src1.start(); src2.start()
+      sources.push(src1, src2); nodes.push(bp1, bp2, g1, g2)
+      break
+    }
+
+    case '8': {
+      // ETHERIC HEART — Crystal Chamber: hiss with long feedback reverb shimmer
+      const src = noiseSource(ctx)
+      const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 3000
+      const srcG = ctx.createGain(); srcG.gain.value = 0.2
+      src.connect(hp); hp.connect(srcG); srcG.connect(out)
+      // Long reverb tail via feedback delay
+      const delay = ctx.createDelay(2.0); delay.delayTime.value = 0.8
+      const fb = ctx.createGain(); fb.gain.value = 0.62
+      const delayLP = ctx.createBiquadFilter(); delayLP.type = 'lowpass'; delayLP.frequency.value = 6000
+      srcG.connect(delay); delay.connect(delayLP); delayLP.connect(fb)
+      fb.connect(delay); delay.connect(out)
+      out.gain.linearRampToValueAtTime(TARGET_GAIN * 0.75, ctx.currentTime + 5)
+      src.start()
+      sources.push(src); nodes.push(hp, srcG, delay, fb, delayLP)
+      break
+    }
+  }
+
+  return {
+    stop: () => {
+      out.gain.setTargetAtTime(0, ctx.currentTime, 0.8)
+      setTimeout(() => {
+        sources.forEach(s => { try { s.stop() } catch { /* already stopped */ } })
+        oscillators.forEach(o => { try { o.stop() } catch { /* already stopped */ } })
+        nodes.forEach(n => { try { n.disconnect() } catch { /* ignore */ } })
+        try { out.disconnect() } catch { /* ignore */ }
+      }, 2400)
+    },
+  }
+}
+
+// ─── Audio: drop engine ───────────────────────────────────────────────────────
 
 type DropAudioHandle = {
   stop: () => void
   setLevel: (v: number) => void
 }
 
-function makeNoiseBuffer(ctx: AudioContext): AudioBuffer {
-  const sr = ctx.sampleRate
-  const buf = ctx.createBuffer(1, sr * 2, sr)
-  const data = buf.getChannelData(0)
-  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1
-  return buf
-}
-
 function createDropAudio(ctx: AudioContext, master: GainNode, id: string): DropAudioHandle {
-  // Per-drop level gate — this is what the fader gesture controls
   const levelGain = ctx.createGain()
   levelGain.gain.setValueAtTime(0, ctx.currentTime)
   levelGain.connect(master)
@@ -149,18 +363,19 @@ function createDropAudio(ctx: AudioContext, master: GainNode, id: string): DropA
     }
     case 'mist': {
       const src = ctx.createBufferSource()
-      src.buffer = makeNoiseBuffer(ctx); src.loop = true
+      src.buffer = makeNoiseBuffer(ctx, 4); src.loop = true
       const filter = ctx.createBiquadFilter()
       filter.type = 'bandpass'; filter.frequency.value = 800; filter.Q.value = 1.5
       const ng = ctx.createGain(); ng.gain.value = 0.12
       src.connect(filter); filter.connect(ng); ng.connect(levelGain)
-      fadeIn(2); src.start()
+      levelGain.gain.linearRampToValueAtTime(1, ctx.currentTime + 2)
+      src.start()
       return {
         setLevel: (v) => levelGain.gain.setTargetAtTime(v, ctx.currentTime, 0.05),
         stop: () => {
           levelGain.gain.setTargetAtTime(0, ctx.currentTime, 0.5)
           setTimeout(() => {
-            try { src.stop() } catch { /* already stopped */ }
+            try { src.stop() } catch { /* ignore */ }
             try { ng.disconnect(); filter.disconnect(); src.disconnect(); levelGain.disconnect() } catch { /* ignore */ }
           }, 800)
         },
@@ -195,6 +410,7 @@ type SavedAtmosphere = {
   name: string
   drops: Array<{ id: string; level: number }>
   masterVolume: number
+  roomId: string | null
   wheelIndex: number | null
   savedAt: number
 }
@@ -215,50 +431,54 @@ function persistAtmosphere(atm: SavedAtmosphere): void {
   localStorage.setItem(LS_KEY, JSON.stringify(all.slice(0, 20)))
 }
 
-// ─── Drag gesture constants ───────────────────────────────────────────────────
+// ─── Drag constants ───────────────────────────────────────────────────────────
 
-// How many pixels of horizontal drag = full range (0→1)
 const DRAG_RANGE_PX = 180
-// Minimum movement before we treat the gesture as a drag (not a tap)
 const DRAG_THRESHOLD_PX = 6
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function PotionMixer() {
-  const [activeDropIds, setActiveDropIds] = useState<string[]>([])
-  // Per-drop level: 0–1. Stored separately so we can read it for visuals.
-  const [levels, setLevels] = useState<Record<string, number>>({})
-  const [masterVolume, setMasterVolume] = useState(0.65)
-  const [showSave, setShowSave] = useState(false)
-  const [saveName, setSaveName] = useState('')
-  const [saveWheel, setSaveWheel] = useState<number | null>(null)
-  const [confirmation, setConfirmation] = useState('')
-  // Which drop is being actively dragged right now (for the readout pill)
-  const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [activeDropIds, setActiveDropIds]   = useState<string[]>([])
+  const [levels, setLevels]                 = useState<Record<string, number>>({})
+  const [masterVolume, setMasterVolume]     = useState(0.65)
+  const [activeRoomId, setActiveRoomId]     = useState<string | null>(null)
+  const [showSave, setShowSave]             = useState(false)
+  const [saveName, setSaveName]             = useState('')
+  const [saveWheel, setSaveWheel]           = useState<number | null>(null)
+  const [confirmation, setConfirmation]     = useState('')
+  const [draggingId, setDraggingId]         = useState<string | null>(null)
 
-  const ctxRef = useRef<AudioContext | null>(null)
-  const masterRef = useRef<GainNode | null>(null)
-  const handlesRef = useRef<Record<string, DropAudioHandle>>({})
+  const ctxRef        = useRef<AudioContext | null>(null)
+  const masterRef     = useRef<GainNode | null>(null)
+  const roomOutRef    = useRef<GainNode | null>(null)       // room goes here
+  const handlesRef    = useRef<Record<string, DropAudioHandle>>({})
+  const roomHandleRef = useRef<RoomHandle | null>(null)
 
-  // Drag gesture state — not in React state so we don't re-render mid-drag
   const dragRef = useRef<{
-    id: string
-    startX: number
-    startLevel: number
-    moved: boolean
+    id: string; startX: number; startLevel: number; moved: boolean
   } | null>(null)
 
+  // ── Context bootstrap ──────────────────────────────────────────────────────
   const ensureCtx = useCallback(() => {
     if (!ctxRef.current) {
       const ctx = new AudioContext()
-      const master = ctx.createGain()
-      master.gain.value = masterVolume
+      // Drops → master → destination
+      const master = ctx.createGain(); master.gain.value = masterVolume
       master.connect(ctx.destination)
+      // Room → roomOut → destination (independent gain)
+      const roomOut = ctx.createGain(); roomOut.gain.value = 1
+      roomOut.connect(ctx.destination)
       ctxRef.current = ctx
       masterRef.current = master
+      roomOutRef.current = roomOut
     }
     if (ctxRef.current.state === 'suspended') void ctxRef.current.resume()
-    return { ctx: ctxRef.current, master: masterRef.current! }
+    return {
+      ctx: ctxRef.current,
+      master: masterRef.current!,
+      roomOut: roomOutRef.current!,
+    }
   }, [masterVolume])
 
   useEffect(() => {
@@ -270,29 +490,37 @@ export default function PotionMixer() {
   useEffect(() => {
     return () => {
       Object.values(handlesRef.current).forEach(h => h.stop())
+      roomHandleRef.current?.stop()
       void ctxRef.current?.close()
     }
   }, [])
 
-  // ── Activate a drop (tap on inactive) ──────────────────────────────────────
+  // ── Room selection ─────────────────────────────────────────────────────────
+  const selectRoom = useCallback((roomId: string | null) => {
+    // Stop current room
+    if (roomHandleRef.current) {
+      roomHandleRef.current.stop()
+      roomHandleRef.current = null
+    }
+    setActiveRoomId(roomId)
+    if (roomId === null) return
+    const { ctx, roomOut } = ensureCtx()
+    roomHandleRef.current = createRoomAudio(ctx, roomOut, roomId)
+  }, [ensureCtx])
+
+  // ── Drop activation ────────────────────────────────────────────────────────
   const activateDrop = useCallback((dropId: string) => {
     const { ctx, master } = ensureCtx()
-    const handle = createDropAudio(ctx, master, dropId)
-    handlesRef.current[dropId] = handle
+    handlesRef.current[dropId] = createDropAudio(ctx, master, dropId)
     setActiveDropIds(prev => [...prev, dropId])
     setLevels(prev => ({ ...prev, [dropId]: 1.0 }))
   }, [ensureCtx])
 
-  // ── Deactivate a drop (tap on active) ──────────────────────────────────────
   const deactivateDrop = useCallback((dropId: string) => {
     handlesRef.current[dropId]?.stop()
     delete handlesRef.current[dropId]
     setActiveDropIds(prev => prev.filter(id => id !== dropId))
-    setLevels(prev => {
-      const next = { ...prev }
-      delete next[dropId]
-      return next
-    })
+    setLevels(prev => { const n = { ...prev }; delete n[dropId]; return n })
   }, [])
 
   const clearAll = useCallback(() => {
@@ -302,95 +530,119 @@ export default function PotionMixer() {
     setLevels({})
   }, [])
 
-  // ── Pointer gesture handlers ───────────────────────────────────────────────
-
+  // ── Pointer drag (level fader) ─────────────────────────────────────────────
   const handlePointerDown = useCallback((e: React.PointerEvent, dropId: string) => {
     e.currentTarget.setPointerCapture(e.pointerId)
-    const isActive = activeDropIds.includes(dropId)
-    if (!isActive) {
-      // Inactive: just activate on pointerup (handled there)
-      return
-    }
-    // Active: begin potential drag
-    dragRef.current = {
-      id: dropId,
-      startX: e.clientX,
-      startLevel: levels[dropId] ?? 1.0,
-      moved: false,
-    }
+    if (!activeDropIds.includes(dropId)) return
+    dragRef.current = { id: dropId, startX: e.clientX, startLevel: levels[dropId] ?? 1.0, moved: false }
   }, [activeDropIds, levels])
 
   const handlePointerMove = useCallback((e: React.PointerEvent, dropId: string) => {
     const drag = dragRef.current
     if (!drag || drag.id !== dropId) return
-
     const delta = e.clientX - drag.startX
-    if (Math.abs(delta) > DRAG_THRESHOLD_PX) {
-      drag.moved = true
-    }
+    if (Math.abs(delta) > DRAG_THRESHOLD_PX) drag.moved = true
     if (!drag.moved) return
-
-    const newLevel = Math.max(0, Math.min(1, drag.startLevel + delta / DRAG_RANGE_PX))
-    handlesRef.current[dropId]?.setLevel(newLevel)
-    setLevels(prev => ({ ...prev, [dropId]: newLevel }))
+    const v = Math.max(0, Math.min(1, drag.startLevel + delta / DRAG_RANGE_PX))
+    handlesRef.current[dropId]?.setLevel(v)
+    setLevels(prev => ({ ...prev, [dropId]: v }))
     setDraggingId(dropId)
   }, [])
 
   const handlePointerUp = useCallback((e: React.PointerEvent, dropId: string) => {
     e.currentTarget.releasePointerCapture(e.pointerId)
-    const drag = dragRef.current
-    const wasDrag = drag?.moved ?? false
+    const wasDrag = dragRef.current?.moved ?? false
     dragRef.current = null
     setDraggingId(null)
-
-    if (wasDrag) return // level was set during drag — no toggle
-
-    // Tap behaviour
-    const isActive = activeDropIds.includes(dropId)
-    if (isActive) {
-      deactivateDrop(dropId)
-    } else {
-      activateDrop(dropId)
-    }
+    if (wasDrag) return
+    if (activeDropIds.includes(dropId)) deactivateDrop(dropId)
+    else activateDrop(dropId)
   }, [activeDropIds, activateDrop, deactivateDrop])
 
   // ── Derived visuals ────────────────────────────────────────────────────────
-
   const activeEntries = activeDropIds.map(id => ({
-    id,
-    color: DROPS.find(d => d.id === id)!.color,
-    level: levels[id] ?? 1.0,
+    id, color: DROPS.find(d => d.id === id)!.color, level: levels[id] ?? 1.0,
   }))
-
   const potColor = blendWeighted(activeEntries)
   const isEmpty = activeDropIds.length === 0
+  const activeRoom = ROOMS.find(r => r.id === activeRoomId) ?? null
 
   // ── Save ──────────────────────────────────────────────────────────────────
-
   const handleSave = () => {
     if (!activeDropIds.length) return
     persistAtmosphere({
       name: saveName.trim() || 'Untitled mixture',
       drops: activeDropIds.map(id => ({ id, level: levels[id] ?? 1.0 })),
       masterVolume,
+      roomId: activeRoomId,
       wheelIndex: saveWheel,
       savedAt: Date.now(),
     })
     const label = saveWheel !== null ? clockTitles[saveWheel] : 'session'
     setConfirmation(`Saved — ${saveName.trim() || 'Untitled mixture'} · ${label}`)
-    setShowSave(false)
-    setSaveName('')
-    setSaveWheel(null)
+    setShowSave(false); setSaveName(''); setSaveWheel(null)
     setTimeout(() => setConfirmation(''), 4000)
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
+
+      {/* ── Room selector ── */}
+      <div>
+        <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 mb-3">
+          Room
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {/* No room */}
+          <button
+            type="button"
+            onClick={() => selectRoom(null)}
+            className={`px-3 py-1.5 rounded-full text-[10px] font-medium border transition-all ${
+              activeRoomId === null
+                ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-transparent'
+                : 'border-black/10 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:border-black/20 dark:hover:border-white/20'
+            }`}
+          >
+            No room
+          </button>
+
+          {ROOMS.map(room => {
+            const isActive = activeRoomId === room.id
+            return (
+              <button
+                key={room.id}
+                type="button"
+                onClick={() => selectRoom(isActive ? null : room.id)}
+                title={room.name}
+                className="px-3 py-1.5 rounded-full text-[10px] font-medium border transition-all"
+                style={{
+                  borderColor: isActive ? room.color : 'rgba(128,128,128,0.2)',
+                  color: isActive ? room.color : undefined,
+                  backgroundColor: isActive ? `${room.color}18` : undefined,
+                  boxShadow: isActive ? `0 0 0 1px ${room.color}44` : undefined,
+                }}
+              >
+                {room.wheelName}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Active room name */}
+        <p
+          className="mt-2 text-[10px] text-gray-400 dark:text-gray-500 h-4 transition-opacity duration-300"
+          style={{ opacity: activeRoom ? 1 : 0 }}
+        >
+          {activeRoom ? `${activeRoom.name} — running in the background` : ''}
+        </p>
+      </div>
 
       {/* ── The pot ── */}
       <div className="flex flex-col items-center gap-3">
         <div className="relative" style={{ width: 200, height: 200 }}>
-          <svg viewBox="0 0 200 200" width="200" height="200" className="absolute inset-0 pointer-events-none" aria-hidden>
+          <svg viewBox="0 0 200 200" width="200" height="200"
+            className="absolute inset-0 pointer-events-none" aria-hidden>
             <ellipse cx="100" cy="192" rx="60" ry="8" fill="black" opacity="0.12" />
             <path
               d="M 30 75 Q 18 140 40 175 Q 70 198 100 198 Q 130 198 160 175 Q 182 140 170 75 Q 155 55 100 55 Q 45 55 30 75 Z"
@@ -404,12 +656,10 @@ export default function PotionMixer() {
               opacity={0.9}
             />
             <ellipse cx="100" cy="73" rx="68" ry="18"
-              fill="none" stroke="white" strokeWidth="1.5" opacity={0.1}
-            />
+              fill="none" stroke="white" strokeWidth="1.5" opacity={0.1} />
             {!isEmpty && (
               <ellipse cx="90" cy="68" rx="28" ry="8"
-                fill="white" opacity={0.07} transform="rotate(-10 90 68)"
-              />
+                fill="white" opacity={0.07} transform="rotate(-10 90 68)" />
             )}
             {activeEntries.map(({ id, color, level }, i) => {
               const cx = 65 + (i % 5) * 18
@@ -450,47 +700,37 @@ export default function PotionMixer() {
             const active = activeDropIds.includes(drop.id)
             const level = levels[drop.id] ?? 1.0
             const isDragging = draggingId === drop.id
-
             return (
               <div key={drop.id} className="flex flex-col items-center gap-2">
-                {/* Level readout — visible only while dragging this drop */}
                 <div
                   className="text-[10px] font-mono tabular-nums text-gray-500 dark:text-gray-400 h-4 leading-none transition-opacity duration-150"
                   style={{ opacity: isDragging ? 1 : 0 }}
                 >
                   {Math.round(level * 100)}
                 </div>
-
-                {/* The orb — pointer target */}
                 <div
                   role="button"
                   aria-pressed={active}
                   aria-label={`${drop.name} — ${drop.sub}`}
                   className="rounded-full select-none"
                   style={{
-                    width: 52,
-                    height: 52,
+                    width: 52, height: 52,
                     backgroundColor: drop.color,
                     cursor: active ? 'ew-resize' : 'pointer',
-                    touchAction: 'none', // prevent scroll hijack on touch
-                    // Opacity encodes current level for active drops
+                    touchAction: 'none',
                     opacity: active ? 0.35 + level * 0.65 : 0.55,
-                    // Scale up slightly when active
                     transform: active
                       ? `scale(${1.04 + level * 0.08}) translateY(-2px)`
                       : 'scale(1)',
                     boxShadow: active
                       ? `0 0 0 2px white, 0 0 0 4px ${drop.color}66, 0 4px ${8 + level * 10}px ${drop.color}${Math.round(level * 88).toString(16).padStart(2,'0')}`
                       : `0 2px 8px ${drop.color}44`,
-                    transition: isDragging
-                      ? 'box-shadow 0.05s, opacity 0.05s'
-                      : 'all 0.25s ease',
+                    transition: isDragging ? 'box-shadow 0.05s, opacity 0.05s' : 'all 0.25s ease',
                   }}
                   onPointerDown={e => handlePointerDown(e, drop.id)}
                   onPointerMove={e => handlePointerMove(e, drop.id)}
                   onPointerUp={e => handlePointerUp(e, drop.id)}
                 />
-
                 <span className="text-[11px] font-medium text-gray-700 dark:text-gray-300 leading-none">
                   {drop.name}
                 </span>
@@ -532,9 +772,7 @@ export default function PotionMixer() {
           </Button>
         )}
         {confirmation && (
-          <span className="text-[11px] text-green-600 dark:text-green-400 animate-in fade-in">
-            {confirmation}
-          </span>
+          <span className="text-[11px] text-green-600 dark:text-green-400">{confirmation}</span>
         )}
       </div>
 
@@ -543,9 +781,7 @@ export default function PotionMixer() {
         <div className="rounded-xl border border-black/8 dark:border-white/10 bg-white/60 dark:bg-white/[0.04] p-5 space-y-4">
           <p className="text-xs font-semibold text-gray-700 dark:text-gray-200">Name this mixture</p>
           <input
-            type="text"
-            autoFocus
-            maxLength={48}
+            type="text" autoFocus maxLength={48}
             className="w-full rounded-lg border border-black/10 dark:border-white/10 bg-transparent px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-violet-500"
             placeholder="e.g. Morning focus"
             value={saveName}
@@ -558,8 +794,7 @@ export default function PotionMixer() {
             </p>
             <div className="flex flex-wrap gap-2">
               <button
-                type="button"
-                onClick={() => setSaveWheel(null)}
+                type="button" onClick={() => setSaveWheel(null)}
                 className={`px-3 py-1.5 rounded-full text-[10px] font-medium border transition-all ${
                   saveWheel === null
                     ? 'border-violet-500 text-violet-600 dark:text-violet-300 bg-violet-50 dark:bg-violet-900/20'
@@ -570,9 +805,7 @@ export default function PotionMixer() {
               </button>
               {clockTitles.map((title, i) => (
                 <button
-                  key={i}
-                  type="button"
-                  onClick={() => setSaveWheel(i)}
+                  key={i} type="button" onClick={() => setSaveWheel(i)}
                   className="px-3 py-1.5 rounded-full text-[10px] font-medium border transition-all"
                   style={{
                     borderColor: saveWheel === i ? WHEEL_HEX[i] : 'rgba(128,128,128,0.2)',
@@ -587,7 +820,10 @@ export default function PotionMixer() {
           </div>
           <div className="flex gap-2 pt-1">
             <Button size="sm" onClick={handleSave} className="text-xs h-8">Save</Button>
-            <Button size="sm" variant="ghost" onClick={() => { setShowSave(false); setSaveName(''); setSaveWheel(null) }} className="text-xs h-8">
+            <Button size="sm" variant="ghost"
+              onClick={() => { setShowSave(false); setSaveName(''); setSaveWheel(null) }}
+              className="text-xs h-8"
+            >
               Cancel
             </Button>
           </div>
