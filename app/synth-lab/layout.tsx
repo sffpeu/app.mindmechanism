@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Synth lab · Mind Mechanism',
+  title: 'The Mixing Pot · Mind Mechanism',
   description:
-    'Play with planetary resonance in real time — a playful look at the sonic framework behind the wheels.',
+    'Build your own tonal atmosphere. Drop sound elements into the pot, blend them, and save the mixture to a wheel or your session.',
 }
 
 export default function SynthLabLayout({ children }: { children: React.ReactNode }) {
