@@ -28,32 +28,35 @@ const DROPS: Drop[] = [
 ]
 
 // ─── Room definitions ─────────────────────────────────────────────────────────
+// Each room is an effects chain applied to the mix output.
+// The cauldron sits inside the room — the room shapes the sound.
 
 type Room = {
-  id: string          // matches wheel index as string '0'–'8'
-  name: string        // evocative name
-  color: string       // WHEEL_HEX colour
-  wheelName: string   // e.g. ROOT
+  id: string
+  name: string          // what the room does
+  color: string
+  wheelName: string
+  description: string   // one-line character
 }
 
 const ROOMS: Room[] = clockTitles.map((title, i) => ({
   id: String(i),
-  name: [
-    'Deep Earth',       // ROOT
-    'Running Water',    // SACRAL
-    'Open Fire',        // SOLAR PLEXUS
-    'Forest Floor',     // HEART
-    'Open Ocean',       // THROAT
-    'Deep Space',       // THIRD EYE
-    'Mountain Wind',    // MALE CROWN
-    'Soft Rain',        // FEMALE CROWN
-    'Crystal Chamber',  // ETHERIC HEART
-  ][i]!,
-  color: WHEEL_HEX[i]!,
   wheelName: title,
+  color: WHEEL_HEX[i]!,
+  ...[
+    { name: 'Cave',       description: 'tight reflections, close walls'        }, // ROOT
+    { name: 'Chorus',     description: 'liquid doubling, gentle spread'         }, // SACRAL
+    { name: 'Small Room', description: 'warm presence, early reflections'       }, // SOLAR PLEXUS
+    { name: 'Hall',       description: 'open reverb, sustained tail'            }, // HEART
+    { name: 'Tremolo',    description: 'slow breathing pulse on the mix'        }, // THROAT
+    { name: 'Phaser',     description: 'sweeping phase, depth in motion'        }, // THIRD EYE
+    { name: 'Wide',       description: 'stereo expansion, air between tones'    }, // MALE CROWN
+    { name: 'Shimmer',    description: 'pitch-shifted reverb, ascending wash'   }, // FEMALE CROWN
+    { name: 'Cathedral',  description: 'vast reverb, long floating decay'       }, // ETHERIC HEART
+  ][i]!,
 }))
 
-// ─── Colour blending (level-weighted) ────────────────────────────────────────
+// ─── Colour blending ──────────────────────────────────────────────────────────
 
 function hexToRgb(hex: string): [number, number, number] {
   return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)]
@@ -69,7 +72,7 @@ function blendWeighted(entries: Array<{ color: string; level: number }>): string
   return `rgb(${r},${g},${b})`
 }
 
-// ─── Audio: noise buffer util ─────────────────────────────────────────────────
+// ─── Audio utilities ──────────────────────────────────────────────────────────
 
 function makeNoiseBuffer(ctx: AudioContext, seconds = 3): AudioBuffer {
   const sr = ctx.sampleRate
@@ -79,214 +82,248 @@ function makeNoiseBuffer(ctx: AudioContext, seconds = 3): AudioBuffer {
   return buf
 }
 
-function noiseSource(ctx: AudioContext): AudioBufferSourceNode {
-  const src = ctx.createBufferSource()
-  src.buffer = makeNoiseBuffer(ctx, 4)
-  src.loop = true
-  return src
+// Schroeder-style reverb: parallel comb filters → series allpass diffusers
+// roomScale: 0.5 (cave) → 2.0 (cathedral)
+// feedback: 0.4 (bright/short) → 0.82 (dark/long)
+type ReverbResult = { input: GainNode; output: GainNode; nodes: AudioNode[] }
+
+function makeReverb(
+  ctx: AudioContext,
+  roomScale: number,
+  feedbackGain: number,
+  dampHz: number,
+  dryLevel: number,
+  wetLevel: number,
+): ReverbResult {
+  const input  = ctx.createGain()
+  const output = ctx.createGain()
+  const nodes: AudioNode[] = [input, output]
+
+  // Dry path
+  const dry = ctx.createGain(); dry.gain.value = dryLevel
+  input.connect(dry); dry.connect(output); nodes.push(dry)
+
+  // Wet path through comb bank
+  const combDelaysBase = [0.0297, 0.0371, 0.0411, 0.0437, 0.0307, 0.0359]
+  const combSum = ctx.createGain(); combSum.gain.value = wetLevel / combDelaysBase.length
+  nodes.push(combSum)
+
+  for (const d of combDelaysBase) {
+    const delayTime = d * roomScale
+    const delay = ctx.createDelay(2); delay.delayTime.value = delayTime
+    const fb    = ctx.createGain(); fb.gain.value = feedbackGain
+    const damp  = ctx.createBiquadFilter(); damp.type = 'lowpass'; damp.frequency.value = dampHz
+    input.connect(delay)
+    delay.connect(damp); damp.connect(fb); fb.connect(delay); delay.connect(combSum)
+    nodes.push(delay, fb, damp)
+  }
+
+  // Allpass diffusers in series
+  const apDelays = [0.005, 0.0017]
+  let chain: AudioNode = combSum
+  for (const d of apDelays) {
+    const ap = ctx.createBiquadFilter(); ap.type = 'allpass'
+    ap.frequency.value = 1 / (2 * Math.PI * d)
+    chain.connect(ap); chain = ap; nodes.push(ap)
+  }
+  chain.connect(output)
+
+  return { input, output, nodes }
 }
 
-// ─── Audio: room engine ───────────────────────────────────────────────────────
-// Each room is a self-contained ambient generator. Gain is fixed and low —
-// the room is a backdrop, not a mix element.
+// ─── Room effect chains ───────────────────────────────────────────────────────
+// Each room is a signal processor: input receives the mix, output goes to destination.
 
-type RoomHandle = { stop: () => void }
+type EffectChain = {
+  input: AudioNode
+  output: AudioNode
+  dispose: () => void
+}
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function createRoomAudio(ctx: AudioContext, destination: AudioNode, roomId: string): RoomHandle {
-  const out = ctx.createGain()
-  out.gain.setValueAtTime(0, ctx.currentTime)
-  out.connect(destination)
+function createRoomEffect(ctx: AudioContext, roomId: string): EffectChain {
+  const allNodes: AudioNode[] = []
+  const allOscillators: OscillatorNode[] = []
 
-  const sources: AudioBufferSourceNode[] = []
-  const oscillators: OscillatorNode[] = []
-  const nodes: AudioNode[] = []
-
-  const TARGET_GAIN = 0.28
+  const input  = ctx.createGain(); (input as GainNode).gain.value = 1
+  const output = ctx.createGain(); (output as GainNode).gain.value = 1
+  allNodes.push(input, output)
 
   switch (roomId) {
 
     case '0': {
-      // ROOT — Deep Earth: sub rumble + low cave resonance
-      const src = noiseSource(ctx)
-      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 90
-      const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.08
-      const lfoG = ctx.createGain(); lfoG.gain.value = 0.04
-      lfo.connect(lfoG); lfoG.connect(out.gain)
-      src.connect(lp); lp.connect(out)
-      out.gain.linearRampToValueAtTime(TARGET_GAIN, ctx.currentTime + 4)
-      src.start(); lfo.start()
-      sources.push(src); oscillators.push(lfo); nodes.push(lp, lfoG)
+      // ROOT — Cave: short bright reverb, close walls
+      const { input: rvIn, output: rvOut, nodes } = makeReverb(ctx, 0.55, 0.48, 5500, 0.4, 1.6)
+      input.connect(rvIn); rvOut.connect(output)
+      allNodes.push(...nodes)
       break
     }
 
     case '1': {
-      // SACRAL — Running Water: layered bandpass noise
-      const freqs = [320, 680, 1100, 2200]
-      freqs.forEach(f => {
-        const src = noiseSource(ctx)
-        const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'
-        bp.frequency.value = f; bp.Q.value = 0.7
-        const g = ctx.createGain(); g.gain.value = 0.25
-        src.connect(bp); bp.connect(g); g.connect(out)
-        src.start()
-        sources.push(src); nodes.push(bp, g)
-      })
-      out.gain.linearRampToValueAtTime(TARGET_GAIN, ctx.currentTime + 3)
+      // SACRAL — Chorus: two detuned delay lines with LFO modulation
+      const dry = ctx.createGain(); dry.gain.value = 0.5
+      input.connect(dry); dry.connect(output)
+
+      for (let i = 0; i < 3; i++) {
+        const delay  = ctx.createDelay(0.05); delay.delayTime.value = 0.01 + i * 0.003
+        const lfo    = ctx.createOscillator(); lfo.type = 'sine'
+        lfo.frequency.value = 0.28 + i * 0.13   // slightly different rates
+        const lfoG   = ctx.createGain(); lfoG.gain.value = 0.004 + i * 0.001
+        const tapG   = ctx.createGain(); tapG.gain.value = 0.3
+        lfo.connect(lfoG); lfoG.connect(delay.delayTime)
+        input.connect(delay); delay.connect(tapG); tapG.connect(output)
+        lfo.start()
+        allOscillators.push(lfo)
+        allNodes.push(delay, lfoG, tapG, dry)
+      }
       break
     }
 
     case '2': {
-      // SOLAR PLEXUS — Open Fire: noise with fast crackle LFO
-      const src = noiseSource(ctx)
-      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 600
-      const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 80
-      // Slow amplitude swell
-      const swell = ctx.createOscillator(); swell.type = 'sine'; swell.frequency.value = 0.15
-      const swellG = ctx.createGain(); swellG.gain.value = 0.06
-      // Fast crackle
-      const crackle = ctx.createOscillator(); crackle.type = 'sine'; crackle.frequency.value = 9
-      const crackleG = ctx.createGain(); crackleG.gain.value = 0.03
-      swell.connect(swellG); swellG.connect(out.gain)
-      crackle.connect(crackleG); crackleG.connect(out.gain)
-      src.connect(hp); hp.connect(lp); lp.connect(out)
-      out.gain.linearRampToValueAtTime(TARGET_GAIN, ctx.currentTime + 2)
-      src.start(); swell.start(); crackle.start()
-      sources.push(src); oscillators.push(swell, crackle); nodes.push(lp, hp, swellG, crackleG)
+      // SOLAR PLEXUS — Small Room: warm, early reflections present
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3200
+      input.connect(lp)
+      const { input: rvIn, output: rvOut, nodes } = makeReverb(ctx, 0.85, 0.58, 3200, 0.5, 1.3)
+      lp.connect(rvIn); rvOut.connect(output)
+      allNodes.push(lp, ...nodes)
       break
     }
 
     case '3': {
-      // HEART — Forest Floor: soft mid noise + gentle breeze swell
-      const src = noiseSource(ctx)
-      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'
-      bp.frequency.value = 500; bp.Q.value = 0.4
-      const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.12
-      const lfoG = ctx.createGain(); lfoG.gain.value = 0.07
-      lfo.connect(lfoG); lfoG.connect(out.gain)
-      src.connect(bp); bp.connect(out)
-      out.gain.linearRampToValueAtTime(TARGET_GAIN * 0.8, ctx.currentTime + 4)
-      src.start(); lfo.start()
-      sources.push(src); oscillators.push(lfo); nodes.push(bp, lfoG)
+      // HEART — Hall: open, sustained, natural
+      const { input: rvIn, output: rvOut, nodes } = makeReverb(ctx, 1.5, 0.74, 4000, 0.3, 1.8)
+      input.connect(rvIn); rvOut.connect(output)
+      allNodes.push(...nodes)
       break
     }
 
     case '4': {
-      // THROAT — Open Ocean: very slow wave swell on broadband noise
-      const src = noiseSource(ctx)
-      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 800
-      const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 60
-      // Wave rhythm — ~0.07 Hz = one wave every ~14 seconds
-      const wave = ctx.createOscillator(); wave.type = 'sine'; wave.frequency.value = 0.07
-      const waveG = ctx.createGain(); waveG.gain.value = 0.12
-      wave.connect(waveG); waveG.connect(out.gain)
-      src.connect(hp); hp.connect(lp); lp.connect(out)
-      out.gain.linearRampToValueAtTime(TARGET_GAIN, ctx.currentTime + 6)
-      src.start(); wave.start()
-      sources.push(src); oscillators.push(wave); nodes.push(lp, hp, waveG)
+      // THROAT — Tremolo: the mix breathes slowly
+      const dry = ctx.createGain(); dry.gain.value = 1
+      const trem = ctx.createGain(); trem.gain.value = 0        // modulated by LFO
+      const lfo  = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.45
+      const lfoG = ctx.createGain(); lfoG.gain.value = 0.35     // depth
+      const base = ctx.createGain(); base.gain.value = 0.65     // floor (keeps signal audible)
+      // LFO modulates gain: floor + LFO*depth
+      lfo.connect(lfoG); lfoG.connect(trem.gain)
+      input.connect(dry); dry.connect(base); base.connect(output)
+      input.connect(trem); trem.connect(output)
+      lfo.start()
+      allOscillators.push(lfo)
+      allNodes.push(dry, trem, lfoG, base)
       break
     }
 
     case '5': {
-      // THIRD EYE — Deep Space: barely-there hiss + ultra-low sub tone
-      const src = noiseSource(ctx)
-      const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 4000
-      const shelfG = ctx.createGain(); shelfG.gain.value = 0.15
-      src.connect(hp); hp.connect(shelfG); shelfG.connect(out)
-      // Sub presence, nearly inaudible
-      const sub = ctx.createOscillator(); sub.type = 'sine'; sub.frequency.value = 32
-      const subG = ctx.createGain(); subG.gain.value = 0.06
-      sub.connect(subG); subG.connect(out)
-      out.gain.linearRampToValueAtTime(TARGET_GAIN * 0.7, ctx.currentTime + 5)
-      src.start(); sub.start()
-      sources.push(src); oscillators.push(sub); nodes.push(hp, shelfG, subG)
+      // THIRD EYE — Phaser: 4-stage allpass with slow sweep
+      const dry = ctx.createGain(); dry.gain.value = 0.5
+      input.connect(dry); dry.connect(output)
+
+      const lfo  = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.18
+      const lfoG = ctx.createGain(); lfoG.gain.value = 700       // sweep centre ±700Hz
+      const base = ctx.createConstantSource(); base.offset.value = 1000 // centre at 1kHz
+      base.start()
+
+      let chain: AudioNode = input
+      const stages: BiquadFilterNode[] = []
+      for (let i = 0; i < 4; i++) {
+        const ap = ctx.createBiquadFilter(); ap.type = 'allpass'; ap.Q.value = 8
+        ap.frequency.value = 400 + i * 300
+        lfo.connect(lfoG); lfoG.connect(ap.frequency)
+        base.connect(ap.frequency)
+        chain.connect(ap); chain = ap
+        stages.push(ap); allNodes.push(ap)
+      }
+      const wetG = ctx.createGain(); wetG.gain.value = 0.5
+      chain.connect(wetG); wetG.connect(output)
+      lfo.start()
+      allOscillators.push(lfo)
+      allNodes.push(dry, lfoG, wetG, base)
       break
     }
 
     case '6': {
-      // MALE CROWN — Mountain Wind: highpass noise with gusty LFO
-      const src = noiseSource(ctx)
-      const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1200
-      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 5000
-      // Irregular gust — two LFOs at different rates beating together
-      const gust1 = ctx.createOscillator(); gust1.type = 'sine'; gust1.frequency.value = 0.22
-      const gust2 = ctx.createOscillator(); gust2.type = 'sine'; gust2.frequency.value = 0.31
-      const gustG1 = ctx.createGain(); gustG1.gain.value = 0.06
-      const gustG2 = ctx.createGain(); gustG2.gain.value = 0.04
-      gust1.connect(gustG1); gust2.connect(gustG2)
-      gustG1.connect(out.gain); gustG2.connect(out.gain)
-      src.connect(hp); hp.connect(lp); lp.connect(out)
-      out.gain.linearRampToValueAtTime(TARGET_GAIN, ctx.currentTime + 3)
-      src.start(); gust1.start(); gust2.start()
-      sources.push(src); oscillators.push(gust1, gust2); nodes.push(hp, lp, gustG1, gustG2)
+      // MALE CROWN — Wide: Haas stereo expansion via ChannelMerger
+      const merger  = ctx.createChannelMerger(2)
+      const splitter = ctx.createChannelSplitter(2)
+      const delay   = ctx.createDelay(0.04); delay.delayTime.value = 0.022  // 22ms Haas
+      // Left: near-dry
+      input.connect(merger, 0, 0)
+      // Right: delayed
+      input.connect(delay); delay.connect(merger, 0, 1)
+      merger.connect(output)
+      allNodes.push(merger, splitter, delay)
       break
     }
 
     case '7': {
-      // FEMALE CROWN — Soft Rain: mid-high noise, constant gentle patter
-      const src1 = noiseSource(ctx)
-      const src2 = noiseSource(ctx)
-      const bp1 = ctx.createBiquadFilter(); bp1.type = 'bandpass'; bp1.frequency.value = 2400; bp1.Q.value = 0.6
-      const bp2 = ctx.createBiquadFilter(); bp2.type = 'bandpass'; bp2.frequency.value = 4800; bp2.Q.value = 0.5
-      const g1 = ctx.createGain(); g1.gain.value = 0.5
-      const g2 = ctx.createGain(); g2.gain.value = 0.3
-      src1.connect(bp1); bp1.connect(g1); g1.connect(out)
-      src2.connect(bp2); bp2.connect(g2); g2.connect(out)
-      out.gain.linearRampToValueAtTime(TARGET_GAIN * 0.9, ctx.currentTime + 2)
-      src1.start(); src2.start()
-      sources.push(src1, src2); nodes.push(bp1, bp2, g1, g2)
+      // FEMALE CROWN — Shimmer: reverb with upward pitch-shift in feedback
+      // Pitch shift approximated via ring modulation in the feedback loop
+      const predelay = ctx.createDelay(0.1); predelay.delayTime.value = 0.04
+      const { input: rvIn, output: rvOut, nodes } = makeReverb(ctx, 1.2, 0.7, 6000, 0.3, 1.5)
+      input.connect(predelay); predelay.connect(rvIn)
+
+      // Shimmer: feed reverb output back through a ring modulator (+1 semitone freq shift)
+      // Ring mod = multiply by cosine at shift frequency
+      const ringFreq = 261.63 * (2 ** (1/12) - 1) * 80 // subtle upward shift
+      const ringOsc  = ctx.createOscillator(); ringOsc.type = 'sine'
+      ringOsc.frequency.value = ringFreq
+      const ringGain = ctx.createGain(); ringGain.gain.value = 0
+      const shimmerSend = ctx.createGain(); shimmerSend.gain.value = 0.35
+      const shimmerFb   = ctx.createGain(); shimmerFb.gain.value = 0.45
+
+      rvOut.connect(shimmerSend)
+      shimmerSend.connect(ringGain.gain as unknown as AudioNode) // AM modulation
+      ringOsc.connect(ringGain)
+      ringGain.connect(shimmerFb)
+      shimmerFb.connect(rvIn)
+      rvOut.connect(output)
+      ringOsc.start()
+      allOscillators.push(ringOsc)
+      allNodes.push(predelay, shimmerSend, shimmerFb, ringGain, ...nodes)
       break
     }
 
     case '8': {
-      // ETHERIC HEART — Crystal Chamber: hiss with long feedback reverb shimmer
-      const src = noiseSource(ctx)
-      const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 3000
-      const srcG = ctx.createGain(); srcG.gain.value = 0.2
-      src.connect(hp); hp.connect(srcG); srcG.connect(out)
-      // Long reverb tail via feedback delay
-      const delay = ctx.createDelay(2.0); delay.delayTime.value = 0.8
-      const fb = ctx.createGain(); fb.gain.value = 0.62
-      const delayLP = ctx.createBiquadFilter(); delayLP.type = 'lowpass'; delayLP.frequency.value = 6000
-      srcG.connect(delay); delay.connect(delayLP); delayLP.connect(fb)
-      fb.connect(delay); delay.connect(out)
-      out.gain.linearRampToValueAtTime(TARGET_GAIN * 0.75, ctx.currentTime + 5)
-      src.start()
-      sources.push(src); nodes.push(hp, srcG, delay, fb, delayLP)
+      // ETHERIC HEART — Cathedral: vast reverb, long floating decay
+      const predelay = ctx.createDelay(0.5); predelay.delayTime.value = 0.06
+      input.connect(predelay)
+      const { input: rvIn, output: rvOut, nodes } = makeReverb(ctx, 2.2, 0.82, 3600, 0.15, 2.2)
+      predelay.connect(rvIn)
+      // Second pass — makes it even larger
+      const { input: rv2In, output: rv2Out, nodes: nodes2 } = makeReverb(ctx, 1.8, 0.78, 4500, 0, 0.8)
+      rvOut.connect(rv2In)
+      rvOut.connect(output)
+      rv2Out.connect(output)
+      allNodes.push(predelay, ...nodes, ...nodes2)
       break
     }
   }
 
   return {
-    stop: () => {
-      out.gain.setTargetAtTime(0, ctx.currentTime, 0.8)
-      setTimeout(() => {
-        sources.forEach(s => { try { s.stop() } catch { /* already stopped */ } })
-        oscillators.forEach(o => { try { o.stop() } catch { /* already stopped */ } })
-        nodes.forEach(n => { try { n.disconnect() } catch { /* ignore */ } })
-        try { out.disconnect() } catch { /* ignore */ }
-      }, 2400)
+    input,
+    output,
+    dispose: () => {
+      allOscillators.forEach(o => { try { o.stop() } catch { /* ignore */ } })
+      allNodes.forEach(n => { try { n.disconnect() } catch { /* ignore */ } })
     },
   }
 }
 
-// ─── Audio: drop engine ───────────────────────────────────────────────────────
+// ─── Drop audio engine ────────────────────────────────────────────────────────
 
 type DropAudioHandle = {
   stop: () => void
   setLevel: (v: number) => void
 }
 
-function createDropAudio(ctx: AudioContext, master: GainNode, id: string): DropAudioHandle {
+function createDropAudio(ctx: AudioContext, mixBus: GainNode, id: string): DropAudioHandle {
   const levelGain = ctx.createGain()
   levelGain.gain.setValueAtTime(0, ctx.currentTime)
-  levelGain.connect(master)
+  levelGain.connect(mixBus)
 
   const oscillators: OscillatorNode[] = []
   const extraNodes: AudioNode[] = []
-
-  const fadeIn = (duration = 2) =>
-    levelGain.gain.linearRampToValueAtTime(1, ctx.currentTime + duration)
+  const fadeIn = (d = 2) => levelGain.gain.linearRampToValueAtTime(1, ctx.currentTime + d)
 
   switch (id) {
     case 'warmth': {
@@ -296,8 +333,7 @@ function createDropAudio(ctx: AudioContext, master: GainNode, id: string): DropA
       const g2 = ctx.createGain(); g2.gain.value = 0.09
       o1.connect(g1); o2.connect(g2); g1.connect(levelGain); g2.connect(levelGain)
       fadeIn(3); o1.start(); o2.start()
-      oscillators.push(o1, o2); extraNodes.push(g1, g2)
-      break
+      oscillators.push(o1, o2); extraNodes.push(g1, g2); break
     }
     case 'glow': {
       const o1 = ctx.createOscillator(); o1.type = 'sine'; o1.frequency.value = 432
@@ -306,18 +342,16 @@ function createDropAudio(ctx: AudioContext, master: GainNode, id: string): DropA
       const g2 = ctx.createGain(); g2.gain.value = 0.06
       o1.connect(g1); o2.connect(g2); g1.connect(levelGain); g2.connect(levelGain)
       fadeIn(1.5); o1.start(); o2.start()
-      oscillators.push(o1, o2); extraNodes.push(g1, g2)
-      break
+      oscillators.push(o1, o2); extraNodes.push(g1, g2); break
     }
     case 'shimmer': {
       for (const f of [880, 1320, 2200]) {
         const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f
         const og = ctx.createGain(); og.gain.value = 0.04
-        o.connect(og); og.connect(levelGain)
-        o.start(); oscillators.push(o); extraNodes.push(og)
+        o.connect(og); og.connect(levelGain); o.start()
+        oscillators.push(o); extraNodes.push(og)
       }
-      fadeIn(2)
-      break
+      fadeIn(2); break
     }
     case 'breath': {
       const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = 180
@@ -327,8 +361,7 @@ function createDropAudio(ctx: AudioContext, master: GainNode, id: string): DropA
       lfo.connect(lfoG); lfoG.connect(amp.gain)
       o.connect(amp); amp.connect(levelGain)
       fadeIn(2); o.start(); lfo.start()
-      oscillators.push(o, lfo); extraNodes.push(amp, lfoG)
-      break
+      oscillators.push(o, lfo); extraNodes.push(amp, lfoG); break
     }
     case 'space': {
       const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = 528
@@ -338,8 +371,7 @@ function createDropAudio(ctx: AudioContext, master: GainNode, id: string): DropA
       o.connect(og); og.connect(levelGain); og.connect(delay)
       delay.connect(fbG); fbG.connect(delay); delay.connect(levelGain)
       fadeIn(2); o.start()
-      oscillators.push(o); extraNodes.push(og, delay, fbG)
-      break
+      oscillators.push(o); extraNodes.push(og, delay, fbG); break
     }
     case 'weight': {
       const o1 = ctx.createOscillator(); o1.type = 'sine'; o1.frequency.value = 55
@@ -348,8 +380,7 @@ function createDropAudio(ctx: AudioContext, master: GainNode, id: string): DropA
       const g2 = ctx.createGain(); g2.gain.value = 0.1
       o1.connect(g1); o2.connect(g2); g1.connect(levelGain); g2.connect(levelGain)
       fadeIn(4); o1.start(); o2.start()
-      oscillators.push(o1, o2); extraNodes.push(g1, g2)
-      break
+      oscillators.push(o1, o2); extraNodes.push(g1, g2); break
     }
     case 'hum': {
       const o1 = ctx.createOscillator(); o1.type = 'sine'; o1.frequency.value = 220
@@ -358,8 +389,7 @@ function createDropAudio(ctx: AudioContext, master: GainNode, id: string): DropA
       const g2 = ctx.createGain(); g2.gain.value = 0.1
       o1.connect(g1); o2.connect(g2); g1.connect(levelGain); g2.connect(levelGain)
       fadeIn(2); o1.start(); o2.start()
-      oscillators.push(o1, o2); extraNodes.push(g1, g2)
-      break
+      oscillators.push(o1, o2); extraNodes.push(g1, g2); break
     }
     case 'mist': {
       const src = ctx.createBufferSource()
@@ -386,8 +416,7 @@ function createDropAudio(ctx: AudioContext, master: GainNode, id: string): DropA
       const og = ctx.createGain(); og.gain.value = 0.09
       o.connect(og); og.connect(levelGain)
       fadeIn(1.5); o.start()
-      oscillators.push(o); extraNodes.push(og)
-      break
+      oscillators.push(o); extraNodes.push(og); break
     }
   }
 
@@ -433,85 +462,92 @@ function persistAtmosphere(atm: SavedAtmosphere): void {
 
 // ─── Drag constants ───────────────────────────────────────────────────────────
 
-const DRAG_RANGE_PX = 180
+const DRAG_RANGE_PX    = 180
 const DRAG_THRESHOLD_PX = 6
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function PotionMixer() {
-  const [activeDropIds, setActiveDropIds]   = useState<string[]>([])
-  const [levels, setLevels]                 = useState<Record<string, number>>({})
-  const [masterVolume, setMasterVolume]     = useState(0.65)
-  const [activeRoomId, setActiveRoomId]     = useState<string | null>(null)
-  const [showSave, setShowSave]             = useState(false)
-  const [saveName, setSaveName]             = useState('')
-  const [saveWheel, setSaveWheel]           = useState<number | null>(null)
-  const [confirmation, setConfirmation]     = useState('')
-  const [draggingId, setDraggingId]         = useState<string | null>(null)
+  const [activeDropIds, setActiveDropIds] = useState<string[]>([])
+  const [levels, setLevels]               = useState<Record<string, number>>({})
+  const [masterVolume, setMasterVolume]   = useState(0.65)
+  const [activeRoomId, setActiveRoomId]   = useState<string | null>(null)
+  const [showSave, setShowSave]           = useState(false)
+  const [saveName, setSaveName]           = useState('')
+  const [saveWheel, setSaveWheel]         = useState<number | null>(null)
+  const [confirmation, setConfirmation]   = useState('')
+  const [draggingId, setDraggingId]       = useState<string | null>(null)
 
-  const ctxRef        = useRef<AudioContext | null>(null)
-  const masterRef     = useRef<GainNode | null>(null)
-  const roomOutRef    = useRef<GainNode | null>(null)       // room goes here
-  const handlesRef    = useRef<Record<string, DropAudioHandle>>({})
-  const roomHandleRef = useRef<RoomHandle | null>(null)
+  // Audio graph: drops → mixBus → [roomEffect.input → roomEffect.output] → destination
+  // No room: mixBus → destination directly
+  const ctxRef         = useRef<AudioContext | null>(null)
+  const mixBusRef      = useRef<GainNode | null>(null)
+  const handlesRef     = useRef<Record<string, DropAudioHandle>>({})
+  const roomEffectRef  = useRef<EffectChain | null>(null)
 
   const dragRef = useRef<{
     id: string; startX: number; startLevel: number; moved: boolean
   } | null>(null)
 
-  // ── Context bootstrap ──────────────────────────────────────────────────────
+  // ── Context bootstrap ─────────────────────────────────────────────────────
   const ensureCtx = useCallback(() => {
     if (!ctxRef.current) {
-      const ctx = new AudioContext()
-      // Drops → master → destination
-      const master = ctx.createGain(); master.gain.value = masterVolume
-      master.connect(ctx.destination)
-      // Room → roomOut → destination (independent gain)
-      const roomOut = ctx.createGain(); roomOut.gain.value = 1
-      roomOut.connect(ctx.destination)
+      const ctx  = new AudioContext()
+      const mixBus = ctx.createGain(); mixBus.gain.value = masterVolume
+      // Start dry — direct to destination
+      mixBus.connect(ctx.destination)
       ctxRef.current = ctx
-      masterRef.current = master
-      roomOutRef.current = roomOut
+      mixBusRef.current = mixBus
     }
     if (ctxRef.current.state === 'suspended') void ctxRef.current.resume()
-    return {
-      ctx: ctxRef.current,
-      master: masterRef.current!,
-      roomOut: roomOutRef.current!,
-    }
+    return { ctx: ctxRef.current, mixBus: mixBusRef.current! }
   }, [masterVolume])
 
   useEffect(() => {
-    if (masterRef.current && ctxRef.current) {
-      masterRef.current.gain.setTargetAtTime(masterVolume, ctxRef.current.currentTime, 0.1)
+    if (mixBusRef.current && ctxRef.current) {
+      mixBusRef.current.gain.setTargetAtTime(masterVolume, ctxRef.current.currentTime, 0.1)
     }
   }, [masterVolume])
 
   useEffect(() => {
     return () => {
       Object.values(handlesRef.current).forEach(h => h.stop())
-      roomHandleRef.current?.stop()
+      roomEffectRef.current?.dispose()
       void ctxRef.current?.close()
     }
   }, [])
 
-  // ── Room selection ─────────────────────────────────────────────────────────
+  // ── Room switching ────────────────────────────────────────────────────────
+  // Routing: mixBus.disconnect() → reconnect through new effect (or dry)
   const selectRoom = useCallback((roomId: string | null) => {
-    // Stop current room
-    if (roomHandleRef.current) {
-      roomHandleRef.current.stop()
-      roomHandleRef.current = null
+    const { ctx, mixBus } = ensureCtx()
+
+    // Tear down old effect
+    roomEffectRef.current?.dispose()
+    roomEffectRef.current = null
+
+    // Disconnect mixBus from everything
+    try { mixBus.disconnect() } catch { /* ignore */ }
+
+    if (roomId === null) {
+      // Dry: go straight to destination
+      mixBus.connect(ctx.destination)
+    } else {
+      // Route through effect chain
+      const effect = createRoomEffect(ctx, roomId)
+      effect.input.connect   // already wired internally
+      mixBus.connect(effect.input as GainNode)
+      ;(effect.output as GainNode).connect(ctx.destination)
+      roomEffectRef.current = effect
     }
+
     setActiveRoomId(roomId)
-    if (roomId === null) return
-    const { ctx, roomOut } = ensureCtx()
-    roomHandleRef.current = createRoomAudio(ctx, roomOut, roomId)
   }, [ensureCtx])
 
-  // ── Drop activation ────────────────────────────────────────────────────────
+  // ── Drop management ───────────────────────────────────────────────────────
   const activateDrop = useCallback((dropId: string) => {
-    const { ctx, master } = ensureCtx()
-    handlesRef.current[dropId] = createDropAudio(ctx, master, dropId)
+    const { ctx, mixBus } = ensureCtx()
+    handlesRef.current[dropId] = createDropAudio(ctx, mixBus, dropId)
     setActiveDropIds(prev => [...prev, dropId])
     setLevels(prev => ({ ...prev, [dropId]: 1.0 }))
   }, [ensureCtx])
@@ -530,7 +566,7 @@ export default function PotionMixer() {
     setLevels({})
   }, [])
 
-  // ── Pointer drag (level fader) ─────────────────────────────────────────────
+  // ── Pointer drag (level fader per drop) ──────────────────────────────────
   const handlePointerDown = useCallback((e: React.PointerEvent, dropId: string) => {
     e.currentTarget.setPointerCapture(e.pointerId)
     if (!activeDropIds.includes(dropId)) return
@@ -559,12 +595,12 @@ export default function PotionMixer() {
     else activateDrop(dropId)
   }, [activeDropIds, activateDrop, deactivateDrop])
 
-  // ── Derived visuals ────────────────────────────────────────────────────────
+  // ── Derived ───────────────────────────────────────────────────────────────
   const activeEntries = activeDropIds.map(id => ({
     id, color: DROPS.find(d => d.id === id)!.color, level: levels[id] ?? 1.0,
   }))
-  const potColor = blendWeighted(activeEntries)
-  const isEmpty = activeDropIds.length === 0
+  const potColor  = blendWeighted(activeEntries)
+  const isEmpty   = activeDropIds.length === 0
   const activeRoom = ROOMS.find(r => r.id === activeRoomId) ?? null
 
   // ── Save ──────────────────────────────────────────────────────────────────
@@ -590,11 +626,13 @@ export default function PotionMixer() {
 
       {/* ── Room selector ── */}
       <div>
-        <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 mb-3">
+        <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 mb-1">
           Room
         </p>
+        <p className="text-[9px] text-gray-400/60 dark:text-gray-500/60 mb-3">
+          The mix passes through the room — each room is a different spatial or tonal treatment
+        </p>
         <div className="flex flex-wrap gap-1.5">
-          {/* No room */}
           <button
             type="button"
             onClick={() => selectRoom(null)}
@@ -606,7 +644,6 @@ export default function PotionMixer() {
           >
             No room
           </button>
-
           {ROOMS.map(room => {
             const isActive = activeRoomId === room.id
             return (
@@ -614,7 +651,7 @@ export default function PotionMixer() {
                 key={room.id}
                 type="button"
                 onClick={() => selectRoom(isActive ? null : room.id)}
-                title={room.name}
+                title={`${room.name} — ${room.description}`}
                 className="px-3 py-1.5 rounded-full text-[10px] font-medium border transition-all"
                 style={{
                   borderColor: isActive ? room.color : 'rgba(128,128,128,0.2)',
@@ -623,18 +660,16 @@ export default function PotionMixer() {
                   boxShadow: isActive ? `0 0 0 1px ${room.color}44` : undefined,
                 }}
               >
-                {room.wheelName}
+                {room.name}
               </button>
             )
           })}
         </div>
-
-        {/* Active room name */}
         <p
           className="mt-2 text-[10px] text-gray-400 dark:text-gray-500 h-4 transition-opacity duration-300"
           style={{ opacity: activeRoom ? 1 : 0 }}
         >
-          {activeRoom ? `${activeRoom.name} — running in the background` : ''}
+          {activeRoom ? `${activeRoom.name} · ${activeRoom.description}` : ''}
         </p>
       </div>
 
@@ -681,7 +716,6 @@ export default function PotionMixer() {
             </div>
           )}
         </div>
-
         <p className="text-[10px] tracking-wide text-gray-400 dark:text-gray-500 h-4 text-center">
           {!isEmpty && activeDropIds.map(id => DROPS.find(d => d.id === id)!.name).join(' · ')}
         </p>
@@ -697,8 +731,8 @@ export default function PotionMixer() {
         </p>
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-4">
           {DROPS.map(drop => {
-            const active = activeDropIds.includes(drop.id)
-            const level = levels[drop.id] ?? 1.0
+            const active    = activeDropIds.includes(drop.id)
+            const level     = levels[drop.id] ?? 1.0
             const isDragging = draggingId === drop.id
             return (
               <div key={drop.id} className="flex flex-col items-center gap-2">
@@ -719,9 +753,7 @@ export default function PotionMixer() {
                     cursor: active ? 'ew-resize' : 'pointer',
                     touchAction: 'none',
                     opacity: active ? 0.35 + level * 0.65 : 0.55,
-                    transform: active
-                      ? `scale(${1.04 + level * 0.08}) translateY(-2px)`
-                      : 'scale(1)',
+                    transform: active ? `scale(${1.04 + level * 0.08}) translateY(-2px)` : 'scale(1)',
                     boxShadow: active
                       ? `0 0 0 2px white, 0 0 0 4px ${drop.color}66, 0 4px ${8 + level * 10}px ${drop.color}${Math.round(level * 88).toString(16).padStart(2,'0')}`
                       : `0 2px 8px ${drop.color}44`,
@@ -762,14 +794,10 @@ export default function PotionMixer() {
       {/* ── Actions ── */}
       <div className="flex items-center gap-3 flex-wrap min-h-8">
         {!isEmpty && (
-          <Button variant="outline" size="sm" onClick={clearAll} className="text-xs h-8">
-            Clear
-          </Button>
+          <Button variant="outline" size="sm" onClick={clearAll} className="text-xs h-8">Clear</Button>
         )}
         {!isEmpty && !showSave && (
-          <Button size="sm" onClick={() => setShowSave(true)} className="text-xs h-8">
-            Save mixture
-          </Button>
+          <Button size="sm" onClick={() => setShowSave(true)} className="text-xs h-8">Save mixture</Button>
         )}
         {confirmation && (
           <span className="text-[11px] text-green-600 dark:text-green-400">{confirmation}</span>
@@ -832,7 +860,7 @@ export default function PotionMixer() {
 
       <style>{`
         @keyframes mm-bubble {
-          0%   { transform: translateY(0)    scale(1);    opacity: 0.6; }
+          0%   { transform: translateY(0)    scale(1);    opacity: 0.6;  }
           50%  { transform: translateY(-7px) scale(1.1); opacity: 0.85; }
           100% { transform: translateY(0)    scale(0.95); opacity: 0.45; }
         }
