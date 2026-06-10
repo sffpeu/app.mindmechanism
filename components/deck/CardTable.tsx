@@ -349,6 +349,25 @@ export function CardTable() {
     setRemainingDeck(prev => prev.slice(1))
   }, [remainingDeck])
 
+  const handleDrawBlank = useCallback(() => {
+    const el = tableRef.current
+    if (!el) return
+    const { clientWidth: w, clientHeight: h } = el
+    const id = `blank-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    setCards(prev => {
+      const maxZ = Math.max(0, ...prev.map(c => c.zIndex))
+      return [...prev, {
+        nodeId: id,
+        x: MARGIN + Math.random() * Math.max(0, w - CARD_W - MARGIN * 2),
+        y: MARGIN + Math.random() * Math.max(0, h - CARD_H - MARGIN * 2),
+        rotation: (Math.random() - 0.5) * 22,
+        zIndex: maxZ + 1,
+        isFlipped: false,
+        customContent: { term: '', definition: '', phonetic: '' },
+      }]
+    })
+  }, [])
+
   const handleBgUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -441,17 +460,27 @@ export function CardTable() {
     const updated = [session, ...savedSessions].slice(0, 20)
     setSavedSessions(updated)
 
-    if (user && db) {
-      try {
-        await setDoc(
-          doc(db as Firestore, 'users', user.uid, 'deckSessions', session.id),
-          session
-        )
-        playDeckSessionSaveTone()
-        showToast(`"${name}" saved`)
-      } catch (err) {
-        console.error('Firestore session save failed:', err)
-        showToast('Save failed — please try again')
+    if (user) {
+      // db initialises slightly after auth — wait up to 3 s before giving up
+      let attempts = 0
+      while (!db && attempts < 30) {
+        await new Promise(r => setTimeout(r, 100))
+        attempts++
+      }
+      if (db) {
+        try {
+          await setDoc(
+            doc(db as Firestore, 'users', user.uid, 'deckSessions', session.id),
+            session
+          )
+          playDeckSessionSaveTone()
+          showToast(`"${name}" saved`)
+        } catch (err) {
+          console.error('Firestore session save failed:', err)
+          showToast('Save failed — please try again')
+        }
+      } else {
+        showToast('Could not reach the database — check your connection and try again')
       }
     } else {
       showToast('Sign in to save sessions to your account')
@@ -661,6 +690,14 @@ export function CardTable() {
               )}
             >
               Draw{remainingDeck.length > 0 ? ` (${remainingDeck.length})` : ''}
+            </button>
+            <button
+              type="button"
+              className={DECK_STRIP_BTN_DRAW}
+              onClick={handleDrawBlank}
+              title="Add a blank card to the table"
+            >
+              + Blank
             </button>
             <Divider />
             <button
