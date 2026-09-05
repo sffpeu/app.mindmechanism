@@ -1,9 +1,20 @@
 rules_version = '2';
 
+// Single-owner lockdown. See firestore.rules for the reasoning.
+//
+// The previous version allowed read AND write on every object in the bucket to
+// any signed-in account.
+
 service firebase.storage {
   match /b/{bucket}/o {
+
+    function isOwner() {
+      return request.auth != null
+        && request.auth.token.email == 'future@theoneleggedpoet.com';
+    }
+
     match /{allPaths=**} {
-      allow read, write: if request.auth != null;
+      allow read, write: if isOwner();
     }
   }
-} 
+}
