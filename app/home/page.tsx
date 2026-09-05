@@ -32,6 +32,7 @@ import { HeroSection } from '@/components/landing/HeroSection'
 import { FeatureStrip } from '@/components/landing/FeatureStrip'
 import { ResearchCallout } from '@/components/landing/ResearchCallout'
 import { usePortal } from '@/contexts/PortalContext'
+import { REGISTRATION_OPEN } from '@/lib/siteGate'
 import type { Portal } from '@/lib/portalConfig'
 
 async function persistRegistrationPortal(uid: string, portalId: Portal) {
@@ -87,7 +88,7 @@ function HomeLoginContent() {
       : rawCallback
 
   useEffect(() => {
-    if (searchParams.get('signup') === '1') {
+    if (REGISTRATION_OPEN && searchParams.get('signup') === '1') {
       setEmailAuthMode('signup')
     }
   }, [searchParams])
@@ -201,6 +202,11 @@ function HomeLoginContent() {
       } finally {
         setEmailAuthBusy(false)
       }
+      return
+    }
+
+    if (emailAuthMode === 'signup' && !REGISTRATION_OPEN) {
+      toast.error('New accounts are closed.')
       return
     }
 
@@ -402,7 +408,7 @@ function HomeLoginContent() {
               {emailLinkBusy ? 'Sending link…' : 'Email me a sign-in link (no password)'}
             </Button>
             <p className="text-center text-sm text-[hsl(var(--muted-foreground))]">
-              {emailAuthMode === 'signin' ? (
+              {!REGISTRATION_OPEN ? null : emailAuthMode === 'signin' ? (
                 <>
                   New here?{' '}
                   <button

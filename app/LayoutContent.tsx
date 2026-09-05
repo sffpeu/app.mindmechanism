@@ -25,6 +25,12 @@ function isShellPublic(pathname: string): boolean {
 
 function LayoutContentInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+
+  // The passcode gate renders bare, with no dock, footer or doorman around it.
+  if (pathname === '/gate' || pathname === '/gate/') {
+    return <>{children}</>
+  }
+
   const isProtectedRoute =
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/sessions') ||

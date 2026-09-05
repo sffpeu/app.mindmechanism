@@ -15,6 +15,7 @@ import {
 } from 'firebase/auth'
 import { syncFirebaseAuthCookie } from '@/lib/syncFirebaseAuthCookie'
 import { requiresEmailVerification, getVerifyEmailContinueUrl } from '@/lib/authEmailVerification'
+import { REGISTRATION_OPEN } from '@/lib/siteGate'
 
 interface AuthModalProps {
   isOpen: boolean
@@ -30,6 +31,11 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+
+    if (mode === 'signup' && !REGISTRATION_OPEN) {
+      setError('New accounts are closed.')
+      return
+    }
 
     try {
       if (!auth) {
